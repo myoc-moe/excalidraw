@@ -82,6 +82,7 @@
     "png-chunks-extract": "1.0.0",
     "points-on-curve": "1.0.1",
     "pwacompat": "2.0.17",
+    "rimraf": "6.0.1",
     "roughjs": "4.6.4",
     "sass": "1.51.0",
     "tunnel-rat": "0.1.2"
@@ -127,12 +128,11 @@
   "bugs": "https://github.com/excalidraw/excalidraw/issues",
   "homepage": "https://github.com/excalidraw/excalidraw/tree/master/packages/excalidraw",
   "scripts": {
-    "gen:types": "rm -rf types && tsc",
-    "build:esm": "rm -rf dist && node ../../scripts/buildPackage.js && yarn gen:types",
+    "gen:types": "rimraf types && tsc",
+    "build:esm": "rimraf dist && node ../../scripts/buildPackage.js && yarn gen:types",
     "pack": "yarn build:umd && yarn pack",
     "start": "node ../../scripts/buildExample.mjs && vite",
     "build:example": "node ../../scripts/buildExample.mjs",
-    "size": "yarn build:umd && size-limit",
-    "prepare": "npm run build:esm"
+    "size": "yarn build:umd && size-limit"
   }
 }
