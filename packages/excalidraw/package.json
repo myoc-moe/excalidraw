@@ -132,6 +132,7 @@
     "pack": "yarn build:umd && yarn pack",
     "start": "node ../../scripts/buildExample.mjs && vite",
     "build:example": "node ../../scripts/buildExample.mjs",
-    "size": "yarn build:umd && size-limit"
+    "size": "yarn build:umd && size-limit",
+    "prepare": "npm run build:esm"
   }
 }
