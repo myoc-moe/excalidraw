@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../prod/subset-worker.chunk.js"],
+  "sourcesContent": ["import{Commands as r,subsetToBinary as t}from\"./subset-shared.chunk\";var s=import.meta.url?new URL(import.meta.url):void 0;typeof window>\"u\"&&typeof self<\"u\"&&(self.onmessage=async e=>{switch(e.data.command){case r.Subset:let a=await t(e.data.arrayBuffer,e.data.codePoints);self.postMessage(a,{transfer:[a]});break}});export{s as WorkerUrl};\n"],
+  "mappings": ";;;;;;;;;;AAAA;AAAqE,IAAI,IAAE,YAAY,MAAI,IAAI,IAAI,YAAY,GAAG,IAAE;AAAO,OAAO,SAAO,OAAK,OAAO,OAAK,QAAM,KAAK,YAAU,OAAM,MAAG;AAAC,UAAO,EAAE,KAAK,SAAQ;AAAA,IAAC,KAAK,GAAE;AAAO,UAAI,IAAE,MAAM,GAAE,EAAE,KAAK,aAAY,EAAE,KAAK,UAAU;AAAE,WAAK,YAAY,GAAE,EAAC,UAAS,CAAC,CAAC,EAAC,CAAC;AAAE;AAAA,EAAK;AAAC;",
+  "names": []
+}
