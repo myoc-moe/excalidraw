@@ -1107,9 +1107,7 @@ const ExcalidrawWrapper = () => {
             {
               ...CommandPalette.defaultItems.toggleTheme,
               perform: () => {
-                setAppTheme(
-                  editorTheme === THEME.DARK ? THEME.LIGHT : THEME.DARK,
-                );
+                setAppTheme(THEME.LIGHT); // MYOC - allow light only
               },
             },
             {
