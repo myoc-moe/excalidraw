@@ -18,7 +18,6 @@ This `prop` controls the visibility of the canvas actions inside the `menu`.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `changeViewBackgroundColor` | `boolean` | `true` | Indicates whether to show `Background color picker`. |
-| `clearCanvas` | `boolean` | `true` | Indicates whether to show `Clear canvas` button. |
 | `export` | `false` &#124; [`exportOpts`](#exportopts) | `object` | This prop allows to customize the UI inside the export dialog. By default it shows the `save file to disk`. For more details visit [`exportOpts`](#exportopts). |
 | `loadScene` | `boolean` | `true` | Indicates whether to show `Load` button. |
 | `saveToActiveFile` | `boolean` | `true` | Indicates whether to show `Save` button to save to current file. |
@@ -30,7 +29,6 @@ function App() {
   const UIOptions = {
     canvasActions: {
       changeViewBackgroundColor: false,
-      clearCanvas: false,
       loadScene: false,
     },
   };
@@ -65,7 +63,7 @@ If user choses to `dock` the sidebar, it will push the right part of the UI towa
 function App() {
   return (
     <div style={{ height: "500px" }}>
-      <Excalidraw UIOptions={{dockedSidebarBreakpoint: 200}}/>
+      <Excalidraw UIOptions={{ dockedSidebarBreakpoint: 200 }} />
     </div>
   );
 }
@@ -76,6 +74,6 @@ function App() {
 This `prop` controls the visibility of the tools in the editor.
 Currently you can control the visibility of `image` tool via this prop.
 
-| Prop | Type | Default | Description |
+| Prop  | Type    | Default | Description                                     |
 | --- | --- | --- | --- |
 | image | boolean | true | Decides whether `image` tool should be visible.

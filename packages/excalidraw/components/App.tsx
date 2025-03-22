@@ -387,7 +387,6 @@ import {
   getMinTextElementWidth,
 } from "../element/textMeasurements";
 
-import { activeConfirmDialogAtom } from "./ActiveConfirmDialog";
 import BraveMeasureTextError from "./BraveMeasureTextError";
 import { ContextMenu, CONTEXT_MENU_SEPARATOR } from "./ContextMenu";
 import { activeEyeDropperAtom } from "./EyeDropper";
@@ -4546,13 +4545,6 @@ class App extends React.Component<AppProps, AppState> {
           this.setActiveTool({ type: "laser" });
         }
         return;
-      }
-
-      if (
-        event[KEYS.CTRL_OR_CMD] &&
-        (event.key === KEYS.BACKSPACE || event.key === KEYS.DELETE)
-      ) {
-        editorJotaiStore.set(activeConfirmDialogAtom, "clearCanvas");
       }
 
       // eye dropper

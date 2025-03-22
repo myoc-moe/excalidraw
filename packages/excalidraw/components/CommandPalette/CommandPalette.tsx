@@ -2,11 +2,7 @@ import clsx from "clsx";
 import fuzzy from "fuzzy";
 import { useEffect, useRef, useState } from "react";
 
-import {
-  actionClearCanvas,
-  actionLink,
-  actionToggleSearchMenu,
-} from "../../actions";
+import { actionLink, actionToggleSearchMenu } from "../../actions";
 import {
   actionCopyElementLink,
   actionLinkToElement,
@@ -16,7 +12,7 @@ import { trackEvent } from "../../analytics";
 import { DEFAULT_SIDEBAR, EVENT } from "../../constants";
 import { useUIAppState } from "../../context/ui-appState";
 import { deburr } from "../../deburr";
-import { atom, useAtom, editorJotaiStore } from "../../editor-jotai";
+import { atom, useAtom } from "../../editor-jotai";
 import { t } from "../../i18n";
 import { KEYS } from "../../keys";
 import {
@@ -51,7 +47,6 @@ import {
 import { SHAPES } from "../../shapes";
 import { canChangeBackgroundColor, canChangeStrokeColor } from "../Actions";
 import { useStableCallback } from "../../hooks/useStableCallback";
-import { activeConfirmDialogAtom } from "../ActiveConfirmDialog";
 import { useStable } from "../../hooks/useStable";
 
 import * as defaultItems from "./defaultCommandPaletteItems";
@@ -343,19 +338,6 @@ function CommandPaletteInner({
       commandsFromActions = [
         ...elementsCommands,
         ...editorCommands,
-        {
-          label: getActionLabel(actionClearCanvas),
-          icon: getActionIcon(actionClearCanvas),
-          shortcut: getShortcutFromShortcutName(
-            actionClearCanvas.name as ShortcutName,
-          ),
-          category: DEFAULT_CATEGORIES.editor,
-          keywords: ["delete", "destroy"],
-          viewMode: false,
-          perform: () => {
-            editorJotaiStore.set(activeConfirmDialogAtom, "clearCanvas");
-          },
-        },
         {
           label: t("buttons.exportImage"),
           category: DEFAULT_CATEGORIES.export,

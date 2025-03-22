@@ -139,15 +139,6 @@ describe("<Excalidraw/>", () => {
         expect(queryByTestId(container, "dropdown-menu")).toMatchSnapshot();
       });
 
-      it("should hide clear canvas button when clearCanvas is false", async () => {
-        const { container } = await render(
-          <Excalidraw UIOptions={{ canvasActions: { clearCanvas: false } }} />,
-        );
-        //open menu
-        toggleMenu(container);
-        expect(queryByTestId(container, "clear-canvas-button")).toBeNull();
-      });
-
       it("should hide export button when export is false", async () => {
         const { container } = await render(
           <Excalidraw UIOptions={{ canvasActions: { export: false } }} />,

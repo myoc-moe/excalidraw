@@ -1,10 +1,6 @@
 import { clamp, roundToStep } from "@excalidraw/math";
 
-import {
-  getDefaultAppState,
-  isEraserActive,
-  isHandToolActive,
-} from "../appState";
+import { isEraserActive, isHandToolActive } from "../appState";
 import { DEFAULT_CANVAS_BACKGROUND_PICKS } from "../colors";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
 import { ToolButton } from "../components/ToolButton";
@@ -13,7 +9,6 @@ import {
   handIcon,
   MoonIcon,
   SunIcon,
-  TrashIcon,
   zoomAreaIcon,
   ZoomInIcon,
   ZoomOutIcon,
@@ -28,7 +23,6 @@ import {
 } from "../constants";
 import { setCursor } from "../cursor";
 import { getCommonBounds, getNonDeletedElements } from "../element";
-import { newElementWith } from "../element/mutateElement";
 import { t } from "../i18n";
 import { CODES, KEYS } from "../keys";
 import { getNormalizedZoom } from "../scene";
@@ -78,48 +72,6 @@ export const actionChangeViewBackgroundColor = register({
         updateData={updateData}
       />
     );
-  },
-});
-
-export const actionClearCanvas = register({
-  name: "clearCanvas",
-  label: "labels.clearCanvas",
-  paletteName: "Clear canvas",
-  icon: TrashIcon,
-  trackEvent: { category: "canvas" },
-  predicate: (elements, appState, props, app) => {
-    return (
-      !!app.props.UIOptions.canvasActions.clearCanvas &&
-      !appState.viewModeEnabled &&
-      appState.openDialog?.name !== "elementLinkSelector"
-    );
-  },
-  perform: (elements, appState, _, app) => {
-    app.imageCache.clear();
-    return {
-      elements: elements.map((element) =>
-        newElementWith(element, { isDeleted: true }),
-      ),
-      appState: {
-        ...getDefaultAppState(),
-        files: {},
-        theme: appState.theme,
-        penMode: appState.penMode,
-        penDetected: appState.penDetected,
-        exportBackground: appState.exportBackground,
-        exportEmbedScene: appState.exportEmbedScene,
-        gridSize: appState.gridSize,
-        gridStep: appState.gridStep,
-        gridModeEnabled: appState.gridModeEnabled,
-        stats: appState.stats,
-        pasteDialog: appState.pasteDialog,
-        activeTool:
-          appState.activeTool.type === "image"
-            ? { ...appState.activeTool, type: "selection" }
-            : appState.activeTool,
-      },
-      captureUpdate: CaptureUpdateAction.IMMEDIATELY,
-    };
   },
 });
 

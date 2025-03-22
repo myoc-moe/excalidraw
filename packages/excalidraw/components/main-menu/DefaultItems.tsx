@@ -1,7 +1,6 @@
 import clsx from "clsx";
 
 import {
-  actionClearCanvas,
   actionLoadScene,
   actionSaveToActiveFile,
   actionShortcuts,
@@ -12,9 +11,7 @@ import { getShortcutFromShortcutName } from "../../actions/shortcuts";
 import { trackEvent } from "../../analytics";
 import { THEME } from "../../constants";
 import { useUIAppState } from "../../context/ui-appState";
-import { useSetAtom } from "../../editor-jotai";
 import { useI18n } from "../../i18n";
-import { activeConfirmDialogAtom } from "../ActiveConfirmDialog";
 import {
   useExcalidrawSetAppState,
   useExcalidrawActionManager,
@@ -38,7 +35,6 @@ import {
   save,
   searchIcon,
   SunIcon,
-  TrashIcon,
   usersIcon,
 } from "../icons";
 
@@ -187,29 +183,6 @@ export const Help = () => {
   );
 };
 Help.displayName = "Help";
-
-export const ClearCanvas = () => {
-  const { t } = useI18n();
-
-  const setActiveConfirmDialog = useSetAtom(activeConfirmDialogAtom);
-  const actionManager = useExcalidrawActionManager();
-
-  if (!actionManager.isActionEnabled(actionClearCanvas)) {
-    return null;
-  }
-
-  return (
-    <DropdownMenuItem
-      icon={TrashIcon}
-      onSelect={() => setActiveConfirmDialog("clearCanvas")}
-      data-testid="clear-canvas-button"
-      aria-label={t("buttons.clearReset")}
-    >
-      {t("buttons.clearReset")}
-    </DropdownMenuItem>
-  );
-};
-ClearCanvas.displayName = "ClearCanvas";
 
 export const ToggleTheme = (
   props:
