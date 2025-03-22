@@ -244,6 +244,7 @@ export interface AppState {
   } | null;
   showWelcomeScreen: boolean;
   isLoading: boolean;
+  myocSimplifiedMode: boolean;
   errorMessage: React.ReactNode;
   activeEmbeddable: {
     element: NonDeletedExcalidrawElement;

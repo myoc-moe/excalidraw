@@ -53,83 +53,96 @@ import type {
 } from "./element/types";
 import type { NormalizedZoomValue, Zoom } from "./types";
 
+export type ToolCategory = "manipulation" | "elements";
+
 export const SHAPES = [
   {
     icon: SelectionIcon,
     value: "selection",
     key: KEYS.V,
-    numericKey: KEYS["1"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: true,
   },
   {
     icon: RectangleIcon,
     value: "rectangle",
     key: KEYS.R,
-    numericKey: KEYS["2"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: false,
   },
   {
     icon: DiamondIcon,
     value: "diamond",
     key: KEYS.D,
-    numericKey: KEYS["3"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: false,
   },
   {
     icon: EllipseIcon,
     value: "ellipse",
     key: KEYS.O,
-    numericKey: KEYS["4"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: false,
   },
   {
     icon: ArrowIcon,
     value: "arrow",
     key: KEYS.A,
-    numericKey: KEYS["5"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: false,
   },
   {
     icon: LineIcon,
     value: "line",
     key: KEYS.L,
-    numericKey: KEYS["6"],
+    numericKey: undefined,
     fillable: true,
+    myocSimplifiedMode: false,
   },
   {
     icon: FreedrawIcon,
     value: "freedraw",
     key: [KEYS.P, KEYS.X],
-    numericKey: KEYS["7"],
+    numericKey: undefined,
     fillable: false,
+    myocSimplifiedMode: true,
   },
   {
     icon: TextIcon,
     value: "text",
     key: KEYS.T,
-    numericKey: KEYS["8"],
+    numericKey: undefined,
     fillable: false,
+    myocSimplifiedMode: true,
   },
   {
     icon: ImageIcon,
     value: "image",
-    key: null,
-    numericKey: KEYS["9"],
+    key: [KEYS.I],
+    numericKey: undefined,
     fillable: false,
+    myocSimplifiedMode: true,
   },
   {
     icon: EraserIcon,
     value: "eraser",
     key: KEYS.E,
-    numericKey: KEYS["0"],
+    numericKey: undefined,
     fillable: false,
+    myocSimplifiedMode: true,
   },
 ] as const;
 
 export const findShapeByKey = (key: string) => {
   const shape = SHAPES.find((shape, index) => {
     return (
-      (shape.numericKey != null && key === shape.numericKey.toString()) ||
+      // @ts-expect-error numericKey is just undefined for now because myoc wants to reserve this for future use of screen views
+      (shape.numericKey != null && key === shape.numericKey?.toString()) ||
       (shape.key &&
         (typeof shape.key === "string"
           ? shape.key === key
