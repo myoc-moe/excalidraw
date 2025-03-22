@@ -7,7 +7,6 @@ import { KEYS } from "../keys";
 import { CLASSES } from "../constants";
 import { alignActionsPredicate } from "../actions/actionAlign";
 import { trackEvent } from "../analytics";
-import { useTunnels } from "../context/tunnels";
 import {
   shouldAllowVerticalAlign,
   suppportsHorizontalAlign,
@@ -39,15 +38,9 @@ import Stack from "./Stack";
 import { ToolButton } from "./ToolButton";
 import { Tooltip } from "./Tooltip";
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
-import {
-  EmbedIcon,
-  extraToolsIcon,
-  frameToolIcon,
-  mermaidLogoIcon,
-  laserPointerToolIcon,
-  MagicIcon,
-} from "./icons";
+import { extraToolsIcon, laserPointerToolIcon } from "./icons";
 
+import type { ActionManager } from "../actions/manager";
 import type {
   ExcalidrawElement,
   ExcalidrawElementType,
@@ -55,7 +48,6 @@ import type {
   NonDeletedSceneElementsMap,
 } from "../element/types";
 import type { AppClassProperties, AppProps, UIAppState, Zoom } from "../types";
-import type { ActionManager } from "../actions/manager";
 
 export const canChangeStrokeColor = (
   appState: UIAppState,
@@ -287,11 +279,11 @@ export const ShapesSwitcher = ({
   const laserToolSelected = activeTool.type === "laser";
   const embeddableToolSelected = activeTool.type === "embeddable";
 
-  const { TTDDialogTriggerTunnel } = useTunnels();
-
   return (
     <>
-      {SHAPES.map(({ value, icon, key, numericKey, fillable }, index) => {
+      {SHAPES.filter(
+        (shape) => !appState.myocSimplifiedMode || shape.myocSimplifiedMode,
+      ).map(({ value, icon, key, numericKey, fillable }, index) => {
         if (
           UIOptions.tools?.[
             value as Extract<typeof value, keyof AppProps["UIOptions"]["tools"]>
@@ -303,9 +295,9 @@ export const ShapesSwitcher = ({
         const label = t(`toolBar.${value}`);
         const letter =
           key && capitalizeString(typeof key === "string" ? key : key[0]);
-        const shortcut = letter
+        const shortcut = numericKey
           ? `${letter} ${t("helpDialog.or")} ${numericKey}`
-          : `${numericKey}`;
+          : `${letter}`;
         return (
           <ToolButton
             className={clsx("Shape", { fillable })}
@@ -363,7 +355,7 @@ export const ShapesSwitcher = ({
           onSelect={() => setIsExtraToolsMenuOpen(false)}
           className="App-toolbar__extra-tools-dropdown"
         >
-          <DropdownMenu.Item
+          {/* <DropdownMenu.Item
             onSelect={() => app.setActiveTool({ type: "frame" })}
             icon={frameToolIcon}
             shortcut={KEYS.F.toLocaleUpperCase()}
@@ -371,46 +363,37 @@ export const ShapesSwitcher = ({
             selected={frameToolSelected}
           >
             {t("toolBar.frame")}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "embeddable" })}
-            icon={EmbedIcon}
-            data-testid="toolbar-embeddable"
-            selected={embeddableToolSelected}
-          >
-            {t("toolBar.embeddable")}
-          </DropdownMenu.Item>
-          <DropdownMenu.Item
-            onSelect={() => app.setActiveTool({ type: "laser" })}
-            icon={laserPointerToolIcon}
-            data-testid="toolbar-laser"
-            selected={laserToolSelected}
-            shortcut={KEYS.K.toLocaleUpperCase()}
-          >
-            {t("toolBar.laser")}
-          </DropdownMenu.Item>
-          <div style={{ margin: "6px 0", fontSize: 14, fontWeight: 600 }}>
-            Generate
-          </div>
-          {app.props.aiEnabled !== false && <TTDDialogTriggerTunnel.Out />}
-          <DropdownMenu.Item
-            onSelect={() => app.setOpenDialog({ name: "ttd", tab: "mermaid" })}
-            icon={mermaidLogoIcon}
-            data-testid="toolbar-embeddable"
-          >
-            {t("toolBar.mermaidToExcalidraw")}
-          </DropdownMenu.Item>
-          {app.props.aiEnabled !== false && app.plugins.diagramToCode && (
-            <>
-              <DropdownMenu.Item
-                onSelect={() => app.onMagicframeToolSelect()}
-                icon={MagicIcon}
-                data-testid="toolbar-magicframe"
-              >
-                {t("toolBar.magicframe")}
-                <DropdownMenu.Item.Badge>AI</DropdownMenu.Item.Badge>
-              </DropdownMenu.Item>
-            </>
+          </DropdownMenu.Item> */}
+          {SHAPES.filter((s) => s.myocSimplifiedMode === false).map(
+            ({ value, icon, key, numericKey, fillable }) => {
+              const label = t(`toolBar.${value}`);
+              const letter =
+                key && capitalizeString(typeof key === "string" ? key : key[0]);
+
+              return (
+                <DropdownMenu.Item
+                  key={value}
+                  onSelect={() => app.setActiveTool({ type: value })}
+                  icon={icon}
+                  data-testid={`toolbar-${value}`}
+                  selected={activeTool.type === value}
+                  shortcut={letter ?? undefined}
+                >
+                  {capitalizeString(label)}
+                </DropdownMenu.Item>
+              );
+            },
+          )}
+          {!appState.myocSimplifiedMode && (
+            <DropdownMenu.Item
+              onSelect={() => app.setActiveTool({ type: "laser" })}
+              icon={laserPointerToolIcon}
+              data-testid="toolbar-laser"
+              selected={laserToolSelected}
+              shortcut={KEYS.K.toLocaleUpperCase()}
+            >
+              {t("toolBar.laser")}
+            </DropdownMenu.Item>
           )}
         </DropdownMenu.Content>
       </DropdownMenu>
