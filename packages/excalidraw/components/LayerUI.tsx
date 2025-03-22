@@ -18,7 +18,6 @@ import { capitalizeString, isShallowEqual } from "../utils";
 
 import { SelectedShapeActions, ShapesSwitcher } from "./Actions";
 import { LoadingMessage } from "./LoadingMessage";
-import { LockButton } from "./LockButton";
 import { MobileMenu } from "./MobileMenu";
 import { PasteChartDialog } from "./PasteChartDialog";
 import { Section } from "./Section";
@@ -276,13 +275,13 @@ const LayerUI = ({
                               title={t("toolBar.penMode")}
                               penDetected={appState.penDetected}
                             />
-                            <LockButton
+                            {/* <LockButton
                               checked={appState.activeTool.locked}
                               onChange={onLockToggle}
                               title={t("toolBar.lock")}
-                            />
+                            /> */}
 
-                            <div className="App-toolbar__divider" />
+                            {/* <div className="App-toolbar__divider" /> */}
 
                             <HandButton
                               checked={isHandToolActive(appState)}
