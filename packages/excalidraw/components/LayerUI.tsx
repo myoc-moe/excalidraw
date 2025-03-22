@@ -28,7 +28,6 @@ import { PenModeButton } from "./PenModeButton";
 import Footer from "./footer/Footer";
 import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
 import MainMenu from "./main-menu/MainMenu";
-import { ActiveConfirmDialog } from "./ActiveConfirmDialog";
 import { useDevice } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
 import { LibraryIcon } from "./icons";
@@ -100,7 +99,6 @@ const DefaultMainMenu: React.FC<{
       )}
       <MainMenu.DefaultItems.SearchMenu />
       <MainMenu.DefaultItems.Help />
-      <MainMenu.DefaultItems.ClearCanvas />
       <MainMenu.Separator />
       <MainMenu.Group title="Excalidraw links">
         <MainMenu.DefaultItems.Socials />
@@ -473,7 +471,6 @@ const LayerUI = ({
           }}
         />
       )}
-      <ActiveConfirmDialog />
       {appState.openDialog?.name === "elementLinkSelector" && (
         <ElementLinkDialog
           sourceElementId={appState.openDialog.sourceElementId}

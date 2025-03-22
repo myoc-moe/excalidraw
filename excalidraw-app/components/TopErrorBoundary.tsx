@@ -84,35 +84,6 @@ export class TopErrorBoundary extends React.Component<
               )}
             />
           </div>
-          <div className="ErrorSplash-paragraph align-center">
-            <Trans
-              i18nKey="errorSplash.clearCanvasMessage"
-              button={(el) => (
-                <button
-                  onClick={() => {
-                    try {
-                      localStorage.clear();
-                      window.location.reload();
-                    } catch (error: any) {
-                      console.error(error);
-                    }
-                  }}
-                >
-                  {el}
-                </button>
-              )}
-            />
-            <br />
-            <div className="smaller">
-              <span role="img" aria-label="warning">
-                ⚠️
-              </span>
-              {t("errorSplash.clearCanvasCaveat")}
-              <span role="img" aria-hidden="true">
-                ⚠️
-              </span>
-            </div>
-          </div>
           <div>
             <div className="ErrorSplash-paragraph">
               {t("errorSplash.trackedToSentry", {
