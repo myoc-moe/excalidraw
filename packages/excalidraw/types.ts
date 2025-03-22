@@ -614,7 +614,6 @@ export type ExportOpts = {
 // Excalidraw package index.tsx.
 export type CanvasActions = Partial<{
   changeViewBackgroundColor: boolean;
-  clearCanvas: boolean;
   export: false | ExportOpts;
   loadScene: boolean;
   saveToActiveFile: boolean;
