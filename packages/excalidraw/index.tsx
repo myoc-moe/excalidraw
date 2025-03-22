@@ -51,7 +51,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     children,
     validateEmbeddable,
     renderEmbeddable,
-    aiEnabled,
     showDeprecatedFonts,
   } = props;
 
@@ -141,7 +140,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           onDuplicate={onDuplicate}
           validateEmbeddable={validateEmbeddable}
           renderEmbeddable={renderEmbeddable}
-          aiEnabled={aiEnabled !== false}
+          aiEnabled={false} // Myoc does not support AI generative features
           showDeprecatedFonts={showDeprecatedFonts}
         >
           {children}
