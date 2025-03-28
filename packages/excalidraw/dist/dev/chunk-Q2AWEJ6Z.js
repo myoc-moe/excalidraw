@@ -537,6 +537,7 @@ var getDefaultAppState = () => {
 var APP_STATE_STORAGE_CONF = /* @__PURE__ */ ((config) => config)({
   showWelcomeScreen: { browser: true, export: false, server: false },
   myocSimplifiedMode: { browser: true, export: false, server: false },
+  wheelZoomsOnDefault: { browser: true, export: false, server: false },
   theme: { browser: true, export: false, server: false },
   collaborators: { browser: false, export: false, server: false },
   currentChartType: { browser: true, export: false, server: false },
@@ -24712,7 +24713,7 @@ var parseFileContents = async (blob) => {
   let contents;
   if (blob.type === MIME_TYPES.png) {
     try {
-      return await (await import("./data/image-XNFNIMYC.js")).decodePngMetadata(blob);
+      return await (await import("./data/image-XHOKCPQC.js")).decodePngMetadata(blob);
     } catch (error) {
       if (error.message === "INVALID") {
         throw new ImageSceneDataError(
@@ -25723,4 +25724,4 @@ export {
   getSelectionBoxShape,
   isPointInShape
 };
-//# sourceMappingURL=chunk-BD3TN2F4.js.map
+//# sourceMappingURL=chunk-Q2AWEJ6Z.js.map

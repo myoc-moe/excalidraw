@@ -617,7 +617,7 @@ import {
   wrapText,
   youtubeIcon,
   zoomAreaIcon
-} from "./chunk-BD3TN2F4.js";
+} from "./chunk-Q2AWEJ6Z.js";
 import {
   define_import_meta_env_default
 } from "./chunk-66VA7UC4.js";
@@ -6448,7 +6448,7 @@ var exportCanvas = async (type, elements, appState, files, {
     let blob = canvasToBlob(tempCanvas);
     if (appState.exportEmbedScene) {
       blob = blob.then(
-        (blob2) => import("./data/image-XNFNIMYC.js").then(
+        (blob2) => import("./data/image-XHOKCPQC.js").then(
           ({ encodePngMetadata }) => encodePngMetadata({
             blob: blob2,
             metadata: serializeAsJSON(elements, appState, files, "local")
@@ -12406,6 +12406,7 @@ var ShapesSwitcher = ({
   const frameToolSelected = activeTool.type === "frame";
   const laserToolSelected = activeTool.type === "laser";
   const embeddableToolSelected = activeTool.type === "embeddable";
+  const simplifiedTools = SHAPES.filter((s) => s.myocSimplifiedMode === false);
   return /* @__PURE__ */ jsxs38(Fragment9, { children: [
     SHAPES.filter(
       (shape) => !appState.myocSimplifiedMode || shape.myocSimplifiedMode
@@ -12451,7 +12452,6 @@ var ShapesSwitcher = ({
         value
       );
     }),
-    /* @__PURE__ */ jsx68("div", { className: "App-toolbar__divider" }),
     /* @__PURE__ */ jsxs38(DropdownMenu_default, { open: isExtraToolsMenuOpen, children: [
       /* @__PURE__ */ jsx68(
         DropdownMenu_default.Trigger,
@@ -12474,24 +12474,22 @@ var ShapesSwitcher = ({
           onSelect: () => setIsExtraToolsMenuOpen(false),
           className: "App-toolbar__extra-tools-dropdown",
           children: [
-            SHAPES.filter((s) => s.myocSimplifiedMode === false).map(
-              ({ value, icon, key, numericKey, fillable }) => {
-                const label = t(`toolBar.${value}`);
-                const letter = key && capitalizeString(typeof key === "string" ? key : key[0]);
-                return /* @__PURE__ */ jsx68(
-                  DropdownMenu_default.Item,
-                  {
-                    onSelect: () => app.setActiveTool({ type: value }),
-                    icon,
-                    "data-testid": `toolbar-${value}`,
-                    selected: activeTool.type === value,
-                    shortcut: letter ?? void 0,
-                    children: capitalizeString(label)
-                  },
-                  value
-                );
-              }
-            ),
+            simplifiedTools.map(({ value, icon, key, numericKey, fillable }) => {
+              const label = t(`toolBar.${value}`);
+              const letter = key && capitalizeString(typeof key === "string" ? key : key[0]);
+              return /* @__PURE__ */ jsx68(
+                DropdownMenu_default.Item,
+                {
+                  onSelect: () => app.setActiveTool({ type: value }),
+                  icon,
+                  "data-testid": `toolbar-${value}`,
+                  selected: activeTool.type === value,
+                  shortcut: letter ?? void 0,
+                  children: capitalizeString(label)
+                },
+                value
+              );
+            }),
             !appState.myocSimplifiedMode && /* @__PURE__ */ jsx68(
               DropdownMenu_default.Item,
               {
@@ -29132,7 +29130,7 @@ var App = class _App extends React42.Component {
           return;
         }
         const { deltaX, deltaY } = event;
-        if (event.metaKey || event.ctrlKey) {
+        if (event.metaKey || event.ctrlKey || this.state.wheelZoomsOnDefault) {
           const sign = Math.sign(deltaY);
           const MAX_STEP = ZOOM_STEP * 100;
           const absDelta = Math.abs(deltaY);
@@ -29241,7 +29239,8 @@ var App = class _App extends React42.Component {
       gridModeEnabled = false,
       objectsSnapModeEnabled = false,
       theme = defaultAppState.theme,
-      name = `${t("labels.untitled")}-${getDateTime()}`
+      name = `${t("labels.untitled")}-${getDateTime()}`,
+      wheelZoomsOnDefault = false
     } = props;
     this.state = {
       ...defaultAppState,
@@ -29254,7 +29253,8 @@ var App = class _App extends React42.Component {
       gridModeEnabled: gridModeEnabled ?? defaultAppState.gridModeEnabled,
       name,
       width: window.innerWidth,
-      height: window.innerHeight
+      height: window.innerHeight,
+      wheelZoomsOnDefault
     };
     this.id = nanoid();
     this.library = new library_default(this);
@@ -32829,7 +32829,8 @@ var ExcalidrawBase = (props) => {
     children,
     validateEmbeddable,
     renderEmbeddable,
-    showDeprecatedFonts
+    showDeprecatedFonts,
+    wheelZoomsOnDefault
   } = props;
   const canvasActions = props.UIOptions?.canvasActions;
   const UIOptions = {
@@ -32899,6 +32900,7 @@ var ExcalidrawBase = (props) => {
       renderEmbeddable,
       aiEnabled: false,
       showDeprecatedFonts,
+      wheelZoomsOnDefault,
       children
     }
   ) }) });
