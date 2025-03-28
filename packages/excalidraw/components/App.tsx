@@ -683,6 +683,7 @@ class App extends React.Component<AppProps, AppState> {
       objectsSnapModeEnabled = false,
       theme = defaultAppState.theme,
       name = `${t("labels.untitled")}-${getDateTime()}`,
+      wheelZoomsOnDefault = false,
     } = props;
     this.state = {
       ...defaultAppState,
@@ -696,6 +697,7 @@ class App extends React.Component<AppProps, AppState> {
       name,
       width: window.innerWidth,
       height: window.innerHeight,
+      wheelZoomsOnDefault,
     };
 
     this.id = nanoid();
@@ -10943,7 +10945,7 @@ class App extends React.Component<AppProps, AppState> {
 
       const { deltaX, deltaY } = event;
       // note that event.ctrlKey is necessary to handle pinch zooming
-      if (event.metaKey || event.ctrlKey) {
+      if (event.metaKey || event.ctrlKey || this.state.wheelZoomsOnDefault) {
         const sign = Math.sign(deltaY);
         const MAX_STEP = ZOOM_STEP * 100;
         const absDelta = Math.abs(deltaY);

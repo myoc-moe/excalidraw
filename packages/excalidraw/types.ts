@@ -245,6 +245,7 @@ export interface AppState {
   showWelcomeScreen: boolean;
   isLoading: boolean;
   myocSimplifiedMode: boolean;
+  wheelZoomsOnDefault?: boolean;
   errorMessage: React.ReactNode;
   activeEmbeddable: {
     element: NonDeletedExcalidrawElement;
@@ -584,6 +585,7 @@ export interface ExcalidrawProps {
   ) => JSX.Element | null;
   aiEnabled?: boolean;
   showDeprecatedFonts?: boolean;
+  wheelZoomsOnDefault?: boolean;
 }
 
 export type SceneData = {
@@ -640,6 +642,7 @@ export type AppProps = Merge<
         canvasActions: Required<CanvasActions> & { export: ExportOpts };
       }
     >;
+    wheelZoomsOnDefault?: boolean;
     detectScroll: boolean;
     handleKeyboardGlobally: boolean;
     isCollaborating: boolean;
