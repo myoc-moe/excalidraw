@@ -279,6 +279,8 @@ export const ShapesSwitcher = ({
   const laserToolSelected = activeTool.type === "laser";
   const embeddableToolSelected = activeTool.type === "embeddable";
 
+  const simplifiedTools = SHAPES.filter((s) => s.myocSimplifiedMode === false);
+
   return (
     <>
       {SHAPES.filter(
@@ -332,7 +334,7 @@ export const ShapesSwitcher = ({
           />
         );
       })}
-      <div className="App-toolbar__divider" />
+      {/* <div className="App-toolbar__divider" /> */}
 
       <DropdownMenu open={isExtraToolsMenuOpen}>
         <DropdownMenu.Trigger
@@ -364,26 +366,24 @@ export const ShapesSwitcher = ({
           >
             {t("toolBar.frame")}
           </DropdownMenu.Item> */}
-          {SHAPES.filter((s) => s.myocSimplifiedMode === false).map(
-            ({ value, icon, key, numericKey, fillable }) => {
-              const label = t(`toolBar.${value}`);
-              const letter =
-                key && capitalizeString(typeof key === "string" ? key : key[0]);
+          {simplifiedTools.map(({ value, icon, key, numericKey, fillable }) => {
+            const label = t(`toolBar.${value}`);
+            const letter =
+              key && capitalizeString(typeof key === "string" ? key : key[0]);
 
-              return (
-                <DropdownMenu.Item
-                  key={value}
-                  onSelect={() => app.setActiveTool({ type: value })}
-                  icon={icon}
-                  data-testid={`toolbar-${value}`}
-                  selected={activeTool.type === value}
-                  shortcut={letter ?? undefined}
-                >
-                  {capitalizeString(label)}
-                </DropdownMenu.Item>
-              );
-            },
-          )}
+            return (
+              <DropdownMenu.Item
+                key={value}
+                onSelect={() => app.setActiveTool({ type: value })}
+                icon={icon}
+                data-testid={`toolbar-${value}`}
+                selected={activeTool.type === value}
+                shortcut={letter ?? undefined}
+              >
+                {capitalizeString(label)}
+              </DropdownMenu.Item>
+            );
+          })}
           {!appState.myocSimplifiedMode && (
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "laser" })}
