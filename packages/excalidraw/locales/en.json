@@ -222,7 +222,8 @@
     "publishLibrary": "Publish",
     "submit": "Submit",
     "confirm": "Confirm",
-    "embeddableInteractionButton": "Click to interact"
+    "embeddableInteractionButton": "Click to interact",
+    "focusOnItem": "Focus on Item"
   },
   "alerts": {
     "clearReset": "This will clear the whole canvas. Are you sure?",
@@ -295,7 +296,8 @@
     "laser": "Laser pointer",
     "hand": "Hand (panning tool)",
     "extraTools": "More tools",
-    "mermaidToExcalidraw": "Mermaid to Excalidraw"
+    "mermaidToExcalidraw": "Mermaid to Excalidraw",
+    "focusOnItem": "Focus on Item"
   },
   "element": {
     "rectangle": "Rectangle",

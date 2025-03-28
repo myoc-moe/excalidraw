@@ -387,6 +387,8 @@ import {
   getMinTextElementWidth,
 } from "../element/textMeasurements";
 
+import { actionFocusOnItem } from "../actions/actionFocusOnItem";
+
 import BraveMeasureTextError from "./BraveMeasureTextError";
 import { ContextMenu, CONTEXT_MENU_SEPARATOR } from "./ContextMenu";
 import { activeEyeDropperAtom } from "./EyeDropper";
@@ -10910,6 +10912,7 @@ class App extends React.Component<AppProps, AppState> {
       actionLink,
       actionCopyElementLink,
       CONTEXT_MENU_SEPARATOR,
+      actionFocusOnItem,
       actionDuplicateSelection,
       actionToggleElementLock,
       CONTEXT_MENU_SEPARATOR,

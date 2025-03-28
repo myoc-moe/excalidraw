@@ -137,7 +137,8 @@ export type ActionName =
   | "copyElementLink"
   | "linkToElement"
   | "cropEditor"
-  | "wrapSelectionInFrame";
+  | "wrapSelectionInFrame"
+  | "focusOnItem";
 
 export type PanelComponentProps = {
   elements: readonly ExcalidrawElement[];

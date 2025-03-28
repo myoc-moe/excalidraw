@@ -7,7 +7,6 @@ import { isFrameLikeElement } from "../element/typeChecks";
 import { addElementsToFrame, removeAllElementsFromFrame } from "../frame";
 import { getFrameChildren } from "../frame";
 import { getElementsInGroup } from "../groups";
-import { KEYS } from "../keys";
 import { getSelectedElements } from "../scene";
 import { CaptureUpdateAction } from "../store";
 import { updateActiveTool } from "../utils";
@@ -144,11 +143,7 @@ export const actionSetFrameAsActiveTool = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    !event.altKey &&
-    event.key.toLocaleLowerCase() === KEYS.F,
+  keyTest: (event) => false, // Frame can be accessed without keys so we'll always return false
 });
 
 export const actionWrapSelectionInFrame = register({

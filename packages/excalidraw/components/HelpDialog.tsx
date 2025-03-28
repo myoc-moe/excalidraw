@@ -179,7 +179,6 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               label={t("toolBar.eraser")}
               shortcuts={[KEYS.E, KEYS["0"]]}
             />
-            <Shortcut label={t("toolBar.frame")} shortcuts={[KEYS.F]} />
             <Shortcut label={t("toolBar.laser")} shortcuts={[KEYS.K]} />
             <Shortcut
               label={t("labels.eyeDropper")}
@@ -251,6 +250,7 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
             className="HelpDialog__island--view"
             caption={t("helpDialog.view")}
           >
+            <Shortcut label={t("buttons.focusOnItem")} shortcuts={[KEYS.F]} />
             <Shortcut
               label={t("buttons.zoomIn")}
               shortcuts={[getShortcutKey("CtrlOrCmd++")]}
