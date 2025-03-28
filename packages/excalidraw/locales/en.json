@@ -25,6 +25,7 @@
     "background": "Background",
     "changeBackground": "Change background color",
     "fill": "Fill",
+    "focusOnItem": "Focus on item",
     "strokeWidth": "Stroke width",
     "strokeStyle": "Stroke style",
     "strokeStyle_solid": "Solid",

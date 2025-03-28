@@ -1,16 +1,20 @@
 import { eyeIcon } from "../components/icons";
 import { KEYS } from "../keys";
-import { getSelectedElements } from "../scene";
+import { getSelectedElements, isSomeElementSelected } from "../scene";
 import { CaptureUpdateAction } from "../store";
+import { ToolButton } from "../components/ToolButton";
+
+import { getNonDeletedElements } from "..";
+import { t } from "../i18n";
 
 import { register } from "./register";
 
 export const actionFocusOnItem = register({
   name: "focusOnItem",
   label: "toolBar.focusOnItem",
-  trackEvent: { category: "toolbar" },
+  trackEvent: { category: "element" },
   icon: eyeIcon,
-  viewMode: false,
+  viewMode: true,
   perform: (elements, appState, _, app) => {
     const settings = {
       fitToViewport: true,
@@ -36,4 +40,14 @@ export const actionFocusOnItem = register({
     !event.shiftKey &&
     !event.altKey &&
     event.key.toLocaleLowerCase() === KEYS.F,
+  PanelComponent: ({ elements, appState, updateData }) => (
+    <ToolButton
+      type="button"
+      icon={eyeIcon}
+      title={`${t("labels.focusOnItem")} — ${KEYS.F.toUpperCase()}`}
+      aria-label={t("labels.focusOnItem")}
+      onClick={() => updateData(null)}
+      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
+    />
+  ),
 });
