@@ -25,6 +25,7 @@ var labels = {
   background: "Background",
   changeBackground: "Change background color",
   fill: "Fill",
+  focusOnItem: "Focus on item",
   strokeWidth: "Stroke width",
   strokeStyle: "Stroke style",
   strokeStyle_solid: "Solid",
@@ -222,7 +223,8 @@ var buttons = {
   publishLibrary: "Publish",
   submit: "Submit",
   confirm: "Confirm",
-  embeddableInteractionButton: "Click to interact"
+  embeddableInteractionButton: "Click to interact",
+  focusOnItem: "Focus on Item"
 };
 var alerts = {
   clearReset: "This will clear the whole canvas. Are you sure?",
@@ -295,7 +297,8 @@ var toolBar = {
   laser: "Laser pointer",
   hand: "Hand (panning tool)",
   extraTools: "More tools",
-  mermaidToExcalidraw: "Mermaid to Excalidraw"
+  mermaidToExcalidraw: "Mermaid to Excalidraw",
+  focusOnItem: "Focus on Item"
 };
 var element = {
   rectangle: "Rectangle",
@@ -706,4 +709,4 @@ export {
   commandPalette,
   en_default
 };
-//# sourceMappingURL=chunk-LMHBUWQS.js.map
+//# sourceMappingURL=chunk-WFANJSPL.js.map
