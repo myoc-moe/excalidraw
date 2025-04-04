@@ -9,9 +9,9 @@ import { t } from "../i18n";
 
 import { register } from "./register";
 
-export const actionFocusOnItem = register({
-  name: "focusOnItem",
-  label: "toolBar.focusOnItem",
+export const actionSmartZoom = register({
+  name: "smartZoom",
+  label: "toolBar.smartZoom",
   trackEvent: { category: "element" },
   icon: eyeIcon,
   viewMode: true,
@@ -44,8 +44,8 @@ export const actionFocusOnItem = register({
     <ToolButton
       type="button"
       icon={eyeIcon}
-      title={`${t("labels.focusOnItem")} — ${KEYS.F.toUpperCase()}`}
-      aria-label={t("labels.focusOnItem")}
+      title={`${t("labels.smartZoom")} — ${KEYS.F.toUpperCase()}`}
+      aria-label={t("labels.smartZoom")}
       onClick={() => updateData(null)}
       visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
     />

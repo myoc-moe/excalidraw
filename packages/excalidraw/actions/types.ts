@@ -138,7 +138,7 @@ export type ActionName =
   | "linkToElement"
   | "cropEditor"
   | "wrapSelectionInFrame"
-  | "focusOnItem";
+  | "smartZoom";
 
 export type PanelComponentProps = {
   elements: readonly ExcalidrawElement[];

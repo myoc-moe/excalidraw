@@ -255,7 +255,7 @@ export const SelectedShapeActions = ({
             {showLinkIcon && renderAction("hyperlink")}
             {showCropEditorAction && renderAction("cropEditor")}
             {showLineEditorAction && renderAction("toggleLinearEditor")}
-            {renderAction("focusOnItem")}
+            {renderAction("smartZoom")}
           </div>
         </fieldset>
       )}
