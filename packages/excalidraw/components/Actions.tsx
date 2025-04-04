@@ -47,7 +47,13 @@ import type {
   NonDeletedElementsMap,
   NonDeletedSceneElementsMap,
 } from "../element/types";
-import type { AppClassProperties, AppProps, UIAppState, Zoom } from "../types";
+import type {
+  AppClassProperties,
+  AppProps,
+  ToolType,
+  UIAppState,
+  Zoom,
+} from "../types";
 
 export const canChangeStrokeColor = (
   appState: UIAppState,
@@ -64,7 +70,7 @@ export const canChangeStrokeColor = (
   }
 
   return (
-    (hasStrokeColor(appState.activeTool.type) &&
+    (hasStrokeColor(appState.activeTool.type as ToolType) &&
       appState.activeTool.type !== "image" &&
       commonSelectedType !== "image" &&
       commonSelectedType !== "frame" &&

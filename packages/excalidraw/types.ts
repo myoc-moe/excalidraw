@@ -245,6 +245,7 @@ export interface AppState {
   showWelcomeScreen: boolean;
   isLoading: boolean;
   myocSimplifiedMode: boolean;
+  hideMainMenus: boolean;
   wheelZoomsOnDefault?: boolean;
   errorMessage: React.ReactNode;
   activeEmbeddable: {
