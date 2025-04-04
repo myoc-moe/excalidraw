@@ -3329,4 +3329,33 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 - Switch to Yarn [#3057](https://github.com/excalidraw/excalidraw/pull/3057)
 
 ---
+## Excalidraw Library
+
+**_This section lists the updates made to the excalidraw library and will not affect the integration._**
+
+### Features
+
+- Load old library if migration fails
+
+- Change LibraryPersistenceAdapter `load()` `source` -> `priority`
+
+- Allow `avif`, `jfif`, `webp`, `bmp`, `ico` image types (#6500
+
+- Horizontally center toolbar menu
+
+### Fixes
+
+- Incorrectly duplicating items on paste/library insert (#6467
+
+- Utils leaking Scene state (#6461
+
+- Svg text baseline (#6285
+
+- No migrating `draw` lines correctly
+
+###  Refactor
+
+- Inline `SingleLibraryItem` into `PublishLibrary` (#6462
+
+---
 
