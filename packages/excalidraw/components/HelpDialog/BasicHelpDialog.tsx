@@ -111,52 +111,12 @@ export default function BasicHelpDialog() {
       >
         <Shortcut label={t("helpDialog.smartZoom")} shortcuts={[KEYS.F]} />
         <Shortcut
-          label={t("buttons.zoomIn")}
-          shortcuts={[getShortcutKey("CtrlOrCmd++")]}
-        />
-        <Shortcut
-          label={t("buttons.zoomOut")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+-")]}
-        />
-        <Shortcut
-          label={t("buttons.resetZoom")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+0")]}
-        />
-        <Shortcut
-          label={t("helpDialog.zoomToSelection")}
-          shortcuts={["Shift+2"]}
-        />
-        <Shortcut
-          label={t("helpDialog.movePageUpDown")}
-          shortcuts={["PgUp/PgDn"]}
-        />
-        <Shortcut
-          label={t("helpDialog.movePageLeftRight")}
-          shortcuts={["Shift+PgUp/PgDn"]}
-        />
-        <Shortcut
           label={t("buttons.zenMode")}
           shortcuts={[getShortcutKey("Alt+Z")]}
         />
         <Shortcut
           label={t("buttons.objectsSnapMode")}
           shortcuts={[getShortcutKey("Alt+S")]}
-        />
-        <Shortcut
-          label={t("labels.toggleGrid")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+'")]}
-        />
-        <Shortcut
-          label={t("labels.viewMode")}
-          shortcuts={[getShortcutKey("Alt+R")]}
-        />
-        <Shortcut
-          label={t("stats.fullTitle")}
-          shortcuts={[getShortcutKey("Alt+/")]}
-        />
-        <Shortcut
-          label={t("search.title")}
-          shortcuts={[getShortcutFromShortcutName("searchMenu")]}
         />
         <Shortcut
           label={t("commandPalette.title")}
@@ -175,36 +135,8 @@ export default function BasicHelpDialog() {
         caption={t("helpDialog.editor")}
       >
         <Shortcut
-          label={t("labels.moveCanvas")}
-          shortcuts={[
-            getShortcutKey(`Space+${t("helpDialog.drag")}`),
-            getShortcutKey(`Wheel+${t("helpDialog.drag")}`),
-          ]}
-          isOr={true}
-        />
-        <Shortcut
-          label={t("labels.delete")}
-          shortcuts={[getShortcutKey("Delete")]}
-        />
-        <Shortcut
-          label={t("labels.cut")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+X")]}
-        />
-        <Shortcut
-          label={t("labels.copy")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+C")]}
-        />
-        <Shortcut
-          label={t("labels.paste")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+V")]}
-        />
-        <Shortcut
           label={t("labels.pasteAsPlaintext")}
           shortcuts={[getShortcutKey("CtrlOrCmd+Shift+V")]}
-        />
-        <Shortcut
-          label={t("labels.selectAll")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+A")]}
         />
         <Shortcut
           label={t("labels.multiSelect")}
@@ -227,47 +159,8 @@ export default function BasicHelpDialog() {
           />
         )}
         <Shortcut
-          label={t("labels.sendToBack")}
-          shortcuts={[
-            isDarwin
-              ? getShortcutKey("CtrlOrCmd+Alt+[")
-              : getShortcutKey("CtrlOrCmd+Shift+["),
-          ]}
-        />
-        <Shortcut
-          label={t("labels.bringToFront")}
-          shortcuts={[
-            isDarwin
-              ? getShortcutKey("CtrlOrCmd+Alt+]")
-              : getShortcutKey("CtrlOrCmd+Shift+]"),
-          ]}
-        />
-        <Shortcut
-          label={t("labels.sendBackward")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+[")]}
-        />
-        <Shortcut
-          label={t("labels.bringForward")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+]")]}
-        />
-        <Shortcut
           label={t("helpDialog.toggleElementLock")}
           shortcuts={[getShortcutKey("CtrlOrCmd+Shift+L")]}
-        />
-        <Shortcut
-          label={t("buttons.undo")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+Z")]}
-        />
-        <Shortcut
-          label={t("buttons.redo")}
-          shortcuts={
-            isWindows
-              ? [
-                  getShortcutKey("CtrlOrCmd+Y"),
-                  getShortcutKey("CtrlOrCmd+Shift+Z"),
-                ]
-              : [getShortcutKey("CtrlOrCmd+Shift+Z")]
-          }
         />
         <Shortcut
           label={t("labels.group")}
