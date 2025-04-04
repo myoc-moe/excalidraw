@@ -25,7 +25,7 @@ var labels = {
   background: "Background",
   changeBackground: "Change background color",
   fill: "Fill",
-  focusOnItem: "Focus on item",
+  smartZoom: "Smart Zoom",
   strokeWidth: "Stroke width",
   strokeStyle: "Stroke style",
   strokeStyle_solid: "Solid",
@@ -224,7 +224,7 @@ var buttons = {
   submit: "Submit",
   confirm: "Confirm",
   embeddableInteractionButton: "Click to interact",
-  focusOnItem: "Focus on Item"
+  smartZoom: "Smart Zoom"
 };
 var alerts = {
   clearReset: "This will clear the whole canvas. Are you sure?",
@@ -298,7 +298,7 @@ var toolBar = {
   hand: "Hand (panning tool)",
   extraTools: "More tools",
   mermaidToExcalidraw: "Mermaid to Excalidraw",
-  focusOnItem: "Focus on Item"
+  smartZoom: "Smart Zoom"
 };
 var element = {
   rectangle: "Rectangle",
@@ -391,6 +391,10 @@ var exportDialog = {
   excalidrawplus_exportError: "Couldn't export to Excalidraw+ at this moment..."
 };
 var helpDialog = {
+  myoc: {
+    showingAll: "Showing all controls",
+    showingBasic: "Showing basic controls"
+  },
   blog: "Read our blog",
   click: "click",
   deepSelect: "Deep select",
@@ -415,6 +419,7 @@ var helpDialog = {
   textNewLine: "Add new line (text editor)",
   title: "Help",
   view: "View",
+  smartZoom: "Smart Zoom (Fit selection or all elements if none selected)",
   zoomToFit: "Zoom to fit all elements",
   zoomToSelection: "Zoom to selection",
   toggleElementLock: "Lock/unlock selection",
@@ -709,4 +714,4 @@ export {
   commandPalette,
   en_default
 };
-//# sourceMappingURL=chunk-WFANJSPL.js.map
+//# sourceMappingURL=chunk-DYSQNY2T.js.map

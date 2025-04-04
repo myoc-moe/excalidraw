@@ -435,6 +435,7 @@ var getDefaultAppState = () => {
   return {
     showWelcomeScreen: false,
     myocSimplifiedMode: true,
+    hideMainMenus: false,
     theme: THEME.LIGHT,
     collaborators: /* @__PURE__ */ new Map(),
     currentChartType: "bar",
@@ -537,6 +538,7 @@ var getDefaultAppState = () => {
 var APP_STATE_STORAGE_CONF = /* @__PURE__ */ ((config) => config)({
   showWelcomeScreen: { browser: true, export: false, server: false },
   myocSimplifiedMode: { browser: true, export: false, server: false },
+  hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
   theme: { browser: true, export: false, server: false },
   collaborators: { browser: false, export: false, server: false },
@@ -24713,7 +24715,7 @@ var parseFileContents = async (blob) => {
   let contents;
   if (blob.type === MIME_TYPES.png) {
     try {
-      return await (await import("./data/image-XHOKCPQC.js")).decodePngMetadata(blob);
+      return await (await import("./data/image-HPLT2ROC.js")).decodePngMetadata(blob);
     } catch (error) {
       if (error.message === "INVALID") {
         throw new ImageSceneDataError(
@@ -25326,7 +25328,6 @@ export {
   ExportIcon,
   HelpIcon,
   HelpIconThin,
-  ExternalLinkIcon,
   GithubIcon,
   DiscordIcon,
   XBrandIcon,
@@ -25436,7 +25437,6 @@ export {
   magnetIcon,
   coffeeIcon,
   DeviceDesktopIcon,
-  youtubeIcon,
   gridIcon,
   lineEditorIcon,
   sharpArrowIcon,
@@ -25724,4 +25724,4 @@ export {
   getSelectionBoxShape,
   isPointInShape
 };
-//# sourceMappingURL=chunk-Q2AWEJ6Z.js.map
+//# sourceMappingURL=chunk-OQ7WMSRU.js.map
