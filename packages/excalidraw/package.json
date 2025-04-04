@@ -119,6 +119,7 @@
   "homepage": "https://github.com/myoc-moe/excalidraw/tree/master/packages/excalidraw",
   "scripts": {
     "gen:types": "rimraf -rf types && tsc",
-    "build:esm": "rimraf -rf dist && node ../../scripts/buildPackage.js && yarn gen:types"
+    "build:esm": "rimraf -rf dist && node ../../scripts/buildPackage.js && yarn gen:types",
+    "release": "yarn build:esm && yarn publish"
   }
 }
