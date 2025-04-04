@@ -391,6 +391,10 @@
     "excalidrawplus_exportError": "Couldn't export to Excalidraw+ at this moment..."
   },
   "helpDialog": {
+    "myoc": {
+      "showingAll": "Showing all controls",
+      "showingBasic": "Showing basic controls"
+    },
     "blog": "Read our blog",
     "click": "click",
     "deepSelect": "Deep select",

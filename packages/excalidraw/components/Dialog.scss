@@ -13,6 +13,9 @@
     border-bottom: 1px solid var(--dialog-border-color);
     padding: 0 0 0.75rem;
     margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
   }
 
   .Dialog__close {
