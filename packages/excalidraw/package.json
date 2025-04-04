@@ -1,5 +1,5 @@
 {
-  "name": "@excalidraw/excalidraw",
+  "name": "@myoc/excalidraw",
   "version": "0.18.0",
   "type": "module",
   "types": "./dist/types/excalidraw/index.d.ts",
@@ -114,9 +114,9 @@
     "rimraf": "6.0.1",
     "typescript": "4.9.4"
   },
-  "repository": "https://github.com/excalidraw/excalidraw",
-  "bugs": "https://github.com/excalidraw/excalidraw/issues",
-  "homepage": "https://github.com/excalidraw/excalidraw/tree/master/packages/excalidraw",
+  "repository": "https://github.com/myoc-moe/excalidraw",
+  "bugs": "https://github.com/myoc-moe/excalidraw/issues",
+  "homepage": "https://github.com/myoc-moe/excalidraw/tree/master/packages/excalidraw",
   "scripts": {
     "gen:types": "rimraf -rf types && tsc",
     "build:esm": "rimraf -rf dist && node ../../scripts/buildPackage.js && yarn gen:types"
