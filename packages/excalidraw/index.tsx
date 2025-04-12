@@ -53,6 +53,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderEmbeddable,
     showDeprecatedFonts,
     wheelZoomsOnDefault,
+    strokeColorTopPicks,
+    backgroundColorTopPicks,
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
@@ -144,6 +146,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           aiEnabled={false} // Myoc does not support AI generative features
           showDeprecatedFonts={showDeprecatedFonts}
           wheelZoomsOnDefault={wheelZoomsOnDefault}
+          strokeColorTopPicks={strokeColorTopPicks}
+          backgroundColorTopPicks={backgroundColorTopPicks}
         >
           {children}
         </App>
