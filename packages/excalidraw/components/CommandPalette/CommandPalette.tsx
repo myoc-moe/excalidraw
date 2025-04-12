@@ -2,6 +2,17 @@ import clsx from "clsx";
 import fuzzy from "fuzzy";
 import { useEffect, useRef, useState } from "react";
 
+import {
+  DEFAULT_SIDEBAR,
+  EVENT,
+  KEYS,
+  capitalizeString,
+  getShortcutKey,
+  isWritableElement,
+} from "@excalidraw/common";
+
+import type { MarkRequired } from "@excalidraw/common/utility-types";
+
 import { actionLink, actionToggleSearchMenu } from "../../actions";
 import {
   actionCopyElementLink,
@@ -9,12 +20,10 @@ import {
 } from "../../actions/actionElementLink";
 import { getShortcutFromShortcutName } from "../../actions/shortcuts";
 import { trackEvent } from "../../analytics";
-import { DEFAULT_SIDEBAR, EVENT } from "../../constants";
 import { useUIAppState } from "../../context/ui-appState";
 import { deburr } from "../../deburr";
 import { atom, useAtom } from "../../editor-jotai";
 import { t } from "../../i18n";
-import { KEYS } from "../../keys";
 import {
   useApp,
   useAppProps,
@@ -38,13 +47,7 @@ import {
   LibraryIcon,
 } from "../icons";
 
-import {
-  capitalizeString,
-  getShortcutKey,
-  isWritableElement,
-} from "../../utils";
-
-import { SHAPES } from "../../shapes";
+import { SHAPES } from "../shapes";
 import { canChangeBackgroundColor, canChangeStrokeColor } from "../Actions";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useStable } from "../../hooks/useStable";
@@ -55,7 +58,6 @@ import "./CommandPalette.scss";
 
 import type { CommandPaletteItem } from "./types";
 import type { AppProps, AppState, UIAppState } from "../../types";
-import type { MarkRequired } from "../../utility-types";
 import type { ShortcutName } from "../../actions/shortcuts";
 import type { TranslationKeys } from "../../i18n";
 import type { Action } from "../../actions/types";
@@ -309,6 +311,7 @@ function CommandPaletteInner({
       const toolCommands: CommandPaletteItem[] = [
         actionManager.actions.toggleHandTool,
         actionManager.actions.setFrameAsActiveTool,
+        actionManager.actions.toggleLassoTool,
       ].map((action) => actionToCommand(action, DEFAULT_CATEGORIES.tools));
 
       const editorCommands: CommandPaletteItem[] = [
@@ -445,7 +448,7 @@ function CommandPaletteInner({
           },
         },
         ...SHAPES.reduce((acc: CommandPaletteItem[], shape) => {
-          const { value, icon, key, numericKey } = shape;
+          const { value, icon, key } = shape;
 
           if (
             appProps.UIOptions.tools?.[
@@ -460,7 +463,7 @@ function CommandPaletteInner({
 
           const letter =
             key && capitalizeString(typeof key === "string" ? key : key[0]);
-          const shortcut = letter || numericKey;
+          const shortcut = letter;
 
           const command: CommandPaletteItem = {
             label: t(`toolBar.${value}`),

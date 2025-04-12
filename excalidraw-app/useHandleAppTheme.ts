@@ -1,9 +1,8 @@
 import { THEME } from "@excalidraw/excalidraw";
-import { EVENT } from "@excalidraw/excalidraw/constants";
-import { CODES, KEYS } from "@excalidraw/excalidraw/keys";
+import { EVENT, CODES, KEYS } from "@excalidraw/common";
 import { useCallback, useEffect, useState } from "react";
 
-import type { Theme } from "@excalidraw/excalidraw/element/types";
+import type { Theme } from "@excalidraw/element/types";
 
 const getDarkThemeMediaQuery = (): MediaQueryList | undefined =>
   window.matchMedia?.("(prefers-color-scheme: dark)");

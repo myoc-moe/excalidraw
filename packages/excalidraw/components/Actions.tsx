@@ -1,23 +1,40 @@
 import clsx from "clsx";
 import { useState } from "react";
 
-import { actionToggleZenMode } from "../actions";
+import {
+  CLASSES,
+  KEYS,
+  capitalizeString,
+  isTransparent,
+} from "@excalidraw/common";
 
-import { KEYS } from "../keys";
-import { CLASSES } from "../constants";
-import { alignActionsPredicate } from "../actions/actionAlign";
-import { trackEvent } from "../analytics";
 import {
   shouldAllowVerticalAlign,
   suppportsHorizontalAlign,
-} from "../element/textElement";
+} from "@excalidraw/element/textElement";
+
 import {
   hasBoundTextElement,
   isElbowArrow,
   isImageElement,
   isLinearElement,
   isTextElement,
-} from "../element/typeChecks";
+} from "@excalidraw/element/typeChecks";
+
+import { hasStrokeColor, toolIsArrow } from "@excalidraw/element/comparisons";
+
+import type {
+  ExcalidrawElement,
+  ExcalidrawElementType,
+  NonDeletedElementsMap,
+  NonDeletedSceneElementsMap,
+} from "@excalidraw/element/types";
+
+import { actionToggleZenMode } from "../actions";
+
+import { alignActionsPredicate } from "../actions/actionAlign";
+import { trackEvent } from "../analytics";
+
 import { t } from "../i18n";
 import {
   canChangeRoundness,
@@ -27,9 +44,8 @@ import {
   hasStrokeStyle,
   hasStrokeWidth,
 } from "../scene";
-import { hasStrokeColor, toolIsArrow } from "../scene/comparisons";
-import { SHAPES } from "../shapes";
-import { capitalizeString, isTransparent } from "../utils";
+
+import { SHAPES } from "./shapes";
 
 import "./Actions.scss";
 
@@ -38,15 +54,15 @@ import Stack from "./Stack";
 import { ToolButton } from "./ToolButton";
 import { Tooltip } from "./Tooltip";
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
-import { extraToolsIcon, laserPointerToolIcon } from "./icons";
 
-import type { ActionManager } from "../actions/manager";
-import type {
-  ExcalidrawElement,
-  ExcalidrawElementType,
-  NonDeletedElementsMap,
-  NonDeletedSceneElementsMap,
-} from "../element/types";
+import {
+  EmbedIcon,
+  extraToolsIcon,
+  frameToolIcon,
+  laserPointerToolIcon,
+  LassoIcon,
+} from "./icons";
+
 import type {
   AppClassProperties,
   AppProps,
@@ -54,6 +70,7 @@ import type {
   UIAppState,
   Zoom,
 } from "../types";
+import type { ActionManager } from "../actions/manager";
 
 export const canChangeStrokeColor = (
   appState: UIAppState,
@@ -284,6 +301,8 @@ export const ShapesSwitcher = ({
 
   const frameToolSelected = activeTool.type === "frame";
   const laserToolSelected = activeTool.type === "laser";
+  const lassoToolSelected = activeTool.type === "lasso";
+
   const embeddableToolSelected = activeTool.type === "embeddable";
 
   const simplifiedTools = SHAPES.filter((s) => s.myocSimplifiedMode === false);
@@ -292,7 +311,7 @@ export const ShapesSwitcher = ({
     <>
       {SHAPES.filter(
         (shape) => !appState.myocSimplifiedMode || shape.myocSimplifiedMode,
-      ).map(({ value, icon, key, numericKey, fillable }, index) => {
+      ).map(({ value, icon, key, fillable }, index) => {
         if (
           UIOptions.tools?.[
             value as Extract<typeof value, keyof AppProps["UIOptions"]["tools"]>
@@ -304,9 +323,7 @@ export const ShapesSwitcher = ({
         const label = t(`toolBar.${value}`);
         const letter =
           key && capitalizeString(typeof key === "string" ? key : key[0]);
-        const shortcut = numericKey
-          ? `${letter} ${t("helpDialog.or")} ${numericKey}`
-          : `${letter}`;
+        const shortcut = `${letter}`;
         return (
           <ToolButton
             className={clsx("Shape", { fillable })}
@@ -316,13 +333,21 @@ export const ShapesSwitcher = ({
             checked={activeTool.type === value}
             name="editor-current-shape"
             title={`${capitalizeString(label)} — ${shortcut}`}
-            keyBindingLabel={numericKey || letter}
+            keyBindingLabel={letter}
             aria-label={capitalizeString(label)}
             aria-keyshortcuts={shortcut}
             data-testid={`toolbar-${value}`}
             onPointerDown={({ pointerType }) => {
               if (!appState.penDetected && pointerType === "pen") {
                 app.togglePenMode(true);
+              }
+
+              if (value === "selection") {
+                if (appState.activeTool.type === "selection") {
+                  app.setActiveTool({ type: "lasso" });
+                } else {
+                  app.setActiveTool({ type: "selection" });
+                }
               }
             }}
             onChange={({ pointerType }) => {
@@ -349,6 +374,7 @@ export const ShapesSwitcher = ({
             "App-toolbar__extra-tools-trigger--selected":
               frameToolSelected ||
               embeddableToolSelected ||
+              lassoToolSelected ||
               // in collab we're already highlighting the laser button
               // outside toolbar, so let's not highlight extra-tools button
               // on top of it
@@ -357,7 +383,15 @@ export const ShapesSwitcher = ({
           onToggle={() => setIsExtraToolsMenuOpen(!isExtraToolsMenuOpen)}
           title={t("toolBar.extraTools")}
         >
-          {extraToolsIcon}
+          {frameToolSelected
+            ? frameToolIcon
+            : embeddableToolSelected
+            ? EmbedIcon
+            : laserToolSelected && !app.props.isCollaborating
+            ? laserPointerToolIcon
+            : lassoToolSelected
+            ? LassoIcon
+            : extraToolsIcon}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content
           onClickOutside={() => setIsExtraToolsMenuOpen(false)}
@@ -373,7 +407,15 @@ export const ShapesSwitcher = ({
           >
             {t("toolBar.frame")}
           </DropdownMenu.Item> */}
-          {simplifiedTools.map(({ value, icon, key, numericKey, fillable }) => {
+          <DropdownMenu.Item
+            onSelect={() => app.setActiveTool({ type: "lasso" })}
+            icon={LassoIcon}
+            data-testid="toolbar-lasso"
+            selected={lassoToolSelected}
+          >
+            {t("toolBar.lasso")}
+          </DropdownMenu.Item>
+          {simplifiedTools.map(({ value, icon, key, fillable }) => {
             const label = t(`toolBar.${value}`);
             const letter =
               key && capitalizeString(typeof key === "string" ? key : key[0]);

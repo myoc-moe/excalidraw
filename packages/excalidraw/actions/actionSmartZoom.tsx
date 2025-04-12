@@ -1,5 +1,6 @@
+import { KEYS } from "@excalidraw/common";
+
 import { eyeIcon } from "../components/icons";
-import { KEYS } from "../keys";
 import { getSelectedElements, isSomeElementSelected } from "../scene";
 import { CaptureUpdateAction } from "../store";
 import { ToolButton } from "../components/ToolButton";

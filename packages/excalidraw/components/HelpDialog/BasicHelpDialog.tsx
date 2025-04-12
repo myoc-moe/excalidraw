@@ -1,14 +1,9 @@
+import { getShortcutKey, isFirefox, KEYS } from "@excalidraw/common";
 import { getShortcutFromShortcutName } from "@excalidraw/excalidraw/actions/shortcuts";
 import { probablySupportsClipboardBlob } from "@excalidraw/excalidraw/clipboard";
-import {
-  isFirefox,
-  isDarwin,
-  isWindows,
-} from "@excalidraw/excalidraw/constants";
 import { t } from "@excalidraw/excalidraw/i18n";
-import { KEYS } from "@excalidraw/excalidraw/keys";
-import { SHAPES } from "@excalidraw/excalidraw/shapes";
-import { getShortcutKey } from "@excalidraw/excalidraw/utils";
+
+import { SHAPES } from "../shapes";
 
 import type { JSX } from "react";
 

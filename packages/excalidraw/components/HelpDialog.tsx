@@ -1,14 +1,15 @@
 import React, { useMemo } from "react";
 import clsx from "clsx";
 
+import { isDarwin, isFirefox, isWindows } from "@excalidraw/common";
+
+import { KEYS, getShortcutKey } from "@excalidraw/common";
+
+import { SHAPES } from "@excalidraw/element/shapes";
+
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { probablySupportsClipboardBlob } from "../clipboard";
-import { isDarwin, isFirefox, isWindows } from "../constants";
 import { t } from "../i18n";
-import { KEYS } from "../keys";
-import { getShortcutKey } from "../utils";
-
-import { SHAPES } from "../shapes";
 
 import { Dialog } from "./Dialog";
 
