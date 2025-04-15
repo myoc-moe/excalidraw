@@ -149,16 +149,15 @@ export const MobileMenu = ({
 
     return (
       <div className="App-toolbar-content">
-        <MainMenuTunnel.Out />
+        <div>
+          {actionManager.renderAction("undo")}
+          {actionManager.renderAction("redo")}
+        </div>
         {actionManager.renderAction("toggleEditMenu")}
         {actionManager.renderAction(
           appState.multiElement ? "finalize" : "duplicateSelection",
         )}
         {actionManager.renderAction("deleteSelectedElements")}
-        <div>
-          {actionManager.renderAction("undo")}
-          {actionManager.renderAction("redo")}
-        </div>
       </div>
     );
   };
