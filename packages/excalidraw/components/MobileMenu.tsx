@@ -150,6 +150,7 @@ export const MobileMenu = ({
     return (
       <div className="App-toolbar-content">
         <div>
+          {actionManager.renderAction("smartZoom")}
           {actionManager.renderAction("undo")}
           {actionManager.renderAction("redo")}
         </div>

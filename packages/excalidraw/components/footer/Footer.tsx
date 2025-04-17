@@ -15,6 +15,8 @@ import Stack from "../Stack";
 
 import type { ActionManager } from "../../actions/manager";
 import type { UIAppState } from "../../types";
+import { Tooltip } from "../Tooltip";
+import { t } from "@excalidraw/excalidraw/i18n";
 
 const Footer = ({
   appState,
@@ -46,6 +48,12 @@ const Footer = ({
       >
         <Stack.Col gap={2}>
           <Section heading="canvasActions">
+            <Tooltip label={t("buttons.smartZoom")}>
+              <div className={clsx("smart-zoom-button")}>
+                {actionManager.renderAction("smartZoom")}
+              </div>
+            </Tooltip>
+
             <ZoomActions
               renderAction={actionManager.renderAction}
               zoom={appState.zoom}

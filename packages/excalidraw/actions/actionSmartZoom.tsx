@@ -13,7 +13,7 @@ import { register } from "./register";
 export const actionSmartZoom = register({
   name: "smartZoom",
   label: "toolBar.smartZoom",
-  trackEvent: { category: "element" },
+  trackEvent: { category: "toolbar" },
   icon: eyeIcon,
   viewMode: true,
   perform: (elements, appState, _, app) => {
@@ -45,10 +45,11 @@ export const actionSmartZoom = register({
     <ToolButton
       type="button"
       icon={eyeIcon}
-      title={`${t("labels.smartZoom")} — ${KEYS.F.toUpperCase()}`}
       aria-label={t("labels.smartZoom")}
       onClick={() => updateData(null)}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
+      size={data?.size || "medium"}
+      data-testid="button-smart-zoom"
+      keyBindingLabel={KEYS.F.toLocaleUpperCase()}
     />
   ),
 });

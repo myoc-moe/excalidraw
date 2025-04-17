@@ -3,6 +3,7 @@
   background-color: var(--island-bg-color);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 0 0 1px var(--color-surface-lowest);
+  margin-inline-start: 0.6em; // to make space for smartZoom
 }
 
 .zoom-button,
