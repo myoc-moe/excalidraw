@@ -486,6 +486,8 @@ import { Toast } from "./Toast";
 
 import { findShapeByKey } from "./shapes";
 
+import BraveMeasureTextError from "./BraveMeasureTextError";
+
 import type {
   RenderInteractiveSceneCallback,
   ScrollBars,
