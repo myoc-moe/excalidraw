@@ -434,7 +434,7 @@ body.excalidraw-cursor-resize * {
       cursor: pointer;
 
       &:hover {
-        background-color: var(--island-bg-color);
+      background-color: var(--island-bg-color);
       }
     }
   }
@@ -476,6 +476,7 @@ body.excalidraw-cursor-resize * {
   }
 
   .smart-zoom-button button {
+    box-shadow: 0 0 0 1px var(--color-surface-lowest);
     background-color: var(--color-surface-low) !important;
     font-size: 0.875rem !important;
     width: var(--lg-button-size);
