@@ -41,7 +41,7 @@ export const actionSmartZoom = register({
     !event.shiftKey &&
     !event.altKey &&
     event.key.toLocaleLowerCase() === KEYS.F,
-  PanelComponent: ({ elements, appState, updateData }) => (
+  PanelComponent: ({ data, updateData }) => (
     <ToolButton
       type="button"
       icon={eyeIcon}
