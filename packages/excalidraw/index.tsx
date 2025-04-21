@@ -55,6 +55,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     wheelZoomsOnDefault,
     strokeColorTopPicks,
     backgroundColorTopPicks,
+    renderScrollbars,
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
@@ -148,6 +149,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           wheelZoomsOnDefault={wheelZoomsOnDefault}
           strokeColorTopPicks={strokeColorTopPicks}
           backgroundColorTopPicks={backgroundColorTopPicks}
+          renderScrollbars={renderScrollbars}
         >
           {children}
         </App>
