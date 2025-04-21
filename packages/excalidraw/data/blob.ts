@@ -388,10 +388,16 @@ export const ImageURLToFile = async (
 export const getFileFromEvent = async (
   event: React.DragEvent<HTMLDivElement>,
 ) => {
-  const file = event.dataTransfer.files.item(0);
+  const dataTransferFiles = Array.from(event.dataTransfer.files);
   const fileHandle = await getFileHandle(event);
 
-  return { file: file ? await normalizeFile(file) : null, fileHandle };
+  const files = dataTransferFiles
+    ? await Promise.all(dataTransferFiles.map((file) => normalizeFile(file)))
+    : null;
+  return {
+    files,
+    fileHandle,
+  };
 };
 
 export const getFileHandle = async (
