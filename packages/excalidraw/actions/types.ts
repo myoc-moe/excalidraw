@@ -109,6 +109,7 @@ export type ActionName =
   | "alignHorizontallyCentered"
   | "distributeHorizontally"
   | "distributeVertically"
+  | "arrangeElements"
   | "flipHorizontal"
   | "flipVertical"
   | "viewMode"

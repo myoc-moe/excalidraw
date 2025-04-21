@@ -277,6 +277,7 @@ function CommandPaletteInner({
         actionManager.actions.alignRight,
         actionManager.actions.alignVerticallyCentered,
         actionManager.actions.alignHorizontallyCentered,
+        actionManager.actions.arrangeElements,
         actionManager.actions.duplicateSelection,
         actionManager.actions.smartZoom,
         actionManager.actions.flipHorizontal,
