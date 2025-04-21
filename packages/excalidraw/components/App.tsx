@@ -19,6 +19,7 @@ import {
 } from "@excalidraw/math";
 import { isPointInShape } from "@excalidraw/utils/collision";
 import { getSelectionBoxShape } from "@excalidraw/utils/shape";
+import { arrangeElements } from "@excalidraw/element/arrange";
 
 import {
   COLOR_PALETTE,
@@ -3081,7 +3082,7 @@ class App extends React.Component<AppProps, AppState> {
       // must be called in the same frame (thus before any awaits) as the paste
       // event else some browsers (FF...) will clear the clipboardData
       // (something something security)
-      let file = event?.clipboardData?.files[0];
+      let file = event.clipboardData?.files[0];
       const data = await parseClipboard(event, isPlainPaste);
       if (!file && !isPlainPaste) {
         if (data.mixedContent) {
@@ -3107,18 +3108,44 @@ class App extends React.Component<AppProps, AppState> {
           return;
         }
 
+        if (!event.clipboardData) {
+          throw new Error("Clipboard data is not available");
+        }
+
+        const filesList = event.clipboardData.files;
+        const files = Array.from(filesList);
+
+        const newImageElements = await Promise.all(
+          files.map(async (f) => {
         const imageElement = this.createImageElement({ sceneX, sceneY });
-        this.insertImageElement(imageElement, file);
-        this.initializeImageDimensions(imageElement);
+            await this.insertImageElement(imageElement, f);
+            this.initializeImageDimensions(imageElement); // Initializes size of the placeholder
+
+            return imageElement;
+          }),
+        );
+
+        // Select the newly added image elements
+        const selections: Record<string, true> = Object.assign(
+          {},
+          ...newImageElements.map((i) => ({
+            [i.id]: true,
+          })),
+        );
         this.setState({
           selectedElementIds: makeNextSelectedElementIds(
-            {
-              [imageElement.id]: true,
-            },
+            selections,
             this.state,
           ),
         });
-
+        // Arrange the new image elements
+        const elementsMap = arrayToMap(newImageElements);
+        arrangeElements(
+          newImageElements,
+          elementsMap,
+          this.state.arrangeConfiguration.algorithm,
+          this.state.arrangeConfiguration.gap,
+        );
         return;
       }
 
