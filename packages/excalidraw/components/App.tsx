@@ -19,6 +19,7 @@ import {
 } from "@excalidraw/math";
 import { isPointInShape } from "@excalidraw/utils/collision";
 import { getSelectionBoxShape } from "@excalidraw/utils/shape";
+import { arrangeElements } from "@excalidraw/element/arrange";
 
 import {
   COLOR_PALETTE,
@@ -3085,7 +3086,7 @@ class App extends React.Component<AppProps, AppState> {
       // must be called in the same frame (thus before any awaits) as the paste
       // event else some browsers (FF...) will clear the clipboardData
       // (something something security)
-      let file = event?.clipboardData?.files[0];
+      let file = event.clipboardData?.files[0];
       const data = await parseClipboard(event, isPlainPaste);
       if (!file && !isPlainPaste) {
         if (data.mixedContent) {
@@ -3111,18 +3112,44 @@ class App extends React.Component<AppProps, AppState> {
           return;
         }
 
-        const imageElement = this.createImageElement({ sceneX, sceneY });
-        this.insertImageElement(imageElement, file);
-        this.initializeImageDimensions(imageElement);
+        if (!event.clipboardData) {
+          throw new Error("Clipboard data is not available");
+        }
+
+        const filesList = event.clipboardData.files;
+        const files = Array.from(filesList);
+
+        const newImageElements = await Promise.all(
+          files.map(async (f) => {
+            const imageElement = this.createImageElement({ sceneX, sceneY });
+            await this.insertImageElement(imageElement, f);
+            this.initializeImageDimensions(imageElement); // Initializes size of the placeholder
+
+            return imageElement;
+          }),
+        );
+
+        // Select the newly added image elements
+        const selections: Record<string, true> = Object.assign(
+          {},
+          ...newImageElements.map((i) => ({
+            [i.id]: true,
+          })),
+        );
         this.setState({
           selectedElementIds: makeNextSelectedElementIds(
-            {
-              [imageElement.id]: true,
-            },
+            selections,
             this.state,
           ),
         });
-
+        // Arrange the new image elements
+        const elementsMap = arrayToMap(newImageElements);
+        arrangeElements(
+          newImageElements,
+          elementsMap,
+          this.state.arrangeConfiguration.algorithm,
+          this.state.arrangeConfiguration.gap,
+        );
         return;
       }
 
@@ -10255,21 +10282,35 @@ class App extends React.Component<AppProps, AppState> {
 
   private handleAppOnDrop = async (event: React.DragEvent<HTMLDivElement>) => {
     // must be retrieved first, in the same frame
-    const { file, fileHandle } = await getFileFromEvent(event);
+    const { files, fileHandle } = await getFileFromEvent(event);
     const { x: sceneX, y: sceneY } = viewportCoordsToSceneCoords(
       event,
       this.state,
     );
 
+    if (files === null) {
+      console.warn("File is null");
+      return;
+    }
+
+    const file = files ? files[0] : null;
+
     try {
       // if image tool not supported, don't show an error here and let it fall
       // through so we still support importing scene data from images. If no
       // scene data encoded, we'll show an error then
-      if (isSupportedImageFile(file) && this.isToolSupported("image")) {
+      if (
+        files.length > 0 &&
+        isSupportedImageFile(file) &&
+        this.isToolSupported("image")
+      ) {
         // first attempt to decode scene from the image if it's embedded
+        // and if it's the only image
         // ---------------------------------------------------------------------
-
-        if (file?.type === MIME_TYPES.png || file?.type === MIME_TYPES.svg) {
+        if (
+          (files.length === 1 && file.type === MIME_TYPES.png) ||
+          file.type === MIME_TYPES.svg
+        ) {
           try {
             const scene = await loadFromBlob(
               file,
@@ -10295,21 +10336,48 @@ class App extends React.Component<AppProps, AppState> {
           }
         }
 
-        // if no scene is embedded or we fail for whatever reason, fall back
-        // to importing as regular image
+        // if theres more than one image, or if no scene is embedded,
+        // or we fail for whatever reason, fall back to importing as regular image
         // ---------------------------------------------------------------------
 
-        const imageElement = this.createImageElement({ sceneX, sceneY });
-        this.insertImageElement(imageElement, file);
-        this.initializeImageDimensions(imageElement);
-        this.setState({
-          selectedElementIds: makeNextSelectedElementIds(
-            { [imageElement.id]: true },
-            this.state,
-          ),
-        });
+        // if there's no images that are supported, continue instead and try to parse json
+        const supportedImageFiles = files.filter((file) =>
+          isSupportedImageFile(file),
+        );
 
-        return;
+        if (supportedImageFiles.length > 0) {
+          const newImageElements = await Promise.all(
+            supportedImageFiles.map(async (file) => {
+              const imageElement = this.createImageElement({ sceneX, sceneY });
+              await this.insertImageElement(imageElement, file);
+              this.initializeImageDimensions(imageElement);
+
+              return imageElement;
+            }),
+          );
+          // Select the newly added image elements
+          const selections: Record<string, true> = Object.assign(
+            {},
+            ...newImageElements.map((i) => ({
+              [i.id]: true,
+            })),
+          );
+          this.setState({
+            selectedElementIds: makeNextSelectedElementIds(
+              selections,
+              this.state,
+            ),
+          });
+          // Arrange the new image elements
+          const elementsMap = arrayToMap(newImageElements);
+          arrangeElements(
+            newImageElements,
+            elementsMap,
+            this.state.arrangeConfiguration.algorithm,
+            this.state.arrangeConfiguration.gap,
+          );
+          return;
+        }
       }
     } catch (error: any) {
       return this.setState({
