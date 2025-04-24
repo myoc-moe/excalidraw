@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   CLASSES,
@@ -56,11 +56,17 @@ import { Tooltip } from "./Tooltip";
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
 
 import {
+  ArrowIcon,
+  DiamondIcon,
   EmbedIcon,
   extraToolsIcon,
   frameToolIcon,
   laserPointerToolIcon,
   LassoIcon,
+  LineIcon,
+  LockedIcon,
+  RectangleIcon,
+  UnlockedIcon,
 } from "./icons";
 
 import type {
@@ -308,7 +314,68 @@ export const ShapesSwitcher = ({
 
   const embeddableToolSelected = activeTool.type === "embeddable";
 
-  const simplifiedTools = SHAPES.filter((s) => s.myocSimplifiedMode === false);
+  const simplifiedShapeTools = SHAPES.filter(
+    (s) => s.myocSimplifiedMode === false,
+  );
+
+  const dropdownIcon = useMemo(() => {
+    switch (activeTool.type) {
+      case "frame":
+        return {
+          icon: frameToolIcon,
+          highlight: false,
+        };
+      case "lasso":
+        return {
+          icon: LassoIcon,
+          highlight: true,
+        };
+      case "embeddable":
+        return {
+          icon: EmbedIcon,
+          highlight: true,
+        };
+      case "laser":
+        if (!app.props.isCollaborating) {
+          return {
+            icon: laserPointerToolIcon,
+            highlight: true,
+          };
+        }
+
+        return {
+          icon: extraToolsIcon,
+          highlight: true,
+        };
+      case "diamond":
+        return {
+          icon: DiamondIcon,
+          highlight: true,
+        };
+      case "rectangle":
+        return {
+          icon: RectangleIcon,
+          highlight: true,
+        };
+      case "ellipse":
+        return {
+          icon: RectangleIcon,
+          highlight: true,
+        };
+      case "arrow":
+        return {
+          icon: ArrowIcon,
+          highlight: true,
+        };
+      case "line":
+        return {
+          icon: LineIcon,
+          highlight: true,
+        };
+      default:
+        return { icon: extraToolsIcon, highlight: false };
+    }
+  }, [activeTool.type, app.props.isCollaborating]);
 
   return (
     <>
@@ -375,26 +442,12 @@ export const ShapesSwitcher = ({
         <DropdownMenu.Trigger
           className={clsx("App-toolbar__extra-tools-trigger", {
             "App-toolbar__extra-tools-trigger--selected":
-              frameToolSelected ||
-              embeddableToolSelected ||
-              lassoToolSelected ||
-              // in collab we're already highlighting the laser button
-              // outside toolbar, so let's not highlight extra-tools button
-              // on top of it
-              (laserToolSelected && !app.props.isCollaborating),
+              dropdownIcon.highlight,
           })}
           onToggle={() => setIsExtraToolsMenuOpen(!isExtraToolsMenuOpen)}
           title={t("toolBar.extraTools")}
         >
-          {frameToolSelected
-            ? frameToolIcon
-            : embeddableToolSelected
-            ? EmbedIcon
-            : laserToolSelected && !app.props.isCollaborating
-            ? laserPointerToolIcon
-            : lassoToolSelected
-            ? LassoIcon
-            : extraToolsIcon}
+          {dropdownIcon.icon}
         </DropdownMenu.Trigger>
         <DropdownMenu.Content
           onClickOutside={() => setIsExtraToolsMenuOpen(false)}
@@ -418,7 +471,7 @@ export const ShapesSwitcher = ({
           >
             {t("toolBar.lasso")}
           </DropdownMenu.Item>
-          {simplifiedTools.map(({ value, icon, key, fillable }) => {
+          {simplifiedShapeTools.map(({ value, icon, key, fillable }) => {
             const label = t(`toolBar.${value}`);
             const letter =
               key && capitalizeString(typeof key === "string" ? key : key[0]);
@@ -436,6 +489,17 @@ export const ShapesSwitcher = ({
               </DropdownMenu.Item>
             );
           })}
+          <div className="App-toolbar__dropdown-divider" />
+          <DropdownMenu.Item
+            onSelect={() => app.toggleLock()}
+            icon={appState.activeTool.locked ? LockedIcon : UnlockedIcon}
+            data-testid={`toolbar-lock`}
+            selected={appState.activeTool.locked}
+            shortcut={KEYS.Q}
+          >
+            {capitalizeString(t("toolBar.lock-short"))}
+          </DropdownMenu.Item>
+
           {!appState.myocSimplifiedMode && (
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "laser" })}
