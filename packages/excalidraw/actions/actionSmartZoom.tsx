@@ -1,11 +1,10 @@
 import { KEYS } from "@excalidraw/common";
 
-import { eyeIcon } from "../components/icons";
-import { getSelectedElements, isSomeElementSelected } from "../scene";
+import { arrowsToEyeIcon } from "../components/icons";
+import { getSelectedElements } from "../scene";
 import { CaptureUpdateAction } from "../store";
 import { ToolButton } from "../components/ToolButton";
 
-import { getNonDeletedElements } from "..";
 import { t } from "../i18n";
 
 import { register } from "./register";
@@ -14,7 +13,7 @@ export const actionSmartZoom = register({
   name: "smartZoom",
   label: "toolBar.smartZoom",
   trackEvent: { category: "toolbar" },
-  icon: eyeIcon,
+  icon: arrowsToEyeIcon,
   viewMode: true,
   perform: (elements, appState, _, app) => {
     const settings = {
@@ -44,7 +43,7 @@ export const actionSmartZoom = register({
   PanelComponent: ({ data, updateData }) => (
     <ToolButton
       type="button"
-      icon={eyeIcon}
+      icon={arrowsToEyeIcon}
       aria-label={t("labels.smartZoom")}
       onClick={() => updateData(null)}
       size={data?.size || "medium"}

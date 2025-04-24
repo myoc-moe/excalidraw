@@ -434,7 +434,7 @@ body.excalidraw-cursor-resize * {
       cursor: pointer;
 
       &:hover {
-      background-color: var(--island-bg-color);
+        background-color: var(--island-bg-color);
       }
     }
   }
@@ -475,12 +475,42 @@ body.excalidraw-cursor-resize * {
     }
   }
 
-  .smart-zoom-button button {
-    box-shadow: 0 0 0 1px var(--color-surface-lowest);
-    background-color: var(--color-surface-low) !important;
-    font-size: 0.875rem !important;
+  .view-mode-button button {
+    font-size: 0.875rem;
+    background-color: var(--color-surface-low);
     width: var(--lg-button-size);
     height: var(--lg-button-size);
+
+    svg {
+      width: var(--lg-icon-size);
+      height: var(--lg-icon-size);
+    }
+
+    .ToolIcon__icon {
+      width: 100%;
+      height: 100%;
+    }
+
+    &.enabled {
+      background-color: var(--color-surface-primary-container);
+
+      svg {
+        color: var(--color-on-primary-container);
+      }
+
+      .ToolIcon__icon:hover {
+        background-color: inherit;
+      }
+    }
+  }
+
+  .smart-zoom-button button {
+    box-shadow: 0 0 0 1px var(--color-surface-lowest);
+    background-color: var(--color-surface-low);
+    font-size: 0.875rem;
+    width: var(--lg-button-size);
+    height: var(--lg-button-size);
+    margin-inline-start: 0.6em; // to make space for view-mode-button
 
     svg {
       width: var(--lg-icon-size);

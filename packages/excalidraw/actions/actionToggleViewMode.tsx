@@ -1,7 +1,13 @@
 import { CODES, KEYS } from "@excalidraw/common";
 
+import clsx from "clsx";
+
 import { eyeIcon } from "../components/icons";
 import { CaptureUpdateAction } from "../store";
+
+import { ToolButton } from "../components/ToolButton";
+
+import { t } from "../i18n";
 
 import { register } from "./register";
 
@@ -29,4 +35,17 @@ export const actionToggleViewMode = register({
   },
   keyTest: (event) =>
     !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.R,
+  PanelComponent: ({ data, updateData, appState }) => (
+    <ToolButton
+      type="button"
+      icon={eyeIcon}
+      aria-label={t("labels.viewMode")}
+      onClick={() => updateData(null)}
+      size={data?.size || "medium"}
+      data-testid="button-view-mode"
+      className={clsx({
+        enabled: appState.viewModeEnabled,
+      })}
+    />
+  ),
 });

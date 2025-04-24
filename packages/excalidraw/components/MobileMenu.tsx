@@ -2,6 +2,8 @@ import React from "react";
 
 import { showSelectedShapeActions } from "@excalidraw/element/showSelectedShapeActions";
 
+import clsx from "clsx";
+
 import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
 import { isHandToolActive } from "../appState";
@@ -142,6 +144,7 @@ export const MobileMenu = ({
     ) {
       return (
         <div className="App-toolbar-content">
+          {actionManager.renderAction("viewMode")}
           <MainMenuTunnel.Out />
         </div>
       );
@@ -150,7 +153,7 @@ export const MobileMenu = ({
     return (
       <div className="App-toolbar-content">
         <div>
-          {actionManager.renderAction("smartZoom")}
+          {actionManager.renderAction("viewMode")}
           {actionManager.renderAction("undo")}
           {actionManager.renderAction("redo")}
         </div>
