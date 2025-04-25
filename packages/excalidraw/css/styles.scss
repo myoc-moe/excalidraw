@@ -476,10 +476,11 @@ body.excalidraw-cursor-resize * {
   }
 
   .view-mode-button button {
-    font-size: 0.875rem;
     background-color: var(--color-surface-low);
-    width: var(--lg-button-size);
+    box-shadow: 0 0 0 1px var(--color-surface-lowest);
+    font-size: 0.875rem;
     height: var(--lg-button-size);
+    width: var(--lg-button-size);
 
     svg {
       width: var(--lg-icon-size);
@@ -505,11 +506,12 @@ body.excalidraw-cursor-resize * {
   }
 
   .smart-zoom-button button {
-    box-shadow: 0 0 0 1px var(--color-surface-lowest);
     background-color: var(--color-surface-low);
+    box-shadow: 0 0 0 1px var(--color-surface-lowest);
     font-size: 0.875rem;
-    width: var(--lg-button-size);
     height: var(--lg-button-size);
+    width: var(--lg-button-size);
+
     margin-inline-start: 0.6em; // to make space for view-mode-button
 
     svg {
