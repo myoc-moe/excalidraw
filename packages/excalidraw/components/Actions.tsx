@@ -58,6 +58,7 @@ import DropdownMenu from "./dropdownMenu/DropdownMenu";
 import {
   ArrowIcon,
   DiamondIcon,
+  EllipseIcon,
   EmbedIcon,
   extraToolsIcon,
   frameToolIcon,
@@ -359,7 +360,7 @@ export const ShapesSwitcher = ({
         };
       case "ellipse":
         return {
-          icon: RectangleIcon,
+          icon: EllipseIcon,
           highlight: true,
         };
       case "arrow":
