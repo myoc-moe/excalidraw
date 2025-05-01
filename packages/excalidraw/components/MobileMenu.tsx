@@ -144,7 +144,10 @@ export const MobileMenu = ({
     ) {
       return (
         <div className="App-toolbar-content">
-          {actionManager.renderAction("viewMode")}
+          <div>
+            {actionManager.renderAction("viewMode")}
+            {actionManager.renderAction("smartZoom")}
+          </div>
           <MainMenuTunnel.Out />
         </div>
       );
@@ -154,6 +157,7 @@ export const MobileMenu = ({
       <div className="App-toolbar-content">
         <div>
           {actionManager.renderAction("viewMode")}
+          {actionManager.renderAction("smartZoom")}
           {actionManager.renderAction("undo")}
           {actionManager.renderAction("redo")}
         </div>
