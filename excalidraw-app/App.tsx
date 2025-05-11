@@ -807,6 +807,7 @@ const ExcalidrawWrapper = () => {
       <Excalidraw
         excalidrawAPI={excalidrawRefCallback}
         wheelZoomsOnDefault
+        dontResizeLimitMBs={5}
         onChange={onChange}
         initialData={initialStatePromiseRef.current.promise}
         isCollaborating={isCollaborating}
