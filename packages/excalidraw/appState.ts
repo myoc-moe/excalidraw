@@ -25,6 +25,7 @@ export const getDefaultAppState = (): Omit<
   return {
     showWelcomeScreen: false,
     myocSimplifiedMode: true,
+    dontResizeLimitMBs: 5,
     hideMainMenus: false,
     arrangeConfiguration: {
       gap: 10,
@@ -149,6 +150,7 @@ const APP_STATE_STORAGE_CONF = (<
   config)({
   showWelcomeScreen: { browser: true, export: false, server: false },
   myocSimplifiedMode: { browser: true, export: false, server: false },
+  dontResizeLimitMBs: { browser: true, export: false, server: false },
   hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
   arrangeConfiguration: { browser: true, export: false, server: false },

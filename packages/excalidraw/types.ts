@@ -263,6 +263,7 @@ export interface AppState {
   showWelcomeScreen: boolean;
   isLoading: boolean;
   myocSimplifiedMode: boolean;
+  dontResizeLimitMBs: number;
   hideMainMenus: boolean;
   wheelZoomsOnDefault?: boolean;
   arrangeConfiguration: {
