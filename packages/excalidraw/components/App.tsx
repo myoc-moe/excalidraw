@@ -767,6 +767,7 @@ class App extends React.Component<AppProps, AppState> {
         updateScene: this.updateScene,
         updateLibrary: this.library.updateLibrary,
         addFiles: this.addFiles,
+        addImageElementsToScene: this.addImageElementsToScene,
         resetScene: this.resetScene,
         getSceneElementsIncludingDeleted: this.getSceneElementsIncludingDeleted,
         history: {
@@ -3051,6 +3052,50 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  public addImageElementsToScene = async ({
+    sceneX,
+    sceneY,
+    files,
+    selectAfterInsert = true,
+  }: {
+    sceneX: number;
+    sceneY: number;
+    files: File[];
+    selectAfterInsert?: boolean;
+  }) => {
+    const newImageElements = await Promise.all(
+      files.map(async (f) => {
+        const imageElement = this.createImageElement({ sceneX, sceneY });
+        await this.insertImageElement(imageElement, f);
+        this.initializeImageDimensions(imageElement); // Initializes size of the placeholder
+
+        return imageElement;
+      }),
+    );
+
+    if (selectAfterInsert) {
+      // Select the newly added image elements
+      const selections: Record<string, true> = Object.assign(
+        {},
+        ...newImageElements.map((i) => ({
+          [i.id]: true,
+        })),
+      );
+      this.setState({
+        selectedElementIds: makeNextSelectedElementIds(selections, this.state),
+      });
+    }
+
+    // Arrange the new image elements
+    const elementsMap = arrayToMap(newImageElements);
+    arrangeElements(
+      newImageElements,
+      elementsMap,
+      this.state.arrangeConfiguration.algorithm,
+      this.state.arrangeConfiguration.gap,
+    );
+  };
+
   public pasteFromClipboard = withBatchedUpdates(
     async (event: ClipboardEvent) => {
       const isPlainPaste = !!IS_PLAIN_PASTE;
@@ -3118,38 +3163,11 @@ class App extends React.Component<AppProps, AppState> {
 
         const filesList = event.clipboardData.files;
         const files = Array.from(filesList);
-
-        const newImageElements = await Promise.all(
-          files.map(async (f) => {
-            const imageElement = this.createImageElement({ sceneX, sceneY });
-            await this.insertImageElement(imageElement, f);
-            this.initializeImageDimensions(imageElement); // Initializes size of the placeholder
-
-            return imageElement;
-          }),
-        );
-
-        // Select the newly added image elements
-        const selections: Record<string, true> = Object.assign(
-          {},
-          ...newImageElements.map((i) => ({
-            [i.id]: true,
-          })),
-        );
-        this.setState({
-          selectedElementIds: makeNextSelectedElementIds(
-            selections,
-            this.state,
-          ),
+        this.addImageElementsToScene({
+          sceneX,
+          sceneY,
+          files,
         });
-        // Arrange the new image elements
-        const elementsMap = arrayToMap(newImageElements);
-        arrangeElements(
-          newImageElements,
-          elementsMap,
-          this.state.arrangeConfiguration.algorithm,
-          this.state.arrangeConfiguration.gap,
-        );
         return;
       }
 
