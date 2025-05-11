@@ -9817,17 +9817,19 @@ class App extends React.Component<AppProps, AppState> {
 
     const existingFileData = this.files[fileId];
     if (!existingFileData?.dataURL) {
-      try {
-        imageFile = await resizeImageFile(imageFile, {
-          maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
-        });
-      } catch (error: any) {
-        console.error(
-          "Error trying to resizing image file on insertion",
-          error,
-        );
-      }
+      // only resize the file if its too big
+      // try {
+      // imageFile = await resizeImageFile(imageFile, {
+      //   maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
+      // });
+      // } catch (error: any) {
+      //   console.error(
+      //     "Error trying to resizing image file on insertion",
+      //     error,
+      //   );
+      // }
 
+      // TODO: add state for like, low limit vs high limit, and resize if the file is too large for non-pro users
       if (imageFile.size > MAX_ALLOWED_FILE_BYTES) {
         throw new Error(
           t("errors.fileTooBig", {
