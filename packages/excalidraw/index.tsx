@@ -53,7 +53,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderEmbeddable,
     showDeprecatedFonts,
     wheelZoomsOnDefault,
-    dontResizeLimitMBs,
     strokeColorTopPicks,
     backgroundColorTopPicks,
     renderScrollbars,
@@ -148,7 +147,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           aiEnabled={false} // Myoc does not support AI generative features
           showDeprecatedFonts={showDeprecatedFonts}
           wheelZoomsOnDefault={wheelZoomsOnDefault}
-          dontResizeLimitMBs={dontResizeLimitMBs}
           strokeColorTopPicks={strokeColorTopPicks}
           backgroundColorTopPicks={backgroundColorTopPicks}
           renderScrollbars={renderScrollbars}

@@ -263,9 +263,9 @@ export interface AppState {
   showWelcomeScreen: boolean;
   isLoading: boolean;
   myocSimplifiedMode: boolean;
+  dontResizeLimitMBs: number;
   hideMainMenus: boolean;
   wheelZoomsOnDefault?: boolean;
-  dontResizeLimitMBs: number;
   arrangeConfiguration: {
     algorithm: ArrangeAlgorithms;
     gap: number;
@@ -612,7 +612,6 @@ export interface ExcalidrawProps {
   aiEnabled?: boolean;
   showDeprecatedFonts?: boolean;
   wheelZoomsOnDefault?: boolean;
-  dontResizeLimitMBs: number;
   strokeColorTopPicks?: ColorTuple;
   backgroundColorTopPicks?: ColorTuple;
   renderScrollbars?: boolean;
@@ -673,7 +672,6 @@ export type AppProps = Merge<
       }
     >;
     wheelZoomsOnDefault?: boolean;
-    dontResizeLimitMBs: number;
     detectScroll: boolean;
     handleKeyboardGlobally: boolean;
     isCollaborating: boolean;

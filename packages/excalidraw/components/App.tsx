@@ -728,7 +728,6 @@ class App extends React.Component<AppProps, AppState> {
       theme = defaultAppState.theme,
       name = `${t("labels.untitled")}-${getDateTime()}`,
       wheelZoomsOnDefault = false,
-      dontResizeLimitMBs,
     } = props;
     this.state = {
       ...defaultAppState,
@@ -743,7 +742,6 @@ class App extends React.Component<AppProps, AppState> {
       width: window.innerWidth,
       height: window.innerHeight,
       wheelZoomsOnDefault,
-      dontResizeLimitMBs,
     };
 
     this.id = nanoid();
