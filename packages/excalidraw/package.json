@@ -132,6 +132,7 @@
   "scripts": {
     "gen:types": "rimraf -rf types && tsc",
     "build:esm": "rimraf -rf dist && node ../../scripts/buildPackage.js && yarn gen:types",
-    "release": "yarn build:esm && yarn publish"
+    "release": "yarn build:esm && yarn publish",
+    "clearDist": "rimraf -rf dist"
   }
 }
