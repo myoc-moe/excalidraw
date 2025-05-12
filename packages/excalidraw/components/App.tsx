@@ -9787,6 +9787,8 @@ class App extends React.Component<AppProps, AppState> {
       throw new Error(t("errors.unsupportedFileType"));
     }
     const mimeType = imageFile.type;
+    const fileNeedsResizing =
+      imageFile.size >= this.state.dontResizeLimitMBs * 1024 * 1024;
 
     setCursor(this.interactiveCanvas, "wait");
 
@@ -9800,45 +9802,41 @@ class App extends React.Component<AppProps, AppState> {
         console.warn(error);
         throw new Error(t("errors.svgImageInsertError"));
       }
+    } else if (fileNeedsResizing) {
+      try {
+        imageFile = await resizeImageFile(imageFile, {
+          maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
+        });
+        console.info("Excalidraw: image resized");
+      } catch (error: any) {
+        console.error(
+          "Error trying to resizing image file on insertion",
+          error,
+        );
+      }
     }
 
-    // generate image id (by default the file digest) before any
-    // resizing/compression takes place to keep it more portable
+    if (imageFile.size > MAX_ALLOWED_FILE_BYTES) {
+      throw new Error(
+        t("errors.fileTooBig", {
+          maxSize: `${Math.trunc(MAX_ALLOWED_FILE_BYTES / 1024 / 1024)}MB`,
+        }),
+      );
+    }
+
+    // generate image id (by default the file digest) after the file compression/non-compression
+    // so that compressed images have different ids to uncompressed ones
     const fileId = await ((this.props.generateIdForFile?.(
       imageFile,
     ) as Promise<FileId>) || generateIdFromFile(imageFile));
+
+    console.info("Excalidraw File ID:", fileId);
 
     if (!fileId) {
       console.warn(
         "Couldn't generate file id or the supplied `generateIdForFile` didn't resolve to one.",
       );
       throw new Error(t("errors.imageInsertError"));
-    }
-
-    const existingFileData = this.files[fileId];
-    if (!existingFileData?.dataURL) {
-      // only resize the file if its too big
-      const sizeLimitInKBs = this.state.dontResizeLimitMBs * 1024 * 1024;
-      if (imageFile.size >= sizeLimitInKBs) {
-        try {
-          imageFile = await resizeImageFile(imageFile, {
-            maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
-          });
-        } catch (error: any) {
-          console.error(
-            "Error trying to resizing image file on insertion",
-            error,
-          );
-        }
-      }
-
-      if (imageFile.size > MAX_ALLOWED_FILE_BYTES) {
-        throw new Error(
-          t("errors.fileTooBig", {
-            maxSize: `${Math.trunc(MAX_ALLOWED_FILE_BYTES / 1024 / 1024)}MB`,
-          }),
-        );
-      }
     }
 
     if (showCursorImagePreview) {
