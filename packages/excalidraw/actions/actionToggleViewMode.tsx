@@ -1,9 +1,9 @@
 import { CODES, KEYS } from "@excalidraw/common";
 
 import clsx from "clsx";
+import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { eyeIcon } from "../components/icons";
-import { CaptureUpdateAction } from "../store";
 
 import { ToolButton } from "../components/ToolButton";
 

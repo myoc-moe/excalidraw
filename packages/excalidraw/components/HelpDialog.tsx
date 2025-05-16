@@ -18,6 +18,47 @@ import "./HelpDialog.scss";
 import BasicHelpDialog from "./HelpDialog/BasicHelpDialog";
 
 import type { JSX } from "react";
+// Myoc - no header!
+// const Header = () => (
+//   <div className="HelpDialog__header">
+//     <a
+//       className="HelpDialog__btn"
+//       href="https://docs.excalidraw.com"
+//       target="_blank"
+//       rel="noopener"
+//     >
+//       <div className="HelpDialog__link-icon">{ExternalLinkIcon}</div>
+//       {t("helpDialog.documentation")}
+//     </a>
+//     <a
+//       className="HelpDialog__btn"
+//       href="https://plus.excalidraw.com/blog"
+//       target="_blank"
+//       rel="noopener"
+//     >
+//       <div className="HelpDialog__link-icon">{ExternalLinkIcon}</div>
+//       {t("helpDialog.blog")}
+//     </a>
+//     <a
+//       className="HelpDialog__btn"
+//       href="https://github.com/excalidraw/excalidraw/issues"
+//       target="_blank"
+//       rel="noopener noreferrer"
+//     >
+//       <div className="HelpDialog__link-icon">{GithubIcon}</div>
+//       {t("helpDialog.github")}
+//     </a>
+//     <a
+//       className="HelpDialog__btn"
+//       href="https://youtube.com/@excalidraw"
+//       target="_blank"
+//       rel="noopener noreferrer"
+//     >
+//       <div className="HelpDialog__link-icon">{youtubeIcon}</div>
+//       YouTube
+//     </a>
+//   </div>
+// );
 
 const Section = (props: { title: string; children: React.ReactNode }) => (
   <>
@@ -122,6 +163,7 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
         className={"HelpDialog"}
         titleButton={showAllButton}
       >
+        {/* <Header /> - Myoc - no header! */}
         {isShowAll ? (
           <Section title={t("helpDialog.shortcuts")}>
             <ShortcutIsland
@@ -205,6 +247,11 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               <Shortcut
                 label={t("toolBar.link")}
                 shortcuts={[getShortcutKey("CtrlOrCmd+K")]}
+              />
+              <Shortcut
+                label={t("toolBar.convertElementType")}
+                shortcuts={["Tab", "Shift+Tab"]}
+                isOr={true}
               />
             </ShortcutIsland>
             <ShortcutIsland
