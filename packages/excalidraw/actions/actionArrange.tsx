@@ -1,5 +1,7 @@
 import { arrayToMap, getShortcutKey, KEYS, matchKey } from "@excalidraw/common";
 
+import { CaptureUpdateAction } from "@excalidraw/element";
+
 import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element/frame";
 
 import { arrangeElements } from "@excalidraw/element/arrange";
@@ -26,6 +28,7 @@ const arrangeSelectedElements = (
   const selectedElements = app.scene.getSelectedElements(appState);
   const elementsMap = arrayToMap(elements);
   const updatedElements = arrangeElements(
+    app.scene,
     selectedElements,
     elementsMap,
     appState.arrangeConfiguration.algorithm,
