@@ -1,8 +1,9 @@
 import { KEYS } from "@excalidraw/common";
 
+import { CaptureUpdateAction } from "@excalidraw/excalidraw";
+
 import { arrowsToEyeIcon } from "../components/icons";
 import { getSelectedElements } from "../scene";
-import { CaptureUpdateAction } from "../store";
 import { ToolButton } from "../components/ToolButton";
 
 import { t } from "../i18n";
