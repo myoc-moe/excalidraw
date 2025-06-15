@@ -243,7 +243,6 @@ body.excalidraw-cursor-resize * {
     top: 0;
     bottom: 0;
     left: 0;
-    right: 0;
     --bar-padding: calc(4 * var(--space-factor));
     z-index: 4;
     display: flex;
@@ -280,7 +279,7 @@ body.excalidraw-cursor-resize * {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px;
+    padding: 2px;
 
     .dropdown-menu--mobile {
       bottom: 55px;
