@@ -198,7 +198,6 @@ const getRelevantAppStateProps = (
   offsetLeft: appState.offsetLeft,
   offsetTop: appState.offsetTop,
   theme: appState.theme,
-  pendingImageElementId: appState.pendingImageElementId,
   selectionElement: appState.selectionElement,
   selectedGroupIds: appState.selectedGroupIds,
   selectedLinearElement: appState.selectedLinearElement,
@@ -215,6 +214,7 @@ const getRelevantAppStateProps = (
   isCropping: appState.isCropping,
   croppingElementId: appState.croppingElementId,
   searchMatches: appState.searchMatches,
+  activeLockedId: appState.activeLockedId,
 });
 
 const areEqual = (

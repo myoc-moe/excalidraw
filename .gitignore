@@ -27,4 +27,5 @@ coverage
 dev-dist
 html
 meta*.json
+.claude
 packages/excalidraw/dist/

@@ -4,7 +4,6 @@ import {
   LINE_CONFIRM_THRESHOLD,
   ROUNDNESS,
   invariant,
-  elementCenterPoint,
   KEYS,
 } from "@excalidraw/common";
 import {
@@ -46,15 +45,21 @@ import type { NormalizedZoomValue, Zoom } from "@excalidraw/excalidraw/types";
 import { shouldTestInside } from "./collision";
 import { LinearElementEditor } from "./linearElementEditor";
 import { getBoundTextElement } from "./textElement";
-import { ShapeCache } from "./ShapeCache";
 
-import { getElementAbsoluteCoords, type Bounds } from "./bounds";
+import {
+  elementCenterPoint,
+  getElementAbsoluteCoords,
+  type Bounds,
+} from "./bounds";
+
+import { ShapeCache } from "./shape";
 
 import type {
   ExcalidrawElement,
   ElementsMap,
   NonDeleted,
   ExcalidrawLinearElement,
+  NonDeletedSceneElementsMap,
 } from "./types";
 
 export type ToolCategory = "manipulation" | "elements";
@@ -184,18 +189,18 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
 
       return shouldTestInside(element)
         ? getClosedCurveShape<Point>(
-            element,
-            roughShape,
-            pointFrom<Point>(element.x, element.y),
-            element.angle,
-            pointFrom(cx, cy),
-          )
+          element,
+          roughShape,
+          pointFrom<Point>(element.x, element.y),
+          element.angle,
+          pointFrom(cx, cy),
+        )
         : getCurveShape<Point>(
-            roughShape,
-            pointFrom<Point>(element.x, element.y),
-            element.angle,
-            pointFrom(cx, cy),
-          );
+          roughShape,
+          pointFrom<Point>(element.x, element.y),
+          element.angle,
+          pointFrom(cx, cy),
+        );
     }
 
     case "ellipse":
@@ -391,8 +396,8 @@ export const mapIntervalToBezierT = <P extends GlobalPoint | LocalPoint>(
     1 -
     (index +
       (targetLength - arcLengths[index]) /
-        (arcLengths[index + 1] - arcLengths[index])) /
-      pointsCount
+      (arcLengths[index + 1] - arcLengths[index])) /
+    pointsCount
   );
 };
 
@@ -401,6 +406,7 @@ export const mapIntervalToBezierT = <P extends GlobalPoint | LocalPoint>(
  */
 export const aabbForElement = (
   element: Readonly<ExcalidrawElement>,
+  elementsMap: NonDeletedSceneElementsMap,
   offset?: [number, number, number, number],
 ) => {
   const bbox = {
@@ -412,7 +418,7 @@ export const aabbForElement = (
     midY: element.y + element.height / 2,
   };
 
-  const center = elementCenterPoint(element);
+  const center = elementCenterPoint(element, elementsMap);
   const [topLeftX, topLeftY] = pointRotateRads(
     pointFrom(bbox.minX, bbox.minY),
     center,

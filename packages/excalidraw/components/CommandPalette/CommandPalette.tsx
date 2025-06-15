@@ -290,6 +290,7 @@ function CommandPaletteInner({
         actionManager.actions.decreaseFontSize,
         actionManager.actions.toggleLinearEditor,
         actionManager.actions.cropEditor,
+        actionManager.actions.togglePolygon,
         actionLink,
         actionCopyElementLink,
         actionLinkToElement,
@@ -487,7 +488,6 @@ function CommandPaletteInner({
               if (value === "image") {
                 app.setActiveTool({
                   type: value,
-                  insertOnCanvasDirectly: event.type === EVENT.KEYDOWN,
                 });
               } else {
                 app.setActiveTool({ type: value });

@@ -25,7 +25,6 @@ import type {
   ChartType,
   FontFamilyValues,
   FileId,
-  ExcalidrawImageElement,
   Theme,
   StrokeRoundness,
   ExcalidrawEmbeddableElement,
@@ -193,7 +192,6 @@ type _CommonCanvasAppState = {
   offsetLeft: AppState["offsetLeft"];
   offsetTop: AppState["offsetTop"];
   theme: AppState["theme"];
-  pendingImageElementId: AppState["pendingImageElementId"];
 };
 
 export type StaticCanvasAppState = Readonly<
@@ -237,6 +235,7 @@ export type InteractiveCanvasAppState = Readonly<
     croppingElementId: AppState["croppingElementId"];
     // Search matches
     searchMatches: AppState["searchMatches"];
+    activeLockedId: AppState["activeLockedId"];
   }
 >;
 
@@ -257,6 +256,8 @@ export type ObservedElementsAppState = {
   // Right now it's coupled to `editingLinearElement`, ideally it should not be really needed as we already have selectedElementIds & editingLinearElementId
   selectedLinearElementId: LinearElementEditor["elementId"] | null;
   croppingElementId: AppState["croppingElementId"];
+  lockedMultiSelections: AppState["lockedMultiSelections"];
+  activeLockedId: AppState["activeLockedId"];
 };
 
 export interface AppState {
@@ -423,8 +424,6 @@ export interface AppState {
         shown: true;
         data: Spreadsheet;
       };
-  /** imageElement waiting to be placed on canvas */
-  pendingImageElementId: ExcalidrawImageElement["id"] | null;
   showHyperlinkPopup: false | "info" | "editor";
   selectedLinearElement: LinearElementEditor | null;
   snapLines: readonly SnapLine[];
@@ -447,6 +446,14 @@ export interface AppState {
     focusedId: ExcalidrawElement["id"] | null;
     matches: readonly SearchMatch[];
   }> | null;
+
+  /** the locked element/group that's active and shows unlock popup */
+  activeLockedId: string | null;
+  // when locking multiple units of elements together, we assign a temporary
+  // groupId to them so we can unlock them together;
+  // as elements are unlocked, we remove the groupId from the elements
+  // and also remove groupId from this map
+  lockedMultiSelections: { [groupId: string]: true };
 }
 
 export type SearchMatch = {
@@ -815,6 +822,9 @@ export interface ExcalidrawImperativeAPI {
   getSceneElementsIncludingDeleted: InstanceType<
     typeof App
   >["getSceneElementsIncludingDeleted"];
+  getSceneElementsMapIncludingDeleted: InstanceType<
+    typeof App
+  >["getSceneElementsMapIncludingDeleted"];
   history: {
     clear: InstanceType<typeof App>["resetHistory"];
   };
