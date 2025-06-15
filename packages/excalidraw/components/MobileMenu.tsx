@@ -148,7 +148,7 @@ export const MobileMenu = ({
             {actionManager.renderAction("viewMode")}
             {actionManager.renderAction("smartZoom")}
           </div>
-          <MainMenuTunnel.Out />
+          {/* <MainMenuTunnel.Out /> */}
         </div>
       );
     }
