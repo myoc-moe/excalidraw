@@ -324,7 +324,7 @@ export const actionChangeStrokeColor = register({
     <>
       <h3 aria-hidden="true">{t("labels.stroke")}</h3>
       <ColorPicker
-        topPicks={appProps.strokeColorTopPicks ?? DEFAULT_ELEMENT_STROKE_PICKS}
+        topPicks={app.props.strokeColorTopPicks ?? DEFAULT_ELEMENT_STROKE_PICKS}
         palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
         type="elementStroke"
         label={t("labels.stroke")}
@@ -372,7 +372,7 @@ export const actionChangeBackgroundColor = register({
       <h3 aria-hidden="true">{t("labels.background")}</h3>
       <ColorPicker
         topPicks={
-          appProps.backgroundColorTopPicks ?? DEFAULT_ELEMENT_BACKGROUND_PICKS
+          app.props.backgroundColorTopPicks ?? DEFAULT_ELEMENT_BACKGROUND_PICKS
         }
         palette={DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE}
         type="elementBackground"

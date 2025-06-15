@@ -6,8 +6,6 @@ import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element/fra
 
 import { arrangeElements } from "@excalidraw/element/arrange";
 
-import { CaptureUpdateAction } from "@excalidraw/excalidraw";
-
 import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import { TableCellsIcon } from "../components/icons";
