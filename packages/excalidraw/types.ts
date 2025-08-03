@@ -811,6 +811,9 @@ export type PointerDownState = Readonly<{
 export type UnsubscribeCallback = () => void;
 
 export interface ExcalidrawImperativeAPI {
+  updateElementsWithoutUpdate: InstanceType<
+    typeof App
+  >["updateElementsWithoutUpdate"];
   updateScene: InstanceType<typeof App>["updateScene"];
   mutateElement: InstanceType<typeof App>["mutateElement"];
   updateLibrary: InstanceType<typeof Library>["updateLibrary"];

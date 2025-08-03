@@ -263,7 +263,10 @@ export class Scene {
     return didChange;
   }
 
-  replaceAllElements(nextElements: ElementsMapOrArray) {
+  replaceAllElements(
+    nextElements: ElementsMapOrArray,
+    dontTriggerUpdate = false,
+  ) {
     // we do trust the insertion order on the map, though maybe we shouldn't and should prefer order defined by fractional indices
     const _nextElements = toArray(nextElements);
     const nextFrameLikes: ExcalidrawFrameLikeElement[] = [];
@@ -285,7 +288,9 @@ export class Scene {
     this.frames = nextFrameLikes;
     this.nonDeletedFramesLikes = getNonDeletedElements(this.frames).elements;
 
-    this.triggerUpdate();
+    if (!dontTriggerUpdate) {
+      this.triggerUpdate();
+    }
   }
 
   triggerUpdate() {

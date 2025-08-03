@@ -3961,6 +3961,17 @@ class App extends React.Component<AppProps, AppState> {
     return { addedFiles };
   };
 
+  /**
+   * Myoc:
+   *
+   * Updates the elements in the scene without triggering an update event so that it doesn't interfere with the undo/redo stack.
+   */
+  public updateElementsWithoutUpdate = (elements: SceneData["elements"]) => {
+    if (elements) {
+      this.scene.replaceAllElements(elements, true);
+    }
+  };
+
   public updateScene = withBatchedUpdates(
     <K extends keyof AppState>(sceneData: {
       elements?: SceneData["elements"];
