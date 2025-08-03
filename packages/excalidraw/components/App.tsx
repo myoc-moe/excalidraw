@@ -701,6 +701,7 @@ class App extends React.Component<AppProps, AppState> {
 
     if (excalidrawAPI) {
       const api: ExcalidrawImperativeAPI = {
+        updateElementsWithoutUpdate: this.updateElementsWithoutUpdate,
         updateScene: this.updateScene,
         mutateElement: this.mutateElement,
         updateLibrary: this.library.updateLibrary,
