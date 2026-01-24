@@ -54,6 +54,8 @@ import { canChangeBackgroundColor, canChangeStrokeColor } from "../Actions";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useStable } from "../../hooks/useStable";
 
+import { Ellipsify } from "../Ellipsify";
+
 import * as defaultItems from "./defaultCommandPaletteItems";
 
 import "./CommandPalette.scss";
@@ -949,7 +951,7 @@ const CommandItem = ({
             }
           />
         )}
-        {command.label}
+        <Ellipsify>{command.label}</Ellipsify>
       </div>
       {showShortcut && command.shortcut && (
         <CommandShortcutHint shortcut={command.shortcut} />

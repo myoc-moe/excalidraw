@@ -20,7 +20,7 @@ const prerelease = async (nextVersion) => {
     updatePackageVersion(nextVersion);
     await exec(`git add -u`);
     await exec(
-      `git commit -m "docs: release @excalidraw/excalidraw@${nextVersion}  🎉"`,
+      `git commit -m "docs: release @excalidraw/excalidraw@${nextVersion} 🎉"`,
     );
 
     console.info("Done!");

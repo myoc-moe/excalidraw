@@ -14,7 +14,12 @@ import {
   isLineElement,
 } from "@excalidraw/element";
 
-import { KEYS, arrayToMap, updateActiveTool } from "@excalidraw/common";
+import {
+  KEYS,
+  arrayToMap,
+  tupleToCoors,
+  updateActiveTool,
+} from "@excalidraw/common";
 import { isPathALoop } from "@excalidraw/element";
 
 import { isInvisiblySmallElement } from "@excalidraw/element";
@@ -43,12 +48,16 @@ export const actionFinalize = register({
   trackEvent: false,
   perform: (elements, appState, data, app) => {
     const { interactiveCanvas, focusContainer, scene } = app;
-
+    const { event, sceneCoords } =
+      (data as {
+        event?: PointerEvent;
+        sceneCoords?: { x: number; y: number };
+      }) ?? {};
     const elementsMap = scene.getNonDeletedElementsMap();
 
-    if (data?.event && appState.selectedLinearElement) {
+    if (event && appState.selectedLinearElement) {
       const linearElementEditor = LinearElementEditor.handlePointerUp(
-        data.event,
+        event,
         appState.selectedLinearElement,
         appState,
         app.scene,
@@ -85,9 +94,9 @@ export const actionFinalize = register({
       }
     }
 
-    if (appState.editingLinearElement) {
+    if (appState.selectedLinearElement?.isEditing) {
       const { elementId, startBindingElement, endBindingElement } =
-        appState.editingLinearElement;
+        appState.selectedLinearElement;
       const element = LinearElementEditor.getElement(elementId, elementsMap);
 
       if (element) {
@@ -113,7 +122,11 @@ export const actionFinalize = register({
           appState: {
             ...appState,
             cursorButton: "up",
-            editingLinearElement: null,
+            selectedLinearElement: new LinearElementEditor(
+              element,
+              arrayToMap(elementsMap),
+              false, // exit editing mode
+            ),
           },
           captureUpdate: CaptureUpdateAction.IMMEDIATELY,
         };
@@ -145,11 +158,7 @@ export const actionFinalize = register({
 
     if (element) {
       // pen and mouse have hover
-      if (
-        appState.multiElement &&
-        element.type !== "freedraw" &&
-        appState.lastPointerDownWith !== "touch"
-      ) {
+      if (appState.multiElement && element.type !== "freedraw") {
         const { points, lastCommittedPoint } = element;
         if (
           !lastCommittedPoint ||
@@ -204,12 +213,17 @@ export const actionFinalize = register({
           element.points.length > 1 &&
           isBindingEnabled(appState)
         ) {
-          const [x, y] = LinearElementEditor.getPointAtIndexGlobalCoordinates(
-            element,
-            -1,
-            arrayToMap(elements),
-          );
-          maybeBindLinearElement(element, appState, { x, y }, scene);
+          const coords =
+            sceneCoords ??
+            tupleToCoors(
+              LinearElementEditor.getPointAtIndexGlobalCoordinates(
+                element,
+                -1,
+                arrayToMap(elements),
+              ),
+            );
+
+          maybeBindLinearElement(element, appState, coords, scene);
         }
       }
     }
@@ -275,7 +289,7 @@ export const actionFinalize = register({
   },
   keyTest: (event, appState) =>
     (event.key === KEYS.ESCAPE &&
-      (appState.editingLinearElement !== null ||
+      (appState.selectedLinearElement?.isEditing ||
         (!appState.newElement && appState.multiElement === null))) ||
     ((event.key === KEYS.ESCAPE || event.key === KEYS.ENTER) &&
       appState.multiElement !== null),

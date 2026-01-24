@@ -2286,6 +2286,20 @@ export const TableCellsIcon = createIcon(
   tablerIconProps,
 );
 
+export const NormaliseSizeIcon = createIcon(
+  <g strokeWidth="1.5">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <rect x="7" y="6" width="10" height="8" rx="1" strokeDasharray="2 2" />
+    <line x1="3" y1="6" x2="3" y2="14" />
+    <polyline points="2 8 3 6 4 8" />
+    <polyline points="2 12 3 14 4 12" />
+    <line x1="7" y1="18" x2="17" y2="18" />
+    <polyline points="9 17 7 18 9 19" />
+    <polyline points="15 17 17 18 15 19" />
+  </g>,
+  tablerIconProps,
+);
+
 export const arrowsToEyeIcon = createIcon(
   <svg
     stroke="currentColor"
