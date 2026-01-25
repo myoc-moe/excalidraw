@@ -5,11 +5,7 @@ const { execSync } = require("child_process");
 
 const updateChangelog = require("./updateChangelog");
 
-<<<<<<< HEAD
 // skipping utils for now, as it has independent release process
-=======
-// skipping utils for now, as it has independent reonorelease process
->>>>>>> master
 const PACKAGES = ["common", "math", "element", "excalidraw"];
 const PACKAGES_DIR = path.resolve(__dirname, "../packages");
 
@@ -22,12 +18,8 @@ const PACKAGES_DIR = path.resolve(__dirname, "../packages");
  * - yarn release --tag=test                      -> same as above
  * - yarn release --tag=next                      -> publishes `@myoc-moe` packages with "next" tag and version "-[hash]" suffix
  * - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
-<<<<<<< HEAD
- * - yarn release --tag=latest --version=0.19.0   -> publishes `@myoc-moe` packages with "latest" tag and version "0.19.0" & prepares changelog for the release
-=======
  * - yarn release --tag=latest --version=0.19.0   -> publishesy
  *  `@excalidraw` packages with "latest" tag and version "0.19.0" & prepares changelog for the release
->>>>>>> master
  *
  * @returns [tag, version, nonInteractive]
  */
