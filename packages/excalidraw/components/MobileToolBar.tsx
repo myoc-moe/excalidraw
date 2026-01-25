@@ -33,9 +33,8 @@ import {
 import "./ToolIcon.scss";
 import "./MobileToolBar.scss";
 
-import { SHAPES } from "./shapes";
-
 import type { AppClassProperties, ToolType, UIAppState } from "../types";
+import { SHAPES } from "@excalidraw/element/shapes";
 
 const SELECTION_TOOLS = [
   {

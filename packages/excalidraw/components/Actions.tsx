@@ -50,7 +50,7 @@ import { useTextEditorFocus } from "../hooks/useTextEditorFocus";
 
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 
-import { getToolbarTools, SHAPES } from "./shapes";
+import { getToolbarTools, SHAPES } from "@excalidraw/element/shapes";
 
 import "./Actions.scss";
 

@@ -48,7 +48,7 @@ import {
   historyCommandIcon,
 } from "../icons";
 
-import { SHAPES } from "../shapes";
+import { SHAPES } from "@excalidraw/element/shapes";
 import { canChangeBackgroundColor, canChangeStrokeColor } from "../Actions";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useStable } from "../../hooks/useStable";

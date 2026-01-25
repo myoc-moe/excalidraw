@@ -42,7 +42,11 @@ import {
 
 import type { Bounds } from "@excalidraw/common";
 
-import type { NormalizedZoomValue, Zoom } from "@excalidraw/excalidraw/types";
+import type {
+  AppClassProperties,
+  NormalizedZoomValue,
+  Zoom,
+} from "@excalidraw/excalidraw/types";
 
 import { shouldTestInside } from "./collision";
 import { LinearElementEditor } from "./linearElementEditor";
@@ -145,8 +149,23 @@ export const SHAPES = [
   },
 ] as const;
 
-export const findShapeByKey = (key: string) => {
-  const shape = SHAPES.find((shape, index) => {
+export const getToolbarTools = (app: AppClassProperties) => {
+  return app.state.preferredSelectionTool.type === "lasso"
+    ? ([
+        {
+          value: "lasso",
+          icon: SelectionIcon,
+          key: KEYS.V,
+          fillable: true,
+          myocSimplifiedMode: true,
+        },
+        ...SHAPES.slice(1),
+      ] as const)
+    : SHAPES;
+};
+
+export const findShapeByKey = (key: string, app: AppClassProperties) => {
+  const shape = getToolbarTools(app).find((shape, index) => {
     return (
       // @ts-expect-error numericKey is just undefined for now because myoc wants to reserve this for future use of screen views
       (shape.numericKey != null && key === shape.numericKey?.toString()) ||

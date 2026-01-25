@@ -443,7 +443,7 @@ import {
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
 import { Toast } from "./Toast";
 
-import { findShapeByKey } from "./shapes";
+import { findShapeByKey } from "@excalidraw/element/shapes";
 
 import UnlockPopup from "./UnlockPopup";
 
