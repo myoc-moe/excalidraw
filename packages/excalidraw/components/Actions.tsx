@@ -746,6 +746,10 @@ const CombinedExtraActions = ({
                       {renderAction("alignBottom")}
                       {targetElements.length > 2 &&
                         renderAction("distributeVertically")}
+                      {/* breaks the row ˇˇ */}
+                      <div style={{ flexBasis: "100%", height: 0 }} />
+                      {renderAction("arrangeElements")}
+                      {renderAction("normaliseElements")}
                     </div>
                   </div>
                 </fieldset>
