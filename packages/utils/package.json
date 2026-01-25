@@ -1,5 +1,5 @@
 {
-  "name": "@excalidraw/utils",
+  "name": "@myoc/utils",
   "version": "0.1.2",
   "type": "module",
   "types": "./dist/types/utils/src/index.d.ts",
@@ -65,8 +65,8 @@
     "wawoff2": "2.0.1",
     "which": "4.0.0"
   },
-  "bugs": "https://github.com/excalidraw/excalidraw/issues",
-  "repository": "https://github.com/excalidraw/excalidraw",
+  "bugs": "https://github.com/myoc-moe/excalidraw/issues",
+  "repository": "https://github.com/myoc-moe/excalidraw",
   "scripts": {
     "gen:types": "rimraf types && tsc",
     "build:esm": "rimraf dist && node ../../scripts/buildUtils.js && yarn gen:types"

@@ -1,5 +1,5 @@
 {
-  "name": "@excalidraw/element",
+  "name": "@myoc/element",
   "version": "0.18.0",
   "type": "module",
   "types": "./dist/types/element/src/index.d.ts",
@@ -56,14 +56,14 @@
       "last 1 safari version"
     ]
   },
-  "bugs": "https://github.com/excalidraw/excalidraw/issues",
-  "repository": "https://github.com/excalidraw/excalidraw",
+  "bugs": "https://github.com/myoc-moe/excalidraw/issues",
+  "repository": "https://github.com/myoc-moe/excalidraw",
   "scripts": {
     "gen:types": "rimraf types && tsc",
     "build:esm": "rimraf dist && node ../../scripts/buildBase.js && yarn gen:types"
   },
   "dependencies": {
-    "@excalidraw/common": "0.18.0",
-    "@excalidraw/math": "0.18.0"
+    "@myoc/common": "0.18.0",
+    "@myoc/math": "0.18.0"
   }
 }
