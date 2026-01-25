@@ -1314,18 +1314,6 @@ export const ShapesSwitcher = ({
           >
             {capitalizeString(t("toolBar.lock-short"))}
           </DropdownMenu.Item>
-
-          {!app.state.myocSimplifiedMode && (
-            <DropdownMenu.Item
-              onSelect={() => app.setActiveTool({ type: "laser" })}
-              icon={laserPointerToolIcon}
-              data-testid="toolbar-laser"
-              selected={laserToolSelected}
-              shortcut={KEYS.K.toLocaleUpperCase()}
-            >
-              {t("toolBar.laser")}
-            </DropdownMenu.Item>
-          )}
         </DropdownMenu.Content>
       </DropdownMenu>
     </>
