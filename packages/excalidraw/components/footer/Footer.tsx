@@ -4,7 +4,7 @@ import { t } from "@excalidraw/excalidraw/i18n";
 
 import { actionShortcuts } from "../../actions";
 import { useTunnels } from "../../context/tunnels";
-import { ExitZenModeAction, UndoRedoActions, ZoomActions } from "../Actions";
+import { ExitZenModeButton, UndoRedoActions, ZoomActions } from "../Actions";
 import { HelpButton } from "../HelpButton";
 import { Section } from "../Section";
 import Stack from "../Stack";
@@ -82,7 +82,7 @@ const Footer = ({
           />
         </div>
       </div>
-      <ExitZenModeAction
+      <ExitZenModeButton
         actionManager={actionManager}
         showExitZenModeBtn={showExitZenModeBtn}
       />

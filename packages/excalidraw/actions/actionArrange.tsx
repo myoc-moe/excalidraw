@@ -1,4 +1,5 @@
-import { arrayToMap, getShortcutKey, KEYS, matchKey } from "@excalidraw/common";
+import { arrayToMap, KEYS, matchKey } from "@excalidraw/common";
+import { getShortcutKey } from "@excalidraw/excalidraw/shortcut";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 

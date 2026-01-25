@@ -3,13 +3,14 @@ import clsx from "clsx";
 
 import { isDarwin, isFirefox, isWindows } from "@excalidraw/common";
 
-import { KEYS, getShortcutKey } from "@excalidraw/common";
+import { KEYS } from "@excalidraw/common";
 
 import { SHAPES } from "@excalidraw/element/shapes";
 
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { probablySupportsClipboardBlob } from "../clipboard";
 import { t } from "../i18n";
+import { getShortcutKey } from "../shortcut";
 
 import { Dialog } from "./Dialog";
 
