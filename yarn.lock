@@ -1444,17 +1444,20 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@excalidraw/common@0.18.0-f0063e113":
-  version "0.18.0-f0063e113"
-  resolved "https://registry.yarnpkg.com/@excalidraw/common/-/common-0.18.0-f0063e113.tgz#47ea71127fe07a055af84ef2ab40562a3ce4b4f5"
-  integrity sha512-VS9aBg3vRYn8jrvuaAYVrM2Q3rokDO6gmx3bmYZ22fCr6rnnumhJpQvpQEv3fh7YrvnIrihhLgIt8eiCIfzXag==
-
-"@excalidraw/element@0.18.0-f0063e113":
-  version "0.18.0-f0063e113"
-  resolved "https://registry.yarnpkg.com/@excalidraw/element/-/element-0.18.0-f0063e113.tgz#db03a0fa8a95818e9fd796010f2ae1f64aaef78f"
-  integrity sha512-xd3/it2NCGa0gEKnNkSCxDj5seAgEOhGxKfpSUkPLvQXV743THdnh+vVU1dT4xg6/YrMdCCk9GgoLPMw0DP2vg==
+"@excalidraw/common@npm:@myoc/common@0.19.5-ffbfd9327", "@excalidraw/common@npm:@myoc/common@latest":
+  version "0.19.5-ffbfd9327"
+  resolved "https://registry.yarnpkg.com/@myoc/common/-/common-0.19.5-ffbfd9327.tgz#939b3086adda0b026caaaacd4e4cc55bcf1058fc"
+  integrity sha512-YbM2fdlS8pQGRjQu0Ss5+qVXvnL627KDh9DLkQRYa8kLcIUl0jBhmA0Z8uvQgh9SEWqUiA3fikjwu7SOHYik4g==
   dependencies:
-    "@excalidraw/common" "0.18.0-f0063e113"
+    tinycolor2 "1.6.0"
+
+"@excalidraw/element@npm:@myoc/element@0.19.5-ffbfd9327":
+  version "0.19.5-ffbfd9327"
+  resolved "https://registry.yarnpkg.com/@myoc/element/-/element-0.19.5-ffbfd9327.tgz#de8b51f82f5d5de80c03b51a29641bca334f3994"
+  integrity sha512-Wp1dpyGVvYTVvE8Ei8Ys19qBiYkzzo0cXo0/bDwkDwxgkv/FSyVX60sYgq3x7rW9d2VGsffyl8SKGBYu91cJog==
+  dependencies:
+    "@myoc/common" "0.18.0"
+    "@myoc/math" "0.18.0"
 
 "@excalidraw/eslint-config@1.0.3":
   version "1.0.3"
@@ -1508,12 +1511,12 @@
   resolved "https://registry.yarnpkg.com/@excalidraw/markdown-to-text/-/markdown-to-text-0.1.2.tgz#1703705e7da608cf478f17bfe96fb295f55a23eb"
   integrity sha512-1nDXBNAojfi3oSFwJswKREkFm5wrSjqay81QlyRv2pkITG/XYB5v+oChENVBQLcxQwX4IUATWvXM5BcaNhPiIg==
 
-"@excalidraw/math@0.18.0-f0063e113":
-  version "0.18.0-f0063e113"
-  resolved "https://registry.yarnpkg.com/@excalidraw/math/-/math-0.18.0-f0063e113.tgz#e5cfa0f9aeac62499a6c96ffa10b2ec2746b99b0"
-  integrity sha512-WLFqyqo2AcrRNmCpP0QG7kf98zAakAj2TadjlEVwUDQ4YwH8o90TC/phpx7xhTL5cJwMtNyAubNswR4aKCyPrQ==
+"@excalidraw/math@npm:@myoc/math@0.19.5-ffbfd9327", "@excalidraw/math@npm:@myoc/math@latest":
+  version "0.19.5-ffbfd9327"
+  resolved "https://registry.yarnpkg.com/@myoc/math/-/math-0.19.5-ffbfd9327.tgz#b39f793731380c78bcec78776926d5c7121c11bd"
+  integrity sha512-yJaZQBMnAPkizslqeLd71Scm1HJzO9BayMZxbMqCcf30BZv9wnvidOcqeOMiRuryGBrZ0VNNfwBeEzXn7ZDOMg==
   dependencies:
-    "@excalidraw/common" "0.18.0-f0063e113"
+    "@myoc/common" "0.18.0"
 
 "@excalidraw/mermaid-to-excalidraw@1.1.2":
   version "1.1.2"

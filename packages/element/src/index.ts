@@ -87,6 +87,7 @@ export * from "./resizeTest";
 export * from "./Scene";
 export * from "./selection";
 export * from "./shape";
+export * from "./shapes";
 export * from "./showSelectedShapeActions";
 export * from "./sizeHelpers";
 export * from "./sortElements";

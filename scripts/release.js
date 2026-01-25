@@ -14,9 +14,9 @@ const PACKAGES_DIR = path.resolve(__dirname, "../packages");
  *
  * Usage examples:
  * - yarn release --help                          -> prints this help message
- * - yarn release                                 -> publishes `@myoc-moe` packages with "test" tag and "-[hash]" version suffix
+ * - yarn release                                 -> publishes `@myoc` packages with "test" tag and "-[hash]" version suffix
  * - yarn release --tag=test                      -> same as above
- * - yarn release --tag=next                      -> publishes `@myoc-moe` packages with "next" tag and version "-[hash]" suffix
+ * - yarn release --tag=next                      -> publishes `@myoc` packages with "next" tag and version "-[hash]" suffix
  * - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
  * - yarn release --tag=latest --version=0.19.0   -> publishesy
  *  `@excalidraw` packages with "latest" tag and version "0.19.0" & prepares changelog for the release
@@ -36,11 +36,11 @@ const getArguments = () => {
   --non-interactive                              -> (optional) disables interactive prompts`);
 
       console.info(`\nUsage examples:
-  - yarn release                                 -> publishes \`@myoc-moe\` packages with "test" tag and "-[hash]" version suffix
+  - yarn release                                 -> publishes \`@myoc\` packages with "test" tag and "-[hash]" version suffix
   - yarn release --tag=test                      -> same as above
-  - yarn release --tag=next                      -> publishes \`@myoc-moe\` packages with "next" tag and version "-[hash]" suffix
+  - yarn release --tag=next                      -> publishes \`@myoc\` packages with "next" tag and version "-[hash]" suffix
   - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
-  - yarn release --tag=latest --version=0.19.0   -> publishes \`@myoc-moe\` packages with "latest" tag and version "0.19.0" & prepares changelog for the release`);
+  - yarn release --tag=latest --version=0.19.0   -> publishes \`@myoc\` packages with "latest" tag and version "0.19.0" & prepares changelog for the release`);
 
       process.exit(0);
     }
@@ -111,11 +111,14 @@ const updatePackageJsons = (nextVersion) => {
 
     if (pkg.dependencies) {
       for (const dependencyName of PACKAGES) {
-        if (!pkg.dependencies[`@myoc-moe/${dependencyName}`]) {
-          continue;
-        }
+        const myocName = `@myoc/${dependencyName}`;
+        const excalidrawName = `@excalidraw/${dependencyName}`;
+        const aliasVersion = `npm:@myoc/${dependencyName}@${nextVersion}`;
 
-        pkg.dependencies[`@myoc-moe/${dependencyName}`] = nextVersion;
+        if (pkg.dependencies[myocName] || pkg.dependencies[excalidrawName]) {
+          delete pkg.dependencies[myocName];
+          pkg.dependencies[excalidrawName] = aliasVersion;
+        }
       }
     }
 
@@ -152,7 +155,7 @@ const askToCommit = (tag, nextVersion) => {
         if (answer.toLowerCase() === "y") {
           execSync(`git add -u`);
           execSync(
-            `git commit -m "chore: release @myoc-moe/excalidraw@${nextVersion} 🎉"`,
+            `git commit -m "chore: release @myoc/excalidraw@${nextVersion} 🎉"`,
           );
         } else {
           console.warn(
@@ -174,7 +177,7 @@ const buildPackages = () => {
   execSync(`yarn rm:build`, { stdio: "inherit" });
 
   for (const packageName of PACKAGES) {
-    console.info(`Building "@myoc-moe/${packageName}"...`);
+    console.info(`Building "@myoc/${packageName}"...`);
     execSync(`yarn run build:esm`, {
       cwd: path.resolve(PACKAGES_DIR, packageName),
       stdio: "inherit",
@@ -214,7 +217,7 @@ const publishPackages = (tag, version) => {
     });
 
     console.info(
-      `Published "@myoc-moe/${packageName}@${tag}" with version "${version}"! 🎉`,
+      `Published "@myoc/${packageName}@${tag}" with version "${version}"! 🎉`,
     );
   }
 };
