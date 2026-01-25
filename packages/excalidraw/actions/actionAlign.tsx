@@ -4,13 +4,12 @@ import { isFrameLikeElement } from "@excalidraw/element";
 
 import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element";
 
-import { KEYS, arrayToMap, getShortcutKey } from "@excalidraw/common";
+import { KEYS, arrayToMap } from "@excalidraw/common";
 
 import { alignElements } from "@excalidraw/element";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
-import { getMaximumGroups } from "@excalidraw/element/groups";
 import { getSelectedElementsByGroup } from "@excalidraw/element";
 
 import type { ExcalidrawElement } from "@excalidraw/element/types";
@@ -31,6 +30,8 @@ import { t } from "../i18n";
 
 import { isSomeElementSelected } from "../scene";
 
+import { getShortcutKey } from "../shortcut";
+
 import { register } from "./register";
 
 import type { AppClassProperties, AppState, UIAppState } from "../types";
@@ -40,12 +41,7 @@ export const alignActionsPredicate = (
   app: AppClassProperties,
 ) => {
   const selectedElements = app.scene.getSelectedElements(appState);
-  const groups = getMaximumGroups(
-    selectedElements,
-    app.scene.getNonDeletedElementsMap(),
-  );
   return (
-    groups.length > 1 &&
     getSelectedElementsByGroup(
       selectedElements,
       app.scene.getNonDeletedElementsMap(),

@@ -7,7 +7,6 @@ import {
   MIN_ZOOM,
   THEME,
   ZOOM_STEP,
-  getShortcutKey,
   updateActiveTool,
   CODES,
   KEYS,
@@ -39,12 +38,13 @@ import { t } from "../i18n";
 import { getNormalizedZoom } from "../scene";
 import { centerScrollOn } from "../scene/scroll";
 import { getStateForZoom } from "../scene/zoom";
+import { getShortcutKey } from "../shortcut";
 
 import { register } from "./register";
 
 import type { AppState, Offsets } from "../types";
 
-export const actionChangeViewBackgroundColor = register({
+export const actionChangeViewBackgroundColor = register<Partial<AppState>>({
   name: "changeViewBackgroundColor",
   label: "labels.canvasBackground",
   trackEvent: false,
@@ -57,12 +57,12 @@ export const actionChangeViewBackgroundColor = register({
   perform: (_, appState, value) => {
     return {
       appState: { ...appState, ...value },
-      captureUpdate: !!value.viewBackgroundColor
+      captureUpdate: !!value?.viewBackgroundColor
         ? CaptureUpdateAction.IMMEDIATELY
         : CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ elements, appState, updateData, appProps }) => {
+  PanelComponent: ({ elements, appState, updateData, appProps, data }) => {
     // FIXME move me to src/components/mainMenu/DefaultItems.tsx
     return (
       <ColorPicker
@@ -415,7 +415,7 @@ export const actionZoomToFit = register({
     !event[KEYS.CTRL_OR_CMD],
 });
 
-export const actionToggleTheme = register({
+export const actionToggleTheme = register<AppState["theme"]>({
   name: "toggleTheme",
   label: (_, appState) => {
     return appState.theme === THEME.DARK
@@ -423,7 +423,8 @@ export const actionToggleTheme = register({
       : "buttons.darkMode";
   },
   keywords: ["toggle", "dark", "light", "mode", "theme"],
-  icon: (appState) => (appState.theme === THEME.LIGHT ? MoonIcon : SunIcon),
+  icon: (appState, elements) =>
+    appState.theme === THEME.LIGHT ? MoonIcon : SunIcon,
   viewMode: true,
   trackEvent: { category: "canvas" },
   perform: (_, appState, value) => {
@@ -446,13 +447,13 @@ export const actionToggleEraserTool = register({
   name: "toggleEraserTool",
   label: "toolBar.eraser",
   trackEvent: { category: "toolbar" },
-  perform: (elements, appState) => {
+  perform: (elements, appState, _, app) => {
     let activeTool: AppState["activeTool"];
 
     if (isEraserActive(appState)) {
       activeTool = updateActiveTool(appState, {
         ...(appState.activeTool.lastActiveTool || {
-          type: "selection",
+          type: app.state.preferredSelectionTool.type,
         }),
         lastActiveToolBeforeEraser: null,
       });
@@ -482,6 +483,9 @@ export const actionToggleLassoTool = register({
   label: "toolBar.lasso",
   icon: LassoIcon,
   trackEvent: { category: "toolbar" },
+  predicate: (elements, appState, props, app) => {
+    return app.state.preferredSelectionTool.type !== "lasso";
+  },
   perform: (elements, appState, _, app) => {
     let activeTool: AppState["activeTool"];
 

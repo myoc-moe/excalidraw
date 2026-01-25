@@ -40,19 +40,17 @@ import {
   TextIcon,
 } from "@excalidraw/excalidraw/components/icons";
 
+import type { Bounds } from "@excalidraw/common";
+
 import type { NormalizedZoomValue, Zoom } from "@excalidraw/excalidraw/types";
 
 import { shouldTestInside } from "./collision";
 import { LinearElementEditor } from "./linearElementEditor";
 import { getBoundTextElement } from "./textElement";
 
-import {
-  elementCenterPoint,
-  getElementAbsoluteCoords,
-  type Bounds,
-} from "./bounds";
-
 import { ShapeCache } from "./shape";
+
+import { getElementAbsoluteCoords, elementCenterPoint } from "./bounds";
 
 import type {
   ExcalidrawElement,
@@ -183,24 +181,24 @@ export const getElementShape = <Point extends GlobalPoint | LocalPoint>(
     case "arrow":
     case "line": {
       const roughShape =
-        ShapeCache.get(element)?.[0] ??
+        ShapeCache.get(element, null)?.[0] ??
         ShapeCache.generateElementShape(element, null)[0];
       const [, , , , cx, cy] = getElementAbsoluteCoords(element, elementsMap);
 
       return shouldTestInside(element)
         ? getClosedCurveShape<Point>(
-          element,
-          roughShape,
-          pointFrom<Point>(element.x, element.y),
-          element.angle,
-          pointFrom(cx, cy),
-        )
+            element,
+            roughShape,
+            pointFrom<Point>(element.x, element.y),
+            element.angle,
+            pointFrom(cx, cy),
+          )
         : getCurveShape<Point>(
-          roughShape,
-          pointFrom<Point>(element.x, element.y),
-          element.angle,
-          pointFrom(cx, cy),
-        );
+            roughShape,
+            pointFrom<Point>(element.x, element.y),
+            element.angle,
+            pointFrom(cx, cy),
+          );
     }
 
     case "ellipse":
@@ -396,8 +394,8 @@ export const mapIntervalToBezierT = <P extends GlobalPoint | LocalPoint>(
     1 -
     (index +
       (targetLength - arcLengths[index]) /
-      (arcLengths[index + 1] - arcLengths[index])) /
-    pointsCount
+        (arcLengths[index + 1] - arcLengths[index])) /
+      pointsCount
   );
 };
 

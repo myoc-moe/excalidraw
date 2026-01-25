@@ -18,6 +18,7 @@ export {
   actionChangeFontFamily,
   actionChangeTextAlign,
   actionChangeVerticalAlign,
+  actionChangeArrowProperties,
 } from "./actionProperties";
 
 export {
@@ -42,11 +43,7 @@ export {
 } from "./actionExport";
 
 export { actionCopyStyles, actionPasteStyles } from "./actionStyles";
-export {
-  actionToggleCanvasMenu,
-  actionToggleEditMenu,
-  actionShortcuts,
-} from "./actionMenu";
+export { actionShortcuts } from "./actionMenu";
 
 export { actionGroup, actionUngroup } from "./actionGroup";
 
@@ -69,6 +66,7 @@ export {
 } from "./actionDistribute";
 
 export { actionArrangeElements } from "./actionArrange";
+export { actionNormaliseElements } from "./actionNormalise";
 
 export { actionFlipHorizontal, actionFlipVertical } from "./actionFlip";
 

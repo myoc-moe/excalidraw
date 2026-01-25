@@ -32,6 +32,10 @@ export const getDefaultAppState = (): Omit<
       gap: 10,
       algorithm: "bin-packing",
     },
+    normaliseConfiguration: {
+      mode: "average",
+      metric: "size",
+    },
     theme: THEME.LIGHT,
     collaborators: new Map(),
     currentChartType: "bar",
@@ -61,6 +65,10 @@ export const getDefaultAppState = (): Omit<
       locked: DEFAULT_ELEMENT_PROPS.locked,
       fromSelection: false,
       lastActiveTool: null,
+    },
+    preferredSelectionTool: {
+      type: "selection",
+      initialized: false,
     },
     penMode: false,
     penDetected: false,
@@ -103,7 +111,7 @@ export const getDefaultAppState = (): Omit<
       panels: STATS_PANELS.generalStats | STATS_PANELS.elementProperties,
     },
     startBoundElement: null,
-    suggestedBindings: [],
+    suggestedBinding: null,
     frameRendering: { enabled: true, clip: true, name: true, outline: true },
     frameToHighlight: null,
     editingFrame: null,
@@ -130,6 +138,7 @@ export const getDefaultAppState = (): Omit<
     searchMatches: null,
     lockedMultiSelections: {},
     activeLockedId: null,
+    bindMode: "orbit",
   };
 };
 
@@ -155,6 +164,7 @@ const APP_STATE_STORAGE_CONF = (<
   hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
   arrangeConfiguration: { browser: true, export: false, server: false },
+  normaliseConfiguration: { browser: true, export: false, server: false },
   theme: { browser: true, export: false, server: false },
   collaborators: { browser: false, export: false, server: false },
   currentChartType: { browser: true, export: false, server: false },
@@ -187,6 +197,7 @@ const APP_STATE_STORAGE_CONF = (<
   editingTextElement: { browser: false, export: false, server: false },
   editingGroupId: { browser: true, export: false, server: false },
   activeTool: { browser: true, export: false, server: false },
+  preferredSelectionTool: { browser: true, export: false, server: false },
   penMode: { browser: true, export: false, server: false },
   penDetected: { browser: true, export: false, server: false },
   errorMessage: { browser: false, export: false, server: false },
@@ -236,7 +247,7 @@ const APP_STATE_STORAGE_CONF = (<
   shouldCacheIgnoreZoom: { browser: true, export: false, server: false },
   stats: { browser: true, export: false, server: false },
   startBoundElement: { browser: false, export: false, server: false },
-  suggestedBindings: { browser: false, export: false, server: false },
+  suggestedBinding: { browser: false, export: false, server: false },
   frameRendering: { browser: false, export: false, server: false },
   frameToHighlight: { browser: false, export: false, server: false },
   editingFrame: { browser: false, export: false, server: false },
@@ -259,6 +270,7 @@ const APP_STATE_STORAGE_CONF = (<
   searchMatches: { browser: false, export: false, server: false },
   lockedMultiSelections: { browser: true, export: true, server: true },
   activeLockedId: { browser: false, export: false, server: false },
+  bindMode: { browser: true, export: false, server: false },
 });
 
 const _clearAppStateForStorage = <
