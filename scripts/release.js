@@ -101,13 +101,74 @@ const getPackageJsonPath = (packageName) => {
   return path.resolve(PACKAGES_DIR, packageName, "package.json");
 };
 
+const readPackageJson = (packageName) =>
+  JSON.parse(fs.readFileSync(getPackageJsonPath(packageName), "utf-8"));
+
 const updatePackageJsons = (nextVersion) => {
   const packageJsons = new Map();
 
   for (const packageName of PACKAGES) {
-    const pkg = require(getPackageJsonPath(packageName));
+    const pkg = readPackageJson(packageName);
 
     pkg.version = nextVersion;
+
+    if (pkg.dependencies) {
+      for (const dependencyName of PACKAGES) {
+        const myocName = `@myoc/${dependencyName}`;
+        const excalidrawName = `@excalidraw/${dependencyName}`;
+
+        if (pkg.dependencies[myocName]) {
+          pkg.dependencies[myocName] = nextVersion;
+        }
+
+        if (pkg.dependencies[excalidrawName]) {
+          pkg.dependencies[excalidrawName] = nextVersion;
+        }
+      }
+    }
+
+    packageJsons.set(packageName, `${JSON.stringify(pkg, null, 2)}\n`);
+  }
+
+  // modify once, to avoid inconsistent state
+  for (const packageName of PACKAGES) {
+    const content = packageJsons.get(packageName);
+    fs.writeFileSync(getPackageJsonPath(packageName), content, "utf-8");
+  }
+};
+
+const snapshotDependencies = () => {
+  const snapshot = new Map();
+
+  for (const packageName of PACKAGES) {
+    const pkg = readPackageJson(packageName);
+    snapshot.set(packageName, pkg.dependencies ? { ...pkg.dependencies } : null);
+  }
+
+  return snapshot;
+};
+
+const restoreDependencies = (snapshot) => {
+  const packageJsons = new Map();
+
+  for (const packageName of PACKAGES) {
+    const pkg = readPackageJson(packageName);
+    const deps = snapshot.get(packageName);
+    pkg.dependencies = deps ? { ...deps } : undefined;
+    packageJsons.set(packageName, `${JSON.stringify(pkg, null, 2)}\n`);
+  }
+
+  for (const packageName of PACKAGES) {
+    const content = packageJsons.get(packageName);
+    fs.writeFileSync(getPackageJsonPath(packageName), content, "utf-8");
+  }
+};
+
+const applyPublishAliases = (nextVersion) => {
+  const packageJsons = new Map();
+
+  for (const packageName of PACKAGES) {
+    const pkg = readPackageJson(packageName);
 
     if (pkg.dependencies) {
       for (const dependencyName of PACKAGES) {
@@ -125,7 +186,6 @@ const updatePackageJsons = (nextVersion) => {
     packageJsons.set(packageName, `${JSON.stringify(pkg, null, 2)}\n`);
   }
 
-  // modify once, to avoid inconsistent state
   for (const packageName of PACKAGES) {
     const content = packageJsons.get(packageName);
     fs.writeFileSync(getPackageJsonPath(packageName), content, "utf-8");
@@ -226,6 +286,8 @@ const publishPackages = (tag, version) => {
 (async () => {
   const [tag, version, nonInteractive] = getArguments();
 
+  const dependenciesSnapshot = snapshotDependencies();
+
   buildPackages();
 
   if (tag === "latest") {
@@ -233,11 +295,17 @@ const publishPackages = (tag, version) => {
   }
 
   updatePackageJsons(version);
+  applyPublishAliases(version);
 
   if (nonInteractive) {
     publishPackages(tag, version);
   } else {
-    await askToCommit(tag, version);
     await askToPublish(tag, version);
+  }
+
+  restoreDependencies(dependenciesSnapshot);
+
+  if (!nonInteractive) {
+    await askToCommit(tag, version);
   }
 })();
