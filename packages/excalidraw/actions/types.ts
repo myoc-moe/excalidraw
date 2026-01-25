@@ -111,6 +111,7 @@ export type ActionName =
   | "distributeHorizontally"
   | "distributeVertically"
   | "arrangeElements"
+  | "normaliseElements"
   | "flipHorizontal"
   | "flipVertical"
   | "viewMode"

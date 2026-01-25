@@ -257,6 +257,9 @@ export type ObservedElementsAppState = {
   activeLockedId: AppState["activeLockedId"];
 };
 
+export type NormaliseMode = "first" | "average";
+export type NormaliseMetric = "scale" | "height" | "width" | "size";
+
 export interface AppState {
   contextMenu: {
     items: ContextMenuItems;
@@ -272,6 +275,10 @@ export interface AppState {
   arrangeConfiguration: {
     algorithm: ArrangeAlgorithms;
     gap: number;
+  };
+  normaliseConfiguration: {
+    mode: NormaliseMode;
+    metric: NormaliseMetric;
   };
   errorMessage: React.ReactNode;
   activeEmbeddable: {

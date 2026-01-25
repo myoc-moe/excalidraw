@@ -32,6 +32,10 @@ export const getDefaultAppState = (): Omit<
       gap: 10,
       algorithm: "bin-packing",
     },
+    normaliseConfiguration: {
+      mode: "average",
+      metric: "size",
+    },
     theme: THEME.LIGHT,
     collaborators: new Map(),
     currentChartType: "bar",
@@ -155,6 +159,7 @@ const APP_STATE_STORAGE_CONF = (<
   hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
   arrangeConfiguration: { browser: true, export: false, server: false },
+  normaliseConfiguration: { browser: true, export: false, server: false },
   theme: { browser: true, export: false, server: false },
   collaborators: { browser: false, export: false, server: false },
   currentChartType: { browser: true, export: false, server: false },
