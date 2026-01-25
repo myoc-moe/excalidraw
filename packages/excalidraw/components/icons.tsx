@@ -1871,6 +1871,27 @@ export const stackPushIcon = createIcon(
   tablerIconProps,
 );
 
+// tabler-icons: refresh
+export const RetryIcon = createIcon(
+  <g strokeWidth="1.5">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4" />
+    <path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4" />
+  </g>,
+  tablerIconProps,
+);
+
+export const stackPushIcon = createIcon(
+  <g>
+    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+    <path d="M6 10l-2 1l8 4l8 -4l-2 -1" />
+    <path d="M4 15l8 4l8 -4" />
+    <path d="M12 4v7" />
+    <path d="M15 8l-3 3l-3 -3" />
+  </g>,
+  tablerIconProps,
+);
+
 export const ArrowRightIcon = createIcon(
   <g strokeWidth="1.25">
     <path d="M4.16602 10H15.8327" />
