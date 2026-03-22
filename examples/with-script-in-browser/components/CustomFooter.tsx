@@ -1,7 +1,7 @@
 import React from "react";
 
-import type * as TExcalidraw from "@excalidraw/excalidraw";
-import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import type * as TExcalidraw from "@myoc/excalidraw";
+import type { ExcalidrawImperativeAPI } from "@myoc/excalidraw/types";
 
 const COMMENT_SVG = (
   <svg

@@ -61,7 +61,7 @@ export const AppMainMenu: React.FC<{
       {isDevEnv() && (
         <MainMenu.Item
           icon={eyeIcon}
-          onClick={() => {
+          onSelect={() => {
             if (window.visualDebug) {
               delete window.visualDebug;
               saveDebugState({ enabled: false });
@@ -76,6 +76,7 @@ export const AppMainMenu: React.FC<{
         </MainMenu.Item>
       )}
       <MainMenu.Separator />
+      <MainMenu.DefaultItems.Preferences />
       <MainMenu.DefaultItems.ToggleTheme
         allowSystemTheme
         theme={props.theme}

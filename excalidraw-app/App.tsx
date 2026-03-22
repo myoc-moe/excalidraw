@@ -4,6 +4,8 @@ import {
   CaptureUpdateAction,
   reconcileElements,
   useEditorInterface,
+  ExcalidrawAPIProvider,
+  useExcalidrawAPI,
 } from "@excalidraw/excalidraw";
 import { trackEvent } from "@excalidraw/excalidraw/analytics";
 import { getDefaultAppState } from "@excalidraw/excalidraw/appState";
@@ -33,7 +35,6 @@ import {
 import polyfill from "@excalidraw/excalidraw/polyfill";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
-import { useCallbackRefState } from "@excalidraw/excalidraw/hooks/useCallbackRefState";
 import { t } from "@excalidraw/excalidraw/i18n";
 
 import {
@@ -73,6 +74,7 @@ import type {
   BinaryFiles,
   ExcalidrawInitialDataState,
   UIAppState,
+  ExcalidrawProps,
 } from "@excalidraw/excalidraw/types";
 import type { ResolutionType } from "@excalidraw/common/utility-types";
 import type { ResolvablePromise } from "@excalidraw/common/utils";
@@ -113,6 +115,7 @@ import {
 } from "./data";
 
 import { updateStaleImageStatuses } from "./data/FileManager";
+import { FileStatusStore } from "./data/fileStatusStore";
 import {
   importFromLocalStorage,
   importUsernameFromLocalStorage,
@@ -367,6 +370,8 @@ const initializeScene = async (opts: {
 };
 
 const ExcalidrawWrapper = () => {
+  const excalidrawAPI = useExcalidrawAPI();
+
   const [errorMessage, setErrorMessage] = useState("");
   const isCollabDisabled = isRunningInIframe();
 
@@ -396,9 +401,6 @@ const ExcalidrawWrapper = () => {
       trackEvent("load", "version", getVersion());
     }, VERSION_TIMEOUT);
   }, []);
-
-  const [excalidrawAPI, excalidrawRefCallback] =
-    useCallbackRefState<ExcalidrawImperativeAPI>();
 
   const [, setShareDialogState] = useAtom(shareDialogStateAtom);
   const [collabAPI] = useAtom(collabAPIAtom);
@@ -431,18 +433,15 @@ const ExcalidrawWrapper = () => {
     }
   }, [excalidrawAPI]);
 
-  useEffect(() => {
-    if (!excalidrawAPI || (!isCollabDisabled && !collabAPI)) {
-      return;
-    }
-
-    const loadImages = (
-      data: ResolutionType<typeof initializeScene>,
-      isInitialLoad = false,
-    ) => {
-      if (!data.scene) {
+  // ---------------------------------------------------------------------------
+  // Hoisted loadImages
+  // ---------------------------------------------------------------------------
+  const loadImages = useCallback(
+    (data: ResolutionType<typeof initializeScene>, isInitialLoad = false) => {
+      if (!data.scene || !excalidrawAPI) {
         return;
       }
+
       if (collabAPI?.isCollaborating()) {
         if (data.scene.elements) {
           collabAPI
@@ -469,6 +468,12 @@ const ExcalidrawWrapper = () => {
           }, [] as FileId[]) || [];
 
         if (data.isExternalScene) {
+          if (fileIds.length) {
+            // Direct Firebase call (not through FileManager), so track manually
+            FileStatusStore.updateStatuses(
+              fileIds.map((id) => [id, "loading"]),
+            );
+          }
           loadFilesFromFirebase(
             `${FIREBASE_STORAGE_PREFIXES.shareLinkFiles}/${data.id}`,
             data.key,
@@ -480,12 +485,18 @@ const ExcalidrawWrapper = () => {
               erroredFiles,
               elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
             });
+            FileStatusStore.updateStatuses([
+              ...loadedFiles.map((f) => [f.id, "loaded"] as [FileId, "loaded"]),
+              ...[...erroredFiles.keys()].map(
+                (id) => [id, "error"] as [FileId, "error"],
+              ),
+            ]);
           });
         } else if (isInitialLoad) {
           if (fileIds.length) {
             LocalData.fileStorage
               .getFiles(fileIds)
-              .then(({ loadedFiles, erroredFiles }) => {
+              .then(async ({ loadedFiles, erroredFiles }) => {
                 if (loadedFiles.length) {
                   excalidrawAPI.addFiles(loadedFiles);
                 }
@@ -498,10 +509,19 @@ const ExcalidrawWrapper = () => {
           }
           // on fresh load, clear unused files from IDB (from previous
           // session)
-          LocalData.fileStorage.clearObsoleteFiles({ currentFileIds: fileIds });
+          LocalData.fileStorage.clearObsoleteFiles({
+            currentFileIds: fileIds,
+          });
         }
       }
-    };
+    },
+    [collabAPI, excalidrawAPI],
+  );
+
+  useEffect(() => {
+    if (!excalidrawAPI || (!isCollabDisabled && !collabAPI)) {
+      return;
+    }
 
     initializeScene({ collabAPI, excalidrawAPI }).then(async (data) => {
       loadImages(data, /* isInitialLoad */ true);
@@ -626,7 +646,7 @@ const ExcalidrawWrapper = () => {
         false,
       );
     };
-  }, [isCollabDisabled, collabAPI, excalidrawAPI, setLangCode]);
+  }, [isCollabDisabled, collabAPI, excalidrawAPI, setLangCode, loadImages]);
 
   useEffect(() => {
     const unloadHandler = (event: BeforeUnloadEvent) => {
@@ -771,6 +791,56 @@ const ExcalidrawWrapper = () => {
     [setShareDialogState],
   );
 
+  // ---------------------------------------------------------------------------
+  // onExport — intercepts file save to wait for pending image loads
+  // ---------------------------------------------------------------------------
+  const onExport: Required<ExcalidrawProps>["onExport"] = useCallback(
+    async function* () {
+      let snapshot = FileStatusStore.getSnapshot();
+      const { pending, total } = FileStatusStore.getPendingCount(
+        snapshot.value,
+      );
+      if (pending === 0) {
+        return;
+      }
+
+      // Yield initial progress
+      yield {
+        type: "progress",
+        progress: (total - pending) / total,
+        message: `Loading images (${total - pending}/${total})...`,
+      };
+
+      // Wait for all pending images to finish
+      while (true) {
+        snapshot = await FileStatusStore.pull(snapshot.version);
+        const { pending: nowPending, total: nowTotal } =
+          FileStatusStore.getPendingCount(snapshot.value);
+
+        yield {
+          type: "progress",
+          progress: (nowTotal - nowPending) / nowTotal,
+          message: `Loading images (${nowTotal - nowPending}/${nowTotal})...`,
+        };
+
+        if (nowPending === 0) {
+          await new Promise((r) => setTimeout(r, 500));
+          yield {
+            type: "progress",
+            message: `Preparing export...`,
+          };
+          return;
+        }
+      }
+    },
+    [],
+  );
+
+  // const onExport = () => {
+  //   return new Promise((r) => setTimeout(r, 2500));
+  //   // console.log("onExport");
+  // };
+
   // browsers generally prevent infinite self-embedding, there are
   // cases where it still happens, and while we disallow self-embedding
   // by not whitelisting our own origin, this serves as an additional guard
@@ -837,9 +907,9 @@ const ExcalidrawWrapper = () => {
       })}
     >
       <Excalidraw
-        excalidrawAPI={excalidrawRefCallback}
         wheelZoomsOnDefault
         onChange={onChange}
+        onExport={onExport}
         initialData={initialStatePromiseRef.current.promise}
         isCollaborating={isCollaborating}
         onPointerUpdate={collabAPI?.onPointerUpdate}
@@ -1202,7 +1272,9 @@ const ExcalidrawApp = () => {
   return (
     <TopErrorBoundary>
       <Provider store={appJotaiStore}>
-        <ExcalidrawWrapper />
+        <ExcalidrawAPIProvider>
+          <ExcalidrawWrapper />
+        </ExcalidrawAPIProvider>
       </Provider>
     </TopErrorBoundary>
   );

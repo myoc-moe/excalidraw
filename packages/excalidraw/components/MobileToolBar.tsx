@@ -3,6 +3,8 @@ import clsx from "clsx";
 
 import { KEYS, capitalizeString } from "@excalidraw/common";
 
+import { SHAPES } from "@excalidraw/element/shapes";
+
 import { trackEvent } from "../analytics";
 
 import { t } from "../i18n";
@@ -34,7 +36,6 @@ import "./ToolIcon.scss";
 import "./MobileToolBar.scss";
 
 import type { AppClassProperties, ToolType, UIAppState } from "../types";
-import { SHAPES } from "@excalidraw/element/shapes";
 
 const SELECTION_TOOLS = [
   {
@@ -237,7 +238,7 @@ export const MobileToolBar = ({
       />
 
       {/* Other Shapes */}
-      <DropdownMenu open={isOtherShapesMenuOpen} placement="top">
+      <DropdownMenu open={isOtherShapesMenuOpen}>
         <DropdownMenu.Trigger
           className={clsx(
             "App-toolbar__extra-tools-trigger App-toolbar__extra-tools-trigger--mobile",
@@ -265,6 +266,7 @@ export const MobileToolBar = ({
           onClickOutside={() => setIsOtherShapesMenuOpen(false)}
           onSelect={() => setIsOtherShapesMenuOpen(false)}
           className="App-toolbar__extra-tools-dropdown"
+          align="start"
         >
           {/* <DropdownMenu.Item
                       onSelect={() => app.setActiveTool({ type: "frame" })}

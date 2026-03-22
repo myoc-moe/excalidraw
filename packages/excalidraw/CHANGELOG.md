@@ -11,6 +11,87 @@ The change should be grouped under one of the below section and must contain PR 
 Please add the latest change on the top under the correct section.
 -->
 
+## 0.19.503 (2026-03-22)
+
+## Excalidraw API
+
+### Breaking changes
+
+- Renamed the `excalidrawAPI` prop to `onExcalidrawAPI`.
+  - `onExcalidrawAPI` is now called on mount (instead of during constructor), and later on unmount (with `null` value). The API may be removed altogether in the future (you can use `onMount` & `onUmount` to manage the `ExcalidrawAPI` object (e.g. to cache it to a global state), already).
+
+### Features
+
+- Added `ExcalidrawAPI.isDestroyed` flag. Set to `true` once the editor unmounts. Calling any `get*` method, `onStateChange`, or `onEvent` on a destroyed API instance will throw in development and `console.error` in production. The `ExcalidrawAPI` will be reset to `null` on umount, but to be extra safe, you should check `ExcalidrawAPI.isDestroyed` before calling these methods to guard against subtle race conditions in your code.
+
+- Added `onMount`, `onInitialize`, and `onUnmount` props. `onMount` receives `{ excalidrawAPI, container }` once the editor root is mounted. `onInitialize` fires once the initial scene has loaded. `onUnmount` fires just before unmounting.
+
+- Same events are also accessible imperatively through `api.onEvent(...)`.
+
+  ```tsx
+  <Excalidraw
+    onExcalidrawAPI={(api) => {
+      api.onEvent("editor:mount", ({ excalidrawAPI, container }) => {
+        console.log(container);
+      });
+
+      api.onEvent("editor:initialize").then((readyApi) => {
+        readyApi.scrollToContent();
+      });
+    }}
+  />
+  ```
+
+  Note that in future releases, most, if not all, `excalidrawAPI.on*` subscriptions will be removed in favor of `excalidrawAPI.onEvent(name)`.
+
+- Also added `"editor:unmount"` lifecycle event, only accessible via `api.onEvent("editor:unmount")`.
+
+- Exported `<ExcalidrawAPIProvider/>`, `useExcalidrawAPI()`, `useAppStateValue(prop | props | selectorFunction)`, and `useOnExcalidrawStateChange(prop | props | selectorFunction, callback)` from the package. The imperative API also now exposes `onStateChange(prop | props | selectorFunction, callback?)`, and `onEvent(name, callback)`.
+
+  ```tsx
+  <ExcalidrawAPIProvider>
+    <Excalidraw />
+    <Logger />
+  </ExcalidrawAPIProvider>;
+
+  function Logger() {
+    // initially null before the ExcalidrawAPIProvider initializes ater
+    // <Excalidraw/> renders
+    // When <Excalidraw/> unmounts, is reset back to null
+    const api = useExcalidrawAPI();
+
+    useAppStateValue("viewModeEnabled", (viewModeEnabled) => {
+      console.log("view mode changed:", viewModeEnabled);
+    });
+
+    React.useEffect(() => {
+      if (api) {
+        console.log("editor instance id:", api.id);
+      }
+    }, [api]);
+
+    return null;
+  }
+  ```
+
+- Added `onExport` so host apps can delay JSON export until async work completes. The handler receives the export data plus an `AbortSignal`, and may return a `Promise` or an async generator that yields progress updates for the built-in toast UI.
+
+  ```tsx
+  <Excalidraw
+    onExport={async function* (_type, { files }, { signal }) {
+      yield { type: "progress", message: "Waiting for images..." };
+
+      await waitForImagesToLoad(files, signal);
+
+      if (signal.aborted) {
+        return;
+      }
+
+      yield { type: "progress", message: "Export ready", progress: 1 };
+    }}
+  />
+  ```
+
 ## Excalidraw Library
 
 ## 0.18.0 (2025-03-11)
@@ -3385,6 +3466,445 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 ###  Refactor
 
 - Inline `SingleLibraryItem` into `PublishLibrary` (#6462
+
+---
+## Excalidraw Library
+
+**_This section lists the updates made to the excalidraw library and will not affect the integration._**
+
+### Features
+
+- Reduce max tablet MQ size [#10669](https://github.com/excalidraw/excalidraw/pull/10669)
+
+- TextToDiagram v2 [#10530](https://github.com/excalidraw/excalidraw/pull/10530)
+
+- Move visualdebug to utils and introduce volume bindable visualization [#10617](https://github.com/excalidraw/excalidraw/pull/10617)
+
+- Stop using CSS filters for dark mode (static canvas) [#10578](https://github.com/excalidraw/excalidraw/pull/10578)
+
+- Add qr code to live session share dialog. [#10588](https://github.com/excalidraw/excalidraw/pull/10588)
+
+- Non-elbow arrow snapping and behavior changes [#9670](https://github.com/excalidraw/excalidraw/pull/9670)
+
+- Animation support [#10042](https://github.com/excalidraw/excalidraw/pull/10042)
+
+- Add binding visual debug [#10222](https://github.com/excalidraw/excalidraw/pull/10222)
+
+- Add comments/presi eplus promos for discoveribility [#10294](https://github.com/excalidraw/excalidraw/pull/10294)
+
+- More prominent keyboard shortcuts in hints [#10057](https://github.com/excalidraw/excalidraw/pull/10057)
+
+- New mobile layout [#9996](https://github.com/excalidraw/excalidraw/pull/9996)
+
+- Make naming of library items discoverable [#10041](https://github.com/excalidraw/excalidraw/pull/10041)
+
+- Library search [#9903](https://github.com/excalidraw/excalidraw/pull/9903)
+
+- Better file normalization [#10024](https://github.com/excalidraw/excalidraw/pull/10024)
+
+- Compact layout for tablets [#9910](https://github.com/excalidraw/excalidraw/pull/9910)
+
+- [cont.] support inserting multiple images [#9875](https://github.com/excalidraw/excalidraw/pull/9875)
+
+- Drag, resize, and rotate after selecting in lasso [#9732](https://github.com/excalidraw/excalidraw/pull/9732)
+
+- Apply deltas API [#9869](https://github.com/excalidraw/excalidraw/pull/9869)
+
+- Fix delta apply to issues [#9830](https://github.com/excalidraw/excalidraw/pull/9830)
+
+- Allow a frame to snap to its children [#9795](https://github.com/excalidraw/excalidraw/pull/9795)
+
+- Expose `applyTo` options, don't commit empty text element [#9744](https://github.com/excalidraw/excalidraw/pull/9744)
+
+- Support timestamps for youtube video emebds [#9737](https://github.com/excalidraw/excalidraw/pull/9737)
+
+- Capture images after they initialize [#9643](https://github.com/excalidraw/excalidraw/pull/9643)
+
+- Add mulitplatform Docker image support [#9594](https://github.com/excalidraw/excalidraw/pull/9594)
+
+- Wrap texts from stats panel [#9552](https://github.com/excalidraw/excalidraw/pull/9552)
+
+- Various delta improvements [#9571](https://github.com/excalidraw/excalidraw/pull/9571)
+
+- Use `enter` to edit line points & update hints [#9630](https://github.com/excalidraw/excalidraw/pull/9630)
+
+- Precise hit testing [#9488](https://github.com/excalidraw/excalidraw/pull/9488)
+
+- Try to preserve line angle on SHIFT+drag [#9570](https://github.com/excalidraw/excalidraw/pull/9570)
+
+- Do not break polygon on point delete inside line editor [#9580](https://github.com/excalidraw/excalidraw/pull/9580)
+
+- Line polygons [#9477](https://github.com/excalidraw/excalidraw/pull/9477)
+
+- Call actionFinalize at the end of arrow creation and drag [#9453](https://github.com/excalidraw/excalidraw/pull/9453)
+
+- Better unlock [#9546](https://github.com/excalidraw/excalidraw/pull/9546)
+
+- Transparent link background, scale link icon when zooming to below 100% [#9520](https://github.com/excalidraw/excalidraw/pull/9520)
+
+- Allow forms.microsoft.com domain for embeddables [#9519](https://github.com/excalidraw/excalidraw/pull/9519)
+
+- Add ability to turn off compression for files that are smaller than a given size
+
+- Show empty active color if no common color [#9506](https://github.com/excalidraw/excalidraw/pull/9506)
+
+- Include frame names in canvas searches [#9484](https://github.com/excalidraw/excalidraw/pull/9484)
+
+- Add `onIncrement` API [#9450](https://github.com/excalidraw/excalidraw/pull/9450)
+
+- Quarter snap points for diamonds [#9387](https://github.com/excalidraw/excalidraw/pull/9387)
+
+- Precise highlights for bindings [#9472](https://github.com/excalidraw/excalidraw/pull/9472)
+
+- Switch between basic shapes [#9270](https://github.com/excalidraw/excalidraw/pull/9270)
+
+- Add lock tool to the dropdown and also add the status of the extra tools to be the same icon as the selected tool
+
+- Add view mode button
+
+- Add multiple image copy paste or drag and drop
+
+- Multiple image additions from clipboard
+
+- Add arrange elements action
+
+- Add `props.renderScrollbars` [#9399](https://github.com/excalidraw/excalidraw/pull/9399)
+
+- Keep text label horizontal [#9364](https://github.com/excalidraw/excalidraw/pull/9364)
+
+- Add top picks to appProps for both stoke color and background color
+
+- Lasso selection [#9169](https://github.com/excalidraw/excalidraw/pull/9169)
+
+- Add container to multiple text elements [#9348](https://github.com/excalidraw/excalidraw/pull/9348)
+
+- Tweak color swatch, and button bgs [#9330](https://github.com/excalidraw/excalidraw/pull/9330)
+
+- Tweak properties panel styling [#9322](https://github.com/excalidraw/excalidraw/pull/9322)
+
+- Tweak stats panel input styles [#9321](https://github.com/excalidraw/excalidraw/pull/9321)
+
+- Allow to disable preventUnload in dev [#9319](https://github.com/excalidraw/excalidraw/pull/9319)
+
+- Add keyboard shortcut to save file in text  [#9295](https://github.com/excalidraw/excalidraw/pull/9295)
+
+### Fixes
+
+- Issues
+
+- Make mobile mode more myoc looking
+
+- Add normalise functionality
+
+- Regression - invert SVGs in Dark Mode [#10695](https://github.com/excalidraw/excalidraw/pull/10695)
+
+- Set link icon opacity based on element opacity [#10693](https://github.com/excalidraw/excalidraw/pull/10693)
+
+- Rerender TTD preview on message remove [#10681](https://github.com/excalidraw/excalidraw/pull/10681)
+
+- DropdownMenu item badge position [#10682](https://github.com/excalidraw/excalidraw/pull/10682)
+
+- Ttd 429 error handling [#10680](https://github.com/excalidraw/excalidraw/pull/10680)
+
+- Keep input focus during generation [#10679](https://github.com/excalidraw/excalidraw/pull/10679)
+
+- Arrow drag start in bindable area  jumps across bindable [#10676](https://github.com/excalidraw/excalidraw/pull/10676)
+
+- Fail gracefully during restore [#10673](https://github.com/excalidraw/excalidraw/pull/10673)
+
+- Angle-locked line history [#10677](https://github.com/excalidraw/excalidraw/pull/10677)
+
+- Tweak error display in ttd [#10668](https://github.com/excalidraw/excalidraw/pull/10668)
+
+- Retries and related UX fixes [#10657](https://github.com/excalidraw/excalidraw/pull/10657)
+
+- Elbow end point disconnect [#10646](https://github.com/excalidraw/excalidraw/pull/10646)
+
+- Curve endpoint intersection [#10640](https://github.com/excalidraw/excalidraw/pull/10640)
+
+- Update wysiwyg color on theme change [#10618](https://github.com/excalidraw/excalidraw/pull/10618)
+
+- Sentry CI worfklow [#10610](https://github.com/excalidraw/excalidraw/pull/10610)
+
+- Grid color in dark mode [#10600](https://github.com/excalidraw/excalidraw/pull/10600)
+
+- Reconciliation of server updates & refactor restore [#10597](https://github.com/excalidraw/excalidraw/pull/10597)
+
+- Add constants and side methods to packages [#10418](https://github.com/excalidraw/excalidraw/pull/10418)
+
+- Circular reference [#10544](https://github.com/excalidraw/excalidraw/pull/10544)
+
+- Context menu paste adding image twice #10542 [#10543](https://github.com/excalidraw/excalidraw/pull/10543)
+
+- Embeddables lost stroke color option in element properties after #9996 [#10541](https://github.com/excalidraw/excalidraw/pull/10541)
+
+- Broken bindings during collab [#10537](https://github.com/excalidraw/excalidraw/pull/10537)
+
+- Angle snapping around bindable objects incorrectly resolves [#10501](https://github.com/excalidraw/excalidraw/pull/10501)
+
+- Turn into inside bind when angle locked [#10479](https://github.com/excalidraw/excalidraw/pull/10479)
+
+- Box selection of arrows [#10451](https://github.com/excalidraw/excalidraw/pull/10451)
+
+- Ctrl/Alt elbow arrow jumps [#10432](https://github.com/excalidraw/excalidraw/pull/10432)
+
+- Frame and Frame Element binding highlight offset [#10423](https://github.com/excalidraw/excalidraw/pull/10423)
+
+- Do not finalize multi-point lines if binding not enabled [#10410](https://github.com/excalidraw/excalidraw/pull/10410)
+
+- Corner jumping & hints [#10403](https://github.com/excalidraw/excalidraw/pull/10403)
+
+- Rounded left and top clipped image export to SVG [#10387](https://github.com/excalidraw/excalidraw/pull/10387)
+
+- Prevent translation of excalidraw container [#10389](https://github.com/excalidraw/excalidraw/pull/10389)
+
+- Canvas panning stops when hovering over frame title [#10340](https://github.com/excalidraw/excalidraw/pull/10340) (#10351)
+
+- Banner url [#10315](https://github.com/excalidraw/excalidraw/pull/10315)
+
+- Alt-duplication copied elements placement [#10152](https://github.com/excalidraw/excalidraw/pull/10152)
+
+- Close floating sidebar on main menu open [#10295](https://github.com/excalidraw/excalidraw/pull/10295)
+
+- Add toggle pen-mode to MobileMenu [#10293](https://github.com/excalidraw/excalidraw/pull/10293)
+
+- Mobile view ui issues [#10284](https://github.com/excalidraw/excalidraw/pull/10284)
+
+- Prevent wrap text in a container to only text that are not bound to a container [#10250](https://github.com/excalidraw/excalidraw/pull/10250)
+
+- Set radix PropertiesPopover collision boundary [#10221](https://github.com/excalidraw/excalidraw/pull/10221)
+
+- Small tweaks to shortcut hints [#10214](https://github.com/excalidraw/excalidraw/pull/10214)
+
+- Context menu getting covered [#10199](https://github.com/excalidraw/excalidraw/pull/10199)
+
+- Increase transform handle offset [#10180](https://github.com/excalidraw/excalidraw/pull/10180)
+
+- Mobile UI and other fixes [#10177](https://github.com/excalidraw/excalidraw/pull/10177)
+
+- Revert preferred selection to box once you switch to `full` UI [#10160](https://github.com/excalidraw/excalidraw/pull/10160)
+
+- Remove redundant selectionStart/End resetting that causes scroll-reset bug on firefox [#8263](https://github.com/excalidraw/excalidraw/pull/8263)
+
+- Text to diagram translation update issue on language update [#10016](https://github.com/excalidraw/excalidraw/pull/10016)
+
+- Display error message when local storage quota is exceeded [#9961](https://github.com/excalidraw/excalidraw/pull/9961)
+
+- Small improvement on binary heap implementation [#9992](https://github.com/excalidraw/excalidraw/pull/9992)
+
+- Support bidirectional shift+click selection in library items [#10034](https://github.com/excalidraw/excalidraw/pull/10034)
+
+- Library search UI fixes/tweaks [#10032](https://github.com/excalidraw/excalidraw/pull/10032)
+
+- Increase rejection delay for opening files with legacy api [#8961](https://github.com/excalidraw/excalidraw/pull/8961)
+
+- Arrow eraser precision arrow selection [#10006](https://github.com/excalidraw/excalidraw/pull/10006)
+
+- Use analytical Jacobian for curve intersection testing [#10007](https://github.com/excalidraw/excalidraw/pull/10007)
+
+- Elbow arrow routing issue with diamonds and ellipses [#10021](https://github.com/excalidraw/excalidraw/pull/10021)
+
+- Added normalization to images added with the image tool to prevent MIME-mismatches [#10018](https://github.com/excalidraw/excalidraw/pull/10018)
+
+- Reintroduce height-based mobile query detection [#10020](https://github.com/excalidraw/excalidraw/pull/10020)
+
+- Remove local elements when there is room data during `startCollaboration` [#9786](https://github.com/excalidraw/excalidraw/pull/9786)
+
+- Race conditions when adding many library items [#10013](https://github.com/excalidraw/excalidraw/pull/10013)
+
+- Mobile arrow point drag broken [#9998](https://github.com/excalidraw/excalidraw/pull/9998)
+
+- Align MQ breakpoints and always use editor dimensions [#9991](https://github.com/excalidraw/excalidraw/pull/9991)
+
+- Use the right polygon enclosure test [#9979](https://github.com/excalidraw/excalidraw/pull/9979)
+
+- Eraser can handle dots without regressing prior performance improvements [#9946](https://github.com/excalidraw/excalidraw/pull/9946)
+
+- Normalize file on paste/drop [#9959](https://github.com/excalidraw/excalidraw/pull/9959)
+
+- Pasting not working in firefox [#9947](https://github.com/excalidraw/excalidraw/pull/9947)
+
+- Bound text rotation across alignments [#9914](https://github.com/excalidraw/excalidraw/pull/9914)
+
+- Tighten distance for double tap text creation [#9889](https://github.com/excalidraw/excalidraw/pull/9889)
+
+- Restore from invalid fixedSegments & type-safer point updates [#9899](https://github.com/excalidraw/excalidraw/pull/9899)
+
+- Calling toLowerCase on potentially undefined `navigator.*` values [#9901](https://github.com/excalidraw/excalidraw/pull/9901)
+
+- Even deltas with version & version nonce are valid [#9897](https://github.com/excalidraw/excalidraw/pull/9897)
+
+- Scene deleted after pica image resize failure [#9879](https://github.com/excalidraw/excalidraw/pull/9879)
+
+- Do not strip invisible elements from array [#9844](https://github.com/excalidraw/excalidraw/pull/9844)
+
+- Text restore & deletion issues [#9853](https://github.com/excalidraw/excalidraw/pull/9853)
+
+- Editing linear element [#9839](https://github.com/excalidraw/excalidraw/pull/9839)
+
+- Add frame clipping to new element canvas [#9794](https://github.com/excalidraw/excalidraw/pull/9794)
+
+- Fix the root cause of `flushSync` flickering [#9791](https://github.com/excalidraw/excalidraw/pull/9791)
+
+- Multiple line editor bugs [#9760](https://github.com/excalidraw/excalidraw/pull/9760)
+
+- Remove flushSync from alt-lasso and elbow dragging [#9734](https://github.com/excalidraw/excalidraw/pull/9734)
+
+- Improve line creation ux on touch screens [#9740](https://github.com/excalidraw/excalidraw/pull/9740)
+
+- Ellipsify MainMenu and CommandPalette items [#9743](https://github.com/excalidraw/excalidraw/pull/9743)
+
+- Aligning and distributing elements and nested groups while editing a group [#9721](https://github.com/excalidraw/excalidraw/pull/9721)
+
+- Frame dimensions change by stats don't include new elements [#9568](https://github.com/excalidraw/excalidraw/pull/9568)
+
+- Bindings at partially overlapping binding areas [#9536](https://github.com/excalidraw/excalidraw/pull/9536)
+
+- Update with excalidraw
+
+- Move doBoundsIntersect from element/src/bounds.ts to common/math/src/utils.ts [#9650](https://github.com/excalidraw/excalidraw/pull/9650)
+
+- Move elementCenterPoint from common/src/utils.ts to element/src/bounds.ts [#9647](https://github.com/excalidraw/excalidraw/pull/9647)
+
+- Mid-point for rounded linears are not precisely centered [#9544](https://github.com/excalidraw/excalidraw/pull/9544)
+
+- Test hook usage in production code [#9645](https://github.com/excalidraw/excalidraw/pull/9645)
+
+- Set cursor to auto when not hovering a point on linear element [#9642](https://github.com/excalidraw/excalidraw/pull/9642)
+
+- Remove image preview on image insertion [#9626](https://github.com/excalidraw/excalidraw/pull/9626)
+
+- Add history capture for paste and drop of images and embeds [#9605](https://github.com/excalidraw/excalidraw/pull/9605)
+
+- Add generic font family fallbacks before Segoe UI Emoji to fix glyph rendering on windows [#9425](https://github.com/excalidraw/excalidraw/pull/9425)
+
+- Prevent double-click to edit/create text scenarios on line [#9597](https://github.com/excalidraw/excalidraw/pull/9597)
+
+- Prevent search menu from opening when dialog is open [#9279](https://github.com/excalidraw/excalidraw/pull/9279)
+
+- Regression in long press context menu closure [#9588](https://github.com/excalidraw/excalidraw/pull/9588)
+
+- Ghost point issue when moving a shape after dragging a point in the line editor [#9530](https://github.com/excalidraw/excalidraw/pull/9530)
+
+- Linear to elbow conversion crash [#9556](https://github.com/excalidraw/excalidraw/pull/9556)
+
+- Fix keybindings for arrowheads [#9557](https://github.com/excalidraw/excalidraw/pull/9557)
+
+- Elbow arrow conversion labels mixed up [#9547](https://github.com/excalidraw/excalidraw/pull/9547)
+
+- Fix imports
+
+- Fix mutateGroup to use scene.mutateGroup
+
+- Imports
+
+- Unify line height across default fonts [#9513](https://github.com/excalidraw/excalidraw/pull/9513)
+
+- Issues when importing package outside of browser [#9525](https://github.com/excalidraw/excalidraw/pull/9525)
+
+- Never show snap lines when lasso tool active [#9523](https://github.com/excalidraw/excalidraw/pull/9523)
+
+- Alt + ctrl lasso selected elements not always kept [#9522](https://github.com/excalidraw/excalidraw/pull/9522)
+
+- Improve ctrl+alt lasso selecting [#9514](https://github.com/excalidraw/excalidraw/pull/9514)
+
+- Update cached segments when visible area changes [#9512](https://github.com/excalidraw/excalidraw/pull/9512)
+
+- Ensure that fileId is different for compressed vs uncompressed file
+
+- Remove not working prop for dontResizeLimitMBs
+
+- Use rimraf instead of rm -rf [#9460](https://github.com/excalidraw/excalidraw/pull/9460)
+
+- Don't scroll page when TTDDialog is opened [#9455](https://github.com/excalidraw/excalidraw/pull/9455)
+
+- Do not translate bound elements twice [#9486](https://github.com/excalidraw/excalidraw/pull/9486)
+
+- When resizing element, update bound elements after final size of element is determined [#9475](https://github.com/excalidraw/excalidraw/pull/9475)
+
+- When moving a frame through the stats inputs or drags move along its children [#9433](https://github.com/excalidraw/excalidraw/pull/9433)
+
+- Add smartview for mobile
+
+- Remove `noreferrer` on internal links [#9452](https://github.com/excalidraw/excalidraw/pull/9452)
+
+- When dragging arrow endpoint, update binding only on the dragged side [#9367](https://github.com/excalidraw/excalidraw/pull/9367)
+
+- Laser pointer trail disappearing on pointerup [#9413](https://github.com/excalidraw/excalidraw/pull/9413) (#9427)
+
+- Hide the alignment buttons if there is only one group selected (they do nothing if only one group is selected)
+
+- Scrollbar rendering and improve dragging [#9417](https://github.com/excalidraw/excalidraw/pull/9417)
+
+- Duplication tests pointer state leaking between tests [#9414](https://github.com/excalidraw/excalidraw/pull/9414)
+
+- Keep orig elem in place on alt-duplication [#9403](https://github.com/excalidraw/excalidraw/pull/9403)
+
+- Use css vars already provided instead of hard coding directly from oc-gray
+
+- Erasing locked elements [#9400](https://github.com/excalidraw/excalidraw/pull/9400)
+
+- Add DOCTYPE and XML preamble in exported SVG documents [#9386](https://github.com/excalidraw/excalidraw/pull/9386)
+
+- Remove unused variables
+
+- Pass the new top pick color props properly
+
+- Incorrect import for color (was moved to common)
+
+- Lasso selection issues [#9353](https://github.com/excalidraw/excalidraw/pull/9353)
+
+- Rounded diamond edge elbow arrow U route [#9349](https://github.com/excalidraw/excalidraw/pull/9349)
+
+- Deselected hit element being duplicated + incorrect re-seeding [#9333](https://github.com/excalidraw/excalidraw/pull/9333)
+
+- Linear element is not normalized [#9347](https://github.com/excalidraw/excalidraw/pull/9347)
+
+- Strip legacy attrs on element restore [#9318](https://github.com/excalidraw/excalidraw/pull/9318)
+
+- Incorrect type imports [#9308](https://github.com/excalidraw/excalidraw/pull/9308)
+
+- Reduce allocations in collision detection [#9299](https://github.com/excalidraw/excalidraw/pull/9299)
+
+- Refactor and merge duplication and binding [#9246](https://github.com/excalidraw/excalidraw/pull/9246)
+
+- 'Rotate' spell error [#9288](https://github.com/excalidraw/excalidraw/pull/9288)
+
+### Styles
+
+- Remove blue lines [#10425](https://github.com/excalidraw/excalidraw/pull/10425)
+
+###  Refactor
+
+- Change TTD persistence to iDB [#10662](https://github.com/excalidraw/excalidraw/pull/10662)
+
+- Update SCSS syntax & remove open-color dep [#10633](https://github.com/excalidraw/excalidraw/pull/10633)
+
+- Single source of truths with editor interface [#10178](https://github.com/excalidraw/excalidraw/pull/10178)
+
+- Decouple radio button selection from `.buttonList` wrapper [#9528](https://github.com/excalidraw/excalidraw/pull/9528)
+
+- Make element type conversion more generic [#9504](https://github.com/excalidraw/excalidraw/pull/9504)
+
+- Export everything from `@excalidraw/element`, don't import from subpaths [#9466](https://github.com/excalidraw/excalidraw/pull/9466)
+
+- Change movePoints pointUpdates type [#9499](https://github.com/excalidraw/excalidraw/pull/9499)
+
+- Remove dependency on the (static) Scene [#9389](https://github.com/excalidraw/excalidraw/pull/9389)
+
+- Separate elements logic into a standalone package [#9285](https://github.com/excalidraw/excalidraw/pull/9285)
+
+### Performance
+
+- Improve elbow arrow indirect binding logic [#9624](https://github.com/excalidraw/excalidraw/pull/9624)
+
+- Simplify normalizeRadians function [#9572](https://github.com/excalidraw/excalidraw/pull/9572)
+
+- Make eraser great again [#9352](https://github.com/excalidraw/excalidraw/pull/9352)
+
+### Build
+
+- Docker compose version removed [#10074](https://github.com/excalidraw/excalidraw/pull/10074)
 
 ---
 

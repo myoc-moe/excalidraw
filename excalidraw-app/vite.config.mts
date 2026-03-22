@@ -189,7 +189,7 @@ export default defineConfig(({ mode }) => {
               },
             },
             {
-              urlPattern: new RegExp(".chunk-.+.js"),
+              urlPattern: new RegExp("(.chunk-.+|CodeMirrorEditor-.+)\\.js"),
               handler: "CacheFirst",
               options: {
                 cacheName: "chunk",

@@ -1,6 +1,6 @@
 {
   "name": "@myoc/element",
-  "version": "0.19.502-d9d5eeb32",
+  "version": "0.19.503",
   "type": "module",
   "types": "./dist/types/element/src/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -63,7 +63,7 @@
     "build:esm": "rimraf dist && node ../../scripts/buildBase.js && yarn gen:types"
   },
   "dependencies": {
-    "@myoc/common": "0.18.0",
-    "@myoc/math": "0.18.0"
+    "@myoc/common": "0.19.502-d9d5eeb32",
+    "@myoc/math": "0.19.502-d9d5eeb32"
   }
 }

@@ -10,11 +10,12 @@ import {
   isWritableElement,
 } from "@excalidraw/common";
 
-import { actionToggleShapeSwitch } from "@excalidraw/excalidraw/actions/actionToggleShapeSwitch";
-
-import { getShortcutKey } from "@excalidraw/excalidraw/shortcut";
+import { SHAPES } from "@excalidraw/element/shapes";
 
 import type { MarkRequired } from "@excalidraw/common/utility-types";
+
+import { actionToggleShapeSwitch } from "../../actions/actionToggleShapeSwitch";
+import { getShortcutKey } from "../../shortcut";
 
 import { actionLink, actionToggleSearchMenu } from "../../actions";
 import {
@@ -48,7 +49,6 @@ import {
   historyCommandIcon,
 } from "../icons";
 
-import { SHAPES } from "@excalidraw/element/shapes";
 import { canChangeBackgroundColor, canChangeStrokeColor } from "../Actions";
 import { useStableCallback } from "../../hooks/useStableCallback";
 import { useStable } from "../../hooks/useStable";

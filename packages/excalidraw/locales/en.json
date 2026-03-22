@@ -3,6 +3,10 @@
     "paste": "Paste",
     "pasteAsPlaintext": "Paste as plaintext",
     "pasteCharts": "Paste charts",
+    "chartType_bar": "Bar chart",
+    "chartType_line": "Line chart",
+    "chartType_radar": "Radar chart",
+    "chartType_plaintext": "Plain text",
     "selectAll": "Select all",
     "multiSelect": "Add element to selection",
     "moveCanvas": "Move canvas",
@@ -50,7 +54,14 @@
     "arrowhead_crowfoot_many": "Crow's foot (many)",
     "arrowhead_crowfoot_one": "Crow's foot (one)",
     "arrowhead_crowfoot_one_or_many": "Crow's foot (one or many)",
+    "arrowhead_cardinality_one": "Cardinality (one)",
+    "arrowhead_cardinality_many": "Cardinality (many)",
+    "arrowhead_cardinality_one_or_many": "Cardinality (one or many)",
+    "arrowhead_cardinality_exactly_one": "Cardinality (exactly one)",
+    "arrowhead_cardinality_zero_or_one": "Cardinality (zero or one)",
+    "arrowhead_cardinality_zero_or_many": "Cardinality (zero or many)",
     "more_options": "More options",
+    "cardinality": "Cardinality",
     "arrowtypes": "Arrow type",
     "arrowtype_sharp": "Sharp arrow",
     "arrowtype_round": "Curved arrow",
@@ -174,7 +185,11 @@
     "linkToElement": "Link to object",
     "wrapSelectionInFrame": "Wrap selection in frame",
     "tab": "Tab",
-    "shapeSwitch": "Switch shape"
+    "shapeSwitch": "Switch shape",
+    "preferences": "Preferences",
+    "preferences_toolLock": "Tool lock",
+    "arrowBinding": "Arrow binding",
+    "midpointSnapping": "Snap to midpoints"
   },
   "elementLink": {
     "title": "Link to object",
@@ -400,6 +415,10 @@
   "errorDialog": {
     "title": "Error"
   },
+  "progressDialog": {
+    "title": "Saving",
+    "defaultMessage": "Preparing to save..."
+  },
   "exportDialog": {
     "disk_title": "Save to disk",
     "disk_details": "Export the scene data to a file from which you can import later.",
@@ -567,7 +586,9 @@
   },
   "welcomeScreen": {
     "app": {
-      "center_heading": "All your data is saved locally in your browser.",
+      "center_heading": "Your drawings are saved in your browser's storage.",
+      "center_heading_line2": "Browser storage can be cleared unexpectedly.",
+      "center_heading_line3": "Save your work to a file regularly to avoid losing it.",
       "center_heading_plus": "Did you want to go to the Excalidraw+ instead?",
       "menuHint": "Export, preferences, languages, ..."
     },

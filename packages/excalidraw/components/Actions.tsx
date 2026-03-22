@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { useMemo, useRef, useState } from "react";
-import * as Popover from "@radix-ui/react-popover";
+import { Popover } from "radix-ui";
 
 import {
   CLASSES,
@@ -21,6 +21,8 @@ import {
   hasStrokeColor,
   toolIsArrow,
 } from "@excalidraw/element";
+
+import { getToolbarTools, SHAPES } from "@excalidraw/element/shapes";
 
 import type {
   ExcalidrawElement,
@@ -49,8 +51,6 @@ import { getFormValue } from "../actions/actionProperties";
 import { useTextEditorFocus } from "../hooks/useTextEditorFocus";
 
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
-
-import { getToolbarTools, SHAPES } from "@excalidraw/element/shapes";
 
 import "./Actions.scss";
 
@@ -232,7 +232,7 @@ export const SelectedShapeActions = ({
       {(appState.activeTool.type === "text" ||
         targetElements.some(isTextElement)) && (
         <>
-          {renderAction("changeFontFamily")}
+          <fieldset>{renderAction("changeFontFamily")}</fieldset>
           {renderAction("changeFontSize")}
           {(appState.activeTool.type === "text" ||
             suppportsHorizontalAlign(targetElements, elementsMap)) &&
@@ -1160,7 +1160,7 @@ export const ShapesSwitcher = ({
         .filter(
           (shape) => !app.state.myocSimplifiedMode || shape.myocSimplifiedMode,
         )
-        .map(({ value, icon, key, fillable }, index) => {
+        .map(({ value, icon, key, fillable }) => {
           if (
             UIOptions.tools?.[
               value as Extract<
