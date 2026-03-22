@@ -36,6 +36,10 @@
     <img alt="Follow Excalidraw on Twitter" src="https://img.shields.io/twitter/follow/excalidraw.svg?label=follow+@excalidraw&style=social&logo=twitter"/></a>
 </p>
 
+## Myoc Fork
+
+For Myoc-specific install, build, and release instructions, see [MyocReadme.MD](./MyocReadme.MD).
+
 <div align="center">
   <figure>
     <a href="https://excalidraw.com" target="_blank" rel="noopener">
