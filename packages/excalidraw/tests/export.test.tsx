@@ -88,7 +88,10 @@ describe("export", () => {
       { ...getDefaultAppState(), exportEmbedScene: true },
       {},
     );
-    const svgText = svg.outerHTML;
+    const svgText = svg.outerHTML.replace(
+      /data-id="id\d+"/g,
+      'data-id="IMAGE_ID"',
+    );
 
     expect(svgText).toMatchSnapshot(`svg-embdedded scene export output`);
   });

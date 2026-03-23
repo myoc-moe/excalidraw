@@ -145,7 +145,14 @@ describe("<Excalidraw/>", () => {
         );
         //open menu
         toggleMenu(container);
-        expect(queryByTestId(container, "dropdown-menu")).toMatchSnapshot();
+        expect(queryByTestId(container, "dropdown-menu")).toBeTruthy();
+        expect(queryByTestId(container, "load-button")).toBeTruthy();
+        expect(queryByTestId(container, "json-export-button")).toBeTruthy();
+        expect(queryByTestId(container, "image-export-button")).toBeTruthy();
+        expect(queryByTestId(container, "help-menu-item")).toBeTruthy();
+        expect(queryByTestId(container, "canvas-background-picker")).toBeNull();
+        expect(queryByTestId(container, "toggle-dark-mode")).toBeTruthy();
+        expect(queryByTestId(container, "clear-canvas-button")).toBeNull();
       });
 
       it("should hide export button when export is false", async () => {
@@ -416,7 +423,19 @@ describe("<Excalidraw/>", () => {
       );
       //open menu
       toggleMenu(container);
-      expect(queryByTestId(container, "dropdown-menu")).toMatchSnapshot();
+      const dropdownMenu = queryByTestId(container, "dropdown-menu");
+      expect(dropdownMenu).toBeTruthy();
+      expect(queryByText(dropdownMenu as HTMLElement, "Click me")).toBeTruthy();
+      expect(
+        queryByText(dropdownMenu as HTMLElement, "custom menu item"),
+      ).toBeTruthy();
+      expect(queryByTestId(container, "help-menu-item")).toBeTruthy();
+
+      const blogLink = queryByText(
+        dropdownMenu as HTMLElement,
+        "Excalidraw blog",
+      )?.closest("a");
+      expect(blogLink?.getAttribute("href")).toBe("blog.excalidaw.com");
     });
 
     it("should update themeToggle text even if MainMenu memoized", async () => {
