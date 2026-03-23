@@ -29,6 +29,7 @@ You can use this prop when you want to access some [Excalidraw APIs](https://git
 | [getSceneElements](#getsceneelements) | `function` | Returns all the elements excluding the deleted in the scene |
 | [getAppState](#getappstate) | `function` | Returns current appState |
 | [history](#history) | `object` | This is the history API. `history.clear()` will clear the history |
+| [scrollToViewport](#scrolltoviewport) | `function` | Scroll the viewport to an exact `scrollX`/`scrollY`/`zoom` target. |
 | [scrollToContent](#scrolltocontent) | `function` | Scroll the nearest element out of the elements supplied to the center. Defaults to the elements on the scene. |
 | [refresh](#refresh) | `function` | Updates the offsets for the Excalidraw component so that the coordinates are computed correctly (for example the cursor position). |
 | [setToast](#settoast) | `function` | This API can be used to show the toast with custom message. |
@@ -276,6 +277,32 @@ Returns current appState.
 ```
 
 This is the history API. history.clear() will clear the history.
+
+## scrollToViewport
+
+```tsx
+(
+  target: {
+    scrollX: number;
+    scrollY: number;
+    zoom: number;
+  },
+  opts?: {
+    animate?: boolean;
+    duration?: number;
+  },
+) => void
+```
+
+Scroll to an exact saved viewport target.
+
+| Attribute | type | default | Description |
+| --- | --- | --- | --- |
+| target.scrollX | number | \_ | Exact horizontal scroll target. |
+| target.scrollY | number | \_ | Exact vertical scroll target. |
+| target.zoom | number | \_ | Exact zoom target. The value is normalized to the supported zoom range before being applied. |
+| opts.animate | boolean | false | Whether to animate between starting and ending viewport values. |
+| opts.duration | number | 500 | Duration of the animation if `opts.animate` is `true`. |
 
 ## scrollToContent
 

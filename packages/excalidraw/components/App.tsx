@@ -794,6 +794,7 @@ class App extends React.Component<AppProps, AppState> {
       history: {
         clear: this.resetHistory,
       },
+      scrollToViewport: this.scrollToViewport,
       scrollToContent: this.scrollToContent,
       getSceneElements: this.getSceneElements,
       getAppState: () => this.state,
@@ -4300,6 +4301,82 @@ class App extends React.Component<AppProps, AppState> {
 
   private cancelInProgressAnimation: (() => void) | null = null;
 
+  scrollToViewport = (
+    target: {
+      scrollX: number;
+      scrollY: number;
+      zoom: number;
+    },
+    opts?: {
+      animate?: boolean;
+      duration?: number;
+    },
+  ) => {
+    this.cancelInProgressAnimation?.();
+
+    const zoom = { value: getNormalizedZoom(target.zoom) };
+    const animateDuration = opts?.duration ?? 500;
+
+    // when animating, we use RequestAnimationFrame to prevent the animation
+    // from slowing down other processes
+    if (opts?.animate && animateDuration > 0) {
+      const origScrollX = this.state.scrollX;
+      const origScrollY = this.state.scrollY;
+      const origZoom = this.state.zoom.value;
+
+      const cancel = easeToValuesRAF({
+        fromValues: {
+          scrollX: origScrollX,
+          scrollY: origScrollY,
+          zoom: origZoom,
+        },
+        toValues: {
+          scrollX: target.scrollX,
+          scrollY: target.scrollY,
+          zoom: zoom.value,
+        },
+        interpolateValue: (from, to, progress, key) => {
+          // for zoom, use different easing
+          if (key === "zoom") {
+            return from * Math.pow(to / from, easeOut(progress));
+          }
+          // handle using default
+          return undefined;
+        },
+        onStep: ({ scrollX, scrollY, zoom }) => {
+          this.setState({
+            scrollX,
+            scrollY,
+            zoom: { value: zoom },
+          });
+        },
+        onStart: () => {
+          this.setState({ shouldCacheIgnoreZoom: true });
+        },
+        onEnd: () => {
+          this.cancelInProgressAnimation = null;
+          this.setState({ shouldCacheIgnoreZoom: false });
+        },
+        onCancel: () => {
+          this.cancelInProgressAnimation = null;
+          this.setState({ shouldCacheIgnoreZoom: false });
+        },
+        duration: animateDuration,
+      });
+
+      this.cancelInProgressAnimation = () => {
+        cancel();
+        this.cancelInProgressAnimation = null;
+      };
+    } else {
+      this.setState({
+        scrollX: target.scrollX,
+        scrollY: target.scrollY,
+        zoom,
+      });
+    }
+  };
+
   scrollToContent = (
     /**
      * target to scroll to
@@ -4363,8 +4440,6 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
-    this.cancelInProgressAnimation?.();
-
     // convert provided target into ExcalidrawElement[] if necessary
     const targetElements = Array.isArray(target) ? target : [target];
 
@@ -4392,54 +4467,17 @@ class App extends React.Component<AppProps, AppState> {
       scrollY = scroll.scrollY;
     }
 
-    // when animating, we use RequestAnimationFrame to prevent the animation
-    // from slowing down other processes
-    if (opts?.animate) {
-      const origScrollX = this.state.scrollX;
-      const origScrollY = this.state.scrollY;
-      const origZoom = this.state.zoom.value;
-
-      const cancel = easeToValuesRAF({
-        fromValues: {
-          scrollX: origScrollX,
-          scrollY: origScrollY,
-          zoom: origZoom,
-        },
-        toValues: { scrollX, scrollY, zoom: zoom.value },
-        interpolateValue: (from, to, progress, key) => {
-          // for zoom, use different easing
-          if (key === "zoom") {
-            return from * Math.pow(to / from, easeOut(progress));
-          }
-          // handle using default
-          return undefined;
-        },
-        onStep: ({ scrollX, scrollY, zoom }) => {
-          this.setState({
-            scrollX,
-            scrollY,
-            zoom: { value: zoom },
-          });
-        },
-        onStart: () => {
-          this.setState({ shouldCacheIgnoreZoom: true });
-        },
-        onEnd: () => {
-          this.setState({ shouldCacheIgnoreZoom: false });
-        },
-        onCancel: () => {
-          this.setState({ shouldCacheIgnoreZoom: false });
-        },
-        duration: opts?.duration ?? 500,
-      });
-
-      this.cancelInProgressAnimation = () => {
-        cancel();
-        this.cancelInProgressAnimation = null;
-      };
-    } else {
-      this.setState({ scrollX, scrollY, zoom });
-    }
+    this.scrollToViewport(
+      {
+        scrollX,
+        scrollY,
+        zoom: zoom.value,
+      },
+      {
+        animate: opts?.animate,
+        duration: opts?.duration,
+      },
+    );
   };
 
   private maybeUnfollowRemoteUser = () => {
