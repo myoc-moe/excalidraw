@@ -1,5 +1,5 @@
 import { getNonDeletedElements } from "@excalidraw/element";
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import { isLinearElement, isTextElement } from "@excalidraw/element";
 
 import { arrayToMap, KEYS } from "@excalidraw/common";

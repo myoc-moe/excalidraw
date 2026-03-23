@@ -21,7 +21,7 @@ import {
   isTextElement,
   isFrameLikeElement,
 } from "@excalidraw/element";
-import { KEYS, arrayToMap, getLineHeight } from "@excalidraw/common";
+import { KEYS, TOOL_TYPE, arrayToMap, getLineHeight } from "@excalidraw/common";
 
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
 
@@ -448,7 +448,53 @@ type Element<T extends DrawingToolName> = T extends "line" | "freedraw"
 
 export class UI {
   static clickTool = (toolName: ToolType | "lock") => {
-    fireEvent.click(GlobalTestState.renderResult.getByToolName(toolName));
+    const testId =
+      toolName === "lock" ? "toolbar-lock" : `toolbar-${TOOL_TYPE[toolName]}`;
+    const getTool = (root: ParentNode = document) =>
+      root.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+
+    const visibleTool = getTool();
+    if (visibleTool) {
+      fireEvent.click(visibleTool);
+      return;
+    }
+
+    const extraToolsTriggers = document.querySelectorAll<HTMLElement>(
+      ".App-toolbar__extra-tools-trigger",
+    );
+    for (const extraToolsTrigger of extraToolsTriggers) {
+      fireEvent.click(extraToolsTrigger);
+
+      const dropdownTool = getTool(document.body);
+      if (dropdownTool) {
+        fireEvent.click(dropdownTool);
+        return;
+      }
+    }
+
+    act(() => {
+      if (toolName === "lock") {
+        h.app.toggleLock();
+        return;
+      }
+
+      h.app.setActiveTool({ type: toolName });
+
+      if (toolName === "selection" || toolName === "lasso") {
+        h.setState({
+          preferredSelectionTool: { type: toolName, initialized: true },
+        });
+      }
+    });
+
+    if (
+      (toolName === "lock" && h.state.activeTool.locked) ||
+      h.state.activeTool.type === toolName
+    ) {
+      return;
+    }
+
+    throw new Error(`No tool found for "${toolName}"`);
   };
 
   static clickLabeledElement = (label: string) => {
@@ -663,9 +709,7 @@ export class UI {
   }
 
   static queryContextMenu = () => {
-    return GlobalTestState.renderResult.container.querySelector(
-      ".context-menu",
-    ) as HTMLElement | null;
+    return document.querySelector(".context-menu") as HTMLElement | null;
   };
 
   static queryStats = () => {

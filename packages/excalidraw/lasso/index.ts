@@ -5,7 +5,7 @@ import {
 } from "@excalidraw/math";
 
 import { getElementLineSegments } from "@excalidraw/element";
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import {
   isFrameLikeElement,
   isLinearElement,

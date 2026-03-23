@@ -32,7 +32,7 @@ import {
   updateElbowArrowPoints,
   validateElbowPoints,
 } from "@excalidraw/element";
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import { bumpVersion } from "@excalidraw/element";
 import { getContainerElement } from "@excalidraw/element";
 import { detectLineHeight } from "@excalidraw/element";

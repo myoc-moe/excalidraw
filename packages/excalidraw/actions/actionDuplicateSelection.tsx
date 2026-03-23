@@ -7,7 +7,7 @@ import {
 
 import { getNonDeletedElements } from "@excalidraw/element";
 
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 
 import {
   getSelectedElements,

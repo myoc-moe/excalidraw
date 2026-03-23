@@ -10,6 +10,54 @@ import { mockThrottleRAF } from "./packages/excalidraw/tests/helpers/mocks";
 import { yellow } from "./packages/excalidraw/tests/helpers/colorize";
 import { testPolyfills } from "./packages/excalidraw/tests/helpers/polyfills";
 
+class MemoryStorage implements Storage {
+  #items = new Map<string, string>();
+
+  get length() {
+    return this.#items.size;
+  }
+
+  clear() {
+    this.#items.clear();
+  }
+
+  getItem(key: string) {
+    return this.#items.has(key) ? this.#items.get(key)! : null;
+  }
+
+  key(index: number) {
+    return Array.from(this.#items.keys())[index] ?? null;
+  }
+
+  removeItem(key: string) {
+    this.#items.delete(String(key));
+  }
+
+  setItem(key: string, value: string) {
+    this.#items.set(String(key), String(value));
+  }
+}
+
+const ensureStorage = (storageKey: "localStorage" | "sessionStorage") => {
+  const storage = window[storageKey];
+
+  if (
+    storage &&
+    typeof storage.getItem === "function" &&
+    typeof storage.setItem === "function" &&
+    typeof storage.removeItem === "function" &&
+    typeof storage.clear === "function" &&
+    typeof storage.key === "function"
+  ) {
+    return;
+  }
+
+  Object.defineProperty(window, storageKey, {
+    configurable: true,
+    value: new MemoryStorage(),
+  });
+};
+
 vi.mock("@excalidraw/common", async (importOriginal) => {
   const module = await importOriginal<typeof import("@excalidraw/common")>();
 
@@ -27,6 +75,8 @@ Object.assign(globalThis, testPolyfills);
 require("fake-indexeddb/auto");
 
 polyfill();
+ensureStorage("localStorage");
+ensureStorage("sessionStorage");
 
 Object.defineProperty(window, "matchMedia", {
   writable: true,

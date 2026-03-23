@@ -30,6 +30,13 @@ export default defineConfig({
         replacement: path.resolve(__dirname, "./packages/excalidraw/$1"),
       },
       {
+        find: /^@excalidraw\/mermaid-to-excalidraw$/,
+        replacement: path.resolve(
+          __dirname,
+          "./packages/excalidraw/tests/helpers/mermaidToExcalidrawStub.ts",
+        ),
+      },
+      {
         find: /^@excalidraw\/math$/,
         replacement: path.resolve(__dirname, "./packages/math/src/index.ts"),
       },
@@ -53,6 +60,13 @@ export default defineConfig({
     // we need to run them in parallel
     sequence: {
       hooks: "parallel",
+    },
+    // The full jsdom suite becomes flaky under the default forks fan-out on this repo.
+    poolOptions: {
+      forks: {
+        minForks: 1,
+        maxForks: 4,
+      },
     },
     setupFiles: ["./setupTests.ts"],
     globals: true,

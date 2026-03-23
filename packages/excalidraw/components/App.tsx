@@ -121,7 +121,6 @@ import {
   getHoveredElementForBinding,
   isBindingEnabled,
   updateBoundElements,
-  LinearElementEditor,
   newElementWith,
   newFrameElement,
   newFreeDrawElement,
@@ -259,6 +258,7 @@ import {
   getUncroppedWidthAndHeight,
   getActiveTextElement,
 } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 
 import { findShapeByKey } from "@excalidraw/element/shapes";
 

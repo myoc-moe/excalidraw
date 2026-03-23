@@ -18,7 +18,7 @@ import {
   createPlaceholderEmbeddableLabel,
   getEmbedLink,
 } from "@excalidraw/element";
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import { getBoundTextElement, getContainerElement } from "@excalidraw/element";
 import { getLineHeightInPx } from "@excalidraw/element";
 import {

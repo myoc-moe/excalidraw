@@ -1,11 +1,8 @@
 import { pointFrom } from "@excalidraw/math";
 
 import { bindOrUnbindBindingElement } from "@excalidraw/element/binding";
-import {
-  isValidPolygon,
-  LinearElementEditor,
-  newElementWith,
-} from "@excalidraw/element";
+import { isValidPolygon, newElementWith } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 
 import {
   isBindingElement,

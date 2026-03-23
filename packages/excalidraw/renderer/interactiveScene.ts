@@ -40,9 +40,9 @@ import {
   isLineElement,
   maxBindingDistance_simple,
   isTextElement,
-  LinearElementEditor,
   getActiveTextElement,
 } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 
 import { renderSelectionElement } from "@excalidraw/element";
 

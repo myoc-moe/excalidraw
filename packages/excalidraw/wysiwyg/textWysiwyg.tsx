@@ -21,7 +21,7 @@ import {
   updateOriginalContainerCache,
 } from "@excalidraw/element";
 
-import { LinearElementEditor } from "@excalidraw/element";
+import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 import { bumpVersion } from "@excalidraw/element";
 import {
   getBoundTextElementId,
