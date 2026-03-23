@@ -2468,11 +2468,13 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
 
 ---
+
 ## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
 
 ---
+
 ## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
@@ -2605,7 +2607,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Update eraser cursor [#4922](https://github.com/excalidraw/excalidraw/pull/4922)
 
-- Add Eraser 🎉  [#4887](https://github.com/excalidraw/excalidraw/pull/4887)
+- Add Eraser 🎉 [#4887](https://github.com/excalidraw/excalidraw/pull/4887)
 
 - Added optional REACT_APP_WS_SERVER_URL for forks usecases [#4889](https://github.com/excalidraw/excalidraw/pull/4889)
 
@@ -2633,7 +2635,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Throttle `pointermove` events per framerate [#4727](https://github.com/excalidraw/excalidraw/pull/4727)
 
-- Support hyperlinks 🔥  [#4620](https://github.com/excalidraw/excalidraw/pull/4620)
+- Support hyperlinks 🔥 [#4620](https://github.com/excalidraw/excalidraw/pull/4620)
 
 - Added penMode for palm rejection [#4657](https://github.com/excalidraw/excalidraw/pull/4657)
 
@@ -2655,7 +2657,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Support updating text properties by clicking on container [#4499](https://github.com/excalidraw/excalidraw/pull/4499)
 
-- Bind text to shapes when pressing enter and support sticky notes 🎉  [#4343](https://github.com/excalidraw/excalidraw/pull/4343)
+- Bind text to shapes when pressing enter and support sticky notes 🎉 [#4343](https://github.com/excalidraw/excalidraw/pull/4343)
 
 - Redesign toolbar & tweaks [#4387](https://github.com/excalidraw/excalidraw/pull/4387)
 
@@ -2719,7 +2721,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Support renderTopRightUI in mobile [#4065](https://github.com/excalidraw/excalidraw/pull/4065)
 
-- Export THEME from the package  [#4055](https://github.com/excalidraw/excalidraw/pull/4055)
+- Export THEME from the package [#4055](https://github.com/excalidraw/excalidraw/pull/4055)
 
 - Improve freedraw shape [#3984](https://github.com/excalidraw/excalidraw/pull/3984)
 
@@ -2941,7 +2943,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Hide sidebar when `custom` tool active [#5179](https://github.com/excalidraw/excalidraw/pull/5179)
 
-- Rename  src to avatarUrl  in collaborator [#5177](https://github.com/excalidraw/excalidraw/pull/5177)
+- Rename src to avatarUrl in collaborator [#5177](https://github.com/excalidraw/excalidraw/pull/5177)
 
 - Don't save deleted ExcalidrawElements to Firebase [#5108](https://github.com/excalidraw/excalidraw/pull/5108)
 
@@ -3251,7 +3253,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Allow pointer events for disable zen mode button [#3743](https://github.com/excalidraw/excalidraw/pull/3743)
 
-- Use excal id so every element has unique id  [#3696](https://github.com/excalidraw/excalidraw/pull/3696)
+- Use excal id so every element has unique id [#3696](https://github.com/excalidraw/excalidraw/pull/3696)
 
 - Use rgba instead of shorthand alpha [#3688](https://github.com/excalidraw/excalidraw/pull/3688)
 
@@ -3317,7 +3319,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Media query for hiding shortcuts for mobile view [#2667](https://github.com/excalidraw/excalidraw/pull/2667)
 
-###  Refactor
+### Refactor
 
 - Auto ordered imports [#9163](https://github.com/excalidraw/excalidraw/pull/9163)
 
@@ -3410,6 +3412,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 - Switch to Yarn [#3057](https://github.com/excalidraw/excalidraw/pull/3057)
 
 ---
+
 ## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
@@ -3434,11 +3437,12 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - No migrating `draw` lines correctly
 
-###  Refactor
+### Refactor
 
 - Inline `SingleLibraryItem` into `PublishLibrary` (#6462
 
 ---
+
 ## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
@@ -3463,11 +3467,12 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - No migrating `draw` lines correctly
 
-###  Refactor
+### Refactor
 
 - Inline `SingleLibraryItem` into `PublishLibrary` (#6462
 
 ---
+
 ## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
@@ -3586,7 +3591,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Allow to disable preventUnload in dev [#9319](https://github.com/excalidraw/excalidraw/pull/9319)
 
-- Add keyboard shortcut to save file in text  [#9295](https://github.com/excalidraw/excalidraw/pull/9295)
+- Add keyboard shortcut to save file in text [#9295](https://github.com/excalidraw/excalidraw/pull/9295)
 
 ### Fixes
 
@@ -3608,7 +3613,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Keep input focus during generation [#10679](https://github.com/excalidraw/excalidraw/pull/10679)
 
-- Arrow drag start in bindable area  jumps across bindable [#10676](https://github.com/excalidraw/excalidraw/pull/10676)
+- Arrow drag start in bindable area jumps across bindable [#10676](https://github.com/excalidraw/excalidraw/pull/10676)
 
 - Fail gracefully during restore [#10673](https://github.com/excalidraw/excalidraw/pull/10673)
 
@@ -3874,7 +3879,7 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 
 - Remove blue lines [#10425](https://github.com/excalidraw/excalidraw/pull/10425)
 
-###  Refactor
+### Refactor
 
 - Change TTD persistence to iDB [#10662](https://github.com/excalidraw/excalidraw/pull/10662)
 
@@ -3907,4 +3912,3 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 - Docker compose version removed [#10074](https://github.com/excalidraw/excalidraw/pull/10074)
 
 ---
-

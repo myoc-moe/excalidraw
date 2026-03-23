@@ -3,7 +3,7 @@ import { vi } from "vitest";
 
 import { KEYS, reseed } from "@excalidraw/common";
 
-import { SHAPES } from "../components/shapes";
+import { SHAPES } from "@excalidraw/element/shapes";
 
 import { Excalidraw } from "../index";
 import * as InteractiveCanvas from "../renderer/interactiveScene";
@@ -504,9 +504,9 @@ describe("tool locking & selection", () => {
         value !== "image" &&
         value !== "selection" &&
         value !== "eraser" &&
-        value !== "arrow" &&
-        value !== "hand" &&
-        value !== "laser"
+        value !== "arrow"
+        // value !== "hand" &&
+        // value !== "laser"
       ) {
         const element = UI.createElement(value);
         expect(h.state.selectedElementIds[element.id]).not.toBe(true);

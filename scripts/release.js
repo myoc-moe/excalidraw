@@ -142,7 +142,10 @@ const snapshotDependencies = () => {
 
   for (const packageName of PACKAGES) {
     const pkg = readPackageJson(packageName);
-    snapshot.set(packageName, pkg.dependencies ? { ...pkg.dependencies } : null);
+    snapshot.set(
+      packageName,
+      pkg.dependencies ? { ...pkg.dependencies } : null,
+    );
   }
 
   return snapshot;

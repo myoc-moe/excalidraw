@@ -1,9 +1,9 @@
 import React from "react";
 
+import CustomFooter from "./CustomFooter";
+
 import type * as TExcalidraw from "@myoc/excalidraw";
 import type { ExcalidrawImperativeAPI } from "@myoc/excalidraw/types";
-
-import CustomFooter from "./CustomFooter";
 
 const MobileFooter = ({
   excalidrawAPI,

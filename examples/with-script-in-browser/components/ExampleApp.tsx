@@ -8,22 +8,6 @@ import React, {
   cloneElement,
 } from "react";
 
-import type * as TExcalidraw from "@myoc/excalidraw";
-import type { ImportedLibraryData } from "@myoc/excalidraw/data/types";
-import type {
-  NonDeletedExcalidrawElement,
-  Theme,
-} from "@myoc/excalidraw/element/types";
-import type {
-  AppState,
-  BinaryFileData,
-  ExcalidrawImperativeAPI,
-  ExcalidrawInitialDataState,
-  Gesture,
-  LibraryItems,
-  PointerDownState as ExcalidrawPointerDownState,
-} from "@myoc/excalidraw/types";
-
 import initialData from "../initialData";
 import {
   resolvablePromise,
@@ -38,6 +22,23 @@ import MobileFooter from "./MobileFooter";
 import ExampleSidebar from "./sidebar/ExampleSidebar";
 
 import "./ExampleApp.scss";
+
+import type { ImportedLibraryData } from "@myoc/excalidraw/data/types";
+import type * as TExcalidraw from "@myoc/excalidraw";
+
+import type {
+  NonDeletedExcalidrawElement,
+  Theme,
+} from "@myoc/excalidraw/element/types";
+import type {
+  AppState,
+  BinaryFileData,
+  ExcalidrawImperativeAPI,
+  ExcalidrawInitialDataState,
+  Gesture,
+  LibraryItems,
+  PointerDownState as ExcalidrawPointerDownState,
+} from "@myoc/excalidraw/types";
 
 import type { ResolvablePromise } from "../utils";
 
@@ -95,8 +96,6 @@ export default function ExampleApp({
     MainMenu,
     LiveCollaborationTrigger,
     convertToExcalidrawElements,
-    TTDDialog,
-    TTDDialogTrigger,
     ROUNDNESS,
     loadSceneOrLibraryFromBlob,
   } = excalidrawLib;
@@ -244,20 +243,6 @@ export default function ExampleApp({
           Toggle Custom Sidebar
         </Sidebar.Trigger>
         {renderMenu()}
-        {excalidrawAPI && (
-          <TTDDialogTrigger icon={<span>😀</span>}>
-            Text to diagram
-          </TTDDialogTrigger>
-        )}
-        <TTDDialog
-          onTextSubmit={async (_) => {
-            console.info("submit");
-            // sleep for 2s
-            await new Promise((resolve) => setTimeout(resolve, 2000));
-            throw new Error("error, go away now");
-            // return "dummy";
-          }}
-        />
       </>,
     );
     return newElement;
