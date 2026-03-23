@@ -3,9 +3,9 @@ import { createRoot } from "react-dom/client";
 
 import "@myoc/excalidraw/index.css";
 
-import type * as TExcalidraw from "@myoc/excalidraw";
-
 import App from "./components/ExampleApp";
+
+import type * as TExcalidraw from "@myoc/excalidraw";
 
 declare global {
   interface Window {

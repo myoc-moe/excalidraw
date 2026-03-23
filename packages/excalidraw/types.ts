@@ -274,6 +274,29 @@ export type ObservedElementsAppState = {
 export type NormaliseMode = "first" | "average";
 export type NormaliseMetric = "scale" | "height" | "width" | "size";
 
+export type SmartZoomPreferences = {
+  fitToViewport?: boolean;
+  animate?: boolean;
+  duration?: number;
+  viewportZoomFactor?: number;
+};
+
+export type ArrangePreferences = {
+  algorithm?: ArrangeAlgorithms;
+  gap?: number;
+};
+
+export type NormalisePreferences = {
+  mode?: NormaliseMode;
+  metric?: NormaliseMetric;
+};
+
+export type EditorPreferences = {
+  smartZoom?: SmartZoomPreferences;
+  arrange?: ArrangePreferences;
+  normalise?: NormalisePreferences;
+};
+
 export interface AppState {
   contextMenu: {
     items: ContextMenuItems;
@@ -650,6 +673,8 @@ export interface ExcalidrawProps {
     elements: readonly NonDeletedExcalidrawElement[],
     appState: UIAppState,
   ) => JSX.Element;
+  editorPreferences?: EditorPreferences;
+  onEditorPreferencesChange?: (next: EditorPreferences) => void;
   UIOptions?: Partial<UIOptions>;
   detectScroll?: boolean;
   handleKeyboardGlobally?: boolean;

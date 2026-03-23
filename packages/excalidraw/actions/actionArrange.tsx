@@ -1,5 +1,4 @@
 import { arrayToMap, KEYS, matchKey } from "@excalidraw/common";
-import { getShortcutKey } from "@excalidraw/excalidraw/shortcut";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -10,8 +9,11 @@ import { arrangeElements } from "@excalidraw/element/arrange";
 import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import { TableCellsIcon } from "../components/icons";
+import { getEffectiveEditorPreferences } from "../editorPreferences";
 
 import { t } from "../i18n";
+
+import { getShortcutKey } from "../shortcut";
 
 import { register } from "./register";
 
@@ -26,12 +28,16 @@ const arrangeSelectedElements = (
 ) => {
   const selectedElements = app.scene.getSelectedElements(appState);
   const elementsMap = arrayToMap(elements);
+  const { arrange } = getEffectiveEditorPreferences(
+    appState,
+    app.props.editorPreferences,
+  );
   const updatedElements = arrangeElements(
     app.scene,
     selectedElements,
     elementsMap,
-    appState.arrangeConfiguration.algorithm,
-    appState.arrangeConfiguration.gap,
+    arrange.algorithm,
+    arrange.gap,
   );
 
   const updatedElementsMap = arrayToMap(updatedElements);

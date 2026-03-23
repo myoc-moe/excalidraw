@@ -260,6 +260,8 @@ import {
   getActiveTextElement,
 } from "@excalidraw/element";
 
+import { findShapeByKey } from "@excalidraw/element/shapes";
+
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
 
 import type {
@@ -453,8 +455,6 @@ import { isPointHittingLink } from "./hyperlink/helpers";
 import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
 import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 import { Toast } from "./Toast";
-
-import { findShapeByKey } from "@excalidraw/element/shapes";
 
 import UnlockPopup from "./UnlockPopup";
 

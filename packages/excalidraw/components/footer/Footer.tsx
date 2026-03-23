@@ -1,5 +1,6 @@
 import clsx from "clsx";
 
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { t } from "@excalidraw/excalidraw/i18n";
 
 import { actionShortcuts } from "../../actions";

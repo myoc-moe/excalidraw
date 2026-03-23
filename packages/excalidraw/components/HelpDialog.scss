@@ -16,7 +16,7 @@
       border: none;
       white-space: nowrap;
       font-family: inherit;
-  
+
       display: grid;
       grid-template-columns: 1fr 0.2fr;
       align-items: center;
@@ -31,14 +31,13 @@
       line-height: 1;
       width: fit-content;
 
-  
       &.checkmark::before {
         position: absolute;
         left: 6px;
         margin-bottom: 1px;
         content: "\2713";
       }
-  
+
       .toggle-button__label {
         justify-self: start;
         margin-inline-end: 20px;

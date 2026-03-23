@@ -17,6 +17,7 @@ import { saveDebugState } from "./DebugCanvas";
 
 export const AppMainMenu: React.FC<{
   onCollabDialogOpen: () => any;
+  onEditorPreferencesDialogOpen: () => void;
   isCollaborating: boolean;
   isCollabEnabled: boolean;
   theme: Theme | "system";
@@ -76,7 +77,19 @@ export const AppMainMenu: React.FC<{
         </MainMenu.Item>
       )}
       <MainMenu.Separator />
-      <MainMenu.DefaultItems.Preferences />
+      <MainMenu.DefaultItems.Preferences
+        additionalItems={
+          <>
+            <MainMenu.Separator />
+            <MainMenu.Item
+              data-testid="editor-preferences-menu-item"
+              onSelect={() => props.onEditorPreferencesDialogOpen()}
+            >
+              Editor Preferences...
+            </MainMenu.Item>
+          </>
+        }
+      />
       <MainMenu.DefaultItems.ToggleTheme
         allowSystemTheme
         theme={props.theme}

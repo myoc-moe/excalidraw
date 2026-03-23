@@ -7,6 +7,7 @@ import { normaliseElements } from "@excalidraw/element/normalise";
 import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import { NormaliseSizeIcon } from "../components/icons";
+import { getEffectiveEditorPreferences } from "../editorPreferences";
 import { t } from "../i18n";
 
 import { alignActionsPredicate } from "./actionAlign";
@@ -21,12 +22,16 @@ const normaliseSelectedElements = (
 ) => {
   const selectedElements = app.scene.getSelectedElements(appState);
   const elementsMap = arrayToMap(elements);
+  const { normalise } = getEffectiveEditorPreferences(
+    appState,
+    app.props.editorPreferences,
+  );
   const updatedElements = normaliseElements(
     app.scene,
     selectedElements,
     elementsMap,
-    appState.normaliseConfiguration.mode,
-    appState.normaliseConfiguration.metric,
+    normalise.mode,
+    normalise.metric,
   );
 
   const updatedElementsMap = arrayToMap(updatedElements);

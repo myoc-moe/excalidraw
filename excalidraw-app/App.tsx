@@ -10,6 +10,10 @@ import {
 import { trackEvent } from "@excalidraw/excalidraw/analytics";
 import { getDefaultAppState } from "@excalidraw/excalidraw/appState";
 import {
+  getEffectiveEditorPreferences,
+  type ResolvedEditorPreferences,
+} from "@excalidraw/excalidraw/editorPreferences";
+import {
   CommandPalette,
   DEFAULT_CATEGORIES,
 } from "@excalidraw/excalidraw/components/CommandPalette/CommandPalette";
@@ -72,6 +76,7 @@ import type {
   AppState,
   ExcalidrawImperativeAPI,
   BinaryFiles,
+  EditorPreferences,
   ExcalidrawInitialDataState,
   UIAppState,
   ExcalidrawProps,
@@ -139,6 +144,7 @@ import DebugCanvas, {
   isVisualDebuggerEnabled,
   loadSavedDebugState,
 } from "./components/DebugCanvas";
+import { EditorPreferencesDialog } from "./components/EditorPreferencesDialog";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 
 import "./index.scss";
@@ -369,6 +375,27 @@ const initializeScene = async (opts: {
   return { scene: null, isExternalScene: false };
 };
 
+const getDefaultEditorPreferences = (): ResolvedEditorPreferences =>
+  getEffectiveEditorPreferences(getDefaultAppState());
+
+const mergeEditorPreferences = (
+  current: ResolvedEditorPreferences,
+  next: EditorPreferences,
+): ResolvedEditorPreferences => ({
+  smartZoom: {
+    ...current.smartZoom,
+    ...next.smartZoom,
+  },
+  arrange: {
+    ...current.arrange,
+    ...next.arrange,
+  },
+  normalise: {
+    ...current.normalise,
+    ...next.normalise,
+  },
+});
+
 const ExcalidrawWrapper = () => {
   const excalidrawAPI = useExcalidrawAPI();
 
@@ -380,6 +407,10 @@ const ExcalidrawWrapper = () => {
   const [langCode, setLangCode] = useAppLangCode();
 
   const editorInterface = useEditorInterface();
+  const [editorPreferences, setEditorPreferences] =
+    useState<ResolvedEditorPreferences>(getDefaultEditorPreferences);
+  const [isEditorPreferencesDialogOpen, setIsEditorPreferencesDialogOpen] =
+    useState(false);
 
   // initial state
   // ---------------------------------------------------------------------------
@@ -790,6 +821,15 @@ const ExcalidrawWrapper = () => {
     () => setShareDialogState({ isOpen: true, type: "collaborationOnly" }),
     [setShareDialogState],
   );
+  const updateEditorPreferences = useCallback((next: EditorPreferences) => {
+    setEditorPreferences((current) => mergeEditorPreferences(current, next));
+  }, []);
+  const onEditorPreferencesDialogOpen = useCallback(() => {
+    setIsEditorPreferencesDialogOpen(true);
+  }, []);
+  const onEditorPreferencesDialogClose = useCallback(() => {
+    setIsEditorPreferencesDialogOpen(false);
+  }, []);
 
   // ---------------------------------------------------------------------------
   // onExport — intercepts file save to wait for pending image loads
@@ -910,6 +950,8 @@ const ExcalidrawWrapper = () => {
         wheelZoomsOnDefault
         onChange={onChange}
         onExport={onExport}
+        editorPreferences={editorPreferences}
+        onEditorPreferencesChange={updateEditorPreferences}
         initialData={initialStatePromiseRef.current.promise}
         isCollaborating={isCollaborating}
         onPointerUpdate={collabAPI?.onPointerUpdate}
@@ -985,6 +1027,7 @@ const ExcalidrawWrapper = () => {
         {!excalidrawAPI?.getAppState().hideMainMenus && (
           <AppMainMenu
             onCollabDialogOpen={onCollabDialogOpen}
+            onEditorPreferencesDialogOpen={onEditorPreferencesDialogOpen}
             isCollaborating={isCollaborating}
             isCollabEnabled={!isCollabDisabled}
             theme={appTheme}
@@ -1054,6 +1097,14 @@ const ExcalidrawWrapper = () => {
             }
           }}
         />
+
+        {isEditorPreferencesDialogOpen && (
+          <EditorPreferencesDialog
+            editorPreferences={editorPreferences}
+            onChange={updateEditorPreferences}
+            onClose={onEditorPreferencesDialogClose}
+          />
+        )}
 
         <AppSidebar />
 

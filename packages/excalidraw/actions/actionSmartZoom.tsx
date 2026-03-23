@@ -1,10 +1,11 @@
 import { KEYS } from "@excalidraw/common";
 
-import { CaptureUpdateAction } from "@excalidraw/excalidraw";
+import { CaptureUpdateAction } from "@excalidraw/element/store";
 
 import { arrowsToEyeIcon } from "../components/icons";
 import { getSelectedElements } from "../scene";
 import { ToolButton } from "../components/ToolButton";
+import { getEffectiveEditorPreferences } from "../editorPreferences";
 
 import { t } from "../i18n";
 
@@ -17,12 +18,10 @@ export const actionSmartZoom = register({
   icon: arrowsToEyeIcon,
   viewMode: true,
   perform: (elements, appState, _, app) => {
-    const settings = {
-      fitToViewport: true,
-      animate: true,
-      duration: 200,
-      viewportZoomFactor: 0.8,
-    };
+    const settings = getEffectiveEditorPreferences(
+      appState,
+      app.props.editorPreferences,
+    ).smartZoom;
     const selectedElements = getSelectedElements(elements, appState);
     if (selectedElements.length < 1) {
       // Zoom app state to all elements

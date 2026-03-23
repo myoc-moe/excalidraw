@@ -80,6 +80,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     theme,
     name,
     renderCustomStats,
+    editorPreferences,
+    onEditorPreferencesChange,
     onPaste,
     detectScroll = true,
     handleKeyboardGlobally = false,
@@ -192,6 +194,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           theme={theme}
           name={name}
           renderCustomStats={renderCustomStats}
+          editorPreferences={editorPreferences}
+          onEditorPreferencesChange={onEditorPreferencesChange}
           UIOptions={UIOptions}
           onPaste={onPaste}
           detectScroll={detectScroll}
@@ -384,6 +388,13 @@ export { Fonts } from "./fonts/Fonts";
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
 export { CommandPalette } from "./components/CommandPalette/CommandPalette";
+
+export type {
+  ArrangePreferences,
+  EditorPreferences,
+  NormalisePreferences,
+  SmartZoomPreferences,
+} from "./types";
 
 export {
   renderSpreadsheet,

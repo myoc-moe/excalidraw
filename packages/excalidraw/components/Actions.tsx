@@ -1082,14 +1082,10 @@ export const ShapesSwitcher = ({
     },
   ] as const;
 
-  const frameToolSelected = activeTool.type === "frame";
-  const laserToolSelected = activeTool.type === "laser";
   const lassoToolSelected =
     isFullStylesPanel &&
     activeTool.type === "lasso" &&
     app.state.preferredSelectionTool.type !== "lasso";
-
-  const embeddableToolSelected = activeTool.type === "embeddable";
 
   const simplifiedShapeTools = SHAPES.filter(
     (s) => s.myocSimplifiedMode === false,

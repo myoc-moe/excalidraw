@@ -3,6 +3,10 @@ import { getCommonBoundingBox } from "./bounds";
 import { getMaximumGroups } from "./groups";
 
 import { GrowingPacker, type Block } from "./arrange-algorithms/packer";
+import {
+  packBlocksMaxRects,
+  type MaxRectsHeuristic,
+} from "./arrange-algorithms/maxRects";
 
 import type { Scene } from "./Scene";
 
@@ -18,6 +22,10 @@ interface Group {
   group: ExcalidrawElement[];
   boundingBox: BoundingBox;
 }
+
+type GroupBlock = Block & {
+  group: ExcalidrawElement[];
+};
 
 /**
  * Updates all elements relative to the group position
@@ -41,6 +49,38 @@ const mutateGroup = (
   });
 };
 
+const createGroupBlocks = (groups: Group[]): GroupBlock[] =>
+  groups
+    .map((group) => ({
+      w: group.boundingBox.width,
+      h: group.boundingBox.height,
+      group: group.group,
+    }))
+    .sort(
+      (a, b) =>
+        b.w * b.h - a.w * a.h ||
+        Math.max(b.w, b.h) - Math.max(a.w, a.h) ||
+        b.h - a.h ||
+        b.w - a.w,
+    );
+
+const applyPackedGroups = (
+  scene: Scene,
+  groupBlocks: GroupBlock[],
+  origin: { x: number; y: number },
+) => {
+  const groupsAdded = groupBlocks.filter((block) => block.fit);
+
+  groupsAdded.forEach((group) => {
+    mutateGroup(scene, group.group, {
+      x: origin.x + (group.fit?.x ?? 0),
+      y: origin.y + (group.fit?.y ?? 0),
+    });
+  });
+
+  return groupsAdded.flatMap((group) => group.group);
+};
+
 const arrangeElementsBinaryTreePacking = (
   scene: Scene,
   groups: Group[],
@@ -53,43 +93,40 @@ const arrangeElementsBinaryTreePacking = (
     y: commonBoundingBox.minY,
   };
 
-  const groupBlocks: (Block & {
-    group: ExcalidrawElement[];
-  })[] = groups
-    // sort gropus by maxSide, highest to lowest
-    .sort(
-      (a, b) =>
-        Math.max(b.boundingBox.width, b.boundingBox.height) -
-        Math.max(a.boundingBox.width, a.boundingBox.height),
-    )
-    .map((g) => ({
-      w: g.boundingBox.width,
-      h: g.boundingBox.height,
-      group: g.group,
-    }));
+  const groupBlocks = createGroupBlocks(groups);
 
   const packer = new GrowingPacker(gap);
   packer.fit(groupBlocks);
 
-  const groupsAdded = [];
-  for (let n = 0; n < groupBlocks.length; n++) {
-    const block = groupBlocks[n];
-    if (block.fit) {
-      // Add to elements translation
-      groupsAdded.push(block);
-      // DrawRectangle(block.fit.x, block.fit.y, block.w, block.h);
-    }
-  }
-  // For each groupsAdded, we need to actually perform the translation
-  // and update the elements
-  groupsAdded.forEach((group) => {
-    mutateGroup(scene, group.group, {
-      x: origin.x + (group.fit?.x ?? 0),
-      y: origin.y + (group.fit?.y ?? 0),
-    });
+  return applyPackedGroups(scene, groupBlocks, origin);
+};
+
+const arrangeElementsMaxRectsPacking = (
+  scene: Scene,
+  groups: Group[],
+  gap: number,
+  heuristic: MaxRectsHeuristic,
+): ExcalidrawElement[] => {
+  const flattendGroups = groups.flatMap((g) => g.group);
+  const commonBoundingBox = getCommonBoundingBox(flattendGroups);
+  const origin = {
+    x: commonBoundingBox.minX,
+    y: commonBoundingBox.minY,
+  };
+  const groupBlocks = createGroupBlocks(groups);
+  const layout = packBlocksMaxRects(groupBlocks, {
+    gap,
+    heuristic,
   });
 
-  return groupsAdded.flatMap((group) => group.group);
+  if (!layout) {
+    console.warn(
+      `Packing heuristic [${heuristic}] failed - using binary tree packer`,
+    );
+    return arrangeElementsBinaryTreePacking(scene, groups, gap);
+  }
+
+  return applyPackedGroups(scene, groupBlocks, origin);
 };
 
 const arrangeElements = (
@@ -112,12 +149,32 @@ const arrangeElements = (
 
   switch (algorithm) {
     case "bin-packing":
+    case "bin-packing-center":
+      return arrangeElementsMaxRectsPacking(
+        scene,
+        groupBoundingBoxes,
+        gap,
+        "center-distance",
+      );
+    case "bin-packing-max-rects":
+      return arrangeElementsMaxRectsPacking(
+        scene,
+        groupBoundingBoxes,
+        gap,
+        "best-area-fit",
+      );
+    case "bin-packing-binary-tree":
       return arrangeElementsBinaryTreePacking(scene, groupBoundingBoxes, gap);
     default:
       console.warn(
         `Unimplemented algorithm [${algorithm}] - using bin-packing`,
       );
-      return arrangeElementsBinaryTreePacking(scene, groupBoundingBoxes, gap);
+      return arrangeElementsMaxRectsPacking(
+        scene,
+        groupBoundingBoxes,
+        gap,
+        "center-distance",
+      );
   }
 };
 
