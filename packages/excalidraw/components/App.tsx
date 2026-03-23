@@ -2247,26 +2247,6 @@ class App extends React.Component<AppProps, AppState> {
                                 }
                               />
                             )}
-                          {!!this.plugins.diagramToCode &&
-                            selectedElements.length === 1 &&
-                            isMagicFrameElement(firstSelectedElement) && (
-                              <ElementCanvasButtons
-                                element={firstSelectedElement}
-                                elementsMap={elementsMap}
-                              >
-                                <ElementCanvasButton
-                                  title={t("labels.convertToCode")}
-                                  icon={MagicIcon}
-                                  checked={false}
-                                  onChange={() =>
-                                    this.onMagicFrameGenerate(
-                                      firstSelectedElement,
-                                      "button",
-                                    )
-                                  }
-                                />
-                              </ElementCanvasButtons>
-                            )}
                           {selectedElements.length === 1 &&
                             isIframeElement(firstSelectedElement) &&
                             firstSelectedElement.customData?.generationData
@@ -2318,7 +2298,6 @@ class App extends React.Component<AppProps, AppState> {
                                 />
                               </ElementCanvasButtons>
                             )}
-
                           {this.state.toast !== null && (
                             <Toast
                               message={this.state.toast.message}
@@ -3795,37 +3774,6 @@ class App extends React.Component<AppProps, AppState> {
     // ------------------- Only textual stuff remaining -------------------
     if (!data.text) {
       return;
-    }
-
-    // ------------------- Successful Mermaid -------------------
-    if (!isPlainPaste && isMaybeMermaidDefinition(data.text)) {
-      try {
-        const api = (await import(MERMAID_TO_EXCALIDRAW_MODULE)) as {
-          parseMermaidToExcalidraw: (text: string) => Promise<{
-            elements: readonly ExcalidrawElementSkeleton[];
-            files: BinaryFiles;
-          }>;
-        };
-        const { elements: skeletonElements, files } =
-          await api.parseMermaidToExcalidraw(data.text);
-
-        const elements = convertToExcalidrawElements([...skeletonElements], {
-          regenerateIds: true,
-        });
-
-        this.addElementsFromPasteOrLibrary({
-          elements,
-          files,
-          position:
-            this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
-        });
-
-        return;
-      } catch (err: any) {
-        console.warn(
-          `parsing pasted text as mermaid definition failed: ${err.message}`,
-        );
-      }
     }
 
     // ------------------- Pure embeddable URLs -------------------

@@ -335,6 +335,7 @@ export const MobileToolBar = ({
               {t("toolBar.image")}
             </DropdownMenu.Item>
           )}
+          {/* Myoc - tools are deleted */}
         </DropdownMenu.Content>
       </DropdownMenu>
     </div>
