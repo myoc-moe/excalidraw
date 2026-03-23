@@ -876,61 +876,6 @@ const ExcalidrawWrapper = () => {
     [],
   );
 
-  // const onExport = () => {
-  //   return new Promise((r) => setTimeout(r, 2500));
-  //   // console.log("onExport");
-  // };
-
-  // ---------------------------------------------------------------------------
-  // onExport — intercepts file save to wait for pending image loads
-  // ---------------------------------------------------------------------------
-  const onExport: Required<ExcalidrawProps>["onExport"] = useCallback(
-    async function* () {
-      let snapshot = FileStatusStore.getSnapshot();
-      const { pending, total } = FileStatusStore.getPendingCount(
-        snapshot.value,
-      );
-      if (pending === 0) {
-        return;
-      }
-
-      // Yield initial progress
-      yield {
-        type: "progress",
-        progress: (total - pending) / total,
-        message: `Loading images (${total - pending}/${total})...`,
-      };
-
-      // Wait for all pending images to finish
-      while (true) {
-        snapshot = await FileStatusStore.pull(snapshot.version);
-        const { pending: nowPending, total: nowTotal } =
-          FileStatusStore.getPendingCount(snapshot.value);
-
-        yield {
-          type: "progress",
-          progress: (nowTotal - nowPending) / nowTotal,
-          message: `Loading images (${nowTotal - nowPending}/${nowTotal})...`,
-        };
-
-        if (nowPending === 0) {
-          await new Promise((r) => setTimeout(r, 500));
-          yield {
-            type: "progress",
-            message: `Preparing export...`,
-          };
-          return;
-        }
-      }
-    },
-    [],
-  );
-
-  // const onExport = () => {
-  //   return new Promise((r) => setTimeout(r, 2500));
-  //   // console.log("onExport");
-  // };
-
   // browsers generally prevent infinite self-embedding, there are
   // cases where it still happens, and while we disallow self-embedding
   // by not whitelisting our own origin, this serves as an additional guard

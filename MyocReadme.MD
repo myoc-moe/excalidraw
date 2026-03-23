@@ -3,6 +3,7 @@
 This file documents the release workflow for the Myoc fork of Excalidraw.
 
 It is intended for:
+
 - humans working in this repo
 - agents making changes or preparing releases
 
@@ -11,6 +12,7 @@ It is intended for:
 This fork publishes packages under the `@myoc` scope.
 
 Important:
+
 - this repo is released from the workspace root
 - do not publish `packages/excalidraw` directly with `yarn publish`
 - the root release script exists to build packages in order and keep package versions aligned
@@ -18,6 +20,7 @@ Important:
 ## Package Relationships
 
 The main package depends on internal workspace packages:
+
 - `@myoc/common`
 - `@myoc/math`
 - `@myoc/element`
@@ -64,6 +67,7 @@ yarn release --tag=latest --version=0.19.503
 ```
 
 What the root release script does:
+
 - runs install
 - clears build output
 - builds `common`, `math`, `element`, then `excalidraw`
@@ -80,6 +84,7 @@ yarn publish
 ```
 
 Why:
+
 - it skips the monorepo release flow
 - it does not align internal package versions correctly
 - it can publish `@myoc/excalidraw` while `@myoc/common`, `@myoc/math`, and `@myoc/element` are still on older versions
@@ -93,6 +98,7 @@ During `yarn release --tag=latest`, the script may print:
 For this fork, that is usually not important.
 
 Reason:
+
 - the changelog generator expects upstream-style PR commit messages
 - Myoc often uses direct commits without upstream PR numbers
 
@@ -103,6 +109,7 @@ If the release is internal, this warning can usually be ignored.
 Publishing only works if the logged-in npm user has publish access to the `@myoc` scope.
 
 If publish fails with a registry `404` for `@myoc/excalidraw`, check:
+
 - the npm account is logged in correctly
 - the account can publish to `@myoc`
 - `@myoc` is the intended scope
