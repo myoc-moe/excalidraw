@@ -56,6 +56,13 @@ const StaticCanvas = (props: StaticCanvasProps) => {
       canvas.classList.add("excalidraw__canvas", "static");
     }
 
+    const gridColorBold = getComputedStyle(wrapper)
+      .getPropertyValue("--color-grid-bold")
+      .trim();
+    const gridColorRegular = getComputedStyle(wrapper)
+      .getPropertyValue("--color-grid-regular")
+      .trim();
+
     renderStaticScene(
       {
         canvas,
@@ -65,7 +72,11 @@ const StaticCanvas = (props: StaticCanvasProps) => {
         allElementsMap: props.allElementsMap,
         visibleElements: props.visibleElements,
         appState: props.appState,
-        renderConfig: props.renderConfig,
+        renderConfig: {
+          ...props.renderConfig,
+          gridColorBold,
+          gridColorRegular,
+        },
       },
       isRenderThrottlingEnabled(),
     );

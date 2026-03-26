@@ -82,6 +82,9 @@
 
   --color-selection: #6965db;
 
+  --color-grid-bold: #dddddd;
+  --color-grid-regular: #e5e5e5;
+
   --color-icon-white: #fff;
 
   --color-primary: #6965db;
@@ -227,6 +230,9 @@
 
     // will be inverted to a lighter color.
     --color-selection: #3530c4;
+
+    --color-grid-bold: #2f2f2f;
+    --color-grid-regular: #282828;
 
     --color-icon-white: var(--color-gray-90);
 

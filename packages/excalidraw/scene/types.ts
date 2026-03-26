@@ -37,6 +37,8 @@ export type StaticCanvasRenderConfig = {
   elementsPendingErasure: ElementsPendingErasure;
   pendingFlowchartNodes: PendingExcalidrawElements | null;
   theme: AppState["theme"];
+  gridColorBold?: string;
+  gridColorRegular?: string;
 };
 
 export type SVGRenderConfig = {
