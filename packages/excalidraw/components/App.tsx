@@ -293,14 +293,11 @@ import type {
 import type { Mutable, ValueOf } from "@excalidraw/common/utility-types";
 
 import {
-  actionAddToLibrary,
+  actionArrangeElements,
   actionBringForward,
   actionBringToFront,
   actionCopy,
-  actionCopyAsPng,
-  actionCopyAsSvg,
   copyText,
-  actionCopyStyles,
   actionCut,
   actionDeleteSelected,
   actionDuplicateSelection,
@@ -308,13 +305,11 @@ import {
   actionFlipHorizontal,
   actionFlipVertical,
   actionGroup,
-  actionPasteStyles,
   actionSelectAll,
   actionSendBackward,
   actionSendToBack,
   actionToggleGridMode,
   actionToggleStats,
-  actionToggleZenMode,
   actionUnbindText,
   actionBindText,
   actionUngroup,
@@ -452,7 +447,7 @@ import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
 import { StaticCanvas, InteractiveCanvas } from "./canvases";
 import NewElementCanvas from "./canvases/NewElementCanvas";
 import { isPointHittingLink } from "./hyperlink/helpers";
-import { MagicIcon, copyIcon, fullscreenIcon } from "./icons";
+import { copyIcon, fullscreenIcon } from "./icons";
 import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 import { Toast } from "./Toast";
 
@@ -606,38 +601,6 @@ const YOUTUBE_VIDEO_STATES = new Map<
 let IS_PLAIN_PASTE = false;
 let IS_PLAIN_PASTE_TIMER = 0;
 let PLAIN_PASTE_TOAST_SHOWN = false;
-
-const MERMAID_TO_EXCALIDRAW_MODULE = "@excalidraw/mermaid-to-excalidraw";
-const MERMAID_DEFINITION_PREFIXES = [
-  "flowchart",
-  "graph",
-  "sequenceDiagram",
-  "classDiagram",
-  "stateDiagram",
-  "erDiagram",
-  "journey",
-  "gantt",
-  "pie",
-  "mindmap",
-  "timeline",
-  "gitGraph",
-  "quadrantChart",
-  "xychart-beta",
-  "C4Context",
-  "C4Container",
-  "C4Component",
-  "C4Dynamic",
-  "C4Deployment",
-  "requirementDiagram",
-] as const;
-
-const isMaybeMermaidDefinition = (text: string) => {
-  const trimmedText = text.trimStart();
-
-  return MERMAID_DEFINITION_PREFIXES.some((prefix) =>
-    trimmedText.startsWith(prefix),
-  );
-};
 
 let lastPointerUp: (() => void) | null = null;
 const gesture: Gesture = {
@@ -12498,27 +12461,17 @@ class App extends React.Component<AppProps, AppState> {
   ): ContextMenuItems => {
     const options: ContextMenuItems = [];
 
-    options.push(actionCopyAsPng, actionCopyAsSvg);
-
     // canvas contextMenu
     // -------------------------------------------------------------------------
 
     if (type === "canvas") {
       if (this.state.viewModeEnabled) {
-        return [
-          ...options,
-          actionToggleGridMode,
-          actionToggleZenMode,
-          actionToggleViewMode,
-          actionToggleStats,
-        ];
+        return [actionToggleGridMode, actionToggleViewMode, actionToggleStats];
       }
 
       return [
         actionPaste,
         CONTEXT_MENU_SEPARATOR,
-        actionCopyAsPng,
-        actionCopyAsSvg,
         copyText,
         CONTEXT_MENU_SEPARATOR,
         actionSelectAll,
@@ -12528,7 +12481,6 @@ class App extends React.Component<AppProps, AppState> {
         actionToggleObjectsSnapMode,
         actionToggleArrowBinding,
         actionToggleMidpointSnapping,
-        actionToggleZenMode,
         actionToggleViewMode,
         actionToggleStats,
       ];
@@ -12565,12 +12517,10 @@ class App extends React.Component<AppProps, AppState> {
       actionWrapSelectionInFrame,
       CONTEXT_MENU_SEPARATOR,
       actionToggleCropEditor,
+      actionArrangeElements,
       actionNormaliseElements,
       CONTEXT_MENU_SEPARATOR,
       ...options,
-      CONTEXT_MENU_SEPARATOR,
-      actionCopyStyles,
-      actionPasteStyles,
       CONTEXT_MENU_SEPARATOR,
       actionGroup,
       actionTextAutoResize,
@@ -12578,8 +12528,6 @@ class App extends React.Component<AppProps, AppState> {
       actionBindText,
       actionWrapTextInContainer,
       actionUngroup,
-      CONTEXT_MENU_SEPARATOR,
-      actionAddToLibrary,
       ...zIndexActions,
       CONTEXT_MENU_SEPARATOR,
       actionFlipHorizontal,

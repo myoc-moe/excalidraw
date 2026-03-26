@@ -1,5 +1,3 @@
-import { CODES, KEYS } from "@excalidraw/common";
-
 import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { coffeeIcon } from "../components/icons";
@@ -31,6 +29,4 @@ export const actionToggleZenMode = register({
       typeof appProps.zenModeEnabled === "undefined"
     );
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.Z,
 });

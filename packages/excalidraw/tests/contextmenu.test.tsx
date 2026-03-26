@@ -1,9 +1,8 @@
 import React from "react";
 
-import { KEYS, reseed } from "@excalidraw/common";
 import { setDateTimeForTests } from "@excalidraw/common";
+import { KEYS, reseed } from "@excalidraw/common";
 
-import { copiedStyles } from "../actions/actionStyles";
 import { Excalidraw } from "../index";
 
 import { API } from "./helpers/api";
@@ -27,15 +26,6 @@ const queryContextMenuItem = (
   item: ActionName | ShortcutName,
 ) =>
   contextMenu?.querySelector(`li[data-testid="${item}"]`) as HTMLElement | null;
-
-const clickContextMenuItem = (
-  contextMenu: HTMLElement | null,
-  item: ActionName | ShortcutName,
-) => {
-  const contextMenuItem = queryContextMenuItem(contextMenu, item);
-  expect(contextMenuItem).not.toBeNull();
-  fireEvent.click(contextMenuItem!);
-};
 
 const getContextMenuItems = () =>
   Array.from(UI.queryContextMenu()?.querySelectorAll("li") ?? []).map(
@@ -79,12 +69,13 @@ describe("contextMenu element", () => {
     });
 
     expect(getContextMenuItems()).toEqual(
-      expect.arrayContaining<ShortcutName>([
+      expect.arrayContaining([
         "paste",
         "selectAll",
         "gridMode",
         "objectsSnapMode",
-        "zenMode",
+        "arrowBinding",
+        "midpointSnapping",
         "viewMode",
         "stats",
       ]),
@@ -113,9 +104,6 @@ describe("contextMenu element", () => {
       "copy",
       "paste",
       "wrapSelectionInFrame",
-      "copyStyles",
-      "pasteStyles",
-      "addToLibrary",
       "sendBackward",
       "bringForward",
       "sendToBack",
@@ -160,11 +148,9 @@ describe("contextMenu element", () => {
       "copy",
       "paste",
       "wrapSelectionInFrame",
+      "arrangeElements",
       "normaliseElements",
-      "copyStyles",
-      "pasteStyles",
       "group",
-      "addToLibrary",
       "sendBackward",
       "bringForward",
       "sendToBack",
@@ -211,11 +197,9 @@ describe("contextMenu element", () => {
       "copy",
       "paste",
       "wrapSelectionInFrame",
+      "arrangeElements",
       "normaliseElements",
-      "copyStyles",
-      "pasteStyles",
       "ungroup",
-      "addToLibrary",
       "sendBackward",
       "bringForward",
       "sendToBack",
@@ -230,7 +214,7 @@ describe("contextMenu element", () => {
     ]);
   });
 
-  it("selecting copy styles stores the selected element style source", () => {
+  it("does not show copy styles in the context menu", () => {
     const rectangle = API.createElement({
       type: "rectangle",
       x: 0,
@@ -249,11 +233,7 @@ describe("contextMenu element", () => {
     });
 
     const contextMenu = UI.queryContextMenu();
-    clickContextMenuItem(contextMenu, "copyStyles");
-
-    const [copiedElement] = JSON.parse(copiedStyles);
-    expect(copiedElement.id).toBe(rectangle.id);
-    expect(copiedElement.type).toBe("rectangle");
+    expect(queryContextMenuItem(contextMenu, "copyStyles")).toBeNull();
   });
 
   it("right-clicking on a group selects whole group", () => {

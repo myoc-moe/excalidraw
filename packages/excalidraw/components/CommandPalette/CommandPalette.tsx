@@ -306,8 +306,6 @@ function CommandPaletteInner({
         actionManager.actions.copy,
         actionManager.actions.deleteSelectedElements,
         actionManager.actions.wrapSelectionInFrame,
-        actionManager.actions.copyStyles,
-        actionManager.actions.pasteStyles,
         actionManager.actions.bringToFront,
         actionManager.actions.bringForward,
         actionManager.actions.sendBackward,
@@ -366,7 +364,6 @@ function CommandPaletteInner({
         actionManager.actions.resetZoom,
         actionManager.actions.zoomToFit,
         actionManager.actions.smartZoom,
-        actionManager.actions.zenMode,
         actionManager.actions.viewMode,
         actionManager.actions.gridMode,
         actionManager.actions.objectsSnapMode,
@@ -381,7 +378,6 @@ function CommandPaletteInner({
         actionManager.actions.saveToActiveFile,
         actionManager.actions.saveFileToDisk,
         actionManager.actions.copyAsPng,
-        actionManager.actions.copyAsSvg,
       ].map((action) => actionToCommand(action, DEFAULT_CATEGORIES.export));
 
       commandsFromActions = [

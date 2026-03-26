@@ -1,6 +1,6 @@
 {
   "name": "@myoc/common",
-  "version": "0.19.505",
+  "version": "0.19.506",
   "type": "module",
   "types": "./dist/types/common/src/index.d.ts",
   "main": "./dist/prod/index.js",

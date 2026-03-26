@@ -288,10 +288,6 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
                 shortcuts={["Shift+PgUp/PgDn"]}
               />
               <Shortcut
-                label={t("buttons.zenMode")}
-                shortcuts={[getShortcutKey("Alt+Z")]}
-              />
-              <Shortcut
                 label={t("buttons.objectsSnapMode")}
                 shortcuts={[getShortcutKey("Alt+S")]}
               />
@@ -383,14 +379,6 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
                   shortcuts={[getShortcutKey("Shift+Alt+C")]}
                 />
               )}
-              <Shortcut
-                label={t("labels.copyStyles")}
-                shortcuts={[getShortcutKey("CtrlOrCmd+Alt+C")]}
-              />
-              <Shortcut
-                label={t("labels.pasteStyles")}
-                shortcuts={[getShortcutKey("CtrlOrCmd+Alt+V")]}
-              />
               <Shortcut
                 label={t("labels.sendToBack")}
                 shortcuts={[
