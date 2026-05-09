@@ -8,7 +8,13 @@ import { vi } from "vitest";
 import polyfill from "./packages/excalidraw/polyfill";
 import { mockThrottleRAF } from "./packages/excalidraw/tests/helpers/mocks";
 import { yellow } from "./packages/excalidraw/tests/helpers/colorize";
-import { testPolyfills } from "./packages/excalidraw/tests/helpers/polyfills";
+import {
+  PolyfillLocalStorage,
+  testPolyfills,
+} from "./packages/excalidraw/tests/helpers/polyfills";
+
+Object.assign(globalThis, testPolyfills);
+PolyfillLocalStorage();
 
 class MemoryStorage implements Storage {
   #items = new Map<string, string>();
@@ -69,8 +75,6 @@ vi.mock("@excalidraw/common", async (importOriginal) => {
 
 // mock for pep.js not working with setPointerCapture()
 HTMLElement.prototype.setPointerCapture = vi.fn();
-
-Object.assign(globalThis, testPolyfills);
 
 require("fake-indexeddb/auto");
 

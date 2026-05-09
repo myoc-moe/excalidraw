@@ -110,7 +110,6 @@ export const getDefaultAppState = (): Omit<
       open: false,
       panels: STATS_PANELS.generalStats | STATS_PANELS.elementProperties,
     },
-    startBoundElement: null,
     suggestedBinding: null,
     frameRendering: { enabled: true, clip: true, name: true, outline: true },
     frameToHighlight: null,
@@ -139,6 +138,7 @@ export const getDefaultAppState = (): Omit<
     lockedMultiSelections: {},
     activeLockedId: null,
     bindMode: "orbit",
+    boxSelectionMode: "contain",
   };
 };
 
@@ -210,6 +210,7 @@ const APP_STATE_STORAGE_CONF = (<
   gridModeEnabled: { browser: true, export: true, server: true },
   height: { browser: false, export: false, server: false },
   isBindingEnabled: { browser: true, export: false, server: false },
+  boxSelectionMode: { browser: true, export: false, server: false },
   bindingPreference: { browser: true, export: false, server: false },
   isMidpointSnappingEnabled: { browser: true, export: false, server: false },
   defaultSidebarDockedPreference: {
@@ -246,7 +247,6 @@ const APP_STATE_STORAGE_CONF = (<
   selectionElement: { browser: false, export: false, server: false },
   shouldCacheIgnoreZoom: { browser: true, export: false, server: false },
   stats: { browser: true, export: false, server: false },
-  startBoundElement: { browser: false, export: false, server: false },
   suggestedBinding: { browser: false, export: false, server: false },
   frameRendering: { browser: false, export: false, server: false },
   frameToHighlight: { browser: false, export: false, server: false },

@@ -5,10 +5,12 @@ import { resolvablePromise } from "@excalidraw/common";
 
 import { Excalidraw } from "../index";
 
+import { getToolbarTools } from "../components/shapes";
+
 import { Pointer } from "./helpers/ui";
 import { act, render } from "./test-utils";
 
-import type { ExcalidrawImperativeAPI } from "../types";
+import type { AppClassProperties, ExcalidrawImperativeAPI } from "../types";
 
 const waitForNextAnimationFrame = () => {
   return act(
@@ -151,5 +153,30 @@ describe("scrollToViewport()", () => {
     expect(h.state.scrollX).not.toBe(prevScrollX);
     expect(h.state.scrollY).not.toBe(prevScrollY);
     expect(h.state.zoom.value).not.toBe(prevZoom);
+  });
+});
+
+describe("getToolbarTools()", () => {
+  const getToolValues = (preferredSelectionTool: "selection" | "lasso") =>
+    getToolbarTools({
+      state: {
+        preferredSelectionTool: {
+          type: preferredSelectionTool,
+        },
+      },
+    } as AppClassProperties).map((tool) => tool.value);
+
+  it("does not include lasso when selection is preferred", () => {
+    const toolValues = getToolValues("selection");
+
+    expect(toolValues.filter((value) => value === "selection")).toHaveLength(1);
+    expect(toolValues.filter((value) => value === "lasso")).toHaveLength(0);
+  });
+
+  it("replaces selection with lasso when lasso is preferred", () => {
+    const toolValues = getToolValues("lasso");
+
+    expect(toolValues.filter((value) => value === "lasso")).toHaveLength(1);
+    expect(toolValues.filter((value) => value === "selection")).toHaveLength(0);
   });
 });

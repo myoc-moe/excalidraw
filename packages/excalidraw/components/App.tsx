@@ -27,6 +27,7 @@ import {
   KEYS,
   APP_NAME,
   CURSOR_TYPE,
+  DEFAULT_TRANSFORM_HANDLE_SPACING,
   DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
   DEFAULT_VERTICAL_ALIGN,
   DRAGGING_THRESHOLD,
@@ -174,7 +175,9 @@ import {
   isValidTextContainer,
   redrawTextBoundingBox,
   hasBoundingBox,
+  getCommonFrameId,
   getFrameChildren,
+  getFrameChildrenInsertionIndex,
   isCursorInFrame,
   addElementsToFrame,
   replaceAllElementsInFrame,
@@ -257,6 +260,7 @@ import {
   maybeHandleArrowPointlikeDrag,
   getUncroppedWidthAndHeight,
   getActiveTextElement,
+  isEligibleFrameChildType,
 } from "@excalidraw/element";
 import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
 
@@ -597,6 +601,8 @@ const YOUTUBE_VIDEO_STATES = new Map<
   ExcalidrawElement["id"],
   ValueOf<typeof YOUTUBE_STATES>
 >();
+
+const MAX_EMBEDDABLE_VIEWPORT_SCALE = 4;
 
 let IS_PLAIN_PASTE = false;
 let IS_PLAIN_PASTE_TIMER = 0;
@@ -1739,6 +1745,18 @@ class App extends React.Component<AppProps, AppState> {
             this.state.activeEmbeddable?.element === el &&
             this.state.activeEmbeddable?.state === "hover";
 
+          // scale video embeds based on zoom (capped) so that smaller embeds
+          // on canvas when zoomed are still of legible quality
+          // (note: for some embed types like gdrive, the quality is poor when
+          // scaling mid playback and works only when you initially start the
+          // playback at the higher zoom level)
+          const shouldScaleEmbeddableViewport = src?.type === "video";
+          const embeddableViewportScale = clamp(
+            shouldScaleEmbeddableViewport ? scale : 1,
+            0.75,
+            MAX_EMBEDDABLE_VIEWPORT_SCALE,
+          );
+
           return (
             <div
               key={el.id}
@@ -1805,31 +1823,42 @@ class App extends React.Component<AppProps, AppState> {
                     padding: `${el.strokeWidth}px`,
                   }}
                 >
-                  {(isEmbeddableElement(el)
-                    ? this.props.renderEmbeddable?.(el, this.state)
-                    : null) ?? (
-                    <iframe
-                      ref={(ref) => this.cacheEmbeddableRef(el, ref)}
-                      className="excalidraw__embeddable"
-                      srcDoc={
-                        src?.type === "document"
-                          ? src.srcdoc(this.state.theme)
-                          : undefined
-                      }
-                      src={
-                        src?.type !== "document" ? src?.link ?? "" : undefined
-                      }
-                      // https://stackoverflow.com/q/18470015
-                      scrolling="no"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title="Excalidraw Embedded Content"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen={true}
-                      sandbox={`${
-                        src?.sandbox?.allowSameOrigin ? "allow-same-origin" : ""
-                      } allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-downloads`}
-                    />
-                  )}
+                  <div
+                    className="excalidraw__embeddable__content"
+                    style={{
+                      width: `${embeddableViewportScale * 100}%`,
+                      height: `${embeddableViewportScale * 100}%`,
+                      transform: `scale(${1 / embeddableViewportScale})`,
+                    }}
+                  >
+                    {(isEmbeddableElement(el)
+                      ? this.props.renderEmbeddable?.(el, this.state)
+                      : null) ?? (
+                      <iframe
+                        ref={(ref) => this.cacheEmbeddableRef(el, ref)}
+                        className="excalidraw__embeddable"
+                        srcDoc={
+                          src?.type === "document"
+                            ? src.srcdoc(this.state.theme)
+                            : undefined
+                        }
+                        src={
+                          src?.type !== "document" ? src?.link ?? "" : undefined
+                        }
+                        // https://stackoverflow.com/q/18470015
+                        scrolling="no"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Excalidraw Embedded Content"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen={true}
+                        sandbox={`${
+                          src?.sandbox?.allowSameOrigin
+                            ? "allow-same-origin"
+                            : ""
+                        } allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-presentation allow-downloads`}
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2071,20 +2100,30 @@ class App extends React.Component<AppProps, AppState> {
     const selectedElements = this.scene.getSelectedElements(this.state);
     const { renderTopRightUI, renderTopLeftUI, renderCustomStats } = this.props;
 
-    const sceneNonce = this.scene.getSceneNonce();
-    const { elementsMap, visibleElements } =
-      this.renderer.getRenderableElements({
-        sceneNonce,
-        zoom: this.state.zoom,
-        offsetLeft: this.state.offsetLeft,
-        offsetTop: this.state.offsetTop,
-        scrollX: this.state.scrollX,
-        scrollY: this.state.scrollY,
-        height: this.state.height,
-        width: this.state.width,
-        editingTextElement: this.state.editingTextElement,
-        newElementId: this.state.newElement?.id,
-      });
+    const {
+      elementsMap,
+      visibleElements,
+      canvasNonce,
+      /**
+       * element to draw on the <NewElementCanvas> for optimization purposes.
+       * Can be null even if this.state.newElement defined
+       * (e.g. when its zIndex isn't on top) */
+      newElementCanvasElement,
+    } = this.renderer.getRenderableElements({
+      zoom: this.state.zoom,
+      offsetLeft: this.state.offsetLeft,
+      offsetTop: this.state.offsetTop,
+      scrollX: this.state.scrollX,
+      scrollY: this.state.scrollY,
+      height: this.state.height,
+      width: this.state.width,
+      editingTextElement: this.state.editingTextElement,
+      newElement: this.state.newElement,
+      selectedElements,
+      selectedElementsAreBeingDragged:
+        this.state.selectedElementsAreBeingDragged,
+      frameToHighlight: this.state.frameToHighlight,
+    });
     this.visibleElements = visibleElements;
 
     const allElementsMap = this.scene.getNonDeletedElementsMap();
@@ -2291,7 +2330,7 @@ class App extends React.Component<AppProps, AppState> {
                             elementsMap={elementsMap}
                             allElementsMap={allElementsMap}
                             visibleElements={visibleElements}
-                            sceneNonce={sceneNonce}
+                            canvasNonce={canvasNonce}
                             selectionNonce={
                               this.state.selectionElement?.versionNonce
                             }
@@ -2312,9 +2351,10 @@ class App extends React.Component<AppProps, AppState> {
                               theme: this.state.theme,
                             }}
                           />
-                          {this.state.newElement && (
+                          {newElementCanvasElement && (
                             <NewElementCanvas
                               appState={this.state}
+                              newElement={newElementCanvasElement}
                               scale={window.devicePixelRatio}
                               rc={this.rc}
                               elementsMap={elementsMap}
@@ -2342,7 +2382,7 @@ class App extends React.Component<AppProps, AppState> {
                             visibleElements={visibleElements}
                             allElementsMap={allElementsMap}
                             selectedElements={selectedElements}
-                            sceneNonce={sceneNonce}
+                            canvasNonce={canvasNonce}
                             selectionNonce={
                               this.state.selectionElement?.versionNonce
                             }
@@ -2517,6 +2557,7 @@ class App extends React.Component<AppProps, AppState> {
     const magicFrameChildren = getElementsOverlappingFrame(
       this.scene.getNonDeletedElements(),
       magicFrame,
+      this.scene.getNonDeletedElementsMap(),
     ).filter((el) => !isMagicFrameElement(el));
 
     if (!magicFrameChildren.length) {
@@ -2653,7 +2694,7 @@ class App extends React.Component<AppProps, AppState> {
           locked: false,
         });
 
-        this.scene.insertElement(frame);
+        this.insertNewElement(frame);
 
         for (const child of selectedElements) {
           this.scene.mutateElement(child, { frameId: frame.id });
@@ -3731,6 +3772,7 @@ class App extends React.Component<AppProps, AppState> {
         position:
           this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
         retainSeed: isPlainPaste,
+        preserveFrameChildrenOrder: true,
       });
       return;
     }
@@ -3848,6 +3890,7 @@ class App extends React.Component<AppProps, AppState> {
     position: { clientX: number; clientY: number } | "cursor" | "center";
     retainSeed?: boolean;
     fitToContent?: boolean;
+    preserveFrameChildrenOrder?: boolean;
   }) => {
     const elements = restoreElements(opts.elements, null, {
       deleteInvisibleElements: true,
@@ -3889,6 +3932,7 @@ class App extends React.Component<AppProps, AppState> {
         });
       }),
       randomizeSeed: !opts.retainSeed,
+      preserveFrameChildrenOrder: opts.preserveFrameChildrenOrder,
     });
 
     const prevElements = this.scene.getElementsIncludingDeleted();
@@ -3910,11 +3954,10 @@ class App extends React.Component<AppProps, AppState> {
         duplicatedElements,
         topLayerFrame,
       );
-      addElementsToFrame(
+      nextElements = addElementsToFrame(
         nextElements,
         eligibleElements,
         topLayerFrame,
-        this.state,
       );
     }
 
@@ -4140,7 +4183,7 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
-    this.scene.insertElements(textElements);
+    this.insertNewElements(textElements);
     this.store.scheduleCapture();
     this.setState({
       selectedElementIds: makeNextSelectedElementIds(
@@ -5432,7 +5475,7 @@ class App extends React.Component<AppProps, AppState> {
     if (!event[KEYS.CTRL_OR_CMD]) {
       if (this.flowChartCreator.isCreatingChart) {
         if (this.flowChartCreator.pendingNodes?.length) {
-          this.scene.insertElements(this.flowChartCreator.pendingNodes);
+          this.insertNewElements(this.flowChartCreator.pendingNodes);
         }
 
         const firstNode = this.flowChartCreator.pendingNodes?.[0];
@@ -5530,6 +5573,7 @@ class App extends React.Component<AppProps, AppState> {
         selectedLinearElement: isSelectionLikeTool(nextActiveTool.type)
           ? prevState.selectedLinearElement
           : null,
+        frameToHighlight: null,
       } as const;
 
       if (nextActiveTool.type === "freedraw") {
@@ -5728,13 +5772,13 @@ class App extends React.Component<AppProps, AppState> {
         const isDeleted = !nextOriginalText.trim();
         updateElement(nextOriginalText, isDeleted);
 
-        // select the created text element only if submitting via keyboard
-        // (when submitting via click it should act as signal to deselect)
-        if (!isDeleted && viaKeyboard) {
-          const elementIdToSelect = element.containerId
-            ? element.containerId
-            : element.id;
+        // keyboard-submit keeps focus on the edited object. For bound text, keep
+        // the container selected even if the text becomes empty and is deleted.
+        const elementIdToSelect = viaKeyboard
+          ? element.containerId || (!isDeleted ? element.id : null)
+          : null;
 
+        if (elementIdToSelect) {
           // needed to ensure state is updated before "finalize" action
           // that's invoked on keyboard-submit as well
           // TODO either move this into finalize as well, or handle all state
@@ -6127,6 +6171,12 @@ class App extends React.Component<AppProps, AppState> {
         hitElement = elements[index];
         break;
       } else if (x1 < x && x < x2 && y1 < y && y < y2) {
+        // to allow binding to containers within frames,
+        // ignore frames in hit testing
+        if (isFrameLikeElement(elements[index])) {
+          continue;
+        }
+
         hitElement = elements[index];
         break;
       }
@@ -6216,11 +6266,6 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
-      x: sceneX,
-      y: sceneY,
-    });
-
     const textCreationGridPoint = this.getTextCreationGridPoint(sceneX, sceneY);
 
     const newTextElementPosition = parentCenterPosition
@@ -6241,6 +6286,20 @@ class App extends React.Component<AppProps, AppState> {
           x: sceneX,
           y: sceneY,
         };
+
+    const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
+      x: newTextElementPosition.x,
+      y: newTextElementPosition.y,
+    });
+
+    // container has higher priority. Only add to frame if container is in the same frame.
+    const frameId =
+      topLayerFrame &&
+      (!shouldBindToContainer ||
+        !container ||
+        container.frameId === topLayerFrame.id)
+        ? topLayerFrame.id
+        : null;
 
     const element =
       existingTextElement ||
@@ -6271,7 +6330,7 @@ class App extends React.Component<AppProps, AppState> {
             ? (0 as Radians)
             : container.angle
           : (0 as Radians),
-        frameId: topLayerFrame ? topLayerFrame.id : null,
+        frameId,
       });
 
     if (!existingTextElement && shouldBindToContainer && container) {
@@ -6287,9 +6346,12 @@ class App extends React.Component<AppProps, AppState> {
     if (!existingTextElement) {
       if (container && shouldBindToContainer) {
         const containerIndex = this.scene.getElementIndex(container.id);
-        this.scene.insertElementAtIndex(element, containerIndex + 1);
+        // TODO should use insertNewElement, after we update it to handle
+        // elements with containerId + frameId at the same time (containerId
+        // should take precedence when it comes to z-index)
+        this.scene.insertElementsAtIndex([element], containerIndex + 1);
       } else {
-        this.scene.insertElement(element);
+        this.insertNewElement(element);
       }
     }
 
@@ -6671,19 +6733,161 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
-  private getTopLayerFrameAtSceneCoords = (sceneCoords: {
-    x: number;
-    y: number;
-  }) => {
+  /**
+   * finds candidate frame under cursor (when dragging frame children/elements
+   * inside frames)
+   */
+  private getTopLayerFrameAtSceneCoords = (
+    /**
+     * should be already grid aligned (basically should be what the call site
+     * sets the element's coords to, if applicable)
+     */
+    sceneCoords: {
+      x: number;
+      y: number;
+    },
+    opts?: {
+      /** to exclude selected elements when dragging, etc. */
+      excludeElementIds?: AppState["selectedElementIds"];
+      currentFrameId?: ExcalidrawElement["frameId"];
+    },
+  ) => {
     const elementsMap = this.scene.getNonDeletedElementsMap();
-    const frames = this.scene
+    const framesUnderCursor = this.scene
       .getNonDeletedFramesLikes()
       .filter(
         (frame): frame is ExcalidrawFrameLikeElement =>
           !frame.locked && isCursorInFrame(sceneCoords, frame, elementsMap),
       );
 
-    return frames.length ? frames[frames.length - 1] : null;
+    if (!framesUnderCursor.length) {
+      return null;
+    }
+
+    const topLayerFrame = framesUnderCursor.at(-1)!;
+
+    const hitElement = this.getElementsAtPosition(
+      sceneCoords.x,
+      sceneCoords.y,
+      {
+        includeLockedElements: true,
+      },
+    ).findLast((element) => !opts?.excludeElementIds?.[element.id]);
+
+    if (hitElement) {
+      if (
+        isFrameLikeElement(hitElement) &&
+        // case: we're hitting a locked frame itself (frame's outline
+        // or later its bg once implemented)
+        !hitElement.locked
+      ) {
+        return topLayerFrame;
+      }
+
+      const hitElementIndex = this.scene.getElementIndex(hitElement.id);
+      const topLayerFrameIndex = this.scene.getElementIndex(topLayerFrame.id);
+
+      if (
+        hitElementIndex !== -1 &&
+        topLayerFrameIndex !== -1 &&
+        hitElementIndex <= topLayerFrameIndex
+      ) {
+        return topLayerFrame;
+      }
+
+      // to support a case of dragging a pre-existing frame child underneath
+      // a non-frame element covering the cursor
+      const currentFrame = opts?.currentFrameId
+        ? framesUnderCursor.find((frame) => frame.id === opts.currentFrameId) ??
+          null
+        : null;
+
+      if (currentFrame) {
+        return currentFrame;
+      }
+
+      return hitElement.frameId
+        ? framesUnderCursor.find((frame) => frame.id === hitElement.frameId) ??
+            null
+        : null;
+    }
+
+    return topLayerFrame;
+  };
+
+  private updateFrameToHighlight = (
+    frameToHighlight: AppState["frameToHighlight"],
+  ) => {
+    if (this.state.frameToHighlight !== frameToHighlight) {
+      this.setState({ frameToHighlight });
+    }
+  };
+
+  private maybeUpdateFrameToHighlightOnPointerMove = (
+    sceneCoords: { x: number; y: number },
+    isOverScrollBar: boolean,
+  ) => {
+    // currently this function is being called even during pointerdown so we
+    // need to make sure we don't re-set the state when dragging and similar
+    //
+    // But, we still want to reset on pointermove in case the state is stale
+    // so we updte even for non-eligible tool types
+    if (
+      this.state.newElement ||
+      this.state.multiElement ||
+      this.state.selectionElement ||
+      this.state.selectedElementsAreBeingDragged
+    ) {
+      return;
+    }
+
+    this.updateFrameToHighlight(
+      !isOverScrollBar && isEligibleFrameChildType(this.state.activeTool.type)
+        ? this.getTopLayerFrameAtSceneCoords(sceneCoords)
+        : null,
+    );
+  };
+
+  private insertNewElements = (elements: readonly ExcalidrawElement[]) => {
+    if (!elements.length) {
+      return;
+    }
+
+    const chunkedElements: ExcalidrawElement[][] = [];
+
+    for (const element of elements) {
+      const currentChunk = chunkedElements[chunkedElements.length - 1];
+
+      if (currentChunk?.[0].frameId === element.frameId) {
+        currentChunk.push(element);
+      } else {
+        chunkedElements.push([element]);
+      }
+    }
+
+    for (const chunk of chunkedElements) {
+      const frameId = chunk[0].frameId;
+
+      const insertionIndex = frameId
+        ? getFrameChildrenInsertionIndex(
+            this.scene.getElementsIncludingDeleted(),
+            frameId,
+          )
+        : null;
+      this.scene.insertElementsAtIndex(chunk, insertionIndex);
+    }
+  };
+
+  private insertNewElement = (element: ExcalidrawElement) => {
+    this.insertNewElements([element]);
+
+    const frame = element.frameId
+      ? this.scene.getNonDeletedElement(element.frameId)
+      : null;
+
+    this.updateFrameToHighlight(
+      frame && isFrameLikeElement(frame) ? frame : null,
+    );
   };
 
   private handleCanvasPointerMove = (
@@ -6784,6 +6988,14 @@ class App extends React.Component<AppProps, AppState> {
         setCursorForShape(this.interactiveCanvas, this.state);
       }
     }
+
+    this.maybeUpdateFrameToHighlightOnPointerMove(
+      {
+        x: scenePointerX,
+        y: scenePointerY,
+      },
+      isOverScrollBar,
+    );
 
     if (
       !this.state.newElement &&
@@ -6923,7 +7135,7 @@ class App extends React.Component<AppProps, AppState> {
               y: scenePointerY,
             },
           });
-          this.setState({ suggestedBinding: null, startBoundElement: null });
+          this.setState({ suggestedBinding: null });
           if (!this.state.activeTool.locked) {
             resetCursor(this.interactiveCanvas);
             this.setState((prevState) => ({
@@ -7242,6 +7454,14 @@ class App extends React.Component<AppProps, AppState> {
           this.interactiveCanvas,
           isTextElement(hitElement) ? CURSOR_TYPE.TEXT : CURSOR_TYPE.CROSSHAIR,
         );
+      } else if (
+        !event[KEYS.CTRL_OR_CMD] &&
+        this.isHittingCommonBoundingBoxOfSelectedElements(
+          scenePointer,
+          selectedElements,
+        )
+      ) {
+        setCursor(this.interactiveCanvas, CURSOR_TYPE.MOVE);
       } else if (this.state.viewModeEnabled) {
         setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);
       } else if (this.state.openDialog?.name === "elementLinkSelector") {
@@ -7559,7 +7779,6 @@ class App extends React.Component<AppProps, AppState> {
         appState: {
           newElement: null,
           editingTextElement: null,
-          startBoundElement: null,
           suggestedBinding: null,
           selectedElementIds: makeNextSelectedElementIds(
             Object.keys(this.state.selectedElementIds)
@@ -7733,17 +7952,24 @@ class App extends React.Component<AppProps, AppState> {
       const hitSelectedElement =
         pointerDownState.hit.element &&
         this.isASelectedElement(pointerDownState.hit.element);
+      const shouldForceLassoReselect =
+        event.altKey &&
+        event[KEYS.CTRL_OR_CMD] &&
+        !pointerDownState.resize.handleType;
+      const shouldStartLassoSelection =
+        shouldForceLassoReselect ||
+        (!pointerDownState.hit.hasHitCommonBoundingBoxOfSelectedElements &&
+          !pointerDownState.resize.handleType &&
+          !hitSelectedElement);
 
-      if (
-        !pointerDownState.hit.hasHitCommonBoundingBoxOfSelectedElements &&
-        !pointerDownState.resize.handleType &&
-        !hitSelectedElement
-      ) {
-        this.lassoTrail.startPath(
-          pointerDownState.origin.x,
-          pointerDownState.origin.y,
-          event.shiftKey,
-        );
+      if (shouldStartLassoSelection) {
+        if (!this.lassoTrail.hasCurrentTrail) {
+          this.lassoTrail.startPath(
+            pointerDownState.origin.x,
+            pointerDownState.origin.y,
+            event.shiftKey,
+          );
+        }
 
         // block dragging after lasso selection on PCs until the next pointer down
         // (on mobile or tablet, we want to allow user to drag immediately)
@@ -8732,12 +8958,14 @@ class App extends React.Component<AppProps, AppState> {
       DEFAULT_COLLISION_THRESHOLD / this.state.zoom.value,
       1,
     );
+    const boundsPadding =
+      (DEFAULT_TRANSFORM_HANDLE_SPACING * 2) / this.state.zoom.value;
     const [x1, y1, x2, y2] = getCommonBounds(selectedElements);
     return (
-      point.x > x1 - threshold &&
-      point.x < x2 + threshold &&
-      point.y > y1 - threshold &&
-      point.y < y2 + threshold
+      point.x > x1 - boundsPadding - threshold &&
+      point.x < x2 + boundsPadding + threshold &&
+      point.y > y1 - boundsPadding - threshold &&
+      point.y < y2 + boundsPadding + threshold
     );
   }
 
@@ -8823,7 +9051,7 @@ class App extends React.Component<AppProps, AppState> {
       pressures: simulatePressure ? [] : [event.pressure],
     });
 
-    this.scene.insertElement(element);
+    this.insertNewElement(element);
 
     this.setState((prevState) => {
       const nextSelectedElementIds = {
@@ -8838,18 +9066,8 @@ class App extends React.Component<AppProps, AppState> {
       };
     });
 
-    const boundElement = getHoveredElementForBinding(
-      pointFrom<GlobalPoint>(
-        pointerDownState.origin.x,
-        pointerDownState.origin.y,
-      ),
-      this.scene.getNonDeletedElements(),
-      this.scene.getNonDeletedElementsMap(),
-    );
-
     this.setState({
       newElement: element,
-      startBoundElement: boundElement,
       suggestedBinding: null,
     });
   };
@@ -8890,7 +9108,7 @@ class App extends React.Component<AppProps, AppState> {
       height,
     });
 
-    this.scene.insertElement(element);
+    this.insertNewElement(element);
 
     return element;
   };
@@ -8944,7 +9162,7 @@ class App extends React.Component<AppProps, AppState> {
       link,
     });
 
-    this.scene.insertElement(element);
+    this.insertNewElement(element);
 
     return element;
   };
@@ -9188,7 +9406,7 @@ class App extends React.Component<AppProps, AppState> {
         points: [pointFrom<LocalPoint>(0, 0), pointFrom<LocalPoint>(0, 0)],
       });
 
-      this.scene.insertElement(element);
+      this.insertNewElement(element);
 
       if (isBindingElement(element)) {
         // Do the initial binding so the binding strategy has the initial state
@@ -9346,7 +9564,7 @@ class App extends React.Component<AppProps, AppState> {
         selectionElement: element,
       });
     } else {
-      this.scene.insertElement(element);
+      this.insertNewElement(element);
       this.setState({
         multiElement: null,
         newElement: element,
@@ -9379,7 +9597,7 @@ class App extends React.Component<AppProps, AppState> {
         ? newMagicFrameElement(constructorOpts)
         : newFrameElement(constructorOpts);
 
-    this.scene.insertElement(frame);
+    this.insertNewElement(frame);
 
     this.setState({
       multiElement: null,
@@ -9747,18 +9965,17 @@ class App extends React.Component<AppProps, AppState> {
           return;
         }
 
-        const selectedElementsHasAFrame = selectedElements.find((e) =>
+        const selectedElementsHasAFrame = selectedElements.some((e) =>
           isFrameLikeElement(e),
         );
-        const topLayerFrame = this.getTopLayerFrameAtSceneCoords(pointerCoords);
-        const frameToHighlight =
-          topLayerFrame && !selectedElementsHasAFrame ? topLayerFrame : null;
+        const frameToHighlight = selectedElementsHasAFrame
+          ? null
+          : this.getTopLayerFrameAtSceneCoords(pointerCoords, {
+              currentFrameId: getCommonFrameId(selectedElements),
+              excludeElementIds: this.state.selectedElementIds,
+            });
         // Only update the state if there is a difference
-        if (this.state.frameToHighlight !== frameToHighlight) {
-          flushSync(() => {
-            this.setState({ frameToHighlight });
-          });
-        }
+        this.updateFrameToHighlight(frameToHighlight);
 
         // Marking that click was used for dragging to check
         // if elements should be deselected on pointerup
@@ -10194,20 +10411,38 @@ class App extends React.Component<AppProps, AppState> {
           );
 
           let linearElementEditor = this.state.selectedLinearElement;
-          if (!linearElementEditor) {
+
+          if (
+            !linearElementEditor ||
+            linearElementEditor.elementId !== newElement.id
+          ) {
             linearElementEditor = new LinearElementEditor(
               newElement,
               this.scene.getNonDeletedElementsMap(),
             );
+          }
+
+          const lastClickedPointOutOfBounds =
+            linearElementEditor &&
+            (linearElementEditor.initialState.lastClickedPoint < 0 ||
+              linearElementEditor.initialState.lastClickedPoint >=
+                points.length);
+          if (lastClickedPointOutOfBounds) {
+            console.warn(
+              "Last clicked point is out of bounds. Attempting to fix it.",
+            );
             linearElementEditor = {
               ...linearElementEditor,
-              selectedPointsIndices: [1],
+              selectedPointsIndices: [points.length - 1],
               initialState: {
                 ...linearElementEditor.initialState,
-                lastClickedPoint: 1,
+                prevSelectedPointsIndices: null,
+                lastClickedPoint: points.length - 1,
               },
+              hoverPointIndex: points.length - 1,
             };
           }
+
           this.setState({
             newElement,
             ...LinearElementEditor.handlePointDragging(
@@ -10270,6 +10505,7 @@ class App extends React.Component<AppProps, AppState> {
                 this.state.selectionElement,
                 this.scene.getNonDeletedElementsMap(),
                 false,
+                this.state.boxSelectionMode,
               )
             : [];
 
@@ -10701,7 +10937,7 @@ class App extends React.Component<AppProps, AppState> {
               sceneCoords,
             });
           }
-          this.setState({ suggestedBinding: null, startBoundElement: null });
+          this.setState({ suggestedBinding: null });
           if (!activeTool.locked) {
             resetCursor(this.interactiveCanvas);
             this.setState((prevState) => ({
@@ -10722,9 +10958,9 @@ class App extends React.Component<AppProps, AppState> {
               ),
             }));
           } else {
-            this.setState((prevState) => ({
+            this.setState({
               newElement: null,
-            }));
+            });
           }
           // so that the scene gets rendered again to display the newly drawn linear as well
           this.scene.triggerUpdate();
@@ -10786,7 +11022,6 @@ class App extends React.Component<AppProps, AppState> {
             this.scene.getElementsMapIncludingDeleted(),
             elementsInsideFrame,
             newElement,
-            this.state,
           ),
         );
       }
@@ -10846,9 +11081,14 @@ class App extends React.Component<AppProps, AppState> {
           }
         } else {
           // update the relationships between selected elements and frames
-          const topLayerFrame = this.getTopLayerFrameAtSceneCoords(sceneCoords);
-
           const selectedElements = this.scene.getSelectedElements(this.state);
+          const topLayerFrame = this.getTopLayerFrameAtSceneCoords(
+            sceneCoords,
+            {
+              currentFrameId: getCommonFrameId(selectedElements),
+              excludeElementIds: this.state.selectedElementIds,
+            },
+          );
           let nextElements = this.scene.getElementsMapIncludingDeleted();
 
           const updateGroupIdsAfterEditingGroup = (
@@ -10897,10 +11137,8 @@ class App extends React.Component<AppProps, AppState> {
             topLayerFrame &&
             !this.state.selectedElementIds[topLayerFrame.id]
           ) {
-            const elementsToAdd = selectedElements.filter(
-              (element) =>
-                element.frameId !== topLayerFrame.id &&
-                isElementInFrame(element, nextElements, this.state),
+            const elementsToAdd = selectedElements.filter((element) =>
+              isElementInFrame(element, nextElements, this.state),
             );
 
             if (this.state.editingGroupId) {
@@ -10911,7 +11149,6 @@ class App extends React.Component<AppProps, AppState> {
               nextElements,
               elementsToAdd,
               topLayerFrame,
-              this.state,
             );
           } else if (!topLayerFrame) {
             if (this.state.editingGroupId) {
@@ -10973,7 +11210,6 @@ class App extends React.Component<AppProps, AppState> {
               elementsMap,
             ),
             frame,
-            this,
           );
         }
 
@@ -11791,7 +12027,7 @@ class App extends React.Component<AppProps, AppState> {
       sceneY,
       gridPadding,
     );
-    placeholders.forEach((el) => this.scene.insertElement(el));
+    this.insertNewElements(placeholders);
 
     // Create, position, insert and select initialized (replacing placeholders)
     const initialized = await Promise.all(
@@ -11919,6 +12155,7 @@ class App extends React.Component<AppProps, AppState> {
               type: "everything",
               elements: item.elements,
               randomizeSeed: true,
+              preserveFrameChildrenOrder: true,
             }).duplicatedElements,
           }));
 

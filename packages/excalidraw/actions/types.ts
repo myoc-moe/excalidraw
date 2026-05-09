@@ -115,6 +115,7 @@ export type ActionName =
   | "normaliseElements"
   | "flipHorizontal"
   | "flipVertical"
+  | "deselect"
   | "viewMode"
   | "exportWithDarkMode"
   | "toggleTheme"

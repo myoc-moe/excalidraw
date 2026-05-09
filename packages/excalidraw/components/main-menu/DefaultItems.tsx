@@ -36,7 +36,13 @@ import DropdownMenuItemCheckbox from "../dropdownMenu/DropdownMenuItemCheckbox";
 import DropdownMenuItemContentRadio from "../dropdownMenu/DropdownMenuItemContentRadio";
 import DropdownMenuItemLink from "../dropdownMenu/DropdownMenuItemLink";
 import DropdownMenuSub from "../dropdownMenu/DropdownMenuSub";
-import { GithubIcon, DiscordIcon, XBrandIcon, settingsIcon } from "../icons";
+import {
+  GithubIcon,
+  DiscordIcon,
+  XBrandIcon,
+  settingsIcon,
+  emptyIcon,
+} from "../icons";
 import {
   boltIcon,
   DeviceDesktopIcon,
@@ -400,6 +406,39 @@ const PreferencesToggleToolLockItem = () => {
   );
 };
 
+const PreferencesBoxSelectionModeItem = () => {
+  const { t } = useI18n();
+  const appState = useUIAppState();
+  const setAppState = useExcalidrawSetAppState();
+
+  return (
+    <DropdownMenuItemContentRadio<"contain" | "overlap">
+      name="boxSelectionMode"
+      icon={emptyIcon}
+      value={appState.boxSelectionMode}
+      onChange={(value) => {
+        setAppState({
+          boxSelectionMode: value,
+        });
+      }}
+      choices={[
+        {
+          value: "contain",
+          label: t("labels.boxSelectionContain"),
+          ariaLabel: t("labels.boxSelectionContain"),
+        },
+        {
+          value: "overlap",
+          label: t("labels.boxSelectionOverlap"),
+          ariaLabel: t("labels.boxSelectionOverlap"),
+        },
+      ]}
+    >
+      {t("labels.boxSelectionMode")}
+    </DropdownMenuItemContentRadio>
+  );
+};
+
 const PreferencesToggleSnapModeItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
@@ -541,6 +580,7 @@ export const Preferences = ({
       <DropdownMenuSub.Content className="excalidraw-main-menu-preferences-submenu">
         {children || (
           <>
+            <PreferencesBoxSelectionModeItem />
             <PreferencesToggleToolLockItem />
             <PreferencesToggleSnapModeItem />
             <PreferencesToggleGridModeItem />
@@ -557,6 +597,7 @@ export const Preferences = ({
 };
 
 Preferences.ToggleToolLock = PreferencesToggleToolLockItem;
+Preferences.BoxSelectionMode = PreferencesBoxSelectionModeItem;
 Preferences.ToggleSnapMode = PreferencesToggleSnapModeItem;
 Preferences.ToggleArrowBinding = PreferencesToggleArrowBindingItem;
 Preferences.ToggleMidpointSnapping = PreferencesToggleMidpointSnappingItem;
