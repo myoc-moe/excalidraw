@@ -38,7 +38,7 @@ const { h } = window;
 
 beforeEach(async () => {
   localStorage.clear();
-  await render(<Excalidraw handleKeyboardGlobally={true} />);
+  await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   h.state.width = 1000;
   h.state.height = 1000;
 });

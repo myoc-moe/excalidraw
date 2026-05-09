@@ -10,7 +10,7 @@ const { h } = window;
 
 describe("deleting selected elements when frame selected should keep children + select them", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("frame only", async () => {

@@ -16,6 +16,7 @@ declare global {
 const rootElement = document.getElementById("root")!;
 const root = createRoot(rootElement);
 const { Excalidraw } = window.ExcalidrawLib;
+const compressImageFile: TExcalidraw.CompressImageFile = async (file) => file;
 root.render(
   <StrictMode>
     <App
@@ -23,7 +24,7 @@ root.render(
       useCustom={(api: any, args?: any[]) => {}}
       excalidrawLib={window.ExcalidrawLib}
     >
-      <Excalidraw />
+      <Excalidraw compressImageFile={compressImageFile} />
     </App>
   </StrictMode>,
 );

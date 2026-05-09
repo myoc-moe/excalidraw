@@ -12,6 +12,7 @@ describe("shortcuts", () => {
   it("Delete shortcut should delete the selected element", async () => {
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         initialData={{ elements: [API.createElement({ type: "rectangle" })] }}
         handleKeyboardGlobally
       />,

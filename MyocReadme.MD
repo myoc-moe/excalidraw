@@ -1,5 +1,9 @@
 # Myoc Excalidraw Release Notes
 
+## IMPORTANT
+
+RUN LOGIN BEFORE DOING ANY RELEASE STUFF
+
 This file documents the release workflow for the Myoc fork of Excalidraw.
 
 It is intended for:
@@ -63,7 +67,7 @@ yarn release --tag=next
 Stable release:
 
 ```powershell
-yarn release --tag=latest --version=0.19.503
+yarn release --tag=latest --version=0.19.507
 ```
 
 What the root release script does:

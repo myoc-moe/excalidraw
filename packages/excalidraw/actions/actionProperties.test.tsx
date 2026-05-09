@@ -14,7 +14,7 @@ import { render } from "../tests/test-utils";
 
 describe("element locking", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   describe("properties when tool selected", () => {

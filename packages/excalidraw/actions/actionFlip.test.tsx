@@ -59,7 +59,7 @@ describe("flipping re-centers selection", () => {
         elbowed: true,
       }),
     ];
-    await render(<Excalidraw initialData={{ elements }} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} initialData={{ elements }} />);
 
     API.setSelectedElements(elements);
 
@@ -82,7 +82,7 @@ describe("flipping re-centers selection", () => {
 
 describe("flipping arrowheads", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("flipping bound arrow should flip arrowheads only", () => {

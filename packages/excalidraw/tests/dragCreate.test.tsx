@@ -37,7 +37,7 @@ const { h } = window;
 describe("Test dragCreate", () => {
   describe("add element to the scene when pointer dragging long enough", () => {
     it("rectangle", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("rectangle");
       fireEvent.click(tool);
@@ -71,7 +71,7 @@ describe("Test dragCreate", () => {
     });
 
     it("ellipse", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("ellipse");
       fireEvent.click(tool);
@@ -106,7 +106,7 @@ describe("Test dragCreate", () => {
     });
 
     it("diamond", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("diamond");
       fireEvent.click(tool);
@@ -140,7 +140,7 @@ describe("Test dragCreate", () => {
     });
 
     it("arrow", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("arrow");
       fireEvent.click(tool);
@@ -178,7 +178,7 @@ describe("Test dragCreate", () => {
     });
 
     it("line", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("line");
       fireEvent.click(tool);
@@ -224,7 +224,7 @@ describe("Test dragCreate", () => {
     });
 
     it("rectangle", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("rectangle");
       fireEvent.click(tool);
@@ -246,7 +246,7 @@ describe("Test dragCreate", () => {
     });
 
     it("ellipse", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("ellipse");
       fireEvent.click(tool);
@@ -268,7 +268,7 @@ describe("Test dragCreate", () => {
     });
 
     it("diamond", async () => {
-      const { getByToolName, container } = await render(<Excalidraw />);
+      const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
       // select tool
       const tool = getByToolName("diamond");
       fireEvent.click(tool);
@@ -291,7 +291,7 @@ describe("Test dragCreate", () => {
 
     it("arrow", async () => {
       const { getByToolName, container } = await render(
-        <Excalidraw handleKeyboardGlobally={true} />,
+        <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
       );
       // select tool
       const tool = getByToolName("arrow");
@@ -325,7 +325,7 @@ describe("Test dragCreate", () => {
 
     it("line", async () => {
       const { getByToolName, container } = await render(
-        <Excalidraw handleKeyboardGlobally={true} />,
+        <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
       );
       // select tool
       const tool = getByToolName("line");

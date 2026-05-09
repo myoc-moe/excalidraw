@@ -82,7 +82,7 @@ describe("library items inserting", () => {
       },
     ];
 
-    await render(<Excalidraw initialData={{ libraryItems }} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} initialData={{ libraryItems }} />);
   });
 
   afterEach(async () => {
@@ -140,7 +140,7 @@ describe("library items inserting", () => {
 
 describe("library", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
     await act(() => {
       return h.app.library.resetLibrary();
     });
@@ -241,7 +241,7 @@ describe("library", () => {
 
 describe("library menu", () => {
   it("should load library from file picker", async () => {
-    const { container } = await render(<Excalidraw />);
+    const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     const latestLibrary = await h.app.library.getLatestLibrary();
     expect(latestLibrary.length).toBe(0);

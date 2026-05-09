@@ -13,7 +13,7 @@ describe("check rotated elements can be hit:", () => {
   beforeEach(async () => {
     localStorage.clear();
     reseed(7);
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   });
 
   it("arrow", () => {
@@ -58,7 +58,7 @@ describe("hitElementItself cache", () => {
 
     localStorage.clear();
     reseed(7);
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   });
 
   it("reuses cached result when threshold increases", () => {

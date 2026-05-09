@@ -25,7 +25,12 @@ import {
   restoreLibraryItems,
 } from "./restore";
 
-import type { AppState, DataURL, LibraryItem } from "../types";
+import type {
+  AppState,
+  CompressImageFile,
+  DataURL,
+  LibraryItem,
+} from "../types";
 
 import type { ImportedLibraryData } from "./types";
 
@@ -311,14 +316,7 @@ export const dataURLToString = (dataURL: DataURL) => {
   return base64ToString(dataURL.slice(dataURL.indexOf(",") + 1));
 };
 
-export const resizeImageFile = async (
-  file: File,
-  opts: {
-    /** undefined indicates auto */
-    outputType?: typeof MIME_TYPES["jpg"];
-    maxWidthOrHeight: number;
-  },
-): Promise<File> => {
+export const resizeImageFile: CompressImageFile = async (file, opts) => {
   // SVG files shouldn't a can't be resized
   if (file.type === MIME_TYPES.svg) {
     return file;

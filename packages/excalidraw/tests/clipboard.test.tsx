@@ -82,6 +82,7 @@ beforeEach(async () => {
 
   await render(
     <Excalidraw
+      compressImageFile={async (file) => file}
       autoFocus={true}
       handleKeyboardGlobally={true}
       initialData={{ appState: { zoom: { value: 1 as NormalizedZoomValue } } }}

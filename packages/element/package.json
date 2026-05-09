@@ -1,6 +1,6 @@
 {
   "name": "@myoc/element",
-  "version": "0.19.506",
+  "version": "0.19.508",
   "type": "module",
   "types": "./dist/types/element/src/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -30,7 +30,8 @@
   ],
   "description": "Excalidraw elements-related logic",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "license": "MIT",
   "keywords": [
@@ -65,6 +66,6 @@
   "dependencies": {
     "@myoc/common": "0.19.502-d9d5eeb32",
     "@myoc/math": "0.19.502-d9d5eeb32",
-    "@excalidraw/fractional-indexing": "3.3.0"
+    "@myoc/fractional-indexing": "3.3.0"
   }
 }

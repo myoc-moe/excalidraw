@@ -38,7 +38,10 @@ import {
 } from "@excalidraw/common";
 import polyfill from "@excalidraw/excalidraw/polyfill";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { loadFromBlob } from "@excalidraw/excalidraw/data/blob";
+import {
+  loadFromBlob,
+  resizeImageFile,
+} from "@excalidraw/excalidraw/data/blob";
 import { t } from "@excalidraw/excalidraw/i18n";
 
 import {
@@ -943,6 +946,7 @@ const ExcalidrawWrapper = () => {
     >
       <Excalidraw
         wheelZoomsOnDefault
+        compressImageFile={resizeImageFile}
         onChange={onChange}
         onExport={onExport}
         editorPreferences={editorPreferences}

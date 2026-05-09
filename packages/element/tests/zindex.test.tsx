@@ -161,7 +161,7 @@ const assertZindex = ({
 
 describe("z-index manipulation", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("send back", () => {
@@ -411,7 +411,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g1"] },
@@ -430,7 +430,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g1"] },
@@ -605,7 +605,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g2"], isSelected: true },
@@ -624,7 +624,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g2"], isSelected: true },
@@ -743,7 +743,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g2", "g3"], isSelected: true },
@@ -761,7 +761,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g2"], isSelected: true },
@@ -879,7 +879,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g1", "g3"] },
@@ -897,7 +897,7 @@ describe("z-index manipulation", () => {
       ],
     });
 
-    // invalid z-indexes across groups (legacy) → allow to sort to next sibling
+    // invalid z-indexes across groups (legacy) ↁEallow to sort to next sibling
     assertZindex({
       elements: [
         { id: "A", groupIds: ["g1"] },
@@ -1231,7 +1231,7 @@ describe("z-index manipulation", () => {
 
 describe("z-indexing with frames", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   // naming scheme:
@@ -1446,12 +1446,10 @@ describe("z-indexing with frames", () => {
         { id: "R2" },
       ],
       operations: [
-        // +∞
-        [actionBringToFront, ["R1", "R2", "F1_1", "F1_2", "F1"]],
+        // +∁E        [actionBringToFront, ["R1", "R2", "F1_1", "F1_2", "F1"]],
         // noop
         [actionBringToFront, ["R1", "R2", "F1_1", "F1_2", "F1"]],
-        // -∞
-        [actionSendToBack, ["F1_1", "F1_2", "F1", "R1", "R2"]],
+        // -∁E        [actionSendToBack, ["F1_1", "F1_2", "F1", "R1", "R2"]],
         // noop
         [actionSendToBack, ["F1_1", "F1_2", "F1", "R1", "R2"]],
       ],
@@ -1467,12 +1465,10 @@ describe("z-indexing with frames", () => {
         { id: "R2" },
       ],
       operations: [
-        // +∞
-        [actionBringToFront, ["R1", "R2", "F1_1", "F1", "F1_2"]],
+        // +∁E        [actionBringToFront, ["R1", "R2", "F1_1", "F1", "F1_2"]],
         // noop
         [actionBringToFront, ["R1", "R2", "F1_1", "F1", "F1_2"]],
-        // -∞
-        [actionSendToBack, ["F1_1", "F1", "F1_2", "R1", "R2"]],
+        // -∁E        [actionSendToBack, ["F1_1", "F1", "F1_2", "R1", "R2"]],
         // noop
         [actionSendToBack, ["F1_1", "F1", "F1_2", "R1", "R2"]],
       ],
@@ -1488,8 +1484,7 @@ describe("z-indexing with frames", () => {
         { id: "R2" },
       ],
       operations: [
-        // +∞
-        [actionBringToFront, ["R1", "R2", "F1_1", "F1", "F1_2"]],
+        // +∁E        [actionBringToFront, ["R1", "R2", "F1_1", "F1", "F1_2"]],
       ],
     });
 

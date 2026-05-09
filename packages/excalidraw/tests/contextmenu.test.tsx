@@ -42,6 +42,7 @@ describe("contextMenu element", () => {
 
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         handleKeyboardGlobally={true}
         initialData={{ appState: { myocSimplifiedMode: false } }}
       />,

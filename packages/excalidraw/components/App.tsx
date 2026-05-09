@@ -383,7 +383,6 @@ import {
   loadSceneOrLibraryFromBlob,
   normalizeFile,
   parseLibraryJSON,
-  resizeImageFile,
   SVGStringToFile,
 } from "../data/blob";
 
@@ -11711,7 +11710,7 @@ class App extends React.Component<AppProps, AppState> {
       }
     } else if (fileNeedsResizing) {
       try {
-        imageFile = await resizeImageFile(imageFile, {
+        imageFile = await this.props.compressImageFile(imageFile, {
           maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
         });
         console.info("Excalidraw: image resized");

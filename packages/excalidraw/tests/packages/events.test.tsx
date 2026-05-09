@@ -21,6 +21,7 @@ describe("event callbacks", () => {
     const excalidrawAPIPromise = resolvablePromise<ExcalidrawImperativeAPI>();
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         onExcalidrawAPI={(api) => excalidrawAPIPromise.resolve(api as any)}
       />,
     );
@@ -41,6 +42,7 @@ describe("event callbacks", () => {
 
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         onExcalidrawAPI={(api) => {
           if (api) {
             lifecyclePromise.resolve({
@@ -94,6 +96,7 @@ describe("event callbacks", () => {
 
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         onMount={({ excalidrawAPI, container }) => {
           expect(excalidrawAPI).toBeDefined();
           expect(container).toBeInstanceOf(HTMLDivElement);

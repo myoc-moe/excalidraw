@@ -11,7 +11,7 @@ const mouse = new Pointer("mouse");
 
 describe("element locking", () => {
   it("should not show unlockAllElements action in contextMenu if no elements locked", async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     mouse.rightClickAt(0, 0);
 
@@ -21,7 +21,7 @@ describe("element locking", () => {
 
   it("should unlock all elements and select them when using unlockAllElements action in contextMenu", async () => {
     await render(
-      <Excalidraw
+      <Excalidraw compressImageFile={async (file) => file}
         initialData={{
           elements: [
             API.createElement({

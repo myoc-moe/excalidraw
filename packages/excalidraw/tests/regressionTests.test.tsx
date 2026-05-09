@@ -65,7 +65,7 @@ beforeEach(async () => {
   finger1.reset();
   finger2.reset();
 
-  await render(<Excalidraw handleKeyboardGlobally={true} />);
+  await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   API.setAppState({ height: 768, width: MQ_MIN_WIDTH_DESKTOP });
 });
 

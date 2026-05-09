@@ -1,4 +1,4 @@
-import { randomId, reseed } from "@excalidraw/common";
+import { MIME_TYPES, randomId, reseed } from "@excalidraw/common";
 
 import type { FileId } from "@excalidraw/element/types";
 
@@ -21,8 +21,15 @@ const { h } = window;
 
 export const setupImageTest = async (
   sizes: { width: number; height: number }[],
+  compressImageFile = async (file: File) => file,
 ) => {
-  await render(<Excalidraw autoFocus={true} handleKeyboardGlobally={true} />);
+  await render(
+    <Excalidraw
+      compressImageFile={compressImageFile}
+      autoFocus={true}
+      handleKeyboardGlobally={true}
+    />,
+  );
 
   h.state.height = 1000;
 
@@ -111,5 +118,26 @@ describe("image insertion", () => {
     UI.clickTool("image");
 
     await assert();
+  });
+
+  it("should use the provided image compressor for oversized images", async () => {
+    const compressedFile = new File(["compressed"], "large.png", {
+      type: MIME_TYPES.png,
+    });
+    const compressImageFile = vi.fn(async () => compressedFile);
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], compressImageFile);
+    h.state.dontResizeLimitMBs = 0;
+
+    const largeFile = await API.loadFile("./fixtures/deer.png");
+
+    await API.drop([{ kind: "file", file: largeFile }]);
+
+    await waitFor(() => {
+      expect(compressImageFile).toHaveBeenCalledWith(
+        largeFile,
+        expect.objectContaining({ maxWidthOrHeight: expect.any(Number) }),
+      );
+    });
+    expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
   });
 });

@@ -65,7 +65,7 @@ beforeEach(async () => {
   Object.assign(document, {
     elementFromPoint: () => GlobalTestState.canvas,
   });
-  await render(<Excalidraw autoFocus={true} handleKeyboardGlobally={true} />);
+  await render(<Excalidraw compressImageFile={async (file) => file} autoFocus={true} handleKeyboardGlobally={true} />);
   API.setAppState({
     zoom: {
       value: 1 as NormalizedZoomValue,

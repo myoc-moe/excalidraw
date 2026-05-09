@@ -35,7 +35,7 @@ const { h } = window;
 
 describe("move element", () => {
   it("rectangle", async () => {
-    const { getByToolName, container } = await render(<Excalidraw />);
+    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
     const canvas = container.querySelector("canvas.interactive")!;
 
     {
@@ -73,7 +73,7 @@ describe("move element", () => {
   });
 
   it("rectangles with binding arrow", async () => {
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
 
     // create elements
     const rectA = UI.createElement("rectangle", { size: 100 });
@@ -144,7 +144,7 @@ describe("move element", () => {
 
 describe("duplicate element on move when ALT is clicked", () => {
   it("rectangle", async () => {
-    const { getByToolName, container } = await render(<Excalidraw />);
+    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
     const canvas = container.querySelector("canvas.interactive")!;
 
     {

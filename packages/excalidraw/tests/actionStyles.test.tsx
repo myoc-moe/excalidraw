@@ -20,7 +20,7 @@ const mouse = new Pointer("mouse");
 
 describe("actionStyles", () => {
   beforeEach(async () => {
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   });
 
   afterEach(async () => {

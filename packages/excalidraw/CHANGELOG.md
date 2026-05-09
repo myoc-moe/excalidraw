@@ -65,6 +65,7 @@ Please add the latest change on the top under the correct section.
 
 ---
 
+
 ## 0.19.503 (2026-03-22)
 
 ## Excalidraw API
@@ -4072,6 +4073,111 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 - Incorrect import for color (was moved to common)
 
 ---## Excalidraw Library
+
+**_This section lists the updates made to the excalidraw library and will not affect the integration._**
+
+### Features
+
+- Add ability to turn off compression for files that are smaller than a given size
+
+- Add lock tool to the dropdown and also add the status of the extra tools to be the same icon as the selected tool
+
+- Add view mode button
+
+- Add multiple image copy paste or drag and drop
+
+- Multiple image additions from clipboard
+
+- Add arrange elements action
+
+- Add top picks to appProps for both stoke color and background color
+
+### Fixes
+
+- Issues
+
+- Make mobile mode more myoc looking
+
+- Add normalise functionality
+
+- Update with excalidraw
+
+- Fix imports
+
+- Fix mutateGroup to use scene.mutateGroup
+
+- Imports
+
+- Ensure that fileId is different for compressed vs uncompressed file
+
+- Remove not working prop for dontResizeLimitMBs
+
+- Add smartview for mobile
+
+- Hide the alignment buttons if there is only one group selected (they do nothing if only one group is selected)
+
+- Use css vars already provided instead of hard coding directly from oc-gray
+
+- Remove unused variables
+
+- Pass the new top pick color props properly
+
+- Incorrect import for color (was moved to common)
+
+---## Excalidraw Library
+
+**_This section lists the updates made to the excalidraw library and will not affect the integration._**
+
+### Features
+
+- Add ability to turn off compression for files that are smaller than a given size
+
+- Add lock tool to the dropdown and also add the status of the extra tools to be the same icon as the selected tool
+
+- Add view mode button
+
+- Add multiple image copy paste or drag and drop
+
+- Multiple image additions from clipboard
+
+- Add arrange elements action
+
+- Add top picks to appProps for both stoke color and background color
+
+### Fixes
+
+- Issues
+
+- Make mobile mode more myoc looking
+
+- Add normalise functionality
+
+- Update with excalidraw
+
+- Fix imports
+
+- Fix mutateGroup to use scene.mutateGroup
+
+- Imports
+
+- Ensure that fileId is different for compressed vs uncompressed file
+
+- Remove not working prop for dontResizeLimitMBs
+
+- Add smartview for mobile
+
+- Hide the alignment buttons if there is only one group selected (they do nothing if only one group is selected)
+
+- Use css vars already provided instead of hard coding directly from oc-gray
+
+- Remove unused variables
+
+- Pass the new top pick color props properly
+
+- Incorrect import for color (was moved to common)
+
+---
+## Excalidraw Library
 
 **_This section lists the updates made to the excalidraw library and will not affect the integration._**
 

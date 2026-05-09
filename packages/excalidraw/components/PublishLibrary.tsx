@@ -11,7 +11,7 @@ import {
 } from "@excalidraw/common";
 
 import { EditorLocalStorage } from "../data/EditorLocalStorage";
-import { canvasToBlob, resizeImageFile } from "../data/blob";
+import { canvasToBlob } from "../data/blob";
 import { t } from "../i18n";
 
 import { Dialog } from "./Dialog";
@@ -24,7 +24,12 @@ import "./PublishLibrary.scss";
 
 import type { ReactNode } from "react";
 import type { ExportedLibraryData } from "../data/types";
-import type { LibraryItems, LibraryItem, UIAppState } from "../types";
+import type {
+  CompressImageFile,
+  LibraryItems,
+  LibraryItem,
+  UIAppState,
+} from "../types";
 
 interface PublishLibraryDataParams {
   authorName: string;
@@ -35,7 +40,10 @@ interface PublishLibraryDataParams {
   website: string;
 }
 
-const generatePreviewImage = async (libraryItems: LibraryItems) => {
+const generatePreviewImage = async (
+  libraryItems: LibraryItems,
+  compressImageFile: CompressImageFile,
+) => {
   const MAX_ITEMS_PER_ROW = 6;
   const BOX_SIZE = 128;
   const BOX_PADDING = Math.round(BOX_SIZE / 16);
@@ -95,7 +103,7 @@ const generatePreviewImage = async (libraryItems: LibraryItems) => {
     );
   }
 
-  return await resizeImageFile(
+  return await compressImageFile(
     new File([await canvasToBlob(canvas)], "preview", { type: MIME_TYPES.png }),
     {
       outputType: MIME_TYPES.jpg,
@@ -206,6 +214,7 @@ const PublishLibrary = ({
   onError,
   updateItemsInStorage,
   onRemove,
+  compressImageFile,
 }: {
   onClose: () => void;
   libraryItems: LibraryItems;
@@ -219,6 +228,7 @@ const PublishLibrary = ({
   onError: (error: Error) => void;
   updateItemsInStorage: (items: LibraryItems) => void;
   onRemove: (id: string) => void;
+  compressImageFile: CompressImageFile;
 }) => {
   const [libraryData, setLibraryData] = useState<PublishLibraryDataParams>({
     authorName: "",
@@ -275,7 +285,10 @@ const PublishLibrary = ({
       return;
     }
 
-    const previewImage = await generatePreviewImage(clonedLibItems);
+    const previewImage = await generatePreviewImage(
+      clonedLibItems,
+      compressImageFile,
+    );
 
     const libContent: ExportedLibraryData = {
       type: EXPORT_DATA_TYPES.excalidrawLibrary,

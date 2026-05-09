@@ -24,7 +24,7 @@ describe("laser tool interactions", () => {
       onLinkOpenSpy(...args);
       args[1].preventDefault();
     };
-    await render(<Excalidraw onLinkOpen={onLinkOpen} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} onLinkOpen={onLinkOpen} />);
 
     const linkedRect = API.createElement({
       type: "rectangle",
@@ -63,7 +63,7 @@ describe("laser tool interactions", () => {
   });
 
   it("activates embeddables on center click while using the laser tool", async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     const embeddable = API.createElement({
       type: "embeddable",
@@ -108,7 +108,7 @@ describe("laser tool interactions", () => {
   });
 
   it("doesn't pan in view mode when laser tool is active", async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     API.setAppState({ viewModeEnabled: true });
     act(() => {

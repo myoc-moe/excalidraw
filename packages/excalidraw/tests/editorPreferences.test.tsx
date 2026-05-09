@@ -28,7 +28,7 @@ describe("editorPreferences", () => {
   });
 
   it("preserves smart zoom defaults when no editorPreferences prop is provided", async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
     const scrollSpy = vi.spyOn(h.app, "scrollToContent");
     const rectangle = API.createElement({ type: "rectangle" });
 
@@ -103,7 +103,7 @@ describe("editorPreferences", () => {
     };
 
     const rendered = await render(
-      <Excalidraw editorPreferences={initialPreferences} />,
+      <Excalidraw compressImageFile={async (file) => file} editorPreferences={initialPreferences} />,
     );
     const scrollSpy = vi.spyOn(h.app, "scrollToContent");
     const rectangle = API.createElement({ type: "rectangle" });
@@ -121,7 +121,7 @@ describe("editorPreferences", () => {
     );
 
     act(() => {
-      rendered.rerender(<Excalidraw editorPreferences={nextPreferences} />);
+      rendered.rerender(<Excalidraw compressImageFile={async (file) => file} editorPreferences={nextPreferences} />);
     });
 
     await waitFor(() => {
@@ -140,7 +140,7 @@ describe("editorPreferences", () => {
     const arrangeSpy = vi.spyOn(arrangeModule, "arrangeElements");
 
     await render(
-      <Excalidraw
+      <Excalidraw compressImageFile={async (file) => file}
         editorPreferences={{
           arrange: {
             algorithm: "bin-packing-binary-tree",
@@ -184,7 +184,7 @@ describe("editorPreferences", () => {
     const normaliseSpy = vi.spyOn(normaliseModule, "normaliseElements");
 
     await render(
-      <Excalidraw
+      <Excalidraw compressImageFile={async (file) => file}
         editorPreferences={{
           normalise: {
             mode: "first",

@@ -61,7 +61,7 @@ const getOutlineBounds = (element: ReturnType<typeof API.createElement>) => {
 
 describe("box-selection", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("should allow adding to selection via box-select when holding shift", async () => {
@@ -153,7 +153,7 @@ describe("box-selection", () => {
 
 describe("lasso reselection", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("should allow ctrl+alt lasso reselection when starting inside the active common bounds", () => {
@@ -249,7 +249,7 @@ describe("box-selection overlap mode", () => {
 
   beforeEach(async () => {
     await render(
-      <Excalidraw
+      <Excalidraw compressImageFile={async (file) => file}
         initialData={{ appState: { boxSelectionMode: "overlap" } }}
       />,
     );
@@ -788,7 +788,7 @@ describe("box-selection overlap mode", () => {
 
 describe("inner box-selection", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
   it("selecting elements visually nested inside another", async () => {
     const rect1 = API.createElement({
@@ -1071,7 +1071,7 @@ describe("inner box-selection", () => {
 
 describe("selection element", () => {
   it("create selection element on pointer down", async () => {
-    const { getByToolName, container } = await render(<Excalidraw />);
+    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
     // select tool
     const tool = getByToolName("selection");
     fireEvent.click(tool);
@@ -1092,7 +1092,7 @@ describe("selection element", () => {
   });
 
   it("resize selection element on pointer move", async () => {
-    const { getByToolName, container } = await render(<Excalidraw />);
+    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
     // select tool
     const tool = getByToolName("selection");
     fireEvent.click(tool);
@@ -1115,7 +1115,7 @@ describe("selection element", () => {
   });
 
   it("remove selection element on pointer up", async () => {
-    const { getByToolName, container } = await render(<Excalidraw />);
+    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
     // select tool
     const tool = getByToolName("selection");
     fireEvent.click(tool);
@@ -1143,7 +1143,7 @@ describe("select single element on the scene", () => {
 
   it("rectangle", async () => {
     const { getByToolName, container } = await render(
-      <Excalidraw handleKeyboardGlobally={true} />,
+      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
     );
     const canvas = container.querySelector("canvas.interactive")!;
     {
@@ -1176,7 +1176,7 @@ describe("select single element on the scene", () => {
 
   it("diamond", async () => {
     const { getByToolName, container } = await render(
-      <Excalidraw handleKeyboardGlobally={true} />,
+      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
     );
     const canvas = container.querySelector("canvas.interactive")!;
     {
@@ -1209,7 +1209,7 @@ describe("select single element on the scene", () => {
 
   it("ellipse", async () => {
     const { getByToolName, container } = await render(
-      <Excalidraw handleKeyboardGlobally={true} />,
+      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
     );
     const canvas = container.querySelector("canvas.interactive")!;
     {
@@ -1242,7 +1242,7 @@ describe("select single element on the scene", () => {
 
   it("arrow", async () => {
     const { getByToolName, container } = await render(
-      <Excalidraw handleKeyboardGlobally={true} />,
+      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
     );
     const canvas = container.querySelector("canvas.interactive")!;
     {
@@ -1287,7 +1287,7 @@ describe("select single element on the scene", () => {
 
   it("arrow escape", async () => {
     const { getByToolName, container } = await render(
-      <Excalidraw handleKeyboardGlobally={true} />,
+      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
     );
     const canvas = container.querySelector("canvas.interactive")!;
     {
@@ -1334,7 +1334,7 @@ describe("select single element on the scene", () => {
 
 describe("tool locking & selection", () => {
   it("should not select newly created element while tool is locked", async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     UI.clickTool("lock");
     expect(h.state.activeTool.locked).toBe(true);
@@ -1357,7 +1357,7 @@ describe("tool locking & selection", () => {
 
 describe("selectedElementIds stability", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("box-selection should be stable when not changing selection", () => {
@@ -1401,7 +1401,7 @@ describe("selectedElementIds stability", () => {
 
 describe("deselecting", () => {
   beforeEach(async () => {
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   });
 
   it("esc unwinds nested group editing before deselecting", () => {

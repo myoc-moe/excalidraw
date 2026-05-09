@@ -1,6 +1,6 @@
 {
-  "name": "@excalidraw/fractional-indexing",
-  "version": "3.3.0",
+  "version": "0.19.508",
+  "name": "@myoc/fractional-indexing",
   "description": "Provides functions for generating ordering strings",
   "type": "module",
   "types": "./dist/types/fractional-indexing/src/index.d.ts",
@@ -37,7 +37,8 @@
     }
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "files": [
     "dist/*"

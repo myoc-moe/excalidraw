@@ -66,7 +66,7 @@ describe("aligning", () => {
     await act(() => {
       return setLanguage(defaultLang);
     });
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   });
 
   it("aligns two objects correctly to the top", () => {

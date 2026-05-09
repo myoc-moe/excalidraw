@@ -35,7 +35,7 @@ describe("Test <App/>", () => {
       };
     };
 
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
     expect(
       queryByTestId(
         document.querySelector(".excalidraw-modal-container")!,

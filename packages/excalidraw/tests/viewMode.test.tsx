@@ -15,17 +15,17 @@ const pointerTypes = [mouse, touch, pen];
 
 describe("view mode", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
-  it("after switching to view mode – cursor type should be pointer", async () => {
+  it("after switching to view mode  Ecursor type should be pointer", async () => {
     API.setAppState({ viewModeEnabled: true });
     expect(GlobalTestState.interactiveCanvas.style.cursor).toBe(
       CURSOR_TYPE.GRAB,
     );
   });
 
-  it("after switching to view mode, moving, clicking, and pressing space key – cursor type should be pointer", async () => {
+  it("after switching to view mode, moving, clicking, and pressing space key  Ecursor type should be pointer", async () => {
     API.setAppState({ viewModeEnabled: true });
 
     pointerTypes.forEach((pointerType) => {
@@ -41,7 +41,7 @@ describe("view mode", () => {
   });
 
   it("cursor should stay as grabbing type when hovering over canvas elements", async () => {
-    // create a rectangle, then hover over it – cursor should be
+    // create a rectangle, then hover over it  Ecursor should be
     // move type for mouse and grab for touch & pen
     // then switch to view-mode and cursor should be grabbing type
     UI.createElement("rectangle", { size: 100 });

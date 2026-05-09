@@ -15,7 +15,7 @@ const { h } = window;
 
 describe("actionDuplicateSelection", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   describe("duplicating frames", () => {

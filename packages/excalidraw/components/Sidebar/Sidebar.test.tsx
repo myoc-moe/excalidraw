@@ -31,7 +31,7 @@ describe("Sidebar", () => {
   describe("General behavior", () => {
     it("should render custom sidebar", async () => {
       const { container } = await render(
-        <Excalidraw
+        <Excalidraw compressImageFile={async (file) => file}
           initialData={{ appState: { openSidebar: { name: "customSidebar" } } }}
         >
           <Sidebar name="customSidebar">
@@ -46,7 +46,7 @@ describe("Sidebar", () => {
 
     it("should render only one sidebar and prefer the custom one", async () => {
       const { container } = await render(
-        <Excalidraw
+        <Excalidraw compressImageFile={async (file) => file}
           initialData={{ appState: { openSidebar: { name: "customSidebar" } } }}
         >
           <Sidebar name="customSidebar">
@@ -68,7 +68,7 @@ describe("Sidebar", () => {
 
     it("should toggle sidebar using excalidrawAPI.toggleSidebar()", async () => {
       const { container } = await render(
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file}>
           <Sidebar name="customSidebar">
             <div id="test-sidebar-content">42</div>
           </Sidebar>
@@ -157,7 +157,7 @@ describe("Sidebar", () => {
   describe("<Sidebar.Header/>", () => {
     it("should render custom sidebar header", async () => {
       const { container } = await render(
-        <Excalidraw
+        <Excalidraw compressImageFile={async (file) => file}
           initialData={{ appState: { openSidebar: { name: "customSidebar" } } }}
         >
           <Sidebar name="customSidebar">
@@ -178,7 +178,7 @@ describe("Sidebar", () => {
     it("should not render <Sidebar.Header> for custom sidebars by default", async () => {
       const CustomExcalidraw = () => {
         return (
-          <Excalidraw
+          <Excalidraw compressImageFile={async (file) => file}
             initialData={{
               appState: { openSidebar: { name: "customSidebar" } },
             }}
@@ -202,7 +202,7 @@ describe("Sidebar", () => {
       const onStateChange = vi.fn();
       const CustomExcalidraw = () => {
         return (
-          <Excalidraw
+          <Excalidraw compressImageFile={async (file) => file}
             initialData={{
               appState: { openSidebar: { name: "customSidebar" } },
             }}
@@ -277,7 +277,7 @@ describe("Sidebar", () => {
 
     it("should be user-dockable when both `onDock` and `docked` supplied", async () => {
       await render(
-        <Excalidraw
+        <Excalidraw compressImageFile={async (file) => file}
           initialData={{ appState: { openSidebar: { name: "customSidebar" } } }}
         >
           <Sidebar
@@ -304,7 +304,7 @@ describe("Sidebar", () => {
       const mock = jest.spyOn(console, "warn").mockImplementation(() => {});
 
       await render(
-        <Excalidraw
+        <Excalidraw compressImageFile={async (file) => file}
           initialData={{ appState: { openSidebar: { name: "customSidebar" } } }}
         >
           <Sidebar
@@ -331,7 +331,7 @@ describe("Sidebar", () => {
   describe("Sidebar.tab", () => {
     it("should toggle sidebars tabs correctly", async () => {
       const { container } = await render(
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file}>
           <Sidebar name="custom" docked>
             <Sidebar.Tabs>
               <Sidebar.Tab tab="library">Library</Sidebar.Tab>

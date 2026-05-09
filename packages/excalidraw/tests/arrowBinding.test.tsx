@@ -57,7 +57,7 @@ const ctrlKeyUp = () =>
 
 // ---------------------------------------------------------------------------
 
-describe("Arrow binding – non-default case (bindingPreference: disabled)", () => {
+describe("Arrow binding  Enon-default case (bindingPreference: disabled)", () => {
   beforeAll(() => {
     mockBoundingClientRect();
   });
@@ -69,7 +69,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
   beforeEach(async () => {
     localStorage.clear();
     reseed(7);
-    await render(<Excalidraw handleKeyboardGlobally={true} />);
+    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
     h.state.width = 1920;
     h.state.height = 1080;
   });
@@ -97,14 +97,14 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
       expect(actionToggleArrowBinding.checked!(h.state)).toBe(false);
     });
 
-    it("executing the action toggles binding from enabled → disabled", () => {
+    it("executing the action toggles binding from enabled ↁEdisabled", () => {
       expect(h.state.isBindingEnabled).toBe(true);
       API.executeAction(actionToggleArrowBinding);
       expect(h.state.isBindingEnabled).toBe(false);
       expect(h.state.bindingPreference).toBe("disabled");
     });
 
-    it("executing the action toggles binding from disabled → enabled", () => {
+    it("executing the action toggles binding from disabled ↁEenabled", () => {
       API.setAppState({
         bindingPreference: "disabled",
         isBindingEnabled: false,
@@ -116,7 +116,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
     });
 
     it("checked() returns false after action disables binding", () => {
-      API.executeAction(actionToggleArrowBinding); // true → false
+      API.executeAction(actionToggleArrowBinding); // true ↁEfalse
       expect(actionToggleArrowBinding.checked!(h.state)).toBe(false);
     });
   });
@@ -177,7 +177,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
       });
 
       UI.clickTool("arrow");
-      // Start inside the rectangle – binding is off, so no startBinding
+      // Start inside the rectangle  Ebinding is off, so no startBinding
       mouse.down(200, 200);
       mouse.up(700, 200);
 
@@ -208,7 +208,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
       });
 
       UI.clickTool("arrow");
-      // End inside the target rectangle – binding off -> no endBinding
+      // End inside the target rectangle  Ebinding off -> no endBinding
       mouse.down(100, 200);
       mouse.up(600, 200);
 
@@ -406,7 +406,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
       expect(h.state.isBindingEnabled).toBe(false);
     });
 
-    it("full round-trip: off → Ctrl down → on → Ctrl up → off", () => {
+    it("full round-trip: off ↁECtrl down ↁEon ↁECtrl up ↁEoff", () => {
       API.setAppState({
         bindingPreference: "disabled",
         isBindingEnabled: false,
@@ -471,7 +471,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
 
       ctrlKeyDown({ repeat: true });
 
-      // Must remain off – repeat events are ignored
+      // Must remain off  Erepeat events are ignored
       expect(h.state.isBindingEnabled).toBe(false);
     });
 
@@ -519,7 +519,7 @@ describe("Arrow binding – non-default case (bindingPreference: disabled)", () 
 
       ctrlKeyDown();
 
-      // Handler returns early in viewMode — state must stay false
+      // Handler returns early in viewMode  Estate must stay false
       expect(h.state.isBindingEnabled).toBe(false);
     });
   });

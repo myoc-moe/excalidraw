@@ -20,6 +20,7 @@ describe("appState", () => {
 
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         initialData={{
           appState: {
             exportBackground,
@@ -65,6 +66,7 @@ describe("appState", () => {
   it("changing fontSize with text tool selected (no element created yet)", async () => {
     const { container } = await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         initialData={{
           appState: {
             currentItemFontSize: 30,

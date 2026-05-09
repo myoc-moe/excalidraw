@@ -6,6 +6,10 @@ import "@excalidraw/excalidraw/index.css";
 
 import App from "../../with-script-in-browser/components/ExampleApp";
 
+import type { CompressImageFile } from "@excalidraw/excalidraw";
+
+const compressImageFile: CompressImageFile = async (file) => file;
+
 const ExcalidrawWrapper: React.FC = () => {
   return (
     <>
@@ -14,7 +18,7 @@ const ExcalidrawWrapper: React.FC = () => {
         useCustom={(api: any, args?: any[]) => {}}
         excalidrawLib={excalidrawLib}
       >
-        <Excalidraw />
+        <Excalidraw compressImageFile={compressImageFile} />
       </App>
     </>
   );

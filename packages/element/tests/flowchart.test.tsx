@@ -19,7 +19,7 @@ beforeEach(async () => {
   reseed(7);
   mouse.reset();
 
-  await render(<Excalidraw handleKeyboardGlobally={true} />);
+  await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   h.state.width = 1000;
   h.state.height = 1000;
 
@@ -316,9 +316,8 @@ describe("flow chart navigation", () => {
 
   it("take the most obvious link when possible", () => {
     /**
-     * ▨ → ▨   ▨ → ▨
-     *     ↓   ↑
-     *     ▨ → ▨
+     * ▨ ↁE▨   ▨ ↁE▨
+     *     ↁE  ↁE     *     ▨ ↁE▨
      */
 
     API.clearSelection();

@@ -25,7 +25,7 @@ const testElements = [
     ...API.createElement({
       type: "text",
       id: "A",
-      text: "ðŸ˜€",
+      text: "ðŸE",
     }),
     // can't get jsdom text measurement to work so this is a temp hack
     // to ensure the element isn't stripped as invisible
@@ -48,7 +48,7 @@ Object.defineProperty(window, "TextDecoder", {
 
 describe("export", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("export embedded png and reimport", async () => {
@@ -61,7 +61,7 @@ describe("export", () => {
 
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸ˜€" }),
+        expect.objectContaining({ type: "text", text: "ðŸE" }),
       ]);
     });
   });
@@ -78,7 +78,7 @@ describe("export", () => {
       decodeSvgBase64Payload({ svg: metadataElement.innerHTML }),
     );
     expect(decoded.elements).toEqual([
-      expect.objectContaining({ type: "text", text: "ðŸ˜€" }),
+      expect.objectContaining({ type: "text", text: "ðŸE" }),
     ]);
   });
 
@@ -119,7 +119,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸ˜€" }),
+        expect.objectContaining({ type: "text", text: "ðŸE" }),
       ]);
     });
   });
@@ -147,7 +147,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸ˜€" }),
+        expect.objectContaining({ type: "text", text: "ðŸE" }),
       ]);
     });
   });

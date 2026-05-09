@@ -1,6 +1,6 @@
 {
   "name": "@myoc/math",
-  "version": "0.19.506",
+  "version": "0.19.508",
   "type": "module",
   "types": "./dist/types/math/src/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -24,7 +24,8 @@
   ],
   "description": "Excalidraw math functions",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "license": "MIT",
   "keywords": [

@@ -13,7 +13,7 @@ import {
 
 describe("Test <DropdownMenu/>", () => {
   it("should", async () => {
-    const { container } = await render(<Excalidraw />);
+    const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     expect(window.h.state.openMenu).toBe(null);
 

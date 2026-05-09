@@ -11,7 +11,7 @@ import { useAtom } from "../editor-jotai";
 import { useLibraryCache } from "../hooks/useLibraryItemSvg";
 import { t } from "../i18n";
 
-import { useApp, useExcalidrawSetAppState } from "./App";
+import { useApp, useAppProps, useExcalidrawSetAppState } from "./App";
 import ConfirmDialog from "./ConfirmDialog";
 import { Dialog } from "./Dialog";
 import { isLibraryMenuOpenAtom } from "./LibraryMenu";
@@ -55,6 +55,7 @@ export const LibraryDropdownMenuButton: React.FC<{
   className,
 }) => {
   const [libraryItemsData] = useAtom(libraryItemsAtom);
+  const { compressImageFile } = useAppProps();
   const [isLibraryMenuOpen, setIsLibraryMenuOpen] = useAtom(
     isLibraryMenuOpenAtom,
   );
@@ -261,6 +262,7 @@ export const LibraryDropdownMenuButton: React.FC<{
             onPublishLibSuccess(data, libraryItemsData.libraryItems)
           }
           onError={(error) => window.alert(error)}
+          compressImageFile={compressImageFile}
           updateItemsInStorage={() =>
             library.setLibrary(libraryItemsData.libraryItems)
           }

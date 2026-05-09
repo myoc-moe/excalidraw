@@ -606,6 +606,17 @@ export type OnExportProgress = {
   progress?: number;
 };
 
+export type CompressImageFileOpts = {
+  /** undefined indicates auto */
+  outputType?: typeof MIME_TYPES["jpg"];
+  maxWidthOrHeight: number;
+};
+
+export type CompressImageFile = (
+  file: File,
+  opts: CompressImageFileOpts,
+) => Promise<File>;
+
 export interface ExcalidrawProps {
   onChange?: (
     elements: readonly OrderedExcalidrawElement[],
@@ -690,6 +701,7 @@ export interface ExcalidrawProps {
   handleKeyboardGlobally?: boolean;
   onLibraryChange?: (libraryItems: LibraryItems) => void | Promise<any>;
   autoFocus?: boolean;
+  compressImageFile: CompressImageFile;
   generateIdForFile?: (file: File) => string | Promise<string>;
   generateLinkForSelection?: (id: string, type: "element" | "group") => string;
   onLinkOpen?: (

@@ -87,6 +87,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     handleKeyboardGlobally = false,
     onLibraryChange,
     autoFocus = false,
+    compressImageFile,
     generateIdForFile,
     onLinkOpen,
     generateLinkForSelection,
@@ -202,6 +203,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           handleKeyboardGlobally={handleKeyboardGlobally}
           onLibraryChange={onLibraryChange}
           autoFocus={autoFocus}
+          compressImageFile={compressImageFile}
           generateIdForFile={generateIdForFile}
           onLinkOpen={onLinkOpen}
           generateLinkForSelection={generateLinkForSelection}
@@ -391,6 +393,8 @@ export { CommandPalette } from "./components/CommandPalette/CommandPalette";
 
 export type {
   ArrangePreferences,
+  CompressImageFile,
+  CompressImageFileOpts,
   EditorPreferences,
   NormalisePreferences,
   SmartZoomPreferences,

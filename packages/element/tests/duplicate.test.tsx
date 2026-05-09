@@ -401,7 +401,7 @@ describe("duplicating multiple elements", () => {
 
 describe("group-related duplication", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("action-duplicating within group", async () => {
@@ -510,7 +510,7 @@ describe("group-related duplication", () => {
 
 describe("duplication z-order", () => {
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
 
   it("duplication z order with Cmd+D for the lowest z-ordered element should be +1 for the clone", () => {

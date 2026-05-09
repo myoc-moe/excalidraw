@@ -40,7 +40,7 @@ describe("binding for simple arrows", () => {
       await act(() => {
         return setLanguage(defaultLang);
       });
-      await render(<Excalidraw handleKeyboardGlobally={true} />);
+      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
     });
 
     it("should create an `inside` binding", () => {
@@ -185,7 +185,7 @@ describe("binding for simple arrows", () => {
       await act(() => {
         return setLanguage(defaultLang);
       });
-      await render(<Excalidraw handleKeyboardGlobally={true} />);
+      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
     });
 
     it("should handle new arrow start point binding", () => {
@@ -318,7 +318,7 @@ describe("binding for simple arrows", () => {
       await act(() => {
         return setLanguage(defaultLang);
       });
-      await render(<Excalidraw handleKeyboardGlobally={true} />);
+      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
     });
 
     it(
@@ -525,7 +525,7 @@ describe("binding for simple arrows", () => {
       await act(() => {
         return setLanguage(defaultLang);
       });
-      await render(<Excalidraw handleKeyboardGlobally={true} />);
+      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
     });
 
     it("should update binding when text containerized", async () => {

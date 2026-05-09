@@ -34,6 +34,7 @@ describe("setActiveTool()", () => {
     const excalidrawAPIPromise = resolvablePromise<ExcalidrawImperativeAPI>();
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         onExcalidrawAPI={(api) => excalidrawAPIPromise.resolve(api as any)}
       />,
     );
@@ -90,6 +91,7 @@ describe("scrollToViewport()", () => {
     const excalidrawAPIPromise = resolvablePromise<ExcalidrawImperativeAPI>();
     await render(
       <Excalidraw
+        compressImageFile={async (file) => file}
         onExcalidrawAPI={(api) => excalidrawAPIPromise.resolve(api as any)}
       />,
     );

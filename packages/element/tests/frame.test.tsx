@@ -95,7 +95,7 @@ describe("adding elements to frames", () => {
   let arrow: ExcalidrawElement;
 
   beforeEach(async () => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     frame = API.createElement({ id: "id0", type: "frame", x: 0, width: 150 });
     rect1 = API.createElement({
@@ -510,7 +510,7 @@ describe("adding elements to frames", () => {
     initialOrder: ElementType[],
     expectedOrder: ElementType[],
   ) => {
-    await render(<Excalidraw />);
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
 
     const frame = API.createElement({ type: "frame", x: 0, y: 0 });
 
@@ -587,7 +587,7 @@ describe("adding elements to frames", () => {
       );
 
       // FIXME failing in tests (it fails to add elements to frame for some
-      // reason) but works in browser. (╯°□°)╯︵ ┻━┻
+      // reason) but works in browser. (╯°□°)╯�E� ┻━┻
       //
       // Looks like the `getElementsCompletelyInFrame()` doesn't work
       // in these cases.

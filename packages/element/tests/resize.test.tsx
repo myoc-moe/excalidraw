@@ -58,7 +58,7 @@ beforeEach(async () => {
   reseed(7);
   mouse.reset();
 
-  await render(<Excalidraw handleKeyboardGlobally={true} />);
+  await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
   h.state.width = 1000;
   h.state.height = 1000;
 

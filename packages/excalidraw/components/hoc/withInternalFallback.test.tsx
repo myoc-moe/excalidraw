@@ -7,10 +7,10 @@ describe("Test internal component fallback rendering", () => {
   it("should render only one menu per excalidraw instance (custom menu first scenario)", async () => {
     const { container } = await render(
       <div>
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file}>
           <MainMenu>test</MainMenu>
         </Excalidraw>
-        <Excalidraw />
+        <Excalidraw compressImageFile={async (file) => file} />
       </div>,
     );
 
@@ -31,8 +31,8 @@ describe("Test internal component fallback rendering", () => {
   it("should render only one menu per excalidraw instance (default menu first scenario)", async () => {
     const { container } = await render(
       <div>
-        <Excalidraw />
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file} />
+        <Excalidraw compressImageFile={async (file) => file}>
           <MainMenu>test</MainMenu>
         </Excalidraw>
       </div>,
@@ -55,10 +55,10 @@ describe("Test internal component fallback rendering", () => {
   it("should render only one menu per excalidraw instance (two custom menus scenario)", async () => {
     const { container } = await render(
       <div>
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file}>
           <MainMenu>test</MainMenu>
         </Excalidraw>
-        <Excalidraw>
+        <Excalidraw compressImageFile={async (file) => file}>
           <MainMenu>test</MainMenu>
         </Excalidraw>
       </div>,
@@ -81,8 +81,8 @@ describe("Test internal component fallback rendering", () => {
   it("should render only one menu per excalidraw instance (two default menus scenario)", async () => {
     const { container } = await render(
       <div>
-        <Excalidraw />
-        <Excalidraw />
+        <Excalidraw compressImageFile={async (file) => file} />
+        <Excalidraw compressImageFile={async (file) => file} />
       </div>,
     );
 
