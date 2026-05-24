@@ -8289,8 +8289,7 @@ class App extends React.Component<AppProps, AppState> {
       !(
         isHoldingZoomKey &&
         gesture.pointers.size <= 1 &&
-        event.button === POINTER_BUTTON.MAIN &&
-        event.pointerType === "mouse"
+        event.button === POINTER_BUTTON.MAIN
       )
     ) {
       return false;
