@@ -18,6 +18,7 @@ import { ShapeCache } from "@excalidraw/element";
 
 import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
+import { isHandToolActive } from "../appState";
 import { actionToggleStats } from "../actions";
 import { trackEvent } from "../analytics";
 import { TunnelsContext, useInitializeTunnels } from "../context/tunnels";
@@ -52,6 +53,7 @@ import { ErrorDialog } from "./ErrorDialog";
 import { EyeDropper, activeEyeDropperAtom } from "./EyeDropper";
 import { FixedSideContainer } from "./FixedSideContainer";
 import { HelpDialog } from "./HelpDialog";
+import { HandButton } from "./HandButton";
 import { HintViewer } from "./HintViewer";
 import { ImageExportDialog } from "./ImageExportDialog";
 import { Island } from "./Island";
@@ -345,6 +347,11 @@ const LayerUI = ({
                               onChange={() => onPenModeToggle(null)}
                               title={t("toolBar.penMode")}
                               penDetected={appState.penDetected}
+                            />
+                            <HandButton
+                              checked={isHandToolActive(appState)}
+                              onChange={onHandToolToggle}
+                              title={t("toolBar.hand")}
                             />
                             {/* <LockButton
                               checked={appState.activeTool.locked}

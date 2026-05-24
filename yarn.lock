@@ -2058,6 +2058,9 @@
     sass "1.51.0"
     tunnel-rat "0.1.2"
 
+"@myoc/fractional-indexing@3.3.0":
+  version "0.19.508"
+
 "@myoc/math@0.19.502-d9d5eeb32":
   version "0.19.502-d9d5eeb32"
   resolved "https://registry.yarnpkg.com/@myoc/math/-/math-0.19.502-d9d5eeb32.tgz#1e6e756be0c14a4412b04be5f21b08af178a5332"
