@@ -107,6 +107,10 @@ export default function BasicHelpDialog() {
       >
         <Shortcut label={t("helpDialog.smartZoom")} shortcuts={[KEYS.F]} />
         <Shortcut
+          label={t("helpDialog.dragToZoom")}
+          shortcuts={[`${KEYS.Z}+${t("helpDialog.drag")}`]}
+        />
+        <Shortcut
           label={t("buttons.objectsSnapMode")}
           shortcuts={[getShortcutKey("Alt+S")]}
         />

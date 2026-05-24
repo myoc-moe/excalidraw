@@ -334,6 +334,28 @@ describe("regression tests", () => {
     expect(scrollY).not.toEqual(startScrollY);
   });
 
+  it("z + horizontal drag zooms the canvas", () => {
+    mouse.reset();
+
+    const startZoom = h.state.zoom.value;
+
+    Keyboard.keyDown(KEYS.Z);
+    expect(h.app.interactiveCanvas?.style.cursor).toBe("zoom-in");
+
+    mouse.down(100, 100);
+    mouse.up(100, 0);
+
+    const zoomedIn = h.state.zoom.value;
+    expect(zoomedIn).toBeGreaterThan(startZoom);
+
+    mouse.down();
+    mouse.up(-100, 0);
+    Keyboard.keyUp(KEYS.Z);
+
+    expect(h.app.interactiveCanvas?.style.cursor).toBe("");
+    expect(h.state.zoom.value).toBeLessThan(zoomedIn);
+  });
+
   it("arrow keys", () => {
     UI.clickTool("rectangle");
     mouse.down(10, 10);

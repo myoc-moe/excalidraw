@@ -111,6 +111,7 @@ import {
   setDesktopUIMode,
   isSelectionLikeTool,
   oneOf,
+  matchKey,
 } from "@excalidraw/common";
 
 import {
@@ -587,7 +588,9 @@ let didTapTwice: boolean = false;
 let tappedTwiceTimer = 0;
 let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
+let isHoldingZoomKey: boolean = false;
 let isPanning: boolean = false;
+let isZoomingByDragging: boolean = false;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
 let touchTimeout = 0;
@@ -608,6 +611,7 @@ let IS_PLAIN_PASTE_TIMER = 0;
 let PLAIN_PASTE_TOAST_SHOWN = false;
 
 let lastPointerUp: (() => void) | null = null;
+const ZOOM_DRAG_CURSOR = "zoom-in";
 const gesture: Gesture = {
   pointers: new Map(),
   lastCenter: null,
@@ -2852,6 +2856,9 @@ class App extends React.Component<AppProps, AppState> {
 
   private onBlur = withBatchedUpdates(() => {
     isHoldingSpace = false;
+    isHoldingZoomKey = false;
+    isZoomingByDragging = false;
+    this.restoreCursorAfterZoomKey();
     this.setState({
       isBindingEnabled: this.state.bindingPreference === "enabled",
     });
@@ -5051,6 +5058,19 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      if (
+        !event.altKey &&
+        !event.shiftKey &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        matchKey(event, KEYS.Z)
+      ) {
+        isHoldingZoomKey = true;
+        setCursor(this.interactiveCanvas, ZOOM_DRAG_CURSOR);
+        event.preventDefault();
+        return;
+      }
+
       // view mode hardcoded from upstream -> disable tool switching for now
       const shouldPreventToolSwitching = this.props.viewModeEnabled === true;
 
@@ -5358,6 +5378,11 @@ class App extends React.Component<AppProps, AppState> {
         });
       }
       isHoldingSpace = false;
+    }
+
+    if (matchKey(event, KEYS.Z)) {
+      isHoldingZoomKey = false;
+      this.restoreCursorAfterZoomKey();
     }
 
     if (event.key === KEYS.ALT) {
@@ -6962,7 +6987,9 @@ class App extends React.Component<AppProps, AppState> {
 
     if (
       isHoldingSpace ||
+      isHoldingZoomKey ||
       isPanning ||
+      isZoomingByDragging ||
       isDraggingScrollBar ||
       isHandToolActive(this.state)
     ) {
@@ -7826,7 +7853,7 @@ class App extends React.Component<AppProps, AppState> {
       });
     }
 
-    if (isPanning) {
+    if (isPanning || isZoomingByDragging) {
       return;
     }
 
@@ -7835,7 +7862,10 @@ class App extends React.Component<AppProps, AppState> {
     // we must exit before we set `cursorButton` state and `savePointer`
     // else it will send pointer state & laser pointer events in collab when
     // panning
-    if (this.handleCanvasPanUsingWheelOrSpaceDrag(event)) {
+    if (
+      this.handleCanvasZoomUsingZDrag(event) ||
+      this.handleCanvasPanUsingWheelOrSpaceDrag(event)
+    ) {
       return;
     }
 
@@ -8250,6 +8280,86 @@ class App extends React.Component<AppProps, AppState> {
   private maybeCleanupAfterMissingPointerUp = (event: PointerEvent | null) => {
     lastPointerUp?.();
     this.missingPointerEventCleanupEmitter.trigger(event).clear();
+  };
+
+  private handleCanvasZoomUsingZDrag = (
+    event: React.PointerEvent<HTMLElement>,
+  ): boolean => {
+    if (
+      !(
+        isHoldingZoomKey &&
+        gesture.pointers.size <= 1 &&
+        event.button === POINTER_BUTTON.MAIN &&
+        event.pointerType === "mouse"
+      )
+    ) {
+      return false;
+    }
+
+    isZoomingByDragging = true;
+    this.focusContainer();
+    event.preventDefault();
+
+    const anchorClientX = event.clientX;
+    const anchorClientY = event.clientY;
+    const startClientX = event.clientX;
+    const startZoom = this.state.zoom.value;
+    const PIXELS_PER_ZOOM_DOUBLING = 200;
+
+    const onPointerMove = withBatchedUpdatesThrottled((event: PointerEvent) => {
+      const nextZoom = getNormalizedZoom(
+        startZoom *
+          2 ** ((event.clientX - startClientX) / PIXELS_PER_ZOOM_DOUBLING),
+      );
+
+      this.translateCanvas((state) => ({
+        ...getStateForZoom(
+          {
+            viewportX: anchorClientX,
+            viewportY: anchorClientY,
+            nextZoom,
+          },
+          state,
+        ),
+        shouldCacheIgnoreZoom: true,
+      }));
+      this.resetShouldCacheIgnoreZoomDebounced();
+    });
+
+    const teardown = withBatchedUpdates(
+      (lastPointerUp = () => {
+        lastPointerUp = null;
+        isZoomingByDragging = false;
+        if (!isHoldingZoomKey) {
+          this.restoreCursorAfterZoomKey();
+        }
+        window.removeEventListener(EVENT.POINTER_MOVE, onPointerMove);
+        window.removeEventListener(EVENT.POINTER_UP, teardown);
+        window.removeEventListener(EVENT.BLUR, teardown);
+        onPointerMove.flush();
+      }),
+    );
+
+    window.addEventListener(EVENT.BLUR, teardown);
+    window.addEventListener(EVENT.POINTER_MOVE, onPointerMove, {
+      passive: true,
+    });
+    window.addEventListener(EVENT.POINTER_UP, teardown);
+
+    return true;
+  };
+
+  private restoreCursorAfterZoomKey = () => {
+    if (
+      this.state.viewModeEnabled &&
+      this.state.activeTool.type !== "laser"
+    ) {
+      setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);
+    } else if (isSelectionLikeTool(this.state.activeTool.type)) {
+      resetCursor(this.interactiveCanvas);
+    } else {
+      setCursorForShape(this.interactiveCanvas, this.state);
+    }
   };
 
   // Returns whether the event is a panning

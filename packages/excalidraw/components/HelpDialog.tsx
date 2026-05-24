@@ -264,6 +264,10 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
                 shortcuts={[KEYS.F]}
               />
               <Shortcut
+                label={t("helpDialog.dragToZoom")}
+                shortcuts={[`${KEYS.Z}+${t("helpDialog.drag")}`]}
+              />
+              <Shortcut
                 label={t("buttons.zoomIn")}
                 shortcuts={[getShortcutKey("CtrlOrCmd++")]}
               />

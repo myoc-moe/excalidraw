@@ -463,6 +463,7 @@
     "title": "Help",
     "view": "View",
     "smartZoom": "Smart Zoom (Fit selection or all elements if none selected)",
+    "dragToZoom": "Drag to zoom",
     "zoomToFit": "Zoom to fit all elements",
     "zoomToSelection": "Zoom to selection",
     "toggleElementLock": "Lock/unlock selection",
