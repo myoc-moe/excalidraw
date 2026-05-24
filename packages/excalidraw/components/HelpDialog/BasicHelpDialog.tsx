@@ -81,15 +81,16 @@ export default function BasicHelpDialog() {
         caption={t("helpDialog.tools")}
       >
         <Shortcut label={t("toolBar.hand")} shortcuts={[KEYS.H]} />
-        {SHAPES.filter(({ myocSimplifiedMode }) => myocSimplifiedMode).map(
-          ({ value, key }) => (
+        {SHAPES.filter(
+          ({ value, myocSimplifiedMode }) =>
+            value !== "hand" && myocSimplifiedMode,
+        ).map(({ value, key }) => (
             <Shortcut
               key={value}
               label={t(`toolBar.${value}`)}
               shortcuts={[...key]}
             />
-          ),
-        )}
+          ))}
         <Shortcut
           label={t("helpDialog.cropStart")}
           shortcuts={[t("helpDialog.doubleClick"), getShortcutKey("Enter")]}

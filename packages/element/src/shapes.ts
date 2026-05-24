@@ -9,6 +9,7 @@ import {
   EllipseIcon,
   EraserIcon,
   FreedrawIcon,
+  handIcon,
   ImageIcon,
   LineIcon,
   RectangleIcon,
@@ -28,6 +29,14 @@ import type { ExcalidrawElement, ElementsMap } from "./types";
 export type ToolCategory = "manipulation" | "elements";
 
 export const SHAPES = [
+  {
+    icon: handIcon,
+    value: "hand",
+    key: KEYS.H,
+    numericKey: undefined,
+    fillable: false,
+    myocSimplifiedMode: true,
+  },
   {
     icon: SelectionIcon,
     value: "selection",
@@ -113,6 +122,7 @@ export const SHAPES = [
 export const getToolbarTools = (app: AppClassProperties) => {
   return app.state.preferredSelectionTool.type === "lasso"
     ? ([
+        SHAPES[0],
         {
           value: "lasso",
           icon: SelectionIcon,
@@ -120,7 +130,7 @@ export const getToolbarTools = (app: AppClassProperties) => {
           fillable: true,
           myocSimplifiedMode: true,
         },
-        ...SHAPES.slice(1),
+        ...SHAPES.slice(2),
       ] as const)
     : SHAPES;
 };
