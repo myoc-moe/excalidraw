@@ -18,10 +18,14 @@ export const Modal: React.FC<{
   labelledBy: string;
   theme?: AppState["theme"];
   closeOnClickOutside?: boolean;
+  portalContainerClassName?: string;
 }> = (props) => {
   const { closeOnClickOutside = true } = props;
   const modalRoot = useCreatePortalContainer({
-    className: "excalidraw-modal-container",
+    className: clsx(
+      "excalidraw-modal-container",
+      props.portalContainerClassName,
+    ),
   });
 
   const animationsDisabledRef = useRef(

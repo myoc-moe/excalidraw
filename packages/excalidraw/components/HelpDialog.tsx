@@ -163,6 +163,7 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
         title={t("helpDialog.title")}
         className={"HelpDialog"}
         titleButton={showAllButton}
+        portalContainerClassName="HelpDialog__modalContainer"
       >
         {/* <Header /> - Myoc - no header! */}
         {isShowAll ? (

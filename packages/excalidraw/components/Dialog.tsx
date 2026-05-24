@@ -30,6 +30,7 @@ export interface DialogProps {
   autofocus?: boolean;
   closeOnClickOutside?: boolean;
   titleButton?: React.ReactNode;
+  portalContainerClassName?: string;
 }
 
 function getDialogSize(size: DialogSize): number {
@@ -113,6 +114,7 @@ export const Dialog = (props: DialogProps) => {
       maxWidth={getDialogSize(props.size)}
       onCloseRequest={onClose}
       closeOnClickOutside={props.closeOnClickOutside}
+      portalContainerClassName={props.portalContainerClassName}
     >
       <Island ref={setIslandNode}>
         {props.title && (
