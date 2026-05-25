@@ -96,10 +96,6 @@
     "ungroup": "দল বিভেদ করুন",
     "collaborators": "সহযোগী",
     "toggleGrid": "",
-    "addToLibrary": "সংগ্রহে যোগ করুন",
-    "removeFromLibrary": "সংগ্রহ থেকে বের করুন",
-    "libraryLoadingMessage": "সংগ্রহ তৈরি হচ্ছে",
-    "libraries": "সংগ্রহ দেখুন",
     "loadingScene": "দৃশ্য তৈরি হচ্ছে",
     "loadScene": "",
     "align": "পংক্তিবিন্যাস",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "",
     "theme": "",
-    "personalLib": "ব্যক্তিগত লাইব্রেরি",
-    "excalidrawLib": "এক্সক্যালিড্র লাইব্রেরি",
     "decreaseFontSize": "লেখনীর মাত্রা কমান",
     "increaseFontSize": "লেখনীর মাত্রা বাড়ান",
     "unbindText": "লেখার জোড় খুলুন",
@@ -151,7 +145,6 @@
       "lockAll": "সব আবদ্ধ করুন",
       "unlockAll": "সব বিচ্ছিন্ন করুন"
     },
-    "statusPublished": "প্রকাশিত",
     "sidebarLock": "লক",
     "selectAllElementsInFrame": "ফ্রেমের ভিতরের সব উপকরণ বাছাই করুন",
     "removeAllElementsFromFrame": "ফ্রেম থেকে সব উপকরণ মুছুন",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "সংগ্রহে কিছু যোগ করা হয়নি",
-    "hint_emptyLibrary": "এখানে যোগ করার জন্য ক্যানভাসে একটি বস্তু নির্বাচন করুন, অথবা নীচে, প্রকাশ্য সংগ্রহশালা থেকে একটি সংগ্রহ ইনস্টল করুন৷",
-    "hint_emptyPrivateLibrary": "এখানে যোগ করার জন্য ক্যানভাসে একটি বস্তু নির্বাচন করুন",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "সংশোধন করুন",
     "undo": "ফেরত যান",
     "redo": "পুনরায় করুন",
-    "resetLibrary": "সংগ্রহ সাফ করুন",
     "createNewRoom": "নতুন রুম বানান",
     "fullScreen": "পূর্ণস্ক্রীন",
     "darkMode": "ডার্ক মোড",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "জেন মোড বন্ধ করুন",
     "cancel": "বাতিল",
-    "saveLibNames": "",
     "clear": "সাফ",
     "remove": "বিয়োগ",
     "embed": "",
-    "publishLibrary": "",
     "submit": "জমা করুন",
     "confirm": "নিশ্চিত করুন",
     "embeddableInteractionButton": ""
@@ -251,14 +230,9 @@
     "uploadedSecurly": "আপলোডটি এন্ড-টু-এন্ড এনক্রিপশনের মাধ্যমে সুরক্ষিত করা হয়েছে, যার অর্থ হল এক্সক্যালিড্র সার্ভার এবং তৃতীয় পক্ষের দ্বারা পড়তে পারা সম্ভব নয়।",
     "loadSceneOverridePrompt": "বাহ্যিক অঙ্কন লোড করা আপনার বিদ্যমান দৃশ্য প্রতিস্থাপন করবে। আপনি কি অবিরত করতে চান?",
     "collabStopOverridePrompt": "অধিবেশন বন্ধ করা আপনার পূর্ববর্তী, স্থানীয়ভাবে সঞ্চিত অঙ্কন ওভাররাইট করবে। আপনি কি নিশ্চিত?\n\n(যদি আপনি আপনার স্থানীয় অঙ্কন রাখতে চান, তাহলে শুধু ব্রাউজার ট্যাবটি বন্ধ করুন।)",
-    "errorAddingToLibrary": "বস্তুটি সংগ্রহে যোগ করা যায়নি",
-    "errorRemovingFromLibrary": "বস্তুটি সংগ্রহ থেকে বিয়োগ করা যায়নি",
-    "confirmAddLibrary": "এটি আপনার সংগ্রহে {{numShapes}} আকার(গুলি) যোগ করবে। আপনি কি নিশ্চিত?",
     "imageDoesNotContainScene": "এই ছবিতে কোনো দৃশ্যের তথ্য আছে বলে মনে হয় না৷ আপনি কি নিবদ্ধ করার সময় দৃশ্য এমবেডিং করতে সক্ষম?",
     "cannotRestoreFromImage": "এই ফাইল থেকে দৃশ্য পুনরুদ্ধার করা যায়নি",
     "invalidSceneUrl": "সরবরাহ করা লিঙ্ক থেকে দৃশ্য লোড করা যায়নি৷ এটি হয় বিকৃত, অথবা বৈধ এক্সক্যালিড্র জেসন তথ্য নেই৷",
-    "resetLibrary": "এটি আপনার সংগ্রহ পরিষ্কার করবে। আপনি কি নিশ্চিত?",
-    "removeItemsFromsLibrary": "সংগ্রহ থেকে {{count}} বস্তু বিয়োগ করা হবে। আপনি কি নিশ্চিত?",
     "invalidEncryptionKey": "অবৈধ এনক্রীপশন কী।",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "এসভীজী ছবি সন্নিবেশ করা যায়নি। এসভীজী মার্কআপটি অবৈধ মনে হচ্ছে৷",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "কোল্যাব সার্ভারের সাথে সংযোগ করা যায়নি। পৃষ্ঠাটি পুনরায় লোড করে আবার চেষ্টা করুন।",
-    "importLibraryError": "সংগ্রহ লোড করা যায়নি",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "রেখা",
     "freedraw": "কলম",
     "text": "লেখা",
-    "library": "সংগ্রহ",
     "lock": "আঁকার পরে নির্বাচিত টুল সক্রিয় রাখুন",
     "penMode": "",
     "link": "",
@@ -355,7 +321,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "আপনার নিজস্ব সংগ্রহ প্রকাশ করুন",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -441,42 +406,6 @@
   "clearCanvasDialog": {
     "title": ""
   },
-  "publishDialog": {
-    "title": "",
-    "itemName": "",
-    "authorName": "",
-    "githubUsername": "",
-    "twitterUsername": "",
-    "libraryName": "",
-    "libraryDesc": "",
-    "website": "",
-    "placeholder": {
-      "authorName": "",
-      "libraryName": "",
-      "libraryDesc": "",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "",
-      "website": ""
-    },
-    "noteDescription": "",
-    "noteGuidelines": "",
-    "noteLicense": "",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "",
-    "content": ""
-  },
-  "confirmDialog": {
-    "resetLibrary": "",
-    "removeItemsFromLib": ""
-  },
   "imageExportDialog": {
     "header": "",
     "label": {
@@ -523,7 +452,6 @@
     "width": "প্রস্থ"
   },
   "toast": {
-    "addedToLibrary": "সংগ্রহশালায় যুক্ত হয়েছে",
     "copyStyles": "",
     "copyToClipboard": "ক্লিপবোর্ডে কপি করা হয়েছে।",
     "copyToClipboardAsPng": "",

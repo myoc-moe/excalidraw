@@ -96,10 +96,6 @@
     "ungroup": "解除编组",
     "collaborators": "协作者",
     "toggleGrid": "切换网格显示",
-    "addToLibrary": "添加到素材库中",
-    "removeFromLibrary": "从素材库中移除",
-    "libraryLoadingMessage": "正在加载素材库…",
-    "libraries": "浏览素材库",
     "loadingScene": "正在加载绘图…",
     "loadScene": "从文件加载绘图",
     "align": "对齐",
@@ -120,8 +116,6 @@
     "showFonts": "显示字体选择器",
     "toggleTheme": "切换浅色/深色主题",
     "theme": "主题",
-    "personalLib": "个人素材库",
-    "excalidrawLib": "Excalidraw 素材库",
     "decreaseFontSize": "缩小字体大小",
     "increaseFontSize": "放大字体大小",
     "unbindText": "取消文本绑定",
@@ -151,7 +145,6 @@
       "lockAll": "全部锁定",
       "unlockAll": "全部解锁"
     },
-    "statusPublished": "已发布",
     "sidebarLock": "侧边栏常驻",
     "selectAllElementsInFrame": "选择画框中的所有元素",
     "removeAllElementsFromFrame": "分离出画框中的所有元素",
@@ -177,17 +170,6 @@
     "title": "链接到对象",
     "desc": "点击画布上的形状或粘贴链接。",
     "notFound": "在画布上找不到链接的对象。"
-  },
-  "library": {
-    "noItems": "尚未添加任何项目……",
-    "hint_emptyLibrary": "选中画布上的项目添加到此处，或从下方的公共素材库中导入。",
-    "hint_emptyPrivateLibrary": "选中画布上的项目添加到此处。",
-    "search": {
-      "inputPlaceholder": "搜索库",
-      "heading": "匹配的库",
-      "noResults": "无匹配项……",
-      "clearSearch": "清除搜索"
-    }
   },
   "search": {
     "title": "在画布上查找",
@@ -220,7 +202,6 @@
     "edit": "编辑",
     "undo": "撤销",
     "redo": "重做",
-    "resetLibrary": "重置素材库",
     "createNewRoom": "新建会议室",
     "fullScreen": "全屏",
     "darkMode": "深色模式",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "吸附至对象",
     "exitZenMode": "退出禅模式",
     "cancel": "取消",
-    "saveLibNames": "保存名称并退出",
     "clear": "清除",
     "remove": "删除",
     "embed": "切换嵌入",
-    "publishLibrary": "重命名或发布",
     "submit": "提交",
     "confirm": "确定",
     "embeddableInteractionButton": "点击以开始交互"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "上传已被端到端加密保护，这意味着 Excalidraw 的服务器和第三方都无法读取内容。",
     "loadSceneOverridePrompt": "加载外部绘图将取代您现有的内容。您想要继续吗？",
     "collabStopOverridePrompt": "停止会话将覆盖您先前本地存储的绘图。 您确定吗？\n\n(如果您想保持本地绘图，只需关闭浏览器选项卡。)",
-    "errorAddingToLibrary": "无法将项目添加到素材库中",
-    "errorRemovingFromLibrary": "无法从素材库中移除项目",
-    "confirmAddLibrary": "这将添加 {{numShapes}} 个形状到您的素材库中。您确定吗？",
     "imageDoesNotContainScene": "此图像似乎不包含任何画布数据。您是否在导出时启用了画布嵌入功能？",
     "cannotRestoreFromImage": "无法从此图像文件恢复画布",
     "invalidSceneUrl": "无法从提供的 URL 导入场景。它或者格式不正确，或者不包含有效的 Excalidraw JSON 数据。",
-    "resetLibrary": "这将会清除你的素材库。你确定要这么做吗？",
-    "removeItemsFromsLibrary": "确定要从素材库中删除 {{count}} 个项目吗？",
     "invalidEncryptionKey": "密钥必须包含22个字符。实时协作已被禁用。",
     "collabOfflineWarning": "无网络连接。\n您的改动将不会被保存！",
     "localStorageQuotaExceeded": "超过浏览器存储配额。更改将不会被保存。"
@@ -270,8 +244,6 @@
     "svgImageInsertError": "无法插入 SVG 图像。该 SVG 标记似乎是无效的。",
     "failedToFetchImage": "无法获取图片。",
     "cannotResolveCollabServer": "无法连接到实时协作服务器。请重新加载页面并重试。",
-    "importLibraryError": "无法加载素材库",
-    "saveLibraryError": "无法将库保存至存储。请将库保存为本地文件，以确保您的更改不被丢失。",
     "collabSaveFailed": "无法保存到后端数据库。如果问题持续存在，您应该保存文件到本地，以确保您的工作不会丢失。",
     "collabSaveFailed_sizeExceeded": "无法保存到后端数据库，画布似乎过大。您应该保存文件到本地，以确保您的工作不会丢失。",
     "imageToolNotSupported": "图片已被禁用。",
@@ -280,11 +252,6 @@
       "line2": "这可能会破坏绘图中的 <bold>文本元素</bold>。",
       "line3": "我们强烈建议禁用此设置。您可以按照<link>这些步骤</link>来设置。",
       "line4": "如果禁用此设置无法修复文本元素的显示，请在 GitHub 上提交一个 <issueLink>issue</issueLink> ，或者在 <discordLink>Discord</discordLink> 上反馈"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "嵌入元素不能添加到素材库。",
-      "iframe": "不能将 IFrame 元素添加到素材库中。",
-      "image": "我们不久将支持添加图片到素材库"
     },
     "asyncPasteFailedOnRead": "无法粘贴（无法读取系统剪贴板）。",
     "asyncPasteFailedOnParse": "无法粘贴。",
@@ -301,7 +268,6 @@
     "line": "线条",
     "freedraw": "自由书写",
     "text": "文字",
-    "library": "素材库",
     "lock": "绘制后保持所选的工具栏状态",
     "penMode": "笔模式 – 避免误触",
     "link": "为选定的形状添加或更改链接",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "双击或按{{shortcut}}编辑点",
     "lineEditor_pointSelected": "按{{shortcut_1}}移除点，按{{shortcut_2}}复制点，拖拽移动点",
     "lineEditor_nothingSelected": "选择要编辑的点 (按住{{shortcut_1}}选择多个)，\n或按住{{shortcut_2}}并点击以添加新点",
-    "publishLibrary": "发布您自己的素材库",
     "bindTextToElement": "按{{shortcut}}添加文本",
     "createFlowchart": "按{{shortcut}}创建流程图",
     "deepBoxSelect": "按住{{shortcut}}深度选择，并避免拖拽",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "清除画布"
   },
-  "publishDialog": {
-    "title": "发布素材库",
-    "itemName": "项目名称",
-    "authorName": "作者名",
-    "githubUsername": "GitHub 用户名",
-    "twitterUsername": "Twitter 用户名",
-    "libraryName": "名称",
-    "libraryDesc": "简介",
-    "website": "网址",
-    "placeholder": {
-      "authorName": "您的名字或用户名",
-      "libraryName": "素材库名称",
-      "libraryDesc": "介绍您的素材库，让人们了解其用途",
-      "githubHandle": "GitHub 用户名（可选），填写后，您可以编辑已提交待审的素材库",
-      "twitterHandle": "Twitter 用户名（可选），填写后，当我们在Twitter发布推广信息时便可提及您",
-      "website": "您个人网站的或任意的链接（可选）"
-    },
-    "errors": {
-      "required": "必填",
-      "website": "输入一个有效的URL"
-    },
-    "noteDescription": "提交后，您的素材库将被包含在<link>公共素材库广场</link>以供其他人在绘图中使用。",
-    "noteGuidelines": "提交的素材库需先经人工审核。在提交之前，请先阅读<link>指南</link> 。后续沟通和对库的修改需要 GitHub 账号，但这不是必须的。",
-    "noteLicense": "提交即表明您已同意素材库将遵循 <link>MIT 许可证</link>，简而言之，任何人都可以不受限制地使用它们。",
-    "noteItems": "素材库中每个项目都有各自的名称以供筛选。以下项目将被包含：",
-    "atleastOneLibItem": "请选择至少一个素材库以开始",
-    "republishWarning": "注意：部分选中的项目已经发布或提交。请仅在更新已有或已提交的素材库时重复提交项目。"
-  },
-  "publishSuccessDialog": {
-    "title": "素材库已提交",
-    "content": "谢谢你 {{authorName}}。您的素材库已被提交审核。请点击<link>此处</link>跟进此次提交的状态"
-  },
-  "confirmDialog": {
-    "resetLibrary": "重置素材库",
-    "removeItemsFromLib": "从素材库中删除选中的项目"
-  },
   "imageExportDialog": {
     "header": "导出图片",
     "label": {
@@ -524,7 +453,6 @@
     "width": "宽度"
   },
   "toast": {
-    "addedToLibrary": "添加到素材库中",
     "copyStyles": "样式已拷贝。",
     "copyToClipboard": "已复制到剪切板。",
     "copyToClipboardAsPng": "已将 {{exportSelection}} 作为 PNG 复制到剪贴板\n({{exportColorScheme}})",

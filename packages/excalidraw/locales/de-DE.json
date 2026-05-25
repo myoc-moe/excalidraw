@@ -96,10 +96,6 @@
     "ungroup": "Gruppierung aufheben",
     "collaborators": "Mitarbeitende",
     "toggleGrid": "Raster umschalten",
-    "addToLibrary": "Zur Bibliothek hinzufügen",
-    "removeFromLibrary": "Aus Bibliothek entfernen",
-    "libraryLoadingMessage": "Lade Bibliothek…",
-    "libraries": "Bibliotheken durchsuchen",
     "loadingScene": "Lade Zeichnung…",
     "loadScene": "Szene aus Datei laden",
     "align": "Ausrichten",
@@ -120,8 +116,6 @@
     "showFonts": "Schriftauswahl anzeigen",
     "toggleTheme": "Helles/dunkles Design umschalten",
     "theme": "Design",
-    "personalLib": "Persönliche Bibliothek",
-    "excalidrawLib": "Excalidraw Bibliothek",
     "decreaseFontSize": "Schriftgröße verringern",
     "increaseFontSize": "Schriftgröße erhöhen",
     "unbindText": "Text lösen",
@@ -151,7 +145,6 @@
       "lockAll": "Alle sperren",
       "unlockAll": "Alle entsperren"
     },
-    "statusPublished": "Veröffentlicht",
     "sidebarLock": "Seitenleiste offen lassen",
     "selectAllElementsInFrame": "Alle Elemente im Rahmen auswählen",
     "removeAllElementsFromFrame": "Alle Elemente aus dem Rahmen entfernen",
@@ -177,17 +170,6 @@
     "title": "Link zum Objekt",
     "desc": "Klicke auf eine Form auf der Zeichenfläche oder füge einen Link ein.",
     "notFound": "Verknüpftes Objekt wurde nicht auf der Zeichenfläche gefunden."
-  },
-  "library": {
-    "noItems": "Noch keine Elemente hinzugefügt...",
-    "hint_emptyLibrary": "Wähle ein Element auf der Zeichenfläche, um es hier hinzuzufügen. Oder installiere eine Bibliothek aus dem öffentlichen Verzeichnis.",
-    "hint_emptyPrivateLibrary": "Wähle ein Element von der Zeichenfläche, um es hier hinzuzufügen.",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "Auf Zeichenfläche suchen",
@@ -220,7 +202,6 @@
     "edit": "Bearbeiten",
     "undo": "Rückgängig machen",
     "redo": "Wiederholen",
-    "resetLibrary": "Bibliothek zurücksetzen",
     "createNewRoom": "Neuen Raum erstellen",
     "fullScreen": "Vollbildanzeige",
     "darkMode": "Dunkles Design",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Einrasten an Objekten",
     "exitZenMode": "Zen-Modus verlassen",
     "cancel": "Abbrechen",
-    "saveLibNames": "",
     "clear": "Löschen",
     "remove": "Entfernen",
     "embed": "Einbettung umschalten",
-    "publishLibrary": "",
     "submit": "Absenden",
     "confirm": "Bestätigen",
     "embeddableInteractionButton": "Klicken, um zu interagieren"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Der Upload wurde mit Ende-zu-Ende-Verschlüsselung gespeichert. Weder Excalidraw noch Dritte können den Inhalt einsehen.",
     "loadSceneOverridePrompt": "Das Laden einer externen Zeichnung ersetzt den vorhandenen Inhalt. Möchtest du fortfahren?",
     "collabStopOverridePrompt": "Das Stoppen der Sitzung wird deine vorherige, lokal gespeicherte Zeichnung überschreiben. Bist du dir sicher?\n\n(Wenn du deine lokale Zeichnung behalten möchtest, schließe stattdessen den Browser-Tab.)",
-    "errorAddingToLibrary": "Das Element konnte nicht zur Bibliothek hinzugefügt werden",
-    "errorRemovingFromLibrary": "Das Element konnte nicht aus der Bibliothek entfernt werden",
-    "confirmAddLibrary": "Dies fügt {{numShapes}} Form(en) zu deiner Bibliothek hinzu. Bist du dir sicher?",
     "imageDoesNotContainScene": "Dieses Bild scheint keine Szenendaten zu enthalten. Hast Du das Einbetten der Szene während des Exports aktiviert?",
     "cannotRestoreFromImage": "Die Zeichnung konnte aus dieser Bilddatei nicht wiederhergestellt werden",
     "invalidSceneUrl": "Die Szene konnte nicht von der angegebenen URL importiert werden. Sie ist entweder fehlerhaft oder enthält keine gültigen Excalidraw JSON-Daten.",
-    "resetLibrary": "Dieses löscht deine Bibliothek. Bist du sicher?",
-    "removeItemsFromsLibrary": "{{count}} Element(e) aus der Bibliothek löschen?",
     "invalidEncryptionKey": "Verschlüsselungsschlüssel muss 22 Zeichen lang sein. Die Live-Zusammenarbeit ist deaktiviert.",
     "collabOfflineWarning": "Keine Internetverbindung verfügbar.\nDeine Änderungen werden nicht gespeichert!",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "SVG-Bild konnte nicht eingefügt werden. Das SVG-Markup sieht ungültig aus.",
     "failedToFetchImage": "Bild konnte nicht abgerufen werden.",
     "cannotResolveCollabServer": "Konnte keine Verbindung zum Collab-Server herstellen. Bitte lade die Seite neu und versuche es erneut.",
-    "importLibraryError": "Bibliothek konnte nicht geladen werden",
-    "saveLibraryError": "Bibliothek konnte nicht gespeichert werden. Bitte speichere deine Bibliothek lokal in einer Datei, um sicherzustellen, dass keine Änderungen verloren gehen.",
     "collabSaveFailed": "Keine Speicherung in der Backend-Datenbank möglich. Wenn die Probleme weiterhin bestehen, solltest Du Deine Datei lokal speichern, um sicherzustellen, dass Du Deine Arbeit nicht verlierst.",
     "collabSaveFailed_sizeExceeded": "Keine Speicherung in der Backend-Datenbank möglich, die Zeichenfläche scheint zu groß zu sein. Du solltest Deine Datei lokal speichern, um sicherzustellen, dass Du Deine Arbeit nicht verlierst.",
     "imageToolNotSupported": "Bilder sind deaktiviert.",
@@ -280,11 +252,6 @@
       "line2": "Dies könnte dazu führen, dass die <bold>Textelemente</bold> in Ihren Zeichnungen zerstört werden.",
       "line3": "Wir empfehlen dringend, diese Einstellung zu deaktivieren. Dazu kannst Du <link>diesen Schritten</link> folgen.",
       "line4": "Wenn die Deaktivierung dieser Einstellung die fehlerhafte Anzeige von Textelementen nicht behebt, öffne bitte ein <issueLink>Ticket</issueLink> auf unserem GitHub oder schreibe uns auf <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Einbettbare Elemente können der Bibliothek nicht hinzugefügt werden.",
-      "iframe": "IFrame-Elemente können nicht zur Bibliothek hinzugefügt werden.",
-      "image": "Unterstützung für das Hinzufügen von Bildern in die Bibliothek kommt bald!"
     },
     "asyncPasteFailedOnRead": "Einfügen fehlgeschlagen (konnte aus der Zwischenablage des Systems nicht gelesen werden).",
     "asyncPasteFailedOnParse": "Einfügen fehlgeschlagen.",
@@ -301,7 +268,6 @@
     "line": "Linie",
     "freedraw": "Zeichnen",
     "text": "Text",
-    "library": "Bibliothek",
     "lock": "Ausgewähltes Werkzeug nach Zeichnen aktiv lassen",
     "penMode": "Stift-Modus - Berührung verhindern",
     "link": "Link für ausgewählte Form hinzufügen / aktualisieren",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Veröffentliche deine eigene Bibliothek",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Zeichenfläche löschen"
   },
-  "publishDialog": {
-    "title": "Bibliothek veröffentlichen",
-    "itemName": "Elementname",
-    "authorName": "Name des Autors",
-    "githubUsername": "GitHub-Benutzername",
-    "twitterUsername": "Twitter-Benutzername",
-    "libraryName": "Name der Bibliothek",
-    "libraryDesc": "Beschreibung der Bibliothek",
-    "website": "Webseite",
-    "placeholder": {
-      "authorName": "Dein Name oder Benutzername",
-      "libraryName": "Name deiner Bibliothek",
-      "libraryDesc": "Beschreibung deiner Bibliothek, um anderen Nutzern bei der Verwendung zu helfen",
-      "githubHandle": "GitHub-Handle (optional), damit du die Bibliothek bearbeiten kannst, wenn sie zur Überprüfung eingereicht wurde",
-      "twitterHandle": "Twitter-Benutzername (optional), damit wir wissen, wen wir bei Werbung über Twitter nennen können",
-      "website": "Link zu deiner persönlichen Webseite oder zu anderer Seite (optional)"
-    },
-    "errors": {
-      "required": "Erforderlich",
-      "website": "Gültige URL eingeben"
-    },
-    "noteDescription": "Sende deine Bibliothek ein, um in die <link>öffentliche Bibliotheks-Repository aufgenommen zu werden</link>damit andere Nutzer sie in ihren Zeichnungen verwenden können.",
-    "noteGuidelines": "Die Bibliothek muss zuerst manuell freigegeben werden. Bitte lies die <link>Richtlinien</link> vor dem Absenden. Du benötigst ein GitHub-Konto, um zu kommunizieren und Änderungen vorzunehmen, falls erforderlich, aber es ist nicht unbedingt erforderlich.",
-    "noteLicense": "Mit dem Absenden stimmst du zu, dass die Bibliothek unter der <link>MIT-Lizenz, </link>die zusammengefasst beinhaltet, dass jeder sie ohne Einschränkungen nutzen kann.",
-    "noteItems": "Jedes Bibliothekselement muss einen eigenen Namen haben, damit es gefiltert werden kann. Die folgenden Bibliothekselemente werden hinzugefügt:",
-    "atleastOneLibItem": "Bitte wähle mindestens ein Bibliothekselement aus, um zu beginnen",
-    "republishWarning": "Hinweis: Einige der ausgewählten Elemente sind bereits als veröffentlicht/eingereicht markiert. Du solltest Elemente nur erneut einreichen, wenn Du eine existierende Bibliothek oder Einreichung aktualisierst."
-  },
-  "publishSuccessDialog": {
-    "title": "Bibliothek übermittelt",
-    "content": "Vielen Dank {{authorName}}. Deine Bibliothek wurde zur Überprüfung eingereicht. Du kannst den Status verfolgen<link>hier</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Bibliothek zurücksetzen",
-    "removeItemsFromLib": "Ausgewählte Elemente aus der Bibliothek entfernen"
-  },
   "imageExportDialog": {
     "header": "Bild exportieren",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Breite"
   },
   "toast": {
-    "addedToLibrary": "Zur Bibliothek hinzugefügt",
     "copyStyles": "Formatierungen kopiert.",
     "copyToClipboard": "In die Zwischenablage kopiert.",
     "copyToClipboardAsPng": "{{exportSelection}} als PNG in die Zwischenablage kopiert\n({{exportColorScheme}})",

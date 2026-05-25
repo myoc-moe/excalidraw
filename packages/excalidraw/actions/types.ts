@@ -100,7 +100,6 @@ export type ActionName =
   | "group"
   | "ungroup"
   | "goToCollaborator"
-  | "addToLibrary"
   | "changeRoundness"
   | "alignTop"
   | "alignBottom"

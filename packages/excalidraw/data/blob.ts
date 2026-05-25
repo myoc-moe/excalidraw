@@ -18,21 +18,10 @@ import { decodeSvgBase64Payload } from "../scene/export";
 
 import { base64ToString, stringToBase64, toByteString } from "./encode";
 import { nativeFileSystemSupported } from "./filesystem";
-import { isValidExcalidrawData, isValidLibrary } from "./json";
-import {
-  restoreAppState,
-  restoreElements,
-  restoreLibraryItems,
-} from "./restore";
+import { isValidExcalidrawData } from "./json";
+import { restoreAppState, restoreElements } from "./restore";
 
-import type {
-  AppState,
-  CompressImageFile,
-  DataURL,
-  LibraryItem,
-} from "../types";
-
-import type { ImportedLibraryData } from "./types";
+import type { AppState, CompressImageFile, DataURL } from "../types";
 
 const parseFileContents = async (blob: Blob | File): Promise<string> => {
   let contents: string;
@@ -102,8 +91,6 @@ export const getMimeType = (blob: Blob | string): string => {
     return MIME_TYPES.jpg;
   } else if (/\.svg$/.test(name)) {
     return MIME_TYPES.svg;
-  } else if (/\.excalidrawlib$/.test(name)) {
-    return MIME_TYPES.excalidrawlib;
   }
   return "";
 };
@@ -140,7 +127,7 @@ export const isSupportedImageFile = (
   return isSupportedImageFileType(type);
 };
 
-export const loadSceneOrLibraryFromBlob = async (
+export const loadFromBlob = async (
   blob: Blob | File,
   /** @see restore.localAppState */
   localAppState: AppState | null,
@@ -164,30 +151,22 @@ export const loadSceneOrLibraryFromBlob = async (
     }
     if (isValidExcalidrawData(data)) {
       return {
-        type: MIME_TYPES.excalidraw,
-        data: {
-          elements: restoreElements(data.elements, localElements, {
-            repairBindings: true,
-            deleteInvisibleElements: true,
-          }),
-          appState: restoreAppState(
-            {
-              theme: localAppState?.theme,
-              fileHandle: fileHandle || blob.handle || null,
-              ...cleanAppStateForExport(data.appState || {}),
-              ...(localAppState
-                ? calculateScrollCenter(data.elements || [], localAppState)
-                : {}),
-            },
-            localAppState,
-          ),
-          files: data.files || {},
-        },
-      };
-    } else if (isValidLibrary(data)) {
-      return {
-        type: MIME_TYPES.excalidrawlib,
-        data,
+        elements: restoreElements(data.elements, localElements, {
+          repairBindings: true,
+          deleteInvisibleElements: true,
+        }),
+        appState: restoreAppState(
+          {
+            theme: localAppState?.theme,
+            fileHandle: fileHandle || blob.handle || null,
+            ...cleanAppStateForExport(data.appState || {}),
+            ...(localAppState
+              ? calculateScrollCenter(data.elements || [], localAppState)
+              : {}),
+          },
+          localAppState,
+        ),
+        files: data.files || {},
       };
     }
     throw new Error("Error: invalid file");
@@ -197,45 +176,6 @@ export const loadSceneOrLibraryFromBlob = async (
     }
     throw new Error("Error: invalid file");
   }
-};
-
-export const loadFromBlob = async (
-  blob: Blob,
-  /** @see restore.localAppState */
-  localAppState: AppState | null,
-  localElements: readonly ExcalidrawElement[] | null,
-  /** FileSystemFileHandle. Defaults to `blob.handle` if defined, otherwise null. */
-  fileHandle?: FileSystemFileHandle | null,
-) => {
-  const ret = await loadSceneOrLibraryFromBlob(
-    blob,
-    localAppState,
-    localElements,
-    fileHandle,
-  );
-  if (ret.type !== MIME_TYPES.excalidraw) {
-    throw new Error("Error: invalid file");
-  }
-  return ret.data;
-};
-
-export const parseLibraryJSON = (
-  json: string,
-  defaultStatus: LibraryItem["status"] = "unpublished",
-) => {
-  const data: ImportedLibraryData | undefined = JSON.parse(json);
-  if (!isValidLibrary(data)) {
-    throw new Error("Invalid library");
-  }
-  const libraryItems = data.libraryItems || data.library;
-  return restoreLibraryItems(libraryItems, defaultStatus);
-};
-
-export const loadLibraryFromBlob = async (
-  blob: Blob,
-  defaultStatus: LibraryItem["status"] = "unpublished",
-) => {
-  return parseLibraryJSON(await parseFileContents(blob), defaultStatus);
 };
 
 export const canvasToBlob = async (
@@ -461,16 +401,14 @@ const normalizedFileSymbol = Symbol("fileNormalized");
 
 /** attempts to detect correct mimeType if none is set, or if an image
  * has an incorrect extension.
- * Note: doesn't handle missing .excalidraw/.excalidrawlib extension  */
+ * Note: doesn't handle missing .excalidraw extension  */
 export const normalizeFile = async (file: File) => {
   // to prevent double normalization (perf optim)
   if ((file as any)[normalizedFileSymbol]) {
     return file;
   }
 
-  if (file?.name?.endsWith(".excalidrawlib")) {
-    file = createFile(file, MIME_TYPES.excalidrawlib, file.name);
-  } else if (file?.name?.endsWith(".excalidraw")) {
+  if (file?.name?.endsWith(".excalidraw")) {
     file = createFile(file, MIME_TYPES.excalidraw, file.name);
   } else if (!file.type || file.type?.startsWith("image/")) {
     // when the file is an image, make sure the extension corresponds to the

@@ -96,10 +96,6 @@
     "ungroup": "Qrupsuz seçim",
     "collaborators": "Əməkdaşlar",
     "toggleGrid": "Toru dəyiş",
-    "addToLibrary": "Kitabxanaya əlavə et",
-    "removeFromLibrary": "Kitabxanadan sil",
-    "libraryLoadingMessage": "Kitabxana yüklənir...",
-    "libraries": "Kitabxanalara bax",
     "loadingScene": "Səhnə yüklənir...",
     "loadScene": "Səhnəni fayldan yüklə",
     "align": "Hizala",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "Gecə/Güzdüz rejiminə dəyiş",
     "theme": "Fon",
-    "personalLib": "Şəxsi kitabxana",
-    "excalidrawLib": "Excalidraw kitabxanası",
     "decreaseFontSize": "Şrift ölçüsünü azalt",
     "increaseFontSize": "Şrift ölçüsünü artır",
     "unbindText": "Mətni çıxar",
@@ -151,7 +145,6 @@
       "lockAll": "",
       "unlockAll": ""
     },
-    "statusPublished": "",
     "sidebarLock": "",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "",
-    "hint_emptyLibrary": "",
-    "hint_emptyPrivateLibrary": "",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "",
     "undo": "",
     "redo": "",
-    "resetLibrary": "",
     "createNewRoom": "",
     "fullScreen": "",
     "darkMode": "",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Obyektlərə bərkidin",
     "exitZenMode": "Zen rejimindən çıxış",
     "cancel": "Ləğv et",
-    "saveLibNames": "",
     "clear": "Təmizlə",
     "remove": "Sil",
     "embed": "Yerləşdirməni aktiv et",
-    "publishLibrary": "",
     "submit": "Göndər",
     "confirm": "Təsdiqlə",
     "embeddableInteractionButton": "Əlaqə üçün kliklə"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Yükləmə end-to-end şifrələmə texnologiyası ilə qorunub, yəni Excalidraw serveri və üçüncü tərəflər məzmunu oxuya bilməz.",
     "loadSceneOverridePrompt": "Xarici rəsmin yüklənməsi mövcud məzmununuzu əvəz edəcək. Davam etmək istəyirsiniz?",
     "collabStopOverridePrompt": "Sessiyanın dayandırılması əvvəlki, yerli olaraq saxlanılan çertyojunuzun üzərinə yazılacaq. Əminsiniz?",
-    "errorAddingToLibrary": "Kitabxanaya əlavə etmək mümkün olmadı",
-    "errorRemovingFromLibrary": "Kitabxanadan silmək mümkün olmadı",
-    "confirmAddLibrary": "Bu, kitabxananıza {{numShapes}} forma əlavə edəcək. Əminsiniz?",
     "imageDoesNotContainScene": "Bu təsvirdə heç bir səhnə məlumatı yoxdur. İxrac zamanı səhnə yerləşdirməni aktiv etmisiniz?",
     "cannotRestoreFromImage": "Səhnəni bu şəkil faylından bərpa etmək mümkün olmadı",
     "invalidSceneUrl": "",
-    "resetLibrary": "",
-    "removeItemsFromsLibrary": "",
     "invalidEncryptionKey": "",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "",
-    "importLibraryError": "",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "",
     "freedraw": "",
     "text": "",
-    "library": "",
     "lock": "",
     "penMode": "",
     "link": "",
@@ -355,7 +321,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -441,42 +406,6 @@
   "clearCanvasDialog": {
     "title": ""
   },
-  "publishDialog": {
-    "title": "",
-    "itemName": "",
-    "authorName": "",
-    "githubUsername": "",
-    "twitterUsername": "",
-    "libraryName": "",
-    "libraryDesc": "",
-    "website": "",
-    "placeholder": {
-      "authorName": "",
-      "libraryName": "",
-      "libraryDesc": "",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "",
-      "website": ""
-    },
-    "noteDescription": "",
-    "noteGuidelines": "",
-    "noteLicense": "",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "",
-    "content": ""
-  },
-  "confirmDialog": {
-    "resetLibrary": "",
-    "removeItemsFromLib": ""
-  },
   "imageExportDialog": {
     "header": "",
     "label": {
@@ -523,7 +452,6 @@
     "width": ""
   },
   "toast": {
-    "addedToLibrary": "",
     "copyStyles": "",
     "copyToClipboard": "",
     "copyToClipboardAsPng": "",

@@ -76,7 +76,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     viewModeEnabled,
     zenModeEnabled,
     gridModeEnabled,
-    libraryReturnUrl,
     theme,
     name,
     renderCustomStats,
@@ -85,7 +84,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     onPaste,
     detectScroll = true,
     handleKeyboardGlobally = false,
-    onLibraryChange,
     autoFocus = false,
     compressImageFile,
     generateIdForFile,
@@ -191,7 +189,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           viewModeEnabled={viewModeEnabled}
           zenModeEnabled={zenModeEnabled}
           gridModeEnabled={gridModeEnabled}
-          libraryReturnUrl={libraryReturnUrl}
           theme={theme}
           name={name}
           renderCustomStats={renderCustomStats}
@@ -201,7 +198,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           onPaste={onPaste}
           detectScroll={detectScroll}
           handleKeyboardGlobally={handleKeyboardGlobally}
-          onLibraryChange={onLibraryChange}
           autoFocus={autoFocus}
           compressImageFile={compressImageFile}
           generateIdForFile={generateIdForFile}
@@ -305,7 +301,6 @@ export {
   restoreAppState,
   restoreElement,
   restoreElements,
-  restoreLibraryItems,
 } from "./data/restore";
 
 export { reconcileElements } from "./data/reconcile";
@@ -317,13 +312,8 @@ export {
   exportToClipboard,
 } from "@excalidraw/utils/export";
 
-export { serializeAsJSON, serializeLibraryAsJSON } from "./data/json";
-export {
-  loadFromBlob,
-  loadSceneOrLibraryFromBlob,
-  loadLibraryFromBlob,
-} from "./data/blob";
-export { mergeLibraryItems, getLibraryItemsHash } from "./data/library";
+export { serializeAsJSON } from "./data/json";
+export { loadFromBlob } from "./data/blob";
 export { isLinearElement } from "@excalidraw/element";
 
 export {
@@ -347,8 +337,6 @@ export {
 } from "@excalidraw/element";
 
 export { CaptureUpdateAction } from "@excalidraw/element";
-
-export { parseLibraryTokensFromUrl, useHandleLibrary } from "./data/library";
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
 export { Button } from "./components/Button";

@@ -96,10 +96,6 @@
     "ungroup": "Desagrupar seleção",
     "collaborators": "Colaboradores",
     "toggleGrid": "Ativar/desativar grelha",
-    "addToLibrary": "Adicionar à biblioteca",
-    "removeFromLibrary": "Remover da biblioteca",
-    "libraryLoadingMessage": "A carregar a biblioteca…",
-    "libraries": "Procurar bibliotecas",
     "loadingScene": "A carregar a cena…",
     "loadScene": "Carregar cena de um ficheiro",
     "align": "Alinhamento",
@@ -120,8 +116,6 @@
     "showFonts": "Mostrar seletor de fonte",
     "toggleTheme": "Alternar tema claro/escuro",
     "theme": "Tema",
-    "personalLib": "Biblioteca pessoal",
-    "excalidrawLib": "Biblioteca do Excalidraw",
     "decreaseFontSize": "Reduzir o tamanho do tipo de letra",
     "increaseFontSize": "Aumentar o tamanho do tipo de letra",
     "unbindText": "Desligar texto",
@@ -151,7 +145,6 @@
       "lockAll": "Bloquear tudo",
       "unlockAll": "Desbloquear tudo"
     },
-    "statusPublished": "Publicado",
     "sidebarLock": "Manter a barra lateral aberta",
     "selectAllElementsInFrame": "Selecionar todos os elementos na moldura",
     "removeAllElementsFromFrame": "Remover todos os elementos na moldura",
@@ -177,17 +170,6 @@
     "title": "Hiperligação para o objeto",
     "desc": "Clique numa forma na tela ou cole uma hiperligação.",
     "notFound": "O objeto hiperligado não foi encontrado na tela."
-  },
-  "library": {
-    "noItems": "Ainda não foram adicionados itens...",
-    "hint_emptyLibrary": "Selecione um item na área de desenho para adicioná-lo aqui ou então instale uma biblioteca do repositório público abaixo.",
-    "hint_emptyPrivateLibrary": "Selecione um item na área de desenho para adicioná-lo aqui.",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "Pesquisar na área de desenho",
@@ -220,7 +202,6 @@
     "edit": "Editar",
     "undo": "Desfazer",
     "redo": "Refazer",
-    "resetLibrary": "Repor a biblioteca",
     "createNewRoom": "Criar nova sala",
     "fullScreen": "Ecrã inteiro",
     "darkMode": "Modo escuro",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Atrair aos objetos",
     "exitZenMode": "Sair do modo zen",
     "cancel": "Cancelar",
-    "saveLibNames": "",
     "clear": "Limpar",
     "remove": "Remover",
     "embed": "Alternar incorporação",
-    "publishLibrary": "",
     "submit": "Enviar",
     "confirm": "Confirmar",
     "embeddableInteractionButton": "Clique para interagir"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "O envio foi protegido com encriptação de ponta a ponta, o que significa que o servidor do Excalidraw e terceiros não podem ler o conteúdo.",
     "loadSceneOverridePrompt": "Se carregar um desenho externo substituirá o conteúdo existente. Quer continuar?",
     "collabStopOverridePrompt": "Ao interromper a sessão irá substituir o último desenho guardado. Tem a certeza?\n\n(Caso queira manter o último desenho, simplesmente feche a janela do navegador.)",
-    "errorAddingToLibrary": "Não foi possível adicionar o item à biblioteca",
-    "errorRemovingFromLibrary": "Não foi possível remover o item da biblioteca",
-    "confirmAddLibrary": "Isto irá adicionar {{numShapes}} forma(s) à sua biblioteca. Tem a certeza?",
     "imageDoesNotContainScene": "Esta imagem parece não conter dados de cenas. Ativou a incorporação da cena durante a exportação?",
     "cannotRestoreFromImage": "Não foi possível restaurar a cena deste ficheiro de imagem",
     "invalidSceneUrl": "Não foi possível importar a cena a partir do URL fornecido. Ou está mal formado ou não contém dados JSON do Excalidraw válidos.",
-    "resetLibrary": "Isto irá limpar a sua biblioteca. Tem a certeza?",
-    "removeItemsFromsLibrary": "Apagar {{count}} item(ns) da biblioteca?",
     "invalidEncryptionKey": "A chave de encriptação deve ter 22 caracteres. A colaboração ao vivo está desativada.",
     "collabOfflineWarning": "A ligação à Internet não está disponível.\nAs suas alterações não serão guardadas!",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Não foi possível inserir a imagem SVG. A marcação SVG parece inválida.",
     "failedToFetchImage": "Falha ao processar a imagem.",
     "cannotResolveCollabServer": "Não foi possível fazer a ligação ao servidor colaborativo. Por favor volte a carregar a página e tente novamente.",
-    "importLibraryError": "Não foi possível carregar a biblioteca",
-    "saveLibraryError": "Não foi possível guardar a biblioteca no armazenamento. Guarde a sua biblioteca num ficheiro local para garantir que não perde as alterações.",
     "collabSaveFailed": "Não foi possível guardar na base de dados de backend. Se os problemas persistirem, guarde o ficheiro localmente para garantir que não perde o seu trabalho.",
     "collabSaveFailed_sizeExceeded": "Não foi possível guardar na base de dados de backend, parece que a a área de desenho é muito grande. Deve guardar o ficheiro localmente para garantir que não perde o seu trabalho.",
     "imageToolNotSupported": "As imagens estão desativadas.",
@@ -280,11 +252,6 @@
       "line2": "Isto pode resultar na quebra dos <bold>Elementos de texto</bold> nos seus desenhos.",
       "line3": "Recomendamos vivamente a desativação desta configuração. Pode seguir <link>estes passos</link> para saber como o fazer.",
       "line4": "Se a desativação desta configuração não corrigir a apresentação de elementos de texto, reporte um <issueLink>problema</issueLink> no nosso GitHub ou diga-nos no <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Os elementos incorporáveis não podem ser adicionados à biblioteca.",
-      "iframe": "Os elementos IFrame não podem ser adicionados à biblioteca.",
-      "image": "Brevemente será possível adicionar imagens à biblioteca!"
     },
     "asyncPasteFailedOnRead": "Não foi possível colar (não foi possível ler da área de transferência do sistema).",
     "asyncPasteFailedOnParse": "Não foi possível colar.",
@@ -301,7 +268,6 @@
     "line": "Linha",
     "freedraw": "Desenhar",
     "text": "Texto",
-    "library": "Biblioteca",
     "lock": "Manter a ferramenta selecionada ativa após desenhar",
     "penMode": "Modo caneta - impedir toque",
     "link": "Adicionar / atualizar hiperligação para uma forma selecionada",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Publique a sua própria biblioteca",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Apagar área de desenho"
   },
-  "publishDialog": {
-    "title": "Publicar biblioteca",
-    "itemName": "Nome do item",
-    "authorName": "Nome do autor",
-    "githubUsername": "Nome de utilizador no GitHub",
-    "twitterUsername": "Nome de utilizador no Twitter",
-    "libraryName": "Nome da biblioteca",
-    "libraryDesc": "Descrição da biblioteca",
-    "website": "Página web",
-    "placeholder": {
-      "authorName": "Introduza o seu nome ou nome de utilizador",
-      "libraryName": "Nome da sua biblioteca",
-      "libraryDesc": "Descrição da sua biblioteca para ajudar as pessoas a compreenderem a sua utilização",
-      "githubHandle": "Identificador do GitHub (handle opcional), para que possa editar a biblioteca depois desta ser enviada para revisão",
-      "twitterHandle": "Nome de utilizador no Twitter (opcional), para que saibamos a quem atribuir os créditos quando promovermos através do Twitter",
-      "website": "Hiperligação para o seu sítio web pessoal ou outro (opcional)"
-    },
-    "errors": {
-      "required": "Obrigatório",
-      "website": "Introduza um URL válido"
-    },
-    "noteDescription": "Envie a sua biblioteca para ser incluída no <link>repositório de bibliotecas públicas</link> para que outras pessoas a possam utilizar nos seus desenhos.",
-    "noteGuidelines": "A biblioteca precisa de ser aprovada manualmente primeiro. Por favor, leia as <link>orientações</link> antes de enviar. Precisará de uma conta GitHub para comunicar e fazer alterações, se solicitado, mas não é estritamente necessário.",
-    "noteLicense": "Ao submeter, concorda que a biblioteca será publicada ao abrigo da <link>Licença MIT</link>, o que, resumidamente, significa que qualquer pessoa pode utilizá-la sem restrições.",
-    "noteItems": "Cada item de biblioteca deve ter o seu próprio nome para que possa ser filtrado. Serão incluídos os seguintes itens de biblioteca:",
-    "atleastOneLibItem": "Por favor selecione pelo menos um item da biblioteca para começar",
-    "republishWarning": "Nota: alguns dos itens selecionados estão marcados como já publicados / submetidos. Só deve voltar a submeter itens quando atualizar uma biblioteca ou submissão existente."
-  },
-  "publishSuccessDialog": {
-    "title": "Biblioteca enviada",
-    "content": "Obrigado {{authorName}}. A sua biblioteca foi enviada para análise. Pode acompanhar o estado dela <link>aqui</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Repor a biblioteca",
-    "removeItemsFromLib": "Remover os itens selecionados da biblioteca"
-  },
   "imageExportDialog": {
     "header": "Exportar imagem",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Largura"
   },
   "toast": {
-    "addedToLibrary": "Adicionado à biblioteca",
     "copyStyles": "Estilos copiados.",
     "copyToClipboard": "Copiado para a área de transferência.",
     "copyToClipboardAsPng": "{{exportSelection}} copiado para a área de transferência como PNG\n({{exportColorScheme}})",

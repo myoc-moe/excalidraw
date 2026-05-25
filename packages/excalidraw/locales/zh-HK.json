@@ -96,10 +96,6 @@
     "ungroup": "取消物件群組",
     "collaborators": "已連線的協作者",
     "toggleGrid": "",
-    "addToLibrary": "加入作品庫",
-    "removeFromLibrary": "從作品庫中移除",
-    "libraryLoadingMessage": "正在載入作品庫…",
-    "libraries": "瀏覽作品庫",
     "loadingScene": "載入畫布中…",
     "loadScene": "",
     "align": "物件對齊",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "",
     "theme": "",
-    "personalLib": "",
-    "excalidrawLib": "",
     "decreaseFontSize": "",
     "increaseFontSize": "",
     "unbindText": "",
@@ -151,7 +145,6 @@
       "lockAll": "",
       "unlockAll": ""
     },
-    "statusPublished": "",
     "sidebarLock": "",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "",
-    "hint_emptyLibrary": "",
-    "hint_emptyPrivateLibrary": "",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "",
     "undo": "",
     "redo": "",
-    "resetLibrary": "",
     "createNewRoom": "",
     "fullScreen": "",
     "darkMode": "",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "",
     "cancel": "",
-    "saveLibNames": "",
     "clear": "",
     "remove": "",
     "embed": "",
-    "publishLibrary": "",
     "submit": "",
     "confirm": "",
     "embeddableInteractionButton": ""
@@ -251,14 +230,9 @@
     "uploadedSecurly": "",
     "loadSceneOverridePrompt": "",
     "collabStopOverridePrompt": "",
-    "errorAddingToLibrary": "",
-    "errorRemovingFromLibrary": "",
-    "confirmAddLibrary": "",
     "imageDoesNotContainScene": "",
     "cannotRestoreFromImage": "",
     "invalidSceneUrl": "",
-    "resetLibrary": "",
-    "removeItemsFromsLibrary": "",
     "invalidEncryptionKey": "",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "",
-    "importLibraryError": "",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "",
     "freedraw": "",
     "text": "",
-    "library": "",
     "lock": "",
     "penMode": "",
     "link": "",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": ""
   },
-  "publishDialog": {
-    "title": "",
-    "itemName": "",
-    "authorName": "",
-    "githubUsername": "",
-    "twitterUsername": "",
-    "libraryName": "",
-    "libraryDesc": "",
-    "website": "",
-    "placeholder": {
-      "authorName": "",
-      "libraryName": "",
-      "libraryDesc": "",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "",
-      "website": ""
-    },
-    "noteDescription": "",
-    "noteGuidelines": "",
-    "noteLicense": "",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "",
-    "content": ""
-  },
-  "confirmDialog": {
-    "resetLibrary": "",
-    "removeItemsFromLib": ""
-  },
   "imageExportDialog": {
     "header": "",
     "label": {
@@ -524,7 +453,6 @@
     "width": ""
   },
   "toast": {
-    "addedToLibrary": "",
     "copyStyles": "",
     "copyToClipboard": "",
     "copyToClipboardAsPng": "",

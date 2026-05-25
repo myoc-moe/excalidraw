@@ -96,10 +96,6 @@
     "ungroup": "Seçilen grubu dağıt",
     "collaborators": "Ortaklar",
     "toggleGrid": "Izgarayı aç/kapat",
-    "addToLibrary": "Kütüphaneye ekle",
-    "removeFromLibrary": "Kütüphaneden kaldır",
-    "libraryLoadingMessage": "Kütüphane yükleniyor…",
-    "libraries": "Kütüphanelere gözat",
     "loadingScene": "Sahne yükleniyor…",
     "loadScene": "Dosyadan sahne yükle",
     "align": "Hizala",
@@ -120,8 +116,6 @@
     "showFonts": "Yazı tipi seçici",
     "toggleTheme": "Aydınlık/karanlık mod",
     "theme": "Tema",
-    "personalLib": "Kişisel Kitaplık",
-    "excalidrawLib": "Excalidraw Kitaplığı",
     "decreaseFontSize": "Yazı Tipi Boyutunu Küçült",
     "increaseFontSize": "Yazı Tipi Boyutunu Büyült",
     "unbindText": "Metni çöz",
@@ -151,7 +145,6 @@
       "lockAll": "Hepsini kilitle",
       "unlockAll": "Hepsinin kilidini kaldır"
     },
-    "statusPublished": "Yayınlandı",
     "sidebarLock": "Kenar çubuğu açık kalsın",
     "selectAllElementsInFrame": "Çerçevedeki tüm bileşenleri seç",
     "removeAllElementsFromFrame": "Çerçevedeki tüm bileşenleri sil",
@@ -177,17 +170,6 @@
     "title": "Nesneye bağlantıla",
     "desc": "Tuvaldeki bir nesneye tıklayın veya bir bağlantıyı yapıştırın.",
     "notFound": "Bağlantılanan nesne tuvalde bulunamadı."
-  },
-  "library": {
-    "noItems": "Öğe eklenmedi...",
-    "hint_emptyLibrary": "Öğelerden birini eklemek için öğeyi seçin veya aşağıdaki genel kütüphaneden öğeleri ekleyin.",
-    "hint_emptyPrivateLibrary": "Tuvalden bir eleman seçerek sayfaya ekleyin.",
-    "search": {
-      "inputPlaceholder": "Kütüphanede ara",
-      "heading": "Kütüphane eşleşmeleri",
-      "noResults": "Eşleşen öğe bulunamadı…",
-      "clearSearch": "Aramayı temizle"
-    }
   },
   "search": {
     "title": "Tuvalde bul",
@@ -220,7 +202,6 @@
     "edit": "Düzenle",
     "undo": "Geri Al",
     "redo": "Yeniden yap",
-    "resetLibrary": "Kütüphaneyi sıfırla",
     "createNewRoom": "Yeni oda oluştur",
     "fullScreen": "Tam ekran",
     "darkMode": "Koyu tema",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Nesnelere hizala",
     "exitZenMode": "Zen modundan çık",
     "cancel": "İptal",
-    "saveLibNames": "Adları kaydet ve çık",
     "clear": "Temizle",
     "remove": "Kaldır",
     "embed": "Yerleştirmeyi aç veya kapa",
-    "publishLibrary": "Yeniden adlandır veya yayımla",
     "submit": "Gönder",
     "confirm": "Onayla",
     "embeddableInteractionButton": "Etkileşime girmek için tıkla"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Yükleme uçtan uca şifreleme ile korunmaktadır. Excalidraw sunucusu ve üçüncül şahıslar içeriği okuyamayacaktır.",
     "loadSceneOverridePrompt": "Harici çizimler yüklemek mevcut olan içeriği değiştirecektir. Devam etmek istiyor musunuz?",
     "collabStopOverridePrompt": "Oturumu sonlandırmak daha önceki, yerel olarak kaydedilmiş çizimin üzerine kaydedilmesine sebep olacak. Emin misiniz?\n\n(Yerel çiziminizi kaybetmemek için tarayıcı sekmesini kapatabilirsiniz.)",
-    "errorAddingToLibrary": "Öğe kütüphaneye eklenemedi",
-    "errorRemovingFromLibrary": "Öğe kütüphaneden silinemedi",
-    "confirmAddLibrary": "Bu, kitaplığınıza {{numShapes}} tane şekil ekleyecek. Emin misiniz?",
     "imageDoesNotContainScene": "Bu görüntü herhangi bir sahne verisi içermiyor gibi görünüyor. Dışa aktarma sırasında sahne yerleştirmeyi etkinleştirdiniz mi?",
     "cannotRestoreFromImage": "Sahne bu resim dosyasından geri yüklenemedi",
     "invalidSceneUrl": "Verilen bağlantıdan çalışma alanı yüklenemedi. Dosya bozuk olabilir veya geçerli bir Excalidraw JSON verisi bulundurmuyor olabilir.",
-    "resetLibrary": "Bu işlem kütüphanenizi sıfırlayacak. Emin misiniz?",
-    "removeItemsFromsLibrary": "{{count}} öğe(ler) kitaplıktan kaldırılsın mı?",
     "invalidEncryptionKey": "Şifreleme anahtarı 22 karakter olmalı. Canlı işbirliği devre dışı bırakıldı.",
     "collabOfflineWarning": "İnternet bağlantısı bulunamadı. Değişiklikleriniz kaydedilmeyecek!",
     "localStorageQuotaExceeded": "Tarayıcı depolama kotası aşıldı. Değişiklikler kaydedilmeyecek."
@@ -270,8 +244,6 @@
     "svgImageInsertError": "SVG resmi eklenemedi. SVG işaretlemesi geçersiz görünüyor.",
     "failedToFetchImage": "Görsel alınamadı.",
     "cannotResolveCollabServer": "İş birliği sunucusuna bağlanılamıyor. Lütfen sayfayı yenileyip tekrar deneyin.",
-    "importLibraryError": "Kütüphane yüklenemedi",
-    "saveLibraryError": "Kitaplık depolama alanına kaydedilemedi. Değişikliklerinizi kaybetmediğinizden emin olmak için lütfen kitaplığınızı yerel olarak bir dosyaya kaydedin.",
     "collabSaveFailed": "Backend veritabanına kaydedilemedi. Eğer problem devam ederse, çalışmanızı korumak için dosyayı yerel olarak kaydetmelisiniz.",
     "collabSaveFailed_sizeExceeded": "Arka uç veritabanına kaydedilemedi; tuval çok büyük. Çalışmanızı korumak için dosyayı yerel olarak kaydetmelisiniz.",
     "imageToolNotSupported": "Görseller devre dışı.",
@@ -280,11 +252,6 @@
       "line2": "Bu, çizimlerinizdeki <bold>Metin Öğelerinin</bold> kırılmasına neden olabilir.",
       "line3": "Bu ayarı devre dışı bırakmanızı şiddetle tavsiye ederiz. Bunu nasıl yapacağınızı öğrenmek için <link>bu adımları</link> takip edebilirsiniz.",
       "line4": "Bu ayarın devre dışı bırakılması metin öğelerinin görüntülenmesini düzeltmezse, lütfen GitHub'ımızda bir <issueLink>issue</issueLink> açın veya <discordLink>Discord</discordLink> adresinden bize yazın"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Yerleştirilebilir ögeler bu kütüphaneye eklenemez.",
-      "iframe": "IFrame öğeleri kütüphaneye eklenemez.",
-      "image": "Resimleri kütüphaneye ekleme desteği yakında geliyor!"
     },
     "asyncPasteFailedOnRead": "Yapıştırılamadı (sistem panosundan okunamadı).",
     "asyncPasteFailedOnParse": "Yapıştırılamıyor.",
@@ -301,7 +268,6 @@
     "line": "Çizgi",
     "freedraw": "Çiz",
     "text": "Yazı",
-    "library": "Kütüphane",
     "lock": "Seçilen aracı çizimden sonra aktif tut",
     "penMode": "Kalem modu - dokunmayı engelle",
     "link": "Seçilen şekil için bağlantı Ekle/Güncelle",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Kendi kitaplığınızı yayınlayın",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Tuvali temizle"
   },
-  "publishDialog": {
-    "title": "Kitaplığı yayınla",
-    "itemName": "Öğe adı",
-    "authorName": "Yazar adı",
-    "githubUsername": "GıtHub kullanıcı adı",
-    "twitterUsername": "Twitter kullanıcı adı",
-    "libraryName": "Kitaplık adı",
-    "libraryDesc": "Kitaplık açıklaması",
-    "website": "Web sitesi",
-    "placeholder": {
-      "authorName": "Adınız ya da kullanıcı adınız",
-      "libraryName": "Kitaplığınızın adı",
-      "libraryDesc": "İnsanların kullanımını anlamasına yardımcı olmak için kitaplığınızın açıklaması",
-      "githubHandle": "Github bağlantısı ( tercihe bağlı), kütüphane gözden geçirme için onaylandığında düzenleyebiliesiniz diye",
-      "twitterHandle": "Twitter kullanıcı adı ( tercihe bağlı), bu sayede Twitter üzerinde paylaşıren çalışmanızı size atfedebiliriz",
-      "website": "Kişisel web sayfanızı ya da başka bir yeri bağlayın (tercihe bağlı)"
-    },
-    "errors": {
-      "required": "Gerekli",
-      "website": "Geçerli bir URL girin"
-    },
-    "noteDescription": "Submit your library to be included in the <link>genel kütüphane reposu</link>diğer insanlar çizimlerinde kullanabilsin diye.",
-    "noteGuidelines": "Önce kütüphane elle onaylanmalı. şunu okuyun <link>yönergeler</link> onaylamadan önce. gerekli olması halinde iletişim kurmak için ve değişiklik için Github hesabı gerekli, ama çok da illaki olmalı değil.",
-    "noteLicense": "Bunu onaylayarak, kütüğhanenin şu lisansla yayınlanmasını onaylıyorsunuz <link>MIT Lisans, </link>ki bu kısaca herkesin onu kısıtlama olmaksızın kullanabileceği anlamına gelmektedir.",
-    "noteItems": "Her kütüphane kendi ismine sahip olmalı ki tarama yapabilelim. Şu kütüphane ögeleri dahil edilecek:",
-    "atleastOneLibItem": "Lütfen başlamak için en az bir tane kütüphane ögesi seçin",
-    "republishWarning": "Not: seçilen ögelerden bir kısmı zaten yayınlanmış/gönderilmiş. Yalnızca mevcut kütüphane ve gönderileri güncellerken yeniden gönderme işlemi yapmalısınız."
-  },
-  "publishSuccessDialog": {
-    "title": "Kütüphane gönderildi",
-    "content": "Teşekkürler {{authorName}}. Kütüphaneniz gözden geçirme için alındı. Durumu takip edebilirsiniz<link>burada</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Kütüphaneyi sıfırla",
-    "removeItemsFromLib": "Seçilen ögeleri kütüphaneden kaldır"
-  },
   "imageExportDialog": {
     "header": "Resmi dışa aktar",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Genişlik"
   },
   "toast": {
-    "addedToLibrary": "Kütüphaneye eklendi",
     "copyStyles": "Stiller kopyalandı.",
     "copyToClipboard": "Panoya kopyalandı.",
     "copyToClipboardAsPng": "{{exportSelection}} panoya PNG olarak\n({{exportColorScheme}}) kopyalandı",

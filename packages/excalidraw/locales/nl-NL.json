@@ -96,10 +96,6 @@
     "ungroup": "Groep opheffen",
     "collaborators": "Deelnemers",
     "toggleGrid": "Raster in-/uitschakelen",
-    "addToLibrary": "Voeg toe aan bibliotheek",
-    "removeFromLibrary": "Verwijder uit bibliotheek",
-    "libraryLoadingMessage": "Bibliotheek laden…",
-    "libraries": "Blader door bibliotheken",
     "loadingScene": "Scène laden…",
     "loadScene": "Laad scène van uit bestand",
     "align": "Uitlijnen",
@@ -120,8 +116,6 @@
     "showFonts": "Lettertype kiezer weergeven",
     "toggleTheme": "Licht-/donkerthema in-/uitschakelen",
     "theme": "Thema",
-    "personalLib": "Persoonlijke bibliotheek",
-    "excalidrawLib": "Excalidraw bibliotheek",
     "decreaseFontSize": "Letters verkleinen",
     "increaseFontSize": "Letters vergroten",
     "unbindText": "Ontkoppel tekst",
@@ -151,7 +145,6 @@
       "lockAll": "Vergrendel alles",
       "unlockAll": "Ontgrendel alles"
     },
-    "statusPublished": "Gepubliceerd",
     "sidebarLock": "Zijbalk open houden",
     "selectAllElementsInFrame": "Selecteer alle elementen in het frame",
     "removeAllElementsFromFrame": "Verwijder alle elementen in het frame",
@@ -177,17 +170,6 @@
     "title": "Link naar object",
     "desc": "Klik op een vorm op canvas of plak een link.",
     "notFound": "Gekoppeld object is niet gevonden op canvas."
-  },
-  "library": {
-    "noItems": "Nog geen items toegevoegd...",
-    "hint_emptyLibrary": "Selecteer een item op het canvas om het hier toe te voegen of installeer een bibliotheek uit de openbare repository, hieronder.",
-    "hint_emptyPrivateLibrary": "Selecteer een item op het canvas om het hier toe te voegen.",
-    "search": {
-      "inputPlaceholder": "Zoek in bibliotheek",
-      "heading": "Bibliotheek overeenkomsten",
-      "noResults": "Geen items gevonden...",
-      "clearSearch": "Zoekopdracht wissen"
-    }
   },
   "search": {
     "title": "Zoek op canvas",
@@ -220,7 +202,6 @@
     "edit": "Bewerken",
     "undo": "Ongedaan maken",
     "redo": "Herstel ongedaan maken",
-    "resetLibrary": "Bibliotheek Resetten",
     "createNewRoom": "Creëer live-samenwerkingssessie",
     "fullScreen": "Volledig scherm",
     "darkMode": "Donkere modus",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Uitlijnen op objecten",
     "exitZenMode": "Verlaat zen modus",
     "cancel": "Annuleren",
-    "saveLibNames": "Namen opslaan en afsluiten",
     "clear": "Wissen",
     "remove": "Verwijderen",
     "embed": "Embedden in-/uitschakelen",
-    "publishLibrary": "Hernoemen of publiceren",
     "submit": "Versturen",
     "confirm": "Bevestigen",
     "embeddableInteractionButton": "Klik voor interactie"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "De upload is beveiligd met end-to-end encryptie, wat betekent dat de Excalidraw server en derden de inhoud niet kunnen lezen.",
     "loadSceneOverridePrompt": "Het inladen van een externe tekening zal je bestaande inhoud vervangen. Wil je verdergaan?",
     "collabStopOverridePrompt": "Wanneer de sessie wordt gestopt, overschrijft u de eerdere, lokaal opgeslagen tekening. Weet je het zeker?\n\n(Als je de lokale tekening wilt behouden, sluit je in plaats daarvan het browsertabblad)",
-    "errorAddingToLibrary": "Kan item niet toevoegen aan de bibliotheek",
-    "errorRemovingFromLibrary": "Kan item niet uit de bibliotheek verwijderen",
-    "confirmAddLibrary": "Dit zal {{numShapes}} vorm(en) toevoegen aan je bibliotheek. Weet je het zeker?",
     "imageDoesNotContainScene": "Deze afbeelding lijkt geen scène gegevens te bevatten. Heb je scène embedding tijdens het exporteren ingeschakeld?",
     "cannotRestoreFromImage": "Scène kan niet worden hersteld vanuit dit afbeeldingsbestand",
     "invalidSceneUrl": "Kan scène niet importeren vanuit de opgegeven URL. Het is onjuist of bevat geen geldige Excalidraw JSON-gegevens.",
-    "resetLibrary": "Dit zal je bibliotheek wissen. Weet je het zeker?",
-    "removeItemsFromsLibrary": "Verwijder {{count}} item(s) uit bibliotheek?",
     "invalidEncryptionKey": "Encryptiesleutel moet 22 tekens zijn. Live samenwerking is uitgeschakeld.",
     "collabOfflineWarning": "Geen internetverbinding beschikbaar.\nJe wijzigingen worden niet opgeslagen!",
     "localStorageQuotaExceeded": "Limiet voor browser opslag overschreden. Wijzigingen worden niet opgeslagen."
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Kon geen SVG-afbeelding invoegen. De SVG-opmaak ziet er niet geldig uit.",
     "failedToFetchImage": "Afbeeldingen ophalen mislukt.",
     "cannotResolveCollabServer": "Kan geen verbinding maken met de collab server. Herlaad de pagina en probeer het opnieuw.",
-    "importLibraryError": "Kon bibliotheek niet laden",
-    "saveLibraryError": "Kan bibliotheek niet opslaan in opslag. Sla uw bibliotheek op lokaal bestand om ervoor te zorgen dat u geen wijzigingen verliest.",
     "collabSaveFailed": "Kan niet opslaan in de backend database. Als de problemen blijven bestaan, moet u het bestand lokaal opslaan om ervoor te zorgen dat u uw werk niet verliest.",
     "collabSaveFailed_sizeExceeded": "Kan de backend database niet opslaan, het canvas lijkt te groot te zijn. U moet het bestand lokaal opslaan om ervoor te zorgen dat u uw werk niet verliest.",
     "imageToolNotSupported": "Afbeeldingen zijn uitgeschakeld.",
@@ -280,11 +252,6 @@
       "line2": "Dit kan leiden tot het breken van de <bold>Tekst Elementen</bold> in je tekening.",
       "line3": "We raden sterk aan om deze instelling uit te zetten. Je kan <link>deze stappen</link> volgen om te zien hoe.",
       "line4": "Als het uitschakelen van deze instelling het weergeven van tekstelementen niet oplost, open dan een <issueLink>issue</issueLink> op onze GitHub, of stuur ons een bericht op <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Ingesloten elementen kunnen niet worden toegevoegd aan de bibliotheek.",
-      "iframe": "IFrame elementen kunnen niet worden toegevoegd aan de bibliotheek.",
-      "image": "Ondersteuning voor het toevoegen van afbeeldingen aan de bibliotheek komt binnenkort!"
     },
     "asyncPasteFailedOnRead": "Plakken mislukt (kan niet van het systeem klembord lezen).",
     "asyncPasteFailedOnParse": "Kon niet plakken.",
@@ -301,7 +268,6 @@
     "line": "Lijn",
     "freedraw": "Teken",
     "text": "Tekst",
-    "library": "Bibliotheek",
     "lock": "Geselecteerde tool actief houden na tekenen",
     "penMode": "Pen modus - Blokkeer aanraken",
     "link": "Link toevoegen / bijwerken voor een geselecteerde vorm",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "Dubbelklik of druk op {{shortcut}} om punten te bewerken",
     "lineEditor_pointSelected": "Druk op {{shortcut_1}} om punt(en) te verwijderen,\n{{shortcut_2}} om te dupliceren, of sleep om te verplaatsen",
     "lineEditor_nothingSelected": "Selecteer een punt om te bewerken (houd {{shortcut_1}} ingedrukt om meerdere te selecteren),\nof houd {{shortcut_2}} ingedrukt en klik om nieuwe punten toe te voegen",
-    "publishLibrary": "Publiceer je eigen bibliotheek",
     "bindTextToElement": "{{shortcut}} om tekst toe te voegen",
     "createFlowchart": "{{shortcut}} voor het maken van een flowchart",
     "deepBoxSelect": "Houd {{shortcut}} ingedrukt om diep te selecteren, en om slepen te voorkomen",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Wis canvas"
   },
-  "publishDialog": {
-    "title": "Publiceer bibliotheek",
-    "itemName": "Itemnaam",
-    "authorName": "Naam auteur",
-    "githubUsername": "GitHub gebruikersnaam",
-    "twitterUsername": "Twitter gebruikersnaam",
-    "libraryName": "Naam bibliotheek",
-    "libraryDesc": "Beschrijving van de bibliotheek",
-    "website": "Website",
-    "placeholder": {
-      "authorName": "Je naam of gebruikersnaam",
-      "libraryName": "Naam van je bibliotheek",
-      "libraryDesc": "Beschrijving van je bibliotheek om mensen te helpen het gebruik ervan te begrijpen",
-      "githubHandle": "GitHub-gebruikersnaam (optioneel), zodat je de bibliotheek kunt bewerken zodra deze ter beoordeling is ingediend",
-      "twitterHandle": "Twitter-gebruikersnaam (optioneel), zodat we weten wie we moeten vermelden bij promotie op Twitter",
-      "website": "Link naar je persoonlijke website of elders (optioneel)"
-    },
-    "errors": {
-      "required": "Vereist",
-      "website": "Vul een geldige URL in"
-    },
-    "noteDescription": "<link>openbare repository</link>",
-    "noteGuidelines": "<link>richtlijnen</link>",
-    "noteLicense": "<link>MIT-licentie, </link>",
-    "noteItems": "Elk bibliotheekitem moet een eigen naam hebben zodat het gefilterd kan worden. De volgende bibliotheekitems worden geïncludeerd:",
-    "atleastOneLibItem": "Selecteer op zijn minst één bibliotheekitem om te starten",
-    "republishWarning": "Opmerking: sommige van de geselecteerde items zijn al gepubliceerd/ingediend. Je moet items alleen opnieuw indienen bij het bijwerken van een bestaande bibliotheek of inzending."
-  },
-  "publishSuccessDialog": {
-    "title": "Bibliotheek ingediend",
-    "content": "<link>Hier</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Reset bibliotheek",
-    "removeItemsFromLib": "Verwijder geselecteerde items uit bibliotheek"
-  },
   "imageExportDialog": {
     "header": "Exporteer afbeelding",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Breedte"
   },
   "toast": {
-    "addedToLibrary": "Toegevoegd aan bibliotheek",
     "copyStyles": "Stijlen gekopieerd.",
     "copyToClipboard": "Gekopieerd naar het klembord.",
     "copyToClipboardAsPng": "{{exportSelection}} naar klembord gekopieerd als PNG\n({{exportColorScheme}})",

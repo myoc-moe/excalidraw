@@ -48,10 +48,6 @@ import {
 import { newElementWith } from "@excalidraw/element";
 import { isInitializedImageElement } from "@excalidraw/element";
 import clsx from "clsx";
-import {
-  parseLibraryTokensFromUrl,
-  useHandleLibrary,
-} from "@excalidraw/excalidraw/data/library";
 
 import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconcile";
 import type { RestoredDataState } from "@excalidraw/excalidraw/data/restore";
@@ -115,12 +111,7 @@ import {
 } from "./data/localStorage";
 
 import { loadFilesFromFirebase } from "./data/firebase";
-import {
-  LibraryIndexedDBAdapter,
-  LibraryLocalStorageMigrationAdapter,
-  LocalData,
-  localStorageQuotaExceededAtom,
-} from "./data/LocalData";
+import { LocalData, localStorageQuotaExceededAtom } from "./data/LocalData";
 import { isBrowserStorageStateNewer } from "./data/tabSync";
 import { ShareDialog, shareDialogStateAtom } from "./share/ShareDialog";
 import CollabError, { collabErrorIndicatorAtom } from "./collab/CollabError";
@@ -396,13 +387,6 @@ const ExcalidrawWrapper = () => {
   });
   const collabError = useAtomValue(collabErrorIndicatorAtom);
 
-  useHandleLibrary({
-    excalidrawAPI,
-    adapter: LibraryIndexedDBAdapter,
-    // TODO maybe remove this in several months (shipped: 24-03-11)
-    migrationAdapter: LibraryLocalStorageMigrationAdapter,
-  });
-
   const [, forceRefresh] = useState(false);
 
   useEffect(() => {
@@ -517,29 +501,26 @@ const ExcalidrawWrapper = () => {
 
     const onHashChange = async (event: HashChangeEvent) => {
       event.preventDefault();
-      const libraryUrlTokens = parseLibraryTokensFromUrl();
-      if (!libraryUrlTokens) {
-        if (
-          collabAPI?.isCollaborating() &&
-          !isCollaborationLink(window.location.href)
-        ) {
-          collabAPI.stopCollaboration(false);
-        }
-        excalidrawAPI.updateScene({ appState: { isLoading: true } });
-
-        initializeScene({ collabAPI, excalidrawAPI }).then((data) => {
-          loadImages(data);
-          if (data.scene) {
-            excalidrawAPI.updateScene({
-              elements: restoreElements(data.scene.elements, null, {
-                repairBindings: true,
-              }),
-              appState: restoreAppState(data.scene.appState, null),
-              captureUpdate: CaptureUpdateAction.IMMEDIATELY,
-            });
-          }
-        });
+      if (
+        collabAPI?.isCollaborating() &&
+        !isCollaborationLink(window.location.href)
+      ) {
+        collabAPI.stopCollaboration(false);
       }
+      excalidrawAPI.updateScene({ appState: { isLoading: true } });
+
+      initializeScene({ collabAPI, excalidrawAPI }).then((data) => {
+        loadImages(data);
+        if (data.scene) {
+          excalidrawAPI.updateScene({
+            elements: restoreElements(data.scene.elements, null, {
+              repairBindings: true,
+            }),
+            appState: restoreAppState(data.scene.appState, null),
+            captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+          });
+        }
+      });
     };
 
     const syncData = debounce(() => {
@@ -558,13 +539,6 @@ const ExcalidrawWrapper = () => {
           excalidrawAPI.updateScene({
             ...localDataState,
             captureUpdate: CaptureUpdateAction.NEVER,
-          });
-          LibraryIndexedDBAdapter.load().then((data) => {
-            if (data) {
-              excalidrawAPI.updateLibrary({
-                libraryItems: data.libraryItems,
-              });
-            }
           });
           collabAPI?.setUsername(username || "");
         }

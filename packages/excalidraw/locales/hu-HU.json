@@ -96,10 +96,6 @@
     "ungroup": "Csoportbontás",
     "collaborators": "Közreműködők",
     "toggleGrid": "Keresés törlése",
-    "addToLibrary": "Hozzáadás a könyvtárhoz",
-    "removeFromLibrary": "Eltávólítás a könyvtárból",
-    "libraryLoadingMessage": "Könyvtár betöltése…",
-    "libraries": "Könyvtárak böngészése",
     "loadingScene": "Jelenet betöltése…",
     "loadScene": "Betöltés fájlból",
     "align": "Igazítás",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "Világos/sötét háttér kapcsoló",
     "theme": "Téma",
-    "personalLib": "Személyes könyvtár",
-    "excalidrawLib": "Excalidraw könyvtár",
     "decreaseFontSize": "Betűméret csökkentése",
     "increaseFontSize": "Betűméret növelése",
     "unbindText": "Szövegkötés feloldása",
@@ -151,7 +145,6 @@
       "lockAll": "Összes zárolása",
       "unlockAll": "Összes feloldása"
     },
-    "statusPublished": "Közzétéve",
     "sidebarLock": "Oldalsó sáv nyitva tartása",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "Hivatkozás az objektumhoz",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "",
-    "hint_emptyLibrary": "",
-    "hint_emptyPrivateLibrary": "",
-    "search": {
-      "inputPlaceholder": "Keresés a könyvtárban",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": "Keresés törlése"
-    }
   },
   "search": {
     "title": "Rajzvászonon használt",
@@ -220,7 +202,6 @@
     "edit": "Szerkesztés",
     "undo": "Vissza",
     "redo": "Újra",
-    "resetLibrary": "Könyvtár alaphelyzetbe állítása",
     "createNewRoom": "Új szoba létrehozása",
     "fullScreen": "Teljes képernyő",
     "darkMode": "Sötét mód",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Objektumhoz illeszt",
     "exitZenMode": "Kilépés a letisztult módból",
     "cancel": "Mégsem",
-    "saveLibNames": "",
     "clear": "Kiűrítés",
     "remove": "Eltávolítás",
     "embed": "Beágyazás be/ki",
-    "publishLibrary": "",
     "submit": "Elküldés",
     "confirm": "Megerősítés",
     "embeddableInteractionButton": "Interakció Kattintással"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "A feltöltést végpontok közötti titkosítással biztosítottuk, ami azt jelenti, hogy egy harmadik fél nem tudja megnézni a tartalmát, beleértve az Excalidraw szervereit is.",
     "loadSceneOverridePrompt": "A betöltött külső rajz felül fogja írnia meglévőt. Szeretnéd folytatni?",
     "collabStopOverridePrompt": "A munkamenet leállítása felül fogja írni az előzőleg helyben tárolt rajzot. Biztosan ezt akarod?\n(Ha meg akarod tartani a helyben tárolt rajzot, egyszerűen csak zárd be a böngésző fület)",
-    "errorAddingToLibrary": "A tétel nem addható hozzá a könyvtárhoz",
-    "errorRemovingFromLibrary": "A tétel nem távolítható el a könyvtárból",
-    "confirmAddLibrary": "Ez a művelet {{numShapes}} formát fog hozzáadni a könyvtáradhoz. Biztos vagy benne?",
     "imageDoesNotContainScene": "Úgy tűnik, hogy ez a kép nem tartalmaz jelenetadatokat. Engedélyezted a jelenetbeágyazást az exportálás során?",
     "cannotRestoreFromImage": "A jelenet visszaállítása nem sikerült ebből a kép fájlból",
     "invalidSceneUrl": "Nem sikerült importálni a jelenetet a megadott URL-ről. Rossz formátumú, vagy nem tartalmaz érvényes Excalidraw JSON-adatokat.",
-    "resetLibrary": "Ezzel törlöd a könyvtárát. biztos vagy ebben?",
-    "removeItemsFromsLibrary": "{{count}} elemet törölsz a könyvtárból?",
     "invalidEncryptionKey": "A titkosítási kulcsnak 22 karakterből kell állnia. Az élő együttműködés le van tiltva.",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Nem sikerült beszúrni az SVG-képet. Az SVG szintaktika érvénytelennek tűnik.",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "",
-    "importLibraryError": "",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "Vonal",
     "freedraw": "Rajzolás",
     "text": "Szöveg",
-    "library": "Könyvtár",
     "lock": "Rajzolás után az aktív eszközt tartsa kijelölve",
     "penMode": "",
     "link": "Hivatkozás hozzáadása/frissítése a kiválasztott alakzathoz",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Tedd közzé saját könyvtáradat",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Rajzvászon alaphelyzetbe"
   },
-  "publishDialog": {
-    "title": "Könyvtár közzététele",
-    "itemName": "Tétel neve",
-    "authorName": "Szerző neve",
-    "githubUsername": "GitHub felhasználónév",
-    "twitterUsername": "Twitter felhasználónév",
-    "libraryName": "Könyvtár neve",
-    "libraryDesc": "Könyvtár leírása",
-    "website": "Weboldal",
-    "placeholder": {
-      "authorName": "Neved vagy felhasználóneved",
-      "libraryName": "A könyvtárad neve",
-      "libraryDesc": "A könyvtárad használatát segítő leírás",
-      "githubHandle": "GitHub-handle(opcionális), így szerkesztheted a könyvtárat, miután elküldted ellenőrzésre",
-      "twitterHandle": "Twitter-felhasználónév (opcionális), így tudjuk, kinek kell jóváírni a Twitteren keresztüli reklámozást",
-      "website": "Hivatkozás személyes webhelyedre vagy máshová (nem kötelező)"
-    },
-    "errors": {
-      "required": "Kötelező",
-      "website": "Adj meg egy érvényes URL-t"
-    },
-    "noteDescription": "Küld be könyvtáradat, hogy bekerüljön a <link>nyilvános könyvtár tárolóba</link>hogy mások is felhasználhassák a rajzaikban.",
-    "noteGuidelines": "A könyvtárat először manuálisan kell jóváhagyni. Kérjük, olvassa el a <link>segédletet</link> benyújtása előtt. Szüksége lesz egy GitHub-fiókra a kommunikációhoz és a módosításokhoz, ha kérik, de ez nem feltétlenül szükséges.",
-    "noteLicense": "A beküldéssel elfogadja, hogy a könyvtár a következő alatt kerül közzétételre <link>MIT Licensz </link>ami röviden azt jelenti, hogy bárki korlátozás nélkül használhatja őket.",
-    "noteItems": "Minden könyvtárelemnek saját nevével kell rendelkeznie, hogy szűrhető legyen. A következő könyvtári tételek kerülnek bele:",
-    "atleastOneLibItem": "A kezdéshez válassz ki legalább egy könyvtári elemet",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "A könyvtár beküldve",
-    "content": "Köszönjük {{authorName}}. Könyvtáradat elküldtük felülvizsgálatra. Nyomon követheted az állapotot<link>itt</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Könyvtár alaphelyzetbe állítása",
-    "removeItemsFromLib": "A kiválasztott elemek eltávolítása a könyvtárból"
-  },
   "imageExportDialog": {
     "header": "Kép exportálása",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Szélesség"
   },
   "toast": {
-    "addedToLibrary": "Könyvtárhoz adva",
     "copyStyles": "Másolt stílusok.",
     "copyToClipboard": "Vágólapra másolva.",
     "copyToClipboardAsPng": "Az {{exportSelection}} PNG formátumban a vágólapra másolva \n({{exportColorScheme}})",

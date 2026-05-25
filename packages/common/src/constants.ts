@@ -253,10 +253,6 @@ export const STRING_MIME_TYPES = {
   // excalidraw data
   excalidraw: "application/vnd.excalidraw+json",
   excalidrawClipboard: "application/vnd.excalidraw.clipboard+json",
-  // LEGACY: fully-qualified library JSON data
-  excalidrawlib: "application/vnd.excalidrawlib+json",
-  // list of excalidraw library item ids
-  excalidrawlibIds: "application/vnd.excalidrawlib.ids+json",
 } as const;
 
 export const MIME_TYPES = {
@@ -285,7 +281,6 @@ export const EXPORT_IMAGE_TYPES = {
 export const EXPORT_DATA_TYPES = {
   excalidraw: "excalidraw",
   excalidrawClipboard: "excalidraw/clipboard",
-  excalidrawLibrary: "excalidrawlib",
   excalidrawClipboardWithAPI: "excalidraw-api/clipboard",
 } as const;
 
@@ -308,14 +303,6 @@ export const HYPERLINK_TOOLTIP_DELAY = 300;
 export const IDLE_THRESHOLD = 60_000;
 // Report a user active each ACTIVE_THRESHOLD milliseconds
 export const ACTIVE_THRESHOLD = 3_000;
-
-export const URL_QUERY_KEYS = {
-  addLibrary: "addLibrary",
-} as const;
-
-export const URL_HASH_KEYS = {
-  addLibrary: "addLibrary",
-} as const;
 
 export const DEFAULT_UI_OPTIONS: AppProps["UIOptions"] = {
   canvasActions: {
@@ -349,7 +336,6 @@ export const ENCRYPTION_KEY_BITS = 128;
 
 export const VERSIONS = {
   excalidraw: 2,
-  excalidrawLibrary: 2,
 } as const;
 
 export const BOUND_TEXT_PADDING = 5;
@@ -428,19 +414,12 @@ export const DEFAULT_ELEMENT_PROPS: {
   locked: false,
 };
 
-export const LIBRARY_SIDEBAR_TAB = "library";
 export const CANVAS_SEARCH_TAB = "search";
 
 export const DEFAULT_SIDEBAR = {
   name: "default",
-  defaultTab: LIBRARY_SIDEBAR_TAB,
+  defaultTab: CANVAS_SEARCH_TAB,
 } as const;
-
-export const LIBRARY_DISABLED_TYPES = new Set([
-  "iframe",
-  "embeddable",
-  "image",
-] as const);
 
 // use these constants to easily identify reference sites
 export const TOOL_TYPE = {
@@ -466,7 +445,6 @@ export const EDITOR_LS_KEYS = {
   OAI_API_KEY: "excalidraw-oai-api-key",
   // legacy naming (non)scheme
   MERMAID_TO_EXCALIDRAW: "mermaid-to-excalidraw",
-  PUBLISH_LIBRARY: "publish-library-data",
 } as const;
 
 /**

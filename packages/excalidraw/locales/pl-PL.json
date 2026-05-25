@@ -96,10 +96,6 @@
     "ungroup": "Rozgrupuj wybrane",
     "collaborators": "Współtwórcy",
     "toggleGrid": "Przełącz widoczność siatki",
-    "addToLibrary": "Dodaj do biblioteki",
-    "removeFromLibrary": "Usuń z biblioteki",
-    "libraryLoadingMessage": "Wczytywanie biblioteki…",
-    "libraries": "Przeglądaj biblioteki",
     "loadingScene": "Wczytywanie sceny…",
     "loadScene": "Wczytaj scenę z pliku",
     "align": "Wyrównaj",
@@ -120,8 +116,6 @@
     "showFonts": "Pokaż selektor czcionek",
     "toggleTheme": "Przełącz motyw jasny / ciemny",
     "theme": "Motyw",
-    "personalLib": "Biblioteka prywatna",
-    "excalidrawLib": "Biblioteka Excalidraw",
     "decreaseFontSize": "Zmniejsz rozmiar czcionki",
     "increaseFontSize": "Zwiększ rozmiar czcionki",
     "unbindText": "Odłącz tekst od kontenera",
@@ -151,7 +145,6 @@
       "lockAll": "Zablokuj wszystko",
       "unlockAll": "Odblokuj wszystko"
     },
-    "statusPublished": "Opublikowano",
     "sidebarLock": "Panel boczny zawsze otwarty",
     "selectAllElementsInFrame": "Zaznacz wszystkie elementy w ramce",
     "removeAllElementsFromFrame": "Usuń wszystkie elementy z ramki",
@@ -177,17 +170,6 @@
     "title": "Link do obiektu",
     "desc": "Kliknij kształt na obszarze roboczym lub wklej link.",
     "notFound": "Powiązany obiekt nie został znaleziony na płótnie."
-  },
-  "library": {
-    "noItems": "Nie dodano jeszcze żadnych elementów...",
-    "hint_emptyLibrary": "Wybierz element na płótnie, aby go tutaj dodać, lub zainstaluj bibliotekę z poniższego publicznego repozytorium.",
-    "hint_emptyPrivateLibrary": "Wybierz element, aby dodać go tutaj.",
-    "search": {
-      "inputPlaceholder": "Szukaj w bibliotece",
-      "heading": "Znalezione w bibliotece",
-      "noResults": "Nie znaleziono pasujących elementów...",
-      "clearSearch": "Usuń historię wyszukiwania"
-    }
   },
   "search": {
     "title": "Znajdź na płótnie",
@@ -220,7 +202,6 @@
     "edit": "Edytuj",
     "undo": "Cofnij",
     "redo": "Przywróć",
-    "resetLibrary": "Resetuj bibliotekę",
     "createNewRoom": "Utwórz nowy pokój",
     "fullScreen": "Pełny ekran",
     "darkMode": "Ciemny motyw",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Przyciąganie do obiektów",
     "exitZenMode": "Wyjdź z trybu Zen",
     "cancel": "Anuluj",
-    "saveLibNames": "Zapisz nazwę(-y) i wyjdź",
     "clear": "Wyczyść",
     "remove": "Usuń",
     "embed": "Przełącz osadzenie",
-    "publishLibrary": "Zmień nazwę lub opublikuj",
     "submit": "Prześlij",
     "confirm": "Zatwierdź",
     "embeddableInteractionButton": "Kliknij, aby wejść w interakcję"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "By zapewnić Ci prywatność, udostępnianie projektu jest zabezpieczone szyfrowaniem end-to-end, co oznacza, że poza tobą i osobą z którą podzielisz się linkiem, nikt nie ma dostępu do tego co udostępniasz.",
     "loadSceneOverridePrompt": "Wczytanie zewnętrznego rysunku zastąpi istniejącą zawartość. Czy chcesz kontynuować?",
     "collabStopOverridePrompt": "Zatrzymanie sesji nadpisze poprzedni, zapisany lokalnie rysunek. Czy jesteś pewien?\n\n(Jeśli chcesz zachować swój lokalny rysunek, po prostu zamknij zakładkę przeglądarki.)",
-    "errorAddingToLibrary": "Nie udało się dodać elementu do biblioteki",
-    "errorRemovingFromLibrary": "Nie udało się usunąć elementu z biblioteki",
-    "confirmAddLibrary": "To doda {{numShapes}} kształtów do twojej biblioteki. Jesteś pewien?",
     "imageDoesNotContainScene": "Ten obraz nie zawiera żadnych informacji o scenie. Czy włączyłeś osadzanie sceny podczas eksportu?",
     "cannotRestoreFromImage": "Scena nie mogła zostać przywrócona z pliku obrazu",
     "invalidSceneUrl": "Nie udało się zaimportować sceny z podanego adresu URL. Jest ona wadliwa lub nie zawiera poprawnych danych Excalidraw w formacie JSON.",
-    "resetLibrary": "To wyczyści twoją bibliotekę. Jesteś pewien?",
-    "removeItemsFromsLibrary": "Usunąć {{count}} element(ów) z biblioteki?",
     "invalidEncryptionKey": "Klucz szyfrowania musi składać się z 22 znaków. Współpraca na żywo jest wyłączona.",
     "collabOfflineWarning": "Brak połączenia z Internetem.\nTwoje zmiany nie zostaną zapisane!",
     "localStorageQuotaExceeded": "Przekroczono limit pamięci przeglądarki. Zmiany nie zostaną zapisane."
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Nie udało się wstawić obrazu SVG. Znacznik SVG wygląda na nieprawidłowy.",
     "failedToFetchImage": "Nie udało się załadować obrazu.",
     "cannotResolveCollabServer": "Nie można połączyć się z serwerem współpracy w czasie rzeczywistym. Proszę odświeżyć stronę i spróbować ponownie.",
-    "importLibraryError": "Wystąpił błąd w trakcie ładowania biblioteki",
-    "saveLibraryError": "Nie można zapisać biblioteki do pamięci. Proszę zapisać bibliotekę do pliku lokalnie, aby upewnić się, że nie stracisz zmian.",
     "collabSaveFailed": "Nie udało się zapisać w bazie danych. Jeśli problemy nie ustąpią, zapisz plik lokalnie, aby nie utracić swojej pracy.",
     "collabSaveFailed_sizeExceeded": "Nie udało się zapisać w bazie danych — dokument jest za duży. Zapisz plik lokalnie, aby nie utracić swojej pracy.",
     "imageToolNotSupported": "Dodawanie obrazów jest wyłączone.",
@@ -280,11 +252,6 @@
       "line2": "Może to doprowadzić do złamania <bold>elementów tekstu</bold> na rysunkach.",
       "line3": "Zdecydowanie zalecamy wyłączenie tego ustawienia. Możesz wykonać <link>te kroki</link>, aby to zrobić.",
       "line4": "Jeśli wyłączenie tego ustawienia nie naprawia wyświetlania elementów tekstowych, zgłoś <issueLink>problem</issueLink> na naszym GitHubie lub napisz do nas na <discordLink>Discordzie</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Elementy osadzone nie mogą zostać dodane do biblioteki.",
-      "iframe": "Elementy IFrame nie mogą zostać dodane do biblioteki.",
-      "image": "Dodawania obrazów do biblioteki nadejdzie wkrótce!"
     },
     "asyncPasteFailedOnRead": "Nie udało się wkleić (nie udało się odczytać ze schowka systemowego).",
     "asyncPasteFailedOnParse": "Nie udało się wkleić.",
@@ -301,7 +268,6 @@
     "line": "Linia",
     "freedraw": "Rysuj",
     "text": "Tekst",
-    "library": "Biblioteka",
     "lock": "Zablokuj wybrane narzędzie",
     "penMode": "Tryb pióra — zapobiegaj dotknięciom",
     "link": "Dodaj/aktualizuj link dla wybranego kształtu",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "Kliknij dwukrotnie lub naciśnij {{shortcut}}, aby edytować punkty",
     "lineEditor_pointSelected": "Naciśnij {{shortcut_1}}, aby usunąć punkty,\n{{shortcut_2}}, aby je powielić, lub przeciągnij, aby je przenieść",
     "lineEditor_nothingSelected": "Wybierz punkt do edycji (przytrzymaj {{shortcut_1}}, aby wybrać wiele punktów)\nlub przytrzymaj {{shortcut_2}} i kliknij myszą, aby dodać nowe punkty",
-    "publishLibrary": "Opublikuj własną bibliotekę",
     "bindTextToElement": "Naciśnij {{shortcut}}, aby dodać tekst",
     "createFlowchart": "Naciśnij {{shortcut}}, aby utworzyć diagram",
     "deepBoxSelect": "Przytrzymaj {{shortcut}}, aby wybrać w obrębie grupy i zapobiec przeciągnięciu",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Wyczyść płótno"
   },
-  "publishDialog": {
-    "title": "Opublikuj bibliotekę",
-    "itemName": "Nazwa elementu",
-    "authorName": "Nazwa autora",
-    "githubUsername": "Nazwa użytkownika na GitHubie",
-    "twitterUsername": "Nazwa użytkownika Twitter",
-    "libraryName": "Nazwa biblioteki",
-    "libraryDesc": "Opis biblioteki",
-    "website": "Strona internetowa",
-    "placeholder": {
-      "authorName": "Twoje imię lub nazwa użytkownika",
-      "libraryName": "Nazwa twojej biblioteki",
-      "libraryDesc": "Opis twojej biblioteki, aby pomóc innym zrozumieć jej działanie",
-      "githubHandle": "Uchwyt GitHub (opcjonalny), dzięki czemu możesz edytować bibliotekę po przesłaniu do sprawdzenia",
-      "twitterHandle": "Nazwa użytkownika w serwisie Twitter (opcjonalna), aby wiedzieć kogo oznaczyć przy promowaniu na Twitterze",
-      "website": "Link do Twojej osobistej strony internetowej lub gdzie indziej (opcjonalnie)"
-    },
-    "errors": {
-      "required": "Wymagane",
-      "website": "Wprowadź prawidłowy adres URL"
-    },
-    "noteDescription": "<link></link>dla innych osób do wykorzystania w swoich rysunkach.",
-    "noteGuidelines": "Biblioteka musi być najpierw zatwierdzona ręcznie. Przeczytaj <link>wytyczne</link>",
-    "noteLicense": "Wysyłając zgadzasz się, że biblioteka zostanie opublikowana pod <link>Licencja MIT, </link>w skrócie, każdy może z nich korzystać bez ograniczeń.",
-    "noteItems": "Każdy element biblioteki musi mieć własną nazwę, aby był filtrowalny. Uwzględnione zostaną następujące elementy biblioteki:",
-    "atleastOneLibItem": "Proszę wybrać co najmniej jeden element biblioteki, by rozpocząć",
-    "republishWarning": "Uwaga: niektóre z wybranych elementów są oznaczone jako już opublikowane/wysłane. Powinieneś ponownie przesłać elementy tylko wtedy, gdy aktualizujesz istniejącą bibliotekę lub zgłoszenie."
-  },
-  "publishSuccessDialog": {
-    "title": "Biblioteka została przesłana",
-    "content": "Dziękujemy {{authorName}}. Twoja biblioteka została przesłana do sprawdzenia. Możesz śledzić jej stan<link>tutaj</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Zresetuj Bibliotekę",
-    "removeItemsFromLib": "Usuń wybrane elementy z biblioteki"
-  },
   "imageExportDialog": {
     "header": "Eksportuj obraz",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Szerokość"
   },
   "toast": {
-    "addedToLibrary": "Dodano do biblioteki",
     "copyStyles": "Skopiowano style.",
     "copyToClipboard": "Skopiowano do schowka.",
     "copyToClipboardAsPng": "Skopiowano {{exportSelection}} do schowka jako PNG\n({{exportColorScheme}})",

@@ -1,15 +1,7 @@
-import type { VERSIONS } from "@excalidraw/common";
-
 import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import type { cleanAppStateForExport } from "../appState";
-import type {
-  AppState,
-  BinaryFiles,
-  LibraryItem,
-  LibraryItems,
-  LibraryItems_anyVersion,
-} from "../types";
+import type { AppState, BinaryFiles } from "../types";
 
 export interface ExportedDataState {
   type: string;
@@ -45,22 +37,5 @@ export interface ImportedDataState {
     >
   > | null;
   scrollToContent?: boolean;
-  libraryItems?: LibraryItems_anyVersion;
   files?: BinaryFiles;
 }
-
-export interface ExportedLibraryData {
-  type: string;
-  version: typeof VERSIONS.excalidrawLibrary;
-  source: string;
-  libraryItems: LibraryItems;
-}
-
-export interface ImportedLibraryData extends Partial<ExportedLibraryData> {
-  /** @deprecated v1 */
-  library?: LibraryItems;
-}
-
-export type ExcalidrawLibraryIds = {
-  itemIds: LibraryItem["id"][];
-};

@@ -96,10 +96,6 @@
     "ungroup": "Desagrupa la selecció",
     "collaborators": "Col·laboradors",
     "toggleGrid": "Alterna la quadrícula",
-    "addToLibrary": "Afegir a la biblioteca",
-    "removeFromLibrary": "Eliminar de la biblioteca",
-    "libraryLoadingMessage": "S'està carregant la biblioteca…",
-    "libraries": "Explora les biblioteques",
     "loadingScene": "S'està carregant l'escena…",
     "loadScene": "Carrega una escena des d'un fitxer",
     "align": "Alinea",
@@ -120,8 +116,6 @@
     "showFonts": "Mostra el selector tipogràfic",
     "toggleTheme": "Alternar tema clar i fosc",
     "theme": "Tema",
-    "personalLib": "Biblioteca personal",
-    "excalidrawLib": "Biblioteca d'Excalidraw",
     "decreaseFontSize": "Redueix la mida de la lletra",
     "increaseFontSize": "Augmenta la mida de la lletra",
     "unbindText": "Desvincular el text",
@@ -151,7 +145,6 @@
       "lockAll": "Bloca-ho tot",
       "unlockAll": "Desbloca-ho tot"
     },
-    "statusPublished": "Publicat",
     "sidebarLock": "Manté la barra lateral oberta",
     "selectAllElementsInFrame": "Selecciona tots els elements del marc",
     "removeAllElementsFromFrame": "Elimina tots els elements del marc",
@@ -177,17 +170,6 @@
     "title": "Enllaç a l'objecte",
     "desc": "Fes clic en una forma al llenç o enganxa un enllaç.",
     "notFound": "L'objecte enllaçat no s'ha trobat al llenç."
-  },
-  "library": {
-    "noItems": "Encara no s'hi han afegit elements...",
-    "hint_emptyLibrary": "Trieu un element o un llenç per a afegir-lo aquí, o instal·leu una biblioteca del repositori públic, més avall.",
-    "hint_emptyPrivateLibrary": "Trieu un element o un llenç per a afegir-lo aquí.",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "Troba al llenç",
@@ -220,7 +202,6 @@
     "edit": "Edita",
     "undo": "Desfés",
     "redo": "Refés",
-    "resetLibrary": "Restableix la biblioteca",
     "createNewRoom": "Crea una sala nova",
     "fullScreen": "Pantalla completa",
     "darkMode": "Mode fosc",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Ajusta als objectes",
     "exitZenMode": "Surt de mode zen",
     "cancel": "Cancel·la",
-    "saveLibNames": "",
     "clear": "Neteja",
     "remove": "Suprimeix",
     "embed": "Commuta incrustació",
-    "publishLibrary": "",
     "submit": "Envia",
     "confirm": "Confirma",
     "embeddableInteractionButton": "Feu clic per interactuar"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "La càrrega s'ha assegurat amb xifratge punta a punta, cosa que significa que el servidor Excalidraw i tercers no poden llegir el contingut.",
     "loadSceneOverridePrompt": "Si carregas aquest dibuix extern, substituirá el que tens. Vols continuar?",
     "collabStopOverridePrompt": "Aturar la sessió provocarà la sobreescriptura del dibuix previ, que hi ha desat en l'emmagatzematge local. N'esteu segur?\n\n(Si voleu conservar el dibuix local, tanqueu la pentanya del navegador en comptes d'aturar la sessió).",
-    "errorAddingToLibrary": "No s'ha pogut afegir l'element a la biblioteca",
-    "errorRemovingFromLibrary": "No s'ha pogut eliminar l'element de la biblioteca",
-    "confirmAddLibrary": "Això afegirà {{numShapes}} forma(es) a la vostra biblioteca. Estàs segur?",
     "imageDoesNotContainScene": "Aquesta imatge no sembla contenir cap dada d'escena. Heu activat l'incrustació de l'escena durant l'exportació?",
     "cannotRestoreFromImage": "L’escena no s’ha pogut restaurar des d’aquest fitxer d’imatge",
     "invalidSceneUrl": "No s'ha pogut importar l'escena des de l'adreça URL proporcionada. Està malformada o no conté dades Excalidraw JSON vàlides.",
-    "resetLibrary": "Això buidarà la biblioteca. N'esteu segur?",
-    "removeItemsFromsLibrary": "Suprimir {{count}} element(s) de la biblioteca?",
     "invalidEncryptionKey": "La clau d'encriptació ha de tenir 22 caràcters. La col·laboració en directe està desactivada.",
     "collabOfflineWarning": "Sense connexió a internet disponible.\nEls vostres canvis no seran guardats!",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "No ha estat possible inserir la imatge SVG. Les marques SVG semblen invàlides.",
     "failedToFetchImage": "No s'ha pogut obtenir la imatge.",
     "cannotResolveCollabServer": "No ha estat possible connectar amb el servidor collab. Si us plau recarregueu la pàgina i torneu a provar.",
-    "importLibraryError": "No s'ha pogut carregar la biblioteca",
-    "saveLibraryError": "No hem pogut desar la llibreria a l'emmagatzematge. Si us plau, deseu la vostra llibreria a un fitxer local per assegurar que no perds els canvis.",
     "collabSaveFailed": "No s'ha pogut desar a la base de dades de fons. Si els problemes persisteixen, hauríeu de desar el fitxer localment per assegurar-vos que no perdeu el vostre treball.",
     "collabSaveFailed_sizeExceeded": "No s'ha pogut desar a la base de dades de fons, sembla que el llenç és massa gran. Hauríeu de desar el fitxer localment per assegurar-vos que no perdeu el vostre treball.",
     "imageToolNotSupported": "Les imatges no estan habilitades.",
@@ -280,11 +252,6 @@
       "line2": "Això podria provocar problemes amb els <bold>elements de text</bold> en els vostres dissenys.",
       "line3": "Us recomanem encaridament que desactiveu aquesta característica. Podeu seguir <link>aquests passos</link> per a fer-ho.",
       "line4": "Si els elements de text no es mostren correctament malgrat haver desactivat aquesta opció, si us plau, obriu una <issueLink>incidència</issueLink> a la nostra pàgina de GitHub o escriviu-nos a <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Els elements incrustables no poden afegir-se a la biblioteca.",
-      "iframe": "Elements IFrame no es poden afegir a la biblioteca.",
-      "image": "Suport per a afegir imatges a la biblioteca aviat!"
     },
     "asyncPasteFailedOnRead": "No s'ha pogut enganxar (no s'ha pogut llegir del porta-retalls del sistema).",
     "asyncPasteFailedOnParse": "No s'ha pogut enganxar.",
@@ -301,7 +268,6 @@
     "line": "Línia",
     "freedraw": "Dibuix",
     "text": "Text",
-    "library": "Biblioteca",
     "lock": "Mantenir activa l'eina seleccionada desprès de dibuixar",
     "penMode": "Mode de llapis - evita tocar",
     "link": "Afegeix/actualitza l'enllaç per a una forma seleccionada",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Publiqueu la vostra pròpia llibreria",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Neteja el llenç"
   },
-  "publishDialog": {
-    "title": "Publica la biblioteca",
-    "itemName": "Nom de l'element",
-    "authorName": "Nom de l'autor/a",
-    "githubUsername": "Nom d'usuari de GitHub",
-    "twitterUsername": "Nom d'usuari de Twitter",
-    "libraryName": "Nom de la biblioteca",
-    "libraryDesc": "Descripció de la biblioteca",
-    "website": "Lloc web",
-    "placeholder": {
-      "authorName": "Nom o usuari",
-      "libraryName": "Nom de la vostra biblioteca",
-      "libraryDesc": "Descripció de la biblioteca per a ajudar a la gent a entendre'n el funcionament",
-      "githubHandle": "Identificador de GitHub (opcional), per tal que pugueu editar la biblioteca una vegada enviada per a ser revisada",
-      "twitterHandle": "Usuari de twitter (opcional), per tal que puguem donar-vos crèdit quan fem la promoció a Twitter",
-      "website": "Enllaç al vostre lloc web personal o a qualsevol altre (opcional)"
-    },
-    "errors": {
-      "required": "Requerit",
-      "website": "Introduïu una URL vàlida"
-    },
-    "noteDescription": "Envieu la vostra biblioteca perquè sigui inclosa al <link>repositori públic</link>per tal que altres persones puguin fer-ne ús en els seus dibuixos.",
-    "noteGuidelines": "La biblioteca ha de ser aprovada manualment. Si us plau, llegiu les <link>directrius</link> abans d'enviar-hi res. Necessitareu un compte de GitHub per a comunicar i fer-hi canvis si cal, però no és requisit imprescindible.",
-    "noteLicense": "Quan l'envieu, accepteu que la biblioteca sigui publicada sota la <link>llicència MIT, </link>que, en resum, vol dir que qualsevol persona pot fer-ne ús sense restriccions.",
-    "noteItems": "Cada element de la biblioteca ha de tenir el seu propi nom per tal que sigui filtrable. S'hi inclouran els elements següents:",
-    "atleastOneLibItem": "Si us plau, seleccioneu si més no un element de la biblioteca per a començar",
-    "republishWarning": "Nota: alguns dels elements seleccionats s'han marcat com a publicats/enviats. Només hauríeu de reenviar elements quan actualitzeu una biblioteca existent."
-  },
-  "publishSuccessDialog": {
-    "title": "Biblioteca enviada",
-    "content": "Gràcies, {{authorName}}. La vostra biblioteca ha estat enviada per a ser revisada. Podeu comprovar-ne l'estat<link>aquí</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Restableix la biblioteca",
-    "removeItemsFromLib": "Suprimeix els elements seleccionats de la llibreria"
-  },
   "imageExportDialog": {
     "header": "Exporteu la imatge",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Amplada"
   },
   "toast": {
-    "addedToLibrary": "Afegit a la biblioteca",
     "copyStyles": "S'han copiat els estils.",
     "copyToClipboard": "S'ha copiat al porta-retalls.",
     "copyToClipboardAsPng": "S'ha copiat {{exportSelection}} al porta-retalls en format PNG\n({{exportColorScheme}})",

@@ -96,10 +96,6 @@
     "ungroup": "Išgrupuoti pasirinkimą",
     "collaborators": "Bendradarbiautojai",
     "toggleGrid": "",
-    "addToLibrary": "Pridėti į biblioteką",
-    "removeFromLibrary": "Pašalinti iš bibliotekos",
-    "libraryLoadingMessage": "",
-    "libraries": "Naršyti bibliotekas",
     "loadingScene": "",
     "loadScene": "",
     "align": "Lygiuoti",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "",
     "theme": "",
-    "personalLib": "Asmeninė biblioteka",
-    "excalidrawLib": "Exaclidraw biblioteka",
     "decreaseFontSize": "",
     "increaseFontSize": "",
     "unbindText": "",
@@ -151,7 +145,6 @@
       "lockAll": "",
       "unlockAll": ""
     },
-    "statusPublished": "",
     "sidebarLock": "",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "",
-    "hint_emptyLibrary": "",
-    "hint_emptyPrivateLibrary": "",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "Redaguoti",
     "undo": "Anuliuoti",
     "redo": "",
-    "resetLibrary": "Atstatyti biblioteką",
     "createNewRoom": "Sukurti naują kambarį",
     "fullScreen": "Visas ekranas",
     "darkMode": "Tamsus režimas",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "Išeiti iš „Zen“ režimo",
     "cancel": "Atšaukti",
-    "saveLibNames": "",
     "clear": "Išvalyti",
     "remove": "Pašalinti",
     "embed": "",
-    "publishLibrary": "",
     "submit": "Pateikti",
     "confirm": "Patvirtinti",
     "embeddableInteractionButton": ""
@@ -251,14 +230,9 @@
     "uploadedSecurly": "",
     "loadSceneOverridePrompt": "",
     "collabStopOverridePrompt": "Sesijos nutraukimas perrašys ankstesnį, lokaliai išsaugotą piešinį. Ar tikrai to nori?\n\n(Jei nori išlaikyti lokalų piešinį, tiesiog uždaryk naršyklės skirtuką.)",
-    "errorAddingToLibrary": "Nepavyko įtraukti elemento į biblioteką",
-    "errorRemovingFromLibrary": "Nepavyko pašalinti elemento iš bibliotekos",
-    "confirmAddLibrary": "Tai įtrauks {{numShapes}} figūrą/-as į tavo biblioteką. Ar tikrai to nori?",
     "imageDoesNotContainScene": "Panašu, jog šis paveiksliukas neturi scenos duomenų. Ar yra įjuntas scenos įtraukimas ekportavimo metu?",
     "cannotRestoreFromImage": "Nepavyko atstatyti scenos iš šio nuotraukos failo",
     "invalidSceneUrl": "Nepavyko suimportuoti scenos iš pateiktos nuorodos (URL). Ji arba blogai suformatuota, arba savyje neturi teisingų Excalidraw JSON duomenų.",
-    "resetLibrary": "Tai išvalys tavo biblioteką. Ar tikrai to nori?",
-    "removeItemsFromsLibrary": "Ištrinti {{count}} elementą/-us iš bibliotekos?",
     "invalidEncryptionKey": "Šifravimo raktas turi būti iš 22 simbolių. Redagavimas gyvai yra išjungtas.",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Nepavyko įtraukti SVG paveiksliuko. Panašu, jog SVG yra nevalidus.",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "Nepavyko prisijungti prie serverio bendradarbiavimui. Perkrauk puslapį ir pabandyk prisijungti dar kartą.",
-    "importLibraryError": "Nepavyko įkelti bibliotekos",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "Linija",
     "freedraw": "Piešti",
     "text": "Tekstas",
-    "library": "Biblioteka",
     "lock": "Baigus piešti, išlaikyti pasirinktą įrankį",
     "penMode": "Rašyklio režimas - neleisti prisilietimų",
     "link": "",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Išvalyti drobę"
   },
-  "publishDialog": {
-    "title": "Paviešinti biblioteką",
-    "itemName": "Elemento pavadinimas",
-    "authorName": "Autoriaus vardas",
-    "githubUsername": "Github spalyvardis",
-    "twitterUsername": "Twitter slapyvardis",
-    "libraryName": "Bibliotekos pavadinimas",
-    "libraryDesc": "Bibliotekos aprašas",
-    "website": "Tinklalapis",
-    "placeholder": {
-      "authorName": "Tavo vardas arba spalyvardis",
-      "libraryName": "Tavo bibliotekos pavadinimas",
-      "libraryDesc": "Tavo bibliotekos aprašas, padėti žmonėms geriau suprasti jos paskirtį",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "Privalomas",
-      "website": "Įveskite teisingą nuorodą (URL)"
-    },
-    "noteDescription": "Pateik savo biblioteką, jog ji galėtų būti įtraukta į <link></link>jog kiti žmonės galėtų tai naudoti savo piešiniuose.",
-    "noteGuidelines": "Visų pirma, biblioteka turi būti rankiniu būdu patvirtinta. Prašome paskaityti <link>gairės</link>",
-    "noteLicense": "<link>MIT licencija, </link>",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "Biblioteka pateikta",
-    "content": "Ačiū {{authorName}}. Tavo biblioteka buvo pateikta peržiūrai. Gali sekti būseną<link>čia</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Atstatyti biblioteką",
-    "removeItemsFromLib": "Pašalinti pasirinktus elementus iš bibliotekos"
-  },
   "imageExportDialog": {
     "header": "",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Plotis"
   },
   "toast": {
-    "addedToLibrary": "Pridėta į biblioteką",
     "copyStyles": "",
     "copyToClipboard": "Nukopijuota į iškarpinę.",
     "copyToClipboardAsPng": "",

@@ -96,10 +96,6 @@
     "ungroup": "Atgrupēt atlasīto",
     "collaborators": "Dalībnieki",
     "toggleGrid": "",
-    "addToLibrary": "Pievienot bibliotēkai",
-    "removeFromLibrary": "Izņemt no bibliotēkas",
-    "libraryLoadingMessage": "Ielādē bibliotēku…",
-    "libraries": "Apskatīt bibliotēkas",
     "loadingScene": "Ielādē ainu…",
     "loadScene": "",
     "align": "Līdzināt",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "",
     "theme": "",
-    "personalLib": "Personīgā bibliotēka",
-    "excalidrawLib": "Excalidraw bibliotēka",
     "decreaseFontSize": "Samazināt fonta izmēru",
     "increaseFontSize": "Palielināt fonta izmēru",
     "unbindText": "Atdalīt tekstu",
@@ -151,7 +145,6 @@
       "lockAll": "Fiksēt visu",
       "unlockAll": "Atbrīvot visu"
     },
-    "statusPublished": "Publicēts",
     "sidebarLock": "Paturēt atvērtu sānjoslu",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "Neviena vienība vēl nav pievienota...",
-    "hint_emptyLibrary": "Atlasiet objektu tāfelē, lai to šeit pievienotu, vai pievienojiet publisku bibliotēku zemāk.",
-    "hint_emptyPrivateLibrary": "Atlasiet objektu tāfelē, lai to šeit pievienotu.",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "Rediģēt",
     "undo": "Atsaukt",
     "redo": "Atcelt atsaukšanu",
-    "resetLibrary": "Atiestatīt bibliotēku",
     "createNewRoom": "Izveidot jaunu telpu",
     "fullScreen": "Pilnekrāna režīms",
     "darkMode": "Tumšais režīms",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "Pamest Zen režīmu",
     "cancel": "Atcelt",
-    "saveLibNames": "",
     "clear": "Notīrīt",
     "remove": "Noņemt",
     "embed": "",
-    "publishLibrary": "",
     "submit": "Iesniegt",
     "confirm": "Apstiprināt",
     "embeddableInteractionButton": ""
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Augšuplāde nodrošināta ar šifrēšanu no gala līdz galam, kas nozīmē, ka Excalidraw serveri un trešās puses nevar lasīt saturu.",
     "loadSceneOverridePrompt": "Ārēja satura ielāde aizstās jūsu pašreizējo saturu. Vai vēlaties turpināt?",
     "collabStopOverridePrompt": "Sesijas pārtraukšana pārrakstīs jūsu iepriekšējo zīmējumu, kas saglabāts jūsu pārlūkā. Vai turpināt?\n\n(Ja vēlaties paturēt zīmējumu, kas saglabāts jūsu pārlūkā, vienkārši aizveriet pārlūka cilni.)",
-    "errorAddingToLibrary": "Nevarēja pievienot vienumu bibliotēkai",
-    "errorRemovingFromLibrary": "Nevarēja izņemt vienumu no bibliotēkas",
-    "confirmAddLibrary": "Šī funkcija pievienos {{numShapes}} formu(-as) jūsu bibliotēkai. Vai turpināt?",
     "imageDoesNotContainScene": "Šķiet, ka attēls nesatur ainas datus. Vai iespējojāt ainas iegulšanu, kad eksportējāt?",
     "cannotRestoreFromImage": "Ainu nevarēja atgūt no attēla datnes",
     "invalidSceneUrl": "Nevarēja importēt ainu no norādītā URL. Vai nu tas ir nederīgs, vai nesatur derīgus Excalidraw JSON datus.",
-    "resetLibrary": "Šī funkcija iztukšos bibliotēku. Vai turpināt?",
-    "removeItemsFromsLibrary": "Vai izņemt {{count}} vienumu(s) no bibliotēkas?",
     "invalidEncryptionKey": "Šifrēšanas atslēgai jābūt 22 simbolus garai. Tiešsaistes sadarbība ir izslēgta.",
     "collabOfflineWarning": "Nav pieejams interneta pieslēgums.\nJūsu izmaiņas netiks saglabātas!",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Nevarēja ievietot SVG attēlu. Šķiet, ka SVG marķējums nav derīgs.",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "Nevarēja savienoties ar sadarbošanās serveri. Lūdzu, pārlādējiet lapu un mēģiniet vēlreiz.",
-    "importLibraryError": "Nevarēja ielādēt bibliotēku",
-    "saveLibraryError": "",
     "collabSaveFailed": "Darbs nav saglabāts datubāzē. Ja problēma turpinās, saglabājiet datni lokālajā krātuvē, lai nodrošinātos pret darba pazaudēšanu.",
     "collabSaveFailed_sizeExceeded": "Darbs nav saglabāts datubāzē, šķiet, ka tāfele ir pārāk liela. Saglabājiet datni lokālajā krātuvē, lai nodrošinātos pret darba pazaudēšanu.",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "Līnija",
     "freedraw": "Zīmēt",
     "text": "Teksts",
-    "library": "Bibliotēka",
     "lock": "Paturēt izvēlēto rīku pēc darbības",
     "penMode": "Pildspalvas režīms – novērst pieskaršanos",
     "link": "",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Publicēt savu bibliotēku",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Notīrīt tāfeli"
   },
-  "publishDialog": {
-    "title": "Publicēt bibliotēku",
-    "itemName": "Vienuma nosaukums",
-    "authorName": "Autora vārds",
-    "githubUsername": "GitHub lietotājvārds",
-    "twitterUsername": "Twitter lietotājvārds",
-    "libraryName": "Bibliotēkas nosaukums",
-    "libraryDesc": "Bibliotēkas apraksts",
-    "website": "Mājaslapa",
-    "placeholder": {
-      "authorName": "Jūsu vārds vai lietotājvārds",
-      "libraryName": "Jūsu bibliotēkas nosaukums",
-      "libraryDesc": "Bibliotēkas apraksts, kas palīdzēs citiem saprast tās pielietojumu",
-      "githubHandle": "GitHub lietotājvārds (neobligāts), lai jūs varētu rediģēt bibliotēku pēc tās iesniegšanas izskatīšanai",
-      "twitterHandle": "Twitter lietotājvārds (neobligāts), lai mēs varētu jūs pieminēt kā autoru, kad reklamēsim bibliotēku platformā Twitter",
-      "website": "Saikne uz jūsu personīgo mājaslapu vai kādu citu lapu (neobligāta)"
-    },
-    "errors": {
-      "required": "Obligāts",
-      "website": "Ievadiet derīgu URL"
-    },
-    "noteDescription": "Iesniegt savu bibliotēku iekļaušanai <link>publiskajā bibliotēku datubāzē</link>, lai citi to varētu izmantot savos zīmējumos.",
-    "noteGuidelines": "Šai bibliotēkai vispirms jātiek manuāli apstiprinātai. Lūdzu, izlasiet <link>norādījumus</link> pirms iesniegšanas. Jums vajadzēs GitHub kontu, lai sazinātos un veiktu izmaiņas, ja tādas būs pieprasītas, bet tas nav absolūti nepieciešams.",
-    "noteLicense": "Iesniedzot bibliotēku, jūs piekrītat tās publicēšanai saskaņā ar <link>MIT Licenci, </link>kas īsumā nozīmē, ka jebkurš to varēs izmantot bez ierobežojumiem.",
-    "noteItems": "Katram bibliotēkas vienumam jābūt savam nosaukumam, lai to varētu atrast filtrējot. Tiks iekļauti sekojošie bibliotēkas vienumi:",
-    "atleastOneLibItem": "Lūdzu, atlasiet vismaz vienu bibliotēkas vienumu, lai sāktu darbu",
-    "republishWarning": "Ievēro: daži no atzīmētajiem objektiem jau atzīmēti kā publicēti vai iesniegti publicēšanai. Tos vajadzētu atkārtoti iesniegt tikai tad, ja vēlies labot esošo bibliotēku."
-  },
-  "publishSuccessDialog": {
-    "title": "Bibliotēka iesniegta",
-    "content": "Paldies, {{authorName}}! Jūsu bibliotēka iesniegta izskatīšanai. Jūs varat izsekot iesnieguma statusam<link>šeit</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Atiestatīt bibliotēku",
-    "removeItemsFromLib": "Noņemt atlasītos vienumus no bibliotēkas"
-  },
   "imageExportDialog": {
     "header": "",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Platums"
   },
   "toast": {
-    "addedToLibrary": "Pievienots bibliotēkai",
     "copyStyles": "Nokopēja stilus.",
     "copyToClipboard": "Nokopēja starpliktuvē.",
     "copyToClipboardAsPng": "Nokopēja {{exportSelection}} starpliktuvē kā PNG ({{exportColorScheme}})",

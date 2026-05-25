@@ -5,8 +5,8 @@
  * Notes:
  *
  * - DataState refers to full state of the app: appState, elements, images,
- *   though some state is saved separately (collab username, library) for one
- *   reason or another. We also save different data to different storage
+ *   though some state is saved separately (collab username) for one reason
+ *   or another. We also save different data to different storage
  *   (localStorage, indexedDB).
  */
 
@@ -16,27 +16,16 @@ import {
   DEFAULT_SIDEBAR,
   debounce,
 } from "@excalidraw/common";
-import {
-  createStore,
-  entries,
-  del,
-  getMany,
-  set,
-  setMany,
-  get,
-} from "idb-keyval";
+import { createStore, entries, del, getMany, set, setMany } from "idb-keyval";
 
 import { getNonDeletedElements } from "@excalidraw/element";
 
-import type { LibraryPersistedData } from "@excalidraw/excalidraw/data/library";
-import type { ImportedDataState } from "@excalidraw/excalidraw/data/types";
 import type { ExcalidrawElement, FileId } from "@excalidraw/element/types";
 import type {
   AppState,
   BinaryFileData,
   BinaryFiles,
 } from "@excalidraw/excalidraw/types";
-import type { MaybePromise } from "@excalidraw/common/utility-types";
 
 import { appJotaiStore, atom } from "../app-jotai";
 import { SAVE_TO_LOCAL_STORAGE_TIMEOUT, STORAGE_KEYS } from "../app_constants";
@@ -225,53 +214,4 @@ export class LocalData {
       return { savedFiles, erroredFiles };
     },
   });
-}
-export class LibraryIndexedDBAdapter {
-  /** IndexedDB database and store name */
-  private static idb_name = STORAGE_KEYS.IDB_LIBRARY;
-  /** library data store key */
-  private static key = "libraryData";
-
-  private static store = createStore(
-    `${LibraryIndexedDBAdapter.idb_name}-db`,
-    `${LibraryIndexedDBAdapter.idb_name}-store`,
-  );
-
-  static async load() {
-    const IDBData = await get<LibraryPersistedData>(
-      LibraryIndexedDBAdapter.key,
-      LibraryIndexedDBAdapter.store,
-    );
-
-    return IDBData || null;
-  }
-
-  static save(data: LibraryPersistedData): MaybePromise<void> {
-    return set(
-      LibraryIndexedDBAdapter.key,
-      data,
-      LibraryIndexedDBAdapter.store,
-    );
-  }
-}
-
-/** LS Adapter used only for migrating LS library data
- * to indexedDB */
-export class LibraryLocalStorageMigrationAdapter {
-  static load() {
-    const LSData = localStorage.getItem(
-      STORAGE_KEYS.__LEGACY_LOCAL_STORAGE_LIBRARY,
-    );
-    if (LSData != null) {
-      const libraryItems: ImportedDataState["libraryItems"] =
-        JSON.parse(LSData);
-      if (libraryItems) {
-        return { libraryItems };
-      }
-    }
-    return null;
-  }
-  static clear() {
-    localStorage.removeItem(STORAGE_KEYS.__LEGACY_LOCAL_STORAGE_LIBRARY);
-  }
 }

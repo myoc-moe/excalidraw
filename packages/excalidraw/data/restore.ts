@@ -21,7 +21,6 @@ import {
 } from "@excalidraw/common";
 import {
   calculateFixedPointForNonElbowArrowBinding,
-  getNonDeletedElements,
   normalizeArrowhead,
   isPointInElement,
   isValidPolygon,
@@ -73,7 +72,7 @@ import type {
   StrokeRoundness,
 } from "@excalidraw/element/types";
 
-import type { MarkOptional, Mutable } from "@excalidraw/common/utility-types";
+import type { Mutable } from "@excalidraw/common/utility-types";
 
 import { getDefaultAppState } from "../appState";
 
@@ -86,7 +85,6 @@ import {
 import type {
   AppState,
   BinaryFiles,
-  LibraryItem,
   NormalizedZoomValue,
 } from "../types";
 import type { ImportedDataState, LegacyAppState } from "./types";
@@ -1016,48 +1014,4 @@ export const restoreAppState = (
     ),
     editingFrame: null,
   };
-};
-
-const restoreLibraryItem = (libraryItem: LibraryItem) => {
-  const elements = restoreElements(
-    getNonDeletedElements(libraryItem.elements),
-    null,
-  );
-  return elements.length ? { ...libraryItem, elements } : null;
-};
-
-export const restoreLibraryItems = (
-  libraryItems: ImportedDataState["libraryItems"] = [],
-  defaultStatus: LibraryItem["status"],
-) => {
-  const restoredItems: LibraryItem[] = [];
-  for (const item of libraryItems) {
-    // migrate older libraries
-    if (Array.isArray(item)) {
-      const restoredItem = restoreLibraryItem({
-        status: defaultStatus,
-        elements: item,
-        id: randomId(),
-        created: Date.now(),
-      });
-      if (restoredItem) {
-        restoredItems.push(restoredItem);
-      }
-    } else {
-      const _item = item as MarkOptional<
-        LibraryItem,
-        "id" | "status" | "created"
-      >;
-      const restoredItem = restoreLibraryItem({
-        ..._item,
-        id: _item.id || randomId(),
-        status: _item.status || defaultStatus,
-        created: _item.created || Date.now(),
-      });
-      if (restoredItem) {
-        restoredItems.push(restoredItem);
-      }
-    }
-  }
-  return restoredItems;
 };

@@ -96,10 +96,6 @@
     "ungroup": "Desegin hautapenaren taldea",
     "collaborators": "Kolaboratzaileak",
     "toggleGrid": "Txandakatu sareta",
-    "addToLibrary": "Gehitu liburutegira",
-    "removeFromLibrary": "Kendu liburutegitik",
-    "libraryLoadingMessage": "Liburutegia kargatzen…",
-    "libraries": "Arakatu liburutegiak",
     "loadingScene": "Eszena kargatzen…",
     "loadScene": "Fitxategitik kargatu",
     "align": "Lerrokatu",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "Gaia argia/iluna aktibatu",
     "theme": "Itxura",
-    "personalLib": "Liburutegi pertsonala",
-    "excalidrawLib": "Excalidraw liburutegia",
     "decreaseFontSize": "Txikitu letra tamaina",
     "increaseFontSize": "Handitu letra tamaina",
     "unbindText": "Askatu testua",
@@ -151,7 +145,6 @@
       "lockAll": "Blokeatu guztiak",
       "unlockAll": "Desblokeatu guztiak"
     },
-    "statusPublished": "Argitaratua",
     "sidebarLock": "Mantendu alboko barra irekita",
     "selectAllElementsInFrame": "Hautatu markoko elementu guztiak",
     "removeAllElementsFromFrame": "Kendu markoko elementu guztiak",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "Oraindik ez da elementurik gehitu...",
-    "hint_emptyLibrary": "Hautatu oihaleko elementu bat hemen gehitzeko, edo instalatu liburutegi bat beheko biltegi publikotik.",
-    "hint_emptyPrivateLibrary": "Hautatu oihaleko elementu bat hemen gehitzeko.",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "Editatu",
     "undo": "Desegin",
     "redo": "Berregin",
-    "resetLibrary": "Leheneratu liburutegia",
     "createNewRoom": "Sortu gela berria",
     "fullScreen": "Pantaila osoa",
     "darkMode": "Modu iluna",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Atxiki objektuei",
     "exitZenMode": "Irten Zen modutik",
     "cancel": "Utzi",
-    "saveLibNames": "",
     "clear": "Garbitu",
     "remove": "Kendu",
     "embed": "Aldatu kapsulatzea",
-    "publishLibrary": "",
     "submit": "Bidali",
     "confirm": "Bai",
     "embeddableInteractionButton": "Egin klik elkar eragiteko"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Kargatzea muturretik muturrerako zifratze bidez ziurtatu da, hau da, Excalidraw zerbitzariak eta hirugarrenek ezin dutela edukia irakurri.",
     "loadSceneOverridePrompt": "Kanpoko marrazkia kargatzeak lehendik duzun edukia ordezkatuko du. Jarraitu nahi duzu?",
     "collabStopOverridePrompt": "Saioa gelditzeak lokalean gordetako zure aurreko marrazkia gainidatziko du. Ziur zaude?\n\n(Zure marrazki lokala mantendu nahi baduzu, itxi arakatzailearen fitxa.)",
-    "errorAddingToLibrary": "Ezin izan da elementua liburutegian gehitu",
-    "errorRemovingFromLibrary": "Ezin izan da elementua liburutegitik kendu",
-    "confirmAddLibrary": "Honek {{numShapes}} forma gehituko ditu zure liburutegian. Ziur zaude?",
     "imageDoesNotContainScene": "Irudi honek ez dirudi eszena daturik duenik. Eszena kapsulatzea gaitu al duzu esportazioan?",
     "cannotRestoreFromImage": "Ezin izan da eszena leheneratu irudi fitxategi honetatik",
     "invalidSceneUrl": "Ezin izan da eszena inportatu emandako URLtik. Gaizki eratuta dago edo ez du baliozko Excalidraw JSON daturik.",
-    "resetLibrary": "Honek zure liburutegia garbituko du. Ziur zaude?",
-    "removeItemsFromsLibrary": "Liburutegitik {{count}} elementu ezabatu?",
     "invalidEncryptionKey": "Enkriptazio-gakoak 22 karaktere izan behar ditu. Zuzeneko lankidetza desgaituta dago.",
     "collabOfflineWarning": "Ez dago Interneteko konexiorik.\nZure aldaketak ez dira gordeko!",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Ezin izan da SVG irudia txertatu. SVG markak baliogabea dirudi.",
     "failedToFetchImage": "Ezin izan da irudia eskuratu.",
     "cannotResolveCollabServer": "Ezin izan da elkarlaneko zerbitzarira konektatu. Mesedez, berriro kargatu orria eta saiatu berriro.",
-    "importLibraryError": "Ezin izan da liburutegia kargatu",
-    "saveLibraryError": "Ezin izan da liburutegian gorde. Mesedez, gorde fitxategi lokal batetara aldaketarik ez galtzeko.",
     "collabSaveFailed": "Ezin izan da backend datu-basean gorde. Arazoak jarraitzen badu, zure fitxategia lokalean gorde beharko zenuke zure lana ez duzula galtzen ziurtatzeko.",
     "collabSaveFailed_sizeExceeded": "Ezin izan da backend datu-basean gorde, ohiala handiegia dela dirudi. Fitxategia lokalean gorde beharko zenuke zure lana galtzen ez duzula ziurtatzeko.",
     "imageToolNotSupported": "Irudiak desgaituak daude.",
@@ -280,11 +252,6 @@
       "line2": "Honek zure marrazkietako <bold>Testu-elementuak</bold> hautsi ditzake.",
       "line3": "Ezarpen hau desgaitzea gomendatzen dugu. <link>urrats hauek</link> jarrai ditzakezu hori nola egin jakiteko.",
       "line4": "Ezarpen hau desgaituz gero, testu-elementuen bistaratzea konpontzen ez bada, ireki <issueLink>arazo</issueLink> gure GitHub-en edo idatzi iezaguzu <discordLink>Discord</discordLink> helbidera"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Kapsulatutako elementuak ezin dira liburutegira gehitu.",
-      "iframe": "Kapsulatutako elementuak ezin dira liburutegira gehitu.",
-      "image": "Laster egongo da irudiak liburutegian gehitzeko laguntza!"
     },
     "asyncPasteFailedOnRead": "Ezin izan da itsatsi (ezin izan da sistemaren arbeletik irakurri).",
     "asyncPasteFailedOnParse": "Ezin izan da itsatsi.",
@@ -301,7 +268,6 @@
     "line": "Lerroa",
     "freedraw": "Marraztu",
     "text": "Testua",
-    "library": "Liburutegia",
     "lock": "Mantendu aktibo hautatutako tresna marraztu ondoren",
     "penMode": "Luma modua - ukipena saihestu",
     "link": "Gehitu / Eguneratu esteka hautatutako forma baterako",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Argitaratu zure liburutegia",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Garbitu oihala"
   },
-  "publishDialog": {
-    "title": "Argitaratu liburutegia",
-    "itemName": "Elementuaren izena",
-    "authorName": "Egilearen izena",
-    "githubUsername": "GitHub-eko erabiltzaile-izena",
-    "twitterUsername": "Twitter-eko erabiltzaile-izena",
-    "libraryName": "Liburutegiaren izena",
-    "libraryDesc": "Liburutegiaren deskripzioa",
-    "website": "Webgunea",
-    "placeholder": {
-      "authorName": "Zure izena edo erabiltzaile-izena",
-      "libraryName": "Zure liburutegiaren izena",
-      "libraryDesc": "Zure liburutegiaren deskripzioa laguntzeko jendeari ulertzen haren erabilpena",
-      "githubHandle": "GitHub heldulekua (aukerakoa), liburutegia editatu ahal izateko berrikustera bidalitakoan",
-      "twitterHandle": "Twitter-eko erabiltzaile-izena (aukerakoa), badakigu nori kreditatu behar dugun Twitter bidez sustatzeko",
-      "website": "Estekatu zure webgunera edo nahi duzun tokira (aukerakoa)"
-    },
-    "errors": {
-      "required": "Beharrezkoa",
-      "website": "Sartu baliozko URL bat"
-    },
-    "noteDescription": "Bidali zure liburutegira sartu ahal izateko <link>zure liburutegiko biltegian</link>beste jendeak bere marrazkietan erabili ahal izateko.",
-    "noteGuidelines": "Liburutegia eskuz onartu behar da. Irakurri <link>gidalerroak</link> bidali aurretik. GitHub kontu bat edukitzea komeni da komunikatzeko eta aldaketak egin ahal izateko, baina ez da guztiz beharrezkoa.",
-    "noteLicense": "Bidaltzen baduzu, onartzen duzu liburutegia <link>MIT lizentziarekin argitaratuko dela, </link>zeinak, laburbilduz, esan nahi du edozeinek erabiltzen ahal duela murrizketarik gabe.",
-    "noteItems": "Liburutegiko elementu bakoitzak bere izena eduki behar du iragazi ahal izateko. Liburutegiko hurrengo elementuak barne daude:",
-    "atleastOneLibItem": "Hautatu gutxienez liburutegiko elementu bat gutxienez hasi ahal izateko",
-    "republishWarning": "Oharra: hautatutako elementu batzuk dagoeneko argitaratuta/bidalita bezala markatuta daude. Elementuak berriro bidali behar dituzu lehendik dagoen liburutegi edo bidalketa eguneratzen duzunean."
-  },
-  "publishSuccessDialog": {
-    "title": "Liburutegia bidali da",
-    "content": "Eskerrik asko {{authorName}}. Zure liburutegia bidali da berrikustera. Jarraitu dezakezu haren egoera<link>hemen</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Leheneratu liburutegia",
-    "removeItemsFromLib": "Kendu hautatutako elementuak liburutegitik"
-  },
   "imageExportDialog": {
     "header": "Esportatu irudia",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Zabalera"
   },
   "toast": {
-    "addedToLibrary": "Liburutegira gehitu da",
     "copyStyles": "Estiloak kopiatu dira.",
     "copyToClipboard": "Arbelean kopiatu da.",
     "copyToClipboardAsPng": "{{exportSelection}} kopiatu da arbelean PNG gisa\n({{exportColorScheme}})",

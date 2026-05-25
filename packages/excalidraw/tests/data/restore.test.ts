@@ -745,18 +745,18 @@ describe("restoreAppState", () => {
   it("should handle appState.openSidebar legacy values", () => {
     expect(restore.restoreAppState({}, null).openSidebar).toBe(null);
     expect(
-      restore.restoreAppState({ openSidebar: "library" } as any, null)
+      restore.restoreAppState({ openSidebar: "custom" } as any, null)
         .openSidebar,
     ).toEqual({ name: DEFAULT_SIDEBAR.name });
     expect(
       restore.restoreAppState({ openSidebar: "xxx" } as any, null).openSidebar,
     ).toEqual({ name: DEFAULT_SIDEBAR.name });
-    // while "library" was our legacy sidebar name, we can't assume it's legacy
-    // value as it may be some host app's custom sidebar name ¯\_(ツ)_/¯
+    // string sidebar names were legacy values, but object sidebar state may
+    // be some host app's custom sidebar name.
     expect(
-      restore.restoreAppState({ openSidebar: { name: "library" } } as any, null)
+      restore.restoreAppState({ openSidebar: { name: "custom" } } as any, null)
         .openSidebar,
-    ).toEqual({ name: "library" });
+    ).toEqual({ name: "custom" });
     expect(
       restore.restoreAppState(
         { openSidebar: { name: DEFAULT_SIDEBAR.name, tab: "ola" } } as any,

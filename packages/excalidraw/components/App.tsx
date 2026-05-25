@@ -357,7 +357,6 @@ import {
 } from "../clipboard";
 
 import { exportCanvas, loadFromBlob } from "../data";
-import Library, { distributeLibraryItemsOnSquareGrid } from "../data/library";
 import { restoreAppState, restoreElements } from "../data/restore";
 import { getCenter, getDistance } from "../gesture";
 import { History } from "../history";
@@ -380,9 +379,7 @@ import {
   ImageURLToFile,
   isImageFileHandle,
   isSupportedImageFile,
-  loadSceneOrLibraryFromBlob,
   normalizeFile,
-  parseLibraryJSON,
   SVGStringToFile,
 } from "../data/blob";
 
@@ -456,8 +453,6 @@ import { Toast } from "./Toast";
 
 import UnlockPopup from "./UnlockPopup";
 
-import type { ExcalidrawLibraryIds } from "../data/types";
-
 import type {
   RenderInteractiveSceneCallback,
   ScrollBars,
@@ -476,7 +471,6 @@ import type {
   BinaryFiles,
   Gesture,
   GestureEvent,
-  LibraryItems,
   PointerDownState,
   SceneData,
   FrameNameBoundsCache,
@@ -637,8 +631,6 @@ class App extends React.Component<AppProps, AppState> {
   public renderer: Renderer;
   public visibleElements: readonly NonDeletedExcalidrawElement[];
   private resizeObserver: ResizeObserver | undefined;
-  public library: AppClassProperties["library"];
-  public libraryItemsFromStorage: LibraryItems | undefined;
   public id: string;
   private store: Store;
   private history: History;
@@ -755,7 +747,6 @@ class App extends React.Component<AppProps, AppState> {
       updateScene: this.updateScene,
       applyDeltas: this.applyDeltas,
       mutateElement: this.mutateElement,
-      updateLibrary: this.library.updateLibrary,
       addFiles: this.addFiles,
       addImageElementsToScene: this.addImageElementsToScene,
       resetScene: this.resetScene,
@@ -828,7 +819,6 @@ class App extends React.Component<AppProps, AppState> {
     this.stylesPanelMode = deriveStylesPanelMode(this.editorInterface);
 
     this.id = nanoid();
-    this.library = new Library(this);
     this.actionManager = new ActionManager(
       this.syncActionResult,
       () => this.state,
@@ -2456,7 +2446,7 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   public onInsertElements = (elements: readonly ExcalidrawElement[]) => {
-    this.addElementsFromPasteOrLibrary({
+    this.addElementsFromPaste({
       elements,
       position: "center",
       files: null,
@@ -2926,16 +2916,6 @@ class App extends React.Component<AppProps, AppState> {
       } else {
         initialData = (await this.props.initialData) || null;
       }
-      if (initialData?.libraryItems) {
-        this.library
-          .updateLibrary({
-            libraryItems: initialData.libraryItems,
-            merge: true,
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-      }
     } catch (error: any) {
       console.error(error);
       initialData = {
@@ -2964,10 +2944,6 @@ class App extends React.Component<AppProps, AppState> {
     restoredAppState = {
       ...restoredAppState,
       theme: this.props.theme || restoredAppState.theme,
-      // we're falling back to current (pre-init) state when deciding
-      // whether to open the library, to handle a case where we
-      // update the state outside of initialData (e.g. when loading the app
-      // with a library install link, which should auto-open the library)
       openSidebar: restoredAppState?.openSidebar || this.state.openSidebar,
       activeTool:
         activeTool.type === "image" ||
@@ -3222,7 +3198,6 @@ class App extends React.Component<AppProps, AppState> {
     this.resizeObserver?.disconnect();
     this.unmounted = true;
     this.removeEventListeners();
-    this.library.destroy();
     this.laserTrails.stop();
     this.eraserTrail.stop();
     this.onChangeEmitter.clear();
@@ -3771,7 +3746,7 @@ class App extends React.Component<AppProps, AppState> {
           : data.elements
       ) as readonly ExcalidrawElement[];
       // TODO: remove formatting from elements if isPlainPaste
-      this.addElementsFromPasteOrLibrary({
+      this.addElementsFromPaste({
         elements,
         files: data.files || null,
         position:
@@ -3889,7 +3864,7 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
-  addElementsFromPasteOrLibrary = (opts: {
+  addElementsFromPaste = (opts: {
     elements: readonly ExcalidrawElement[];
     files: BinaryFiles | null;
     position: { clientX: number; clientY: number } | "cursor" | "center";
@@ -3996,11 +3971,6 @@ class App extends React.Component<AppProps, AppState> {
     this.setState(
       {
         ...this.state,
-        // keep sidebar (presumably the library) open if it's docked and
-        // can fit.
-        //
-        // Note, we should close the sidebar only if we're dropping items
-        // from library, not when pasting from clipboard. Alas.
         openSidebar:
           this.state.openSidebar &&
           this.editorInterface.canFitSidebar &&
@@ -12218,55 +12188,11 @@ class App extends React.Component<AppProps, AppState> {
     if (imageFiles.length > 0 && this.isToolSupported("image")) {
       return this.insertImages(imageFiles, sceneX, sceneY);
     }
-    const excalidrawLibrary_ids = dataTransferList.getData(
-      MIME_TYPES.excalidrawlibIds,
-    );
-    const excalidrawLibrary_data = dataTransferList.getData(
-      MIME_TYPES.excalidrawlib,
-    );
-    if (excalidrawLibrary_ids || excalidrawLibrary_data) {
-      try {
-        let libraryItems: LibraryItems | null = null;
-        if (excalidrawLibrary_ids) {
-          const { itemIds } = JSON.parse(
-            excalidrawLibrary_ids,
-          ) as ExcalidrawLibraryIds;
-          const allLibraryItems = await this.library.getLatestLibrary();
-          libraryItems = allLibraryItems.filter((item) =>
-            itemIds.includes(item.id),
-          );
-          // legacy library dataTransfer format
-        } else if (excalidrawLibrary_data) {
-          libraryItems = parseLibraryJSON(excalidrawLibrary_data);
-        }
-        if (libraryItems?.length) {
-          libraryItems = libraryItems.map((item) => ({
-            ...item,
-            // #6465
-            elements: duplicateElements({
-              type: "everything",
-              elements: item.elements,
-              randomizeSeed: true,
-              preserveFrameChildrenOrder: true,
-            }).duplicatedElements,
-          }));
-
-          this.addElementsFromPasteOrLibrary({
-            elements: distributeLibraryItemsOnSquareGrid(libraryItems),
-            position: event,
-            files: null,
-          });
-        }
-      } catch (error: any) {
-        this.setState({ errorMessage: error.message });
-      }
-      return;
-    }
 
     if (fileItems.length > 0) {
       const { file, fileHandle } = fileItems[0];
       if (file) {
-        // Attempt to parse an excalidraw/excalidrawlib file
+        // Attempt to parse an excalidraw file
         await this.loadFileToCanvas(file, fileHandle);
       }
     }
@@ -12303,7 +12229,7 @@ class App extends React.Component<AppProps, AppState> {
       const elements = this.scene.getElementsIncludingDeleted();
       let ret;
       try {
-        ret = await loadSceneOrLibraryFromBlob(
+        ret = await loadFromBlob(
           file,
           this.state,
           elements,
@@ -12334,40 +12260,27 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (ret.type === MIME_TYPES.excalidraw) {
-        // restore the fractional indices by mutating elements
-        syncInvalidIndices(elements.concat(ret.data.elements));
+      // restore the fractional indices by mutating elements
+      syncInvalidIndices(elements.concat(ret.elements));
 
-        // don't capture and only update the store snapshot for old elements,
-        // otherwise we would end up with duplicated fractional indices on undo
-        this.store.scheduleMicroAction({
-          action: CaptureUpdateAction.NEVER,
-          elements,
-          appState: undefined,
-        });
+      // don't capture and only update the store snapshot for old elements,
+      // otherwise we would end up with duplicated fractional indices on undo
+      this.store.scheduleMicroAction({
+        action: CaptureUpdateAction.NEVER,
+        elements,
+        appState: undefined,
+      });
 
-        this.setState({ isLoading: true });
-        this.syncActionResult({
-          ...ret.data,
-          appState: {
-            ...(ret.data.appState || this.state),
-            isLoading: false,
-          },
-          replaceFiles: true,
-          captureUpdate: CaptureUpdateAction.IMMEDIATELY,
-        });
-      } else if (ret.type === MIME_TYPES.excalidrawlib) {
-        await this.library
-          .updateLibrary({
-            libraryItems: file,
-            merge: true,
-            openLibraryMenu: true,
-          })
-          .catch((error) => {
-            console.error(error);
-            this.setState({ errorMessage: t("errors.importLibraryError") });
-          });
-      }
+      this.setState({ isLoading: true });
+      this.syncActionResult({
+        ...ret,
+        appState: {
+          ...(ret.appState || this.state),
+          isLoading: false,
+        },
+        replaceFiles: true,
+        captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+      });
     } catch (error: any) {
       this.setState({ isLoading: false, errorMessage: error.message });
     }

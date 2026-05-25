@@ -96,10 +96,6 @@
     "ungroup": "Zrušiť zoskupenie",
     "collaborators": "Spolupracovníci",
     "toggleGrid": "Prepnúť mriežku",
-    "addToLibrary": "Pridať do knižnice",
-    "removeFromLibrary": "Odstrániť z knižnice",
-    "libraryLoadingMessage": "Načítavanie knižnice…",
-    "libraries": "Prehliadať knižnice",
     "loadingScene": "Načítavanie scény…",
     "loadScene": "Načítať scénu zo súboru",
     "align": "Zarovnanie",
@@ -120,8 +116,6 @@
     "showFonts": "Zobraziť výber písma",
     "toggleTheme": "Prepnúť svetlú/tmavú tému",
     "theme": "Téma",
-    "personalLib": "Moja knižnica",
-    "excalidrawLib": "Excalidraw knižnica",
     "decreaseFontSize": "Zmenšiť veľkosť písma",
     "increaseFontSize": "Zväčšiť veľkosť písma",
     "unbindText": "Zrušiť previazanie textu",
@@ -151,7 +145,6 @@
       "lockAll": "Zamknúť všetko",
       "unlockAll": "Odomknúť všetko"
     },
-    "statusPublished": "Zverejnené",
     "sidebarLock": "Nechať bočný panel otvorený",
     "selectAllElementsInFrame": "Vybrať všetky prvky v ráme",
     "removeAllElementsFromFrame": "Odstrániť všetky prvky z rámu",
@@ -177,17 +170,6 @@
     "title": "Odkaz na objekt",
     "desc": "Kliknite na tvar na plátne alebo vložte odkaz.",
     "notFound": "Odkázaný objekt nebol nájdený na plátne."
-  },
-  "library": {
-    "noItems": "Zatiaľ neboli pridané žiadne položky...",
-    "hint_emptyLibrary": "Vyberte položku z plátna pre jej pridanie do knižnice alebo použite knižnicu z verejného zoznamu knižníc nižšie.",
-    "hint_emptyPrivateLibrary": "Vyberte položku z plátna pre jej pridanie do knižnice.",
-    "search": {
-      "inputPlaceholder": "Prehľadávať knižnicu",
-      "heading": "Výsledky z knižnice",
-      "noResults": "Neboli nájdené žiadne výsledky...",
-      "clearSearch": "Vymazať vyhľadávanie"
-    }
   },
   "search": {
     "title": "Vyhľadať v plátne",
@@ -220,7 +202,6 @@
     "edit": "Upraviť",
     "undo": "Späť",
     "redo": "Znova",
-    "resetLibrary": "Obnoviť knižnicu",
     "createNewRoom": "Vytvoriť novú miestnosť",
     "fullScreen": "Celá obrazovka",
     "darkMode": "Tmavý režim",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Prichytiť k objektom",
     "exitZenMode": "Zrušiť režim zen",
     "cancel": "Zrušiť",
-    "saveLibNames": "Uložiť názvy a ukončiť",
     "clear": "Vymazať",
     "remove": "Odstrániť",
     "embed": "Prepnúť zapustenie",
-    "publishLibrary": "Premenovať a zverejniť",
     "submit": "Potvrdiť",
     "confirm": "Potvrdiť",
     "embeddableInteractionButton": "Kliknite pre interakciu"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Nahratie je zabezpečené end-to-end šifrovaním, takže Excalidraw server a tretie strany nedokážu prečítať jeho obsah.",
     "loadSceneOverridePrompt": "Nahratie externej kresby nahradí existujúci obsah. Prajete si pokračovať?",
     "collabStopOverridePrompt": "Ukončenie schôdze nahradí vašu predchádzajúcu lokálne uloženú scénu. Ste si istý?\n\n(Ak si chcete ponechať lokálnu scénu, jednoducho iba zavrite kartu prehliadača.)",
-    "errorAddingToLibrary": "Nepodarilo sa pridať položku do knižnice",
-    "errorRemovingFromLibrary": "Nepodarilo sa odstrániť položku z knižnice",
-    "confirmAddLibrary": "Týmto sa pridá {{numShapes}} tvar(ov) do vašej knižnice. Ste si istí?",
     "imageDoesNotContainScene": "Tento obrázok neobsahuje žiadne údaje scény. Zvolili ste možnosť zahrnúť scénu počas exportu?",
     "cannotRestoreFromImage": "Nepodarilo sa obnoviť scénu z tohto obrázkového súboru",
     "invalidSceneUrl": "Nepodarilo sa načítať scénu z poskytnutej URL. Je nevalidná alebo neobsahuje žiadne validné Excalidraw JSON dáta.",
-    "resetLibrary": "Týmto vyprázdnite vašu knižnicu. Ste si istý?",
-    "removeItemsFromsLibrary": "Odstrániť {{count}} položiek z knižnice?",
     "invalidEncryptionKey": "Šifrovací kľúč musí mať 22 znakov. Živá spolupráca je vypnutá.",
     "collabOfflineWarning": "Internetové pripojenie nie je dostupné.\nVaše zmeny nebudú uložené!",
     "localStorageQuotaExceeded": "Pamäť prehliadača je plná. Zmeny nebudú uložené."
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Nepodarilo sa vložiť SVG obrázok. SVG formát je pravdepodobne nevalidný.",
     "failedToFetchImage": "Načítanie obrázka zlyhalo.",
     "cannotResolveCollabServer": "Nepodarilo sa pripojiť ku kolaboračnému serveru. Prosím obnovte stránku a skúste to znovu.",
-    "importLibraryError": "Nepodarilo sa načítať knižnicu",
-    "saveLibraryError": "Nepodarilo sa uložiť knižnicu. Prosím uložte si vašu knižnicu lokálne do súboru, aby ste nestratili zmeny.",
     "collabSaveFailed": "Uloženie do databázy sa nepodarilo. Ak tento problém pretrváva uložte si váš súbor lokálne aby ste nestratili vašu prácu.",
     "collabSaveFailed_sizeExceeded": "Uloženie do databázy sa nepodarilo, pretože veľkosť plátna je príliš veľká. Uložte si váš súbor lokálne aby ste nestratili vašu prácu.",
     "imageToolNotSupported": "Obrázky sú vypnuté.",
@@ -280,11 +252,6 @@
       "line2": "To môže spôsobiť nesprávne zobrazenie <bold>textových prvkov</bold> vo vašej kresbe.",
       "line3": "Dôrazne odporúčame vypnutie toho nastavenia. Môžete tak spraviť vykonaním <link>týchto krokov</link>.",
       "line4": "Ak vypnutie toho nastavenia nevyrieši problém so zobrazením textových prvkov, prosím ohláste <issueLink>problém</issueLink> na našom GitHub-e alebo nám napíšte na náš <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Zapustené prvky nie je možné pridať do knižnice.",
-      "iframe": "Vložené rámce IFrame nie je možné pridať do knižnice.",
-      "image": "Podpora pre pridávanie obrázkov do knižnice bude dostupná už čoskoro!"
     },
     "asyncPasteFailedOnRead": "Vloženie sa nepodarilo (nebolo možné prečítať obsah schránky).",
     "asyncPasteFailedOnParse": "Vloženie sa nepodarilo.",
@@ -301,7 +268,6 @@
     "line": "Čiara",
     "freedraw": "Kresliť",
     "text": "Text",
-    "library": "Knižnica",
     "lock": "Nechať zvolený nástroj aktívny po skončení kreslenia",
     "penMode": "Režim pera – zabrániť dotyku",
     "link": "Pridať / Upraviť odkaz pre vybraný tvar",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "Použite dvojklik alebo stlačte {{shortcut}} na editovanie textu",
     "lineEditor_pointSelected": "Stačte {{shortcut_1}} pre vymazanie bodov, {{shortcut_2}} pre ich duplikovanie alebo potiahnite pre ich posunutie",
     "lineEditor_nothingSelected": "Zvoľte bod na upravovanie (podržte {{shortcut_1}} pre zvolenie viacerých bodov) alebo podržte {{shortcut_2}} a kliknite na pridanie nového bodu",
-    "publishLibrary": "Uverejniť vašu knižnicu",
     "bindTextToElement": "{{shortcut}} na pridanie textu",
     "createFlowchart": "{{shortcut}} pre vytvorenie vývojového diagramu",
     "deepBoxSelect": "Podržte {{shortcut}} na výber v skupine alebo zamedzeniu potiahnutia",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Vyčistiť plátno"
   },
-  "publishDialog": {
-    "title": "Uverejniť knižnicu",
-    "itemName": "Názov položky",
-    "authorName": "Meno autora",
-    "githubUsername": "Github užívateľské meno",
-    "twitterUsername": "Twitter užívateľské meno",
-    "libraryName": "Názov knižnice",
-    "libraryDesc": "Popis knižnice",
-    "website": "Webová stránka",
-    "placeholder": {
-      "authorName": "Vaše meno alebo užívateľské meno",
-      "libraryName": "Názov vašej knižnice",
-      "libraryDesc": "Popis vašej knižnice, ktorý ostatným pomôže porozumieť jej vhodnému použitiu",
-      "githubHandle": "GitHub užívateľské meno (nepovinné), aby ste mohli robiť úpravy po tom, čo bude knižnica uverejnená na schválenie",
-      "twitterHandle": "Twitter užívateľské meno (nepovinné), aby sme vedeli komu pripísať zásluhu pri propagovaní cez Twitter",
-      "website": "Odkaz na vašu osobnú webovú stránku alebo niekam inam (nepovinné)"
-    },
-    "errors": {
-      "required": "Povinné",
-      "website": "Zadajte platnú adresu URL"
-    },
-    "noteDescription": "Uverejnite vašu knižnicu vo <link>verejnom zozname knižníc</link>aby ju aj ostatní mohli použiť v ich náčrtoch.",
-    "noteGuidelines": "Knižnica musí byť najprv manuálne schválená. Prosím prečítajte si <link>pokyny</link> pred uverejnením. Budete potrebovať Github účet na komunikáciu a vykonanie zmien, ak budú potrebné, avšak nie je to úplne povinné.",
-    "noteLicense": "Potvrdením súhlasíte, že knižnica bude zverejnená s <link>MIT licenciou, </link>čo v skratke znamená, že ju môže použiť hocikto bez obmedzení.",
-    "noteItems": "Každá položka v knižnici musí mať svoje vlastné meno, aby sa dala vyhľadať. Súčasťou knižnice budú nasledujúce položky:",
-    "atleastOneLibItem": "Začnite prosím zvolením aspoň jednej položky z knižnice",
-    "republishWarning": "Poznámka: Niektoré z vybraných položiek sú už označené ako zverejnené. Ich znovu uverejnenie by ste mali vykovať iba vtedy ak aktualizujete už existujúcu knižnicu alebo požiadavku na uverejnenie."
-  },
-  "publishSuccessDialog": {
-    "title": "Knižnica uverejnená",
-    "content": "Ďakujeme vám {{authorName}}. Vaša knižnica bola uverejnená na posúdenie. Stav môžete skontrolovať<link>tu</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Obnoviť knižnicu",
-    "removeItemsFromLib": "Odstrániť zvolené položky z knižnice"
-  },
   "imageExportDialog": {
     "header": "Exportovať obrázok",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Šírka"
   },
   "toast": {
-    "addedToLibrary": "Pridané do knižnice",
     "copyStyles": "Štýly skopírované.",
     "copyToClipboard": "Skopírované do schránky.",
     "copyToClipboardAsPng": "Kopírovanie {{exportSelection}} do schránky ako PNG prebehlo úspešne\n({{exportColorScheme}})",

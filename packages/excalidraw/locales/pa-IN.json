@@ -96,10 +96,6 @@
     "ungroup": "ਚੋਣ ਦਾ ਗਰੁੱਪ ਤੋੜੋ",
     "collaborators": "ਸਹਿਯੋਗੀ",
     "toggleGrid": "",
-    "addToLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਜੋੜੋ",
-    "removeFromLibrary": "ਲਾਇਬ੍ਰੇਰੀ 'ਚੋਂ ਹਟਾਓ",
-    "libraryLoadingMessage": "ਲਾਇਬ੍ਰੇਰੀ ਲੋਡ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ…",
-    "libraries": "ਲਾਇਬ੍ਰੇਰੀਆਂ ਬਰਾਉਜ਼ ਕਰੋ",
     "loadingScene": "ਦ੍ਰਿਸ਼ ਲੋਡ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ…",
     "loadScene": "",
     "align": "ਇਕਸਾਰ",
@@ -120,8 +116,6 @@
     "showFonts": "",
     "toggleTheme": "",
     "theme": "",
-    "personalLib": "ਨਿੱਜੀ ਲਾਇਬ੍ਰੇਰੀ",
-    "excalidrawLib": "ਐਕਸਕਲੀਡਰਾਅ ਲਾਇਬ੍ਰੇਰੀ",
     "decreaseFontSize": "ਫੌਂਟ ਦਾ ਅਕਾਰ ਘਟਾਓ",
     "increaseFontSize": "ਫੌਂਟ ਦਾ ਅਕਾਰ ਵਧਾਓ",
     "unbindText": "ਪਾਠ ਨੂੰ ਵੱਖ ਕਰੋ",
@@ -151,7 +145,6 @@
       "lockAll": "ਸਭ ਲਾਕ ਕਰੋ",
       "unlockAll": "ਸਭ ਅਨਲਾਕ ਕਰੋ"
     },
-    "statusPublished": "ਪ੍ਰਕਾਸ਼ਤ ਹੈ",
     "sidebarLock": "ਸਾਈਡਬਾਰ ਨੂੰ ਖੁੱਲ੍ਹਾ ਰੱਖੋ",
     "selectAllElementsInFrame": "",
     "removeAllElementsFromFrame": "",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "ਹਾਲੇ ਤੱਕ ਕੋਈ ਚੀਜ ਜੋੜੀ ਨਹੀਂ ਗਈ...",
-    "hint_emptyLibrary": "ਇੱਥੇ ਆਈਟਮ ਜੋੜਨ ਲਈ ਉਸਨੂੰ ਕੈਨਵਸ ‘ਤੇ ਚੁਣੋ, ਜਾਂ ਹੇਠਾਂ ਪਬਲਿਕ ਰਿਪਾਜ਼ੀਟਰੀ ‘ਚੋਂ ਲਾਇਬ੍ਰੇਰੀ ਸਥਾਪਤ ਕਰੋ।",
-    "hint_emptyPrivateLibrary": "ਇੱਥੇ ਆਈਟਮ ਜੋੜਨ ਲਈ ਉਸਨੂੰ ਕੈਨਵਸ ‘ਤੇ ਚੁਣੋ।",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "ਸੋਧੋ",
     "undo": "ਅਣਕੀਤਾ ਕਰੋ",
     "redo": "ਮੁੜ-ਕਰੋ",
-    "resetLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਰੀਸੈੱਟ ਕਰੋ",
     "createNewRoom": "ਨਵਾਂ ਕਮਰਾ ਬਣਾਓ",
     "fullScreen": "ਪੂਰੀ ਸਕਰੀਨ",
     "darkMode": "ਡਾਰਕ ਮੋਡ",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "ਜ਼ੈੱਨ ਮੋਡ 'ਚੋਂ ਬਾਹਰ ਨਿਕਲੋ",
     "cancel": "ਰੱਦ ਕਰੋ",
-    "saveLibNames": "",
     "clear": "ਸਾਫ਼ ਕਰੋ",
     "remove": "ਹਟਾਓ",
     "embed": "",
-    "publishLibrary": "",
     "submit": "ਜਮ੍ਹਾ ਕਰਵਾਓ",
     "confirm": "ਪੁਸ਼ਟੀ ਕਰੋ",
     "embeddableInteractionButton": ""
@@ -251,14 +230,9 @@
     "uploadedSecurly": "ਅੱਪਲੋਡ ਸਿਰੇ-ਤੋਂ-ਸਿਰੇ ਤੱਕ ਇਨਕਰਿਪਸ਼ਨ ਨਾਲ ਸੁਰੱਖਿਅਤ ਕੀਤੀ ਹੋਈ ਹੈ, ਜਿਸਦਾ ਮਤਲਬ ਇਹ ਹੈ ਕਿ Excalidraw ਸਰਵਰ ਅਤੇ ਤੀਜੀ ਧਿਰ ਦੇ ਬੰਦੇ ਸਮੱਗਰੀ ਨੂੰ ਪੜ੍ਹ ਨਹੀਂ ਸਕਦੇ।",
     "loadSceneOverridePrompt": "ਬਾਹਰੀ ਡਰਾਇੰਗ ਨੂੰ ਲੋਡ ਕਰਨਾ ਤੁਹਾਡੀ ਮੌਜੂਦਾ ਸਮੱਗਰੀ ਦੀ ਥਾਂ ਲੈ ਲਵੇਗਾ। ਕੀ ਤੁਸੀਂ ਜਾਰੀ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ?",
     "collabStopOverridePrompt": "ਇਜਲਾਸ ਨੂੰ ਰੋਕਣਾ ਪਿਛਲੀ ਲੋਕਲ ਸਾਂਭੀ ਡਰਾਇੰਗ ਦੀ ਥਾਂ ਲੈ ਲਵੇਗਾ। ਪੱਕਾ ਇੰਝ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?\n\n(ਜੇ ਤੁਸੀਂ ਆਪਣੀ ਲੋਕਲ ਡਰਾਇੰਗ ਨੂੰ ਬਰਕਰਾਰ ਰੱਖਣਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਇਹ ਕਰਨ ਦੀ ਬਜਾਏ ਬੱਸ ਆਪਣਾ ਟੈਬ ਬੰਦ ਕਰ ਦਿਉ।)",
-    "errorAddingToLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਸਮੱਗਰੀ ਨਹੀਂ ਜੋੜ ਸਕੇ",
-    "errorRemovingFromLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚੋਂ ਸਮੱਗਰੀ ਨਹੀਂ ਹਟਾ ਸਕੇ",
-    "confirmAddLibrary": "ਇਹ ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ {{numShapes}} ਆਕ੍ਰਿਤੀ(ਆਂ) ਨੂੰ ਜੋੜ ਦੇਵੇਗਾ। ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਇੰਝ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
     "imageDoesNotContainScene": "ਇਸ ਤਸਵੀਰ ਵਿੱਚ ਦ੍ਰਿਸ਼ ਦਾ ਕੋਈ ਵੀ ਡਾਟਾ ਨਜ਼ਰ ਨਹੀਂ ਆ ਰਿਹਾ। ਕੀ ਤੁਸੀਂ ਨਿਰਯਾਤ ਕਰਦੇ ਸਮੇਂ ਦ੍ਰਿਸ਼ ਨੂੰ ਮੜ੍ਹਣਾ ਸਮਰੱਥ ਕੀਤਾ ਸੀ?",
     "cannotRestoreFromImage": "ਇਸ ਤਸਵੀਰ ਫਾਈਲ ਤੋਂ ਦ੍ਰਿਸ਼ ਬਹਾਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ",
     "invalidSceneUrl": "ਦਿੱਤੀ ਗਈ URL 'ਚੋਂ ਦ੍ਰਿਸ਼ ਨੂੰ ਆਯਾਤ ਨਹੀਂ ਕਰ ਸਕੇ। ਇਹ ਜਾਂ ਤਾਂ ਖਰਾਬ ਹੈ, ਜਾਂ ਇਸ ਵਿੱਚ ਜਾਇਜ਼ Excalidraw JSON ਡਾਟਾ ਸ਼ਾਮਲ ਨਹੀਂ ਹੈ।",
-    "resetLibrary": "ਇਹ ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਨੂੰ ਸਾਫ ਕਰ ਦੇਵੇਗਾ। ਕੀ ਤੁਸੀਂ ਪੱਕਾ ਇੰਝ ਕਰਨਾ ਚਾਹੁੰਦੇ ਹੋ?",
-    "removeItemsFromsLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚੋਂ {{count}} ਚੀਜ਼(-ਜ਼ਾਂ) ਮਿਟਾਉਣੀਆਂ ਹਨ?",
     "invalidEncryptionKey": "ਇਨਕਰਿਪਸ਼ਨ ਕੁੰਜੀ ‌‌22 ਅੱਖਰਾਂ ਦੀ ਹੋਣੀ ਚਾਹੀਦੀ ਹੈ। ਲਾਇਵ ਸਹਿਯੋਗ ਬੰਦ ਹੈ।",
     "collabOfflineWarning": "ਕੋਈ ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ ਹੈ\nਤੁਹਾਡੀਆਂ ਤਬਦੀਲੀਆਂ ਸਾਂਭੀਆਂ ਨਹੀਂ ਜਾਣਗੀਆਂ।",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "SVG ਤਸਵੀਰ ਸ਼ਾਮਲ ਨਹੀਂ ਕਰ ਸਕੇ। SVG ਮਾਰਕ-ਅੱਪ ਨਜਾਇਜ਼ ਲੱਗ ਰਿਹਾ ਹੈ।",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "",
-    "importLibraryError": "ਲਾਇਬ੍ਰੇਰੀ ਲੋਡ ਨਹੀਂ ਕੀਤੀ ਜਾ ਸਕੀ",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "",
-      "iframe": "",
-      "image": ""
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "",
@@ -301,7 +268,6 @@
     "line": "ਲਕੀਰ",
     "freedraw": "ਵਾਹੋ",
     "text": "ਪਾਠ",
-    "library": "ਲਾਇਬ੍ਰੇਰੀ",
     "lock": "ਡਰਾਇੰਗ ਤੋਂ ਬਾਅਦ ਵੀ ਚੁਣੇ ਹੋਏ ਸੰਦ ਨੂੰ ਸਰਗਰਮ ਰੱਖੋ ",
     "penMode": "ਪੈੱਨ ਮੋਡ - ਟੱਚ ਤੋਂ ਬਚਾਉਂਦਾ ਹੈ",
     "link": "",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "ਆਪਣੀ ਲਾਇਬ੍ਰੇਰੀ ਪ੍ਰਕਾਸ਼ਿਤ ਕਰੋ",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "ਕੈਨਵਸ ਨੂੰ ਸਾਫ਼ ਕਰੋ"
   },
-  "publishDialog": {
-    "title": "ਲਾਇਬ੍ਰੇਰੀ ਨੂੰ ਪ੍ਰਕਾਸ਼ਤ ਕਰੋ",
-    "itemName": "ਚੀਜ਼ ਦਾ ਨਾਂ",
-    "authorName": "ਲੇਖਕ ਦਾ ਨਾਂ",
-    "githubUsername": "ਗਿੱਟਹੱਬ ਵਰਤੋਂਕਾਰ ਨਾਂ",
-    "twitterUsername": "ਟਵਿੱਟਰ ਦਾ ਵਰਤੋਂਕਾਰ-ਨਾਂ",
-    "libraryName": "ਲਾਇਬ੍ਰੇਰੀ ਦਾ ਨਾਂ",
-    "libraryDesc": "ਲਾਇਬ੍ਰੇਰੀ ਦਾ ਵੇਰਵਾ",
-    "website": "ਵੈੱਬਸਾਇਟ",
-    "placeholder": {
-      "authorName": "ਤੁਹਾਡਾ ਨਾਂ ਜਾਂ ਵਰਤੋਂਕਾਰ-ਨਾਂ",
-      "libraryName": "ਤੁਹਾਡੀ ਲਾਇਬਰ੍ਰੀ ਦਾ ਨਾਂ",
-      "libraryDesc": "ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਦਾ ਵੇਰਵਾ ਤਾਂ ਜੋ ਲੋਕਾਂ ਨੂੰ ਇਸ ਤੋੰਂ ਇਸਦੀ ਵਰਤੋਂ ਕਰਨ ਸਬੰਧੀ ਮਦਦ ਮਿਲ ਸਕੇ",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "ਲੋੜੀਂਦਾ",
-      "website": "ਜਾਇਜ਼ URL ਭਰੋ"
-    },
-    "noteDescription": "ਹੋਰ ਲੋਕਾਂ ਵੱਲੋਂ ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਨੂੰ ਵਰਤਣ ਲਈ ਸਕਣ ਇਸ ਲਈ<link>ਜਨਤਕ ਲਾਇਬ੍ਰੇਰੀ ਦੀ ਰਿਪਾਜ਼ੀਟਰੀ</link> ਵਿੱਚ ਆਪਣੀ ਲਾਇਬ੍ਰੇਰੀ ਸ਼ਾਮਲ ਕਰਵਾਉਣ ਲਈ ਜਮ੍ਹਾ ਕਰਵਾਓ",
-    "noteGuidelines": "<link>ਦਿਸ਼ਾ ਨਿਰਦੇਸ਼</link>",
-    "noteLicense": "<link>MIT ਲਾਇਸੈਂਸ, </link>",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "ਲਾਇਬ੍ਰੇਰੀ ਜਮ੍ਹਾਂ ਕਰਵਾਈ",
-    "content": "ਧੰਨਵਾਦ {{authorName}} ਜੀਉ। ਤੁਹਾਡੀ ਲਾਇਬ੍ਰੇਰੀ ਨੂੰ ਸਮੀਖਿਆ ਲਈ ਭੇਜ ਦਿੱਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਉਸਦੀ ਸਥਿਤੀ <link>ਇੱਥੇ</link> ਦੇਖ ਸਕਦੇ ਹੋ।"
-  },
-  "confirmDialog": {
-    "resetLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਰੀਸੈੱਟ ਕਰੋ",
-    "removeItemsFromLib": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚੋਂ ਚੁਣੀਆਂ ਹੋਈਆਂ ਆਈਟਮਾਂ ਹਟਾਓ"
-  },
   "imageExportDialog": {
     "header": "ਤਸਵੀਰ ਨਿਰਯਾਤ ਕਰੋ",
     "label": {
@@ -524,7 +453,6 @@
     "width": "ਚੌੜਾਈ"
   },
   "toast": {
-    "addedToLibrary": "ਲਾਇਬ੍ਰੇਰੀ ਵਿੱਚ ਜੋੜਿਆ",
     "copyStyles": "ਕਾਪੀ ਕੀਤੇ ਸਟਾਇਲ।",
     "copyToClipboard": "ਕਲਿੱਪਬੋਰਡ 'ਤੇ ਕਾਪੀ ਕੀਤਾ।",
     "copyToClipboardAsPng": "{{exportSelection}} ਨੂੰ ਕਲਿੱਪਬੋਰਡ 'ਤੇ PNG ਵਜੋਂ ਕਾਪੀ ਕੀਤਾ ({{exportColorScheme}})",

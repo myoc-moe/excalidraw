@@ -125,7 +125,7 @@ describe("Sidebar", () => {
         expect(node).not.toBe(null);
       });
 
-      // toggle library (= hide custom sidebar)
+      // toggle default sidebar (= hide custom sidebar)
       // -------------------------------------------------------------------------
       expect(await toggleSidebar({ name: DEFAULT_SIDEBAR.name })).toBe(true);
 
@@ -334,7 +334,7 @@ describe("Sidebar", () => {
         <Excalidraw compressImageFile={async (file) => file}>
           <Sidebar name="custom" docked>
             <Sidebar.Tabs>
-              <Sidebar.Tab tab="library">Library</Sidebar.Tab>
+              <Sidebar.Tab tab="details">Details</Sidebar.Tab>
               <Sidebar.Tab tab="comments">Comments</Sidebar.Tab>
             </Sidebar.Tabs>
           </Sidebar>
@@ -346,17 +346,17 @@ describe("Sidebar", () => {
         async () => {
           expect(
             container.querySelector<HTMLElement>(
-              "[role=tabpanel][data-testid=library]",
+              "[role=tabpanel][data-testid=details]",
             ),
           ).toBeNull();
 
-          // open library sidebar
-          expect(await toggleSidebar({ name: "custom", tab: "library" })).toBe(
+          // open details tab
+          expect(await toggleSidebar({ name: "custom", tab: "details" })).toBe(
             true,
           );
           expect(
             container.querySelector<HTMLElement>(
-              "[role=tabpanel][data-testid=library]",
+              "[role=tabpanel][data-testid=details]",
             ),
           ).not.toBeNull();
 

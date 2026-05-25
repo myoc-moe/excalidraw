@@ -55,7 +55,6 @@ import type { Action } from "./actions/types";
 import type { Spreadsheet } from "./charts";
 import type { ClipboardData } from "./clipboard";
 import type App from "./components/App";
-import type Library from "./data/library";
 import type { ContextMenuItems } from "./components/ContextMenu";
 import type { SnapLine } from "./snapping";
 import type { ImportedDataState } from "./data/types";
@@ -559,39 +558,7 @@ export declare class GestureEvent extends UIEvent {
   readonly scale: number;
 }
 
-// libraries
-// -----------------------------------------------------------------------------
-/** @deprecated legacy: do not use outside of migration paths */
-export type LibraryItem_v1 = readonly NonDeleted<ExcalidrawElement>[];
-/** @deprecated legacy: do not use outside of migration paths */
-type LibraryItems_v1 = readonly LibraryItem_v1[];
-
-/** v2 library item */
-export type LibraryItem = {
-  id: string;
-  status: "published" | "unpublished";
-  elements: readonly NonDeleted<ExcalidrawElement>[];
-  /** timestamp in epoch (ms) */
-  created: number;
-  name?: string;
-  error?: string;
-};
-export type LibraryItems = readonly LibraryItem[];
-export type LibraryItems_anyVersion = LibraryItems | LibraryItems_v1;
-
-export type LibraryItemsSource =
-  | ((
-      currentLibraryItems: LibraryItems,
-    ) => MaybePromise<LibraryItems_anyVersion | Blob>)
-  | MaybePromise<LibraryItems_anyVersion | Blob>;
-// -----------------------------------------------------------------------------
-
-export type ExcalidrawInitialDataState = Merge<
-  ImportedDataState,
-  {
-    libraryItems?: MaybePromise<Required<ImportedDataState>["libraryItems"]>;
-  }
->;
+export type ExcalidrawInitialDataState = ImportedDataState;
 
 export type OnUserFollowedPayload = {
   userToFollow: UserToFollow;
@@ -660,8 +627,7 @@ export interface ExcalidrawProps {
    * Called when element(s) are duplicated so you can listen or modify as
    * needed.
    *
-   * Called when duplicating via mouse-drag, keyboard, paste, library insert
-   * etc.
+   * Called when duplicating via mouse-drag, keyboard, paste, etc.
    *
    * Returned elements will be used in place of the next elements
    * (you should return all elements, including deleted, and not mutate
@@ -685,7 +651,6 @@ export interface ExcalidrawProps {
   zenModeEnabled?: boolean;
   gridModeEnabled?: boolean;
   objectsSnapModeEnabled?: boolean;
-  libraryReturnUrl?: string;
   theme?: Theme;
   // @TODO come with better API before v0.18.0
   name?: string;
@@ -698,7 +663,6 @@ export interface ExcalidrawProps {
   UIOptions?: Partial<UIOptions>;
   detectScroll?: boolean;
   handleKeyboardGlobally?: boolean;
-  onLibraryChange?: (libraryItems: LibraryItems) => void | Promise<any>;
   autoFocus?: boolean;
   compressImageFile: CompressImageFile;
   generateIdForFile?: (file: File) => string | Promise<string>;
@@ -844,7 +808,6 @@ export type AppClassProperties = {
   /** static canvas */
   canvas: HTMLCanvasElement;
   focusContainer(): void;
-  library: Library;
   imageCache: Map<
     FileId,
     {
@@ -865,7 +828,7 @@ export type AppClassProperties = {
   scrollToViewport: App["scrollToViewport"];
   scrollToContent: App["scrollToContent"];
   addFiles: App["addFiles"];
-  addElementsFromPasteOrLibrary: App["addElementsFromPasteOrLibrary"];
+  addElementsFromPaste: App["addElementsFromPaste"];
   togglePenMode: App["togglePenMode"];
   toggleLock: App["toggleLock"];
   setActiveTool: App["setActiveTool"];
@@ -990,7 +953,6 @@ export interface ExcalidrawImperativeAPI {
   updateScene: InstanceType<typeof App>["updateScene"];
   applyDeltas: InstanceType<typeof App>["applyDeltas"];
   mutateElement: InstanceType<typeof App>["mutateElement"];
-  updateLibrary: InstanceType<typeof Library>["updateLibrary"];
   resetScene: InstanceType<typeof App>["resetScene"];
   getSceneElementsIncludingDeleted: InstanceType<
     typeof App

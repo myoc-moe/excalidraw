@@ -96,10 +96,6 @@
     "ungroup": "ยกเลิกการจัดกลุ่ม",
     "collaborators": "ผู้ทำงานร่วมกัน",
     "toggleGrid": "แสดงกริด",
-    "addToLibrary": "เพิ่มไปในคลัง",
-    "removeFromLibrary": "นำออกจากคลัง",
-    "libraryLoadingMessage": "กำลังโหลดคลัง...",
-    "libraries": "เรียกดูไลบรารี",
     "loadingScene": "กำลังโหลดฉาก",
     "loadScene": "โหลดฉากจากไฟล์",
     "align": "จัดตำแหน่ง",
@@ -120,8 +116,6 @@
     "showFonts": "แสดงตัวเลือกแบบอักษร",
     "toggleTheme": "สลับธีมสว่าง/มืด",
     "theme": "ธีม",
-    "personalLib": "คลังของฉัน",
-    "excalidrawLib": "คลังของ Excalidraw",
     "decreaseFontSize": "ลดขนาดตัวอักษร",
     "increaseFontSize": "เพิ่มขนาดตัวอักษร",
     "unbindText": "ยกเลิกการผูกติด",
@@ -151,7 +145,6 @@
       "lockAll": "ล็อกทั้งหมด",
       "unlockAll": "ปลดล็อกทั้งหมด"
     },
-    "statusPublished": "เผยแพร่",
     "sidebarLock": "ปิดแถบด้านข้างเอาไว้",
     "selectAllElementsInFrame": "เลือกองค์ประกอบทั้งหมดในกรอบ",
     "removeAllElementsFromFrame": "ลบองค์ประกอบทั้งหมดในกรอบ",
@@ -177,17 +170,6 @@
     "title": "ลิงค์ไปสู่วัตถุ",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "ยังไม่มีรายการที่เพิ่มเข้าไปได้",
-    "hint_emptyLibrary": "",
-    "hint_emptyPrivateLibrary": "",
-    "search": {
-      "inputPlaceholder": "",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": ""
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "แก้ไข",
     "undo": "เลิกทำ",
     "redo": "ทำซ้ำ",
-    "resetLibrary": "รีเซ็ตคลัง",
     "createNewRoom": "สร้างห้องใหม่",
     "fullScreen": "เต็มหน้าจอ",
     "darkMode": "โหมดกลางคืน",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "",
     "exitZenMode": "ออกจากโหมด Zen",
     "cancel": "ยกเลิก",
-    "saveLibNames": "",
     "clear": "เคลียร์",
     "remove": "ลบ",
     "embed": "สลับการฝัง",
-    "publishLibrary": "",
     "submit": "ตกลง",
     "confirm": "ยืนยัน",
     "embeddableInteractionButton": "คลิกเพื่อปฏิสัมพันธ์"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "การอัพโหลดได้ถูกเข้ารหัสแบบ end-to-end หมายความว่าเซิร์ฟเวอร์ของ Excalidraw และบุคคลอื่นไม่สามารถอ่านข้อมูลได้",
     "loadSceneOverridePrompt": "",
     "collabStopOverridePrompt": "",
-    "errorAddingToLibrary": "ไม่สามารถเพิ่มรายการเข้าไปในคลังได้",
-    "errorRemovingFromLibrary": "ไม่สามารถลบรายการนี้ออกจากคลังได้",
-    "confirmAddLibrary": "",
     "imageDoesNotContainScene": "",
     "cannotRestoreFromImage": "",
     "invalidSceneUrl": "",
-    "resetLibrary": "",
-    "removeItemsFromsLibrary": "",
     "invalidEncryptionKey": "",
     "collabOfflineWarning": "",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "",
     "failedToFetchImage": "",
     "cannotResolveCollabServer": "ไม่สามารถเชื่อต่อกับ collab เซิร์ฟเวอร์ได้ โปรดลองโหลดหน้านี้ใหม่และลองอีกครั้ง",
-    "importLibraryError": "",
-    "saveLibraryError": "",
     "collabSaveFailed": "",
     "collabSaveFailed_sizeExceeded": "",
     "imageToolNotSupported": "",
@@ -280,11 +252,6 @@
       "line2": "",
       "line3": "",
       "line4": ""
-    },
-    "libraryElementTypeError": {
-      "embeddable": "การเพิ่มองค์ประกอบที่ฝังยังไม่สามารถเพิ่มเข้าไปในไลบลารีได้",
-      "iframe": "",
-      "image": "การสนับสนุนสำหรับเพิ่มรูปภาพลงในไลบลารีจะมาในเร็ว ๆ นี้"
     },
     "asyncPasteFailedOnRead": "",
     "asyncPasteFailedOnParse": "ไม่สามารถวางได้",
@@ -301,7 +268,6 @@
     "line": "เส้น",
     "freedraw": "เขียนรูป",
     "text": "ข้อความ",
-    "library": "คลัง",
     "lock": "",
     "penMode": "",
     "link": "เพิ่ม / อัปเดตลิงก์สำหรับรูปร่างที่เลือก",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "",
     "bindTextToElement": "",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": ""
   },
-  "publishDialog": {
-    "title": "",
-    "itemName": "",
-    "authorName": "ชื่อเจ้าของ",
-    "githubUsername": "ชื่อผู้ใช้ GitHub",
-    "twitterUsername": "ชื่อผู้ใช้ Twitter",
-    "libraryName": "",
-    "libraryDesc": "",
-    "website": "เว็บไซต์",
-    "placeholder": {
-      "authorName": "",
-      "libraryName": "",
-      "libraryDesc": "",
-      "githubHandle": "",
-      "twitterHandle": "",
-      "website": ""
-    },
-    "errors": {
-      "required": "จำเป็น",
-      "website": ""
-    },
-    "noteDescription": "",
-    "noteGuidelines": "",
-    "noteLicense": "",
-    "noteItems": "",
-    "atleastOneLibItem": "",
-    "republishWarning": ""
-  },
-  "publishSuccessDialog": {
-    "title": "",
-    "content": ""
-  },
-  "confirmDialog": {
-    "resetLibrary": "",
-    "removeItemsFromLib": ""
-  },
   "imageExportDialog": {
     "header": "ส่งออกเป็นรูปภาพ",
     "label": {
@@ -524,7 +453,6 @@
     "width": "ความกว้าง"
   },
   "toast": {
-    "addedToLibrary": "เพิ่มไปในคลังแล้ว",
     "copyStyles": "คัดลอกรูปแบบสำเร็จแล้ว",
     "copyToClipboard": "คัดลอกไปยังคลิปบอร์ดแล้ว",
     "copyToClipboardAsPng": "",

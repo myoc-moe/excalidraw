@@ -96,10 +96,6 @@
     "ungroup": "Desunir la seleccion",
     "collaborators": "Collaborators",
     "toggleGrid": "",
-    "addToLibrary": "Apondre a la bibliotèca",
-    "removeFromLibrary": "Suprimir de la bibliotèca",
-    "libraryLoadingMessage": "Cargament de la bibliotèca…",
-    "libraries": "Percórrer las bibliotècas",
     "loadingScene": "Cargament de la scèna…",
     "loadScene": "Cargar una scèna d’un fichièr",
     "align": "Alinhament",
@@ -120,8 +116,6 @@
     "showFonts": "Mostrar lo selector de polissa",
     "toggleTheme": "",
     "theme": "Tèma",
-    "personalLib": "Bibliotèca personala",
-    "excalidrawLib": "Bibliotèca Excalidraw",
     "decreaseFontSize": "Reduire talha polissa",
     "increaseFontSize": "Aumentar talha polissa",
     "unbindText": "Dessociar lo tèxte",
@@ -151,7 +145,6 @@
       "lockAll": "Tot verrolhar",
       "unlockAll": "Tot desverrolhar"
     },
-    "statusPublished": "Publicat",
     "sidebarLock": "Gardar la barra laterala dobèrta",
     "selectAllElementsInFrame": "Seleccionar totes los elements del quadre",
     "removeAllElementsFromFrame": "Tirar totes los elements d’al quadre",
@@ -177,17 +170,6 @@
     "title": "",
     "desc": "",
     "notFound": ""
-  },
-  "library": {
-    "noItems": "Cap d’element pas encara apondut...",
-    "hint_emptyLibrary": "Seleccionatz un element d’apondre aquí, o installatz una bibliotèca del depaus public, çai-jos.",
-    "hint_emptyPrivateLibrary": "Seleccionatz un element d’apondre aquí pel canabàs.",
-    "search": {
-      "inputPlaceholder": "Cercar dins la bibliotèca",
-      "heading": "",
-      "noResults": "",
-      "clearSearch": "Escafar la recèrca"
-    }
   },
   "search": {
     "title": "",
@@ -220,7 +202,6 @@
     "edit": "Modificar",
     "undo": "Anullar",
     "redo": "Restablir",
-    "resetLibrary": "Reïnicializar la bibliotèca",
     "createNewRoom": "Crear sala novèla",
     "fullScreen": "Ecran complèt",
     "darkMode": "Mòde escur",
@@ -230,11 +211,9 @@
     "objectsSnapMode": "Ancorar als objèctes",
     "exitZenMode": "Sortir del mòde zen",
     "cancel": "Anullar",
-    "saveLibNames": "",
     "clear": "Escafar",
     "remove": "Tirar",
     "embed": "Alternar l’integracion",
-    "publishLibrary": "",
     "submit": "Enviar",
     "confirm": "Confirmar",
     "embeddableInteractionButton": "Clicar per interagir"
@@ -251,14 +230,9 @@
     "uploadedSecurly": "Lo telecargament es estat securizat amb un chiframent del cap a la fin, significa que los servidors d’Excalidraw o que quina tèrça part que siá pòdon pas legir lo contengut.",
     "loadSceneOverridePrompt": "Cargar un dessenh extèrn remplaçarà vòstre contengut existent. Volètz contunhar ?",
     "collabStopOverridePrompt": "Arrestar la session remplaçarà vòstre precedent dessenh gardat localament. O volètz vertadièrament ?\n\n(Se volètz gardar vòstre dessenh local, tampatz simplament l’onglet del navegador a la plaça)",
-    "errorAddingToLibrary": "Apondon impossible de l’element a la bibliotèca",
-    "errorRemovingFromLibrary": "Supression impossibla de l’element a la bibliotèca",
-    "confirmAddLibrary": "Apondrà {{numShapes}} forma(s) a vòstra bibliotèca. Confirmatz ?",
     "imageDoesNotContainScene": "Aqueste imatge sembla pas conténer cap de donadas de scèna. Avètz activat l’integracion de scèna pendent l’exportacion ?",
     "cannotRestoreFromImage": "Restauracion impossibla de la scèna a partir del fichièr imatge",
     "invalidSceneUrl": "Importacion impossibla de la scèna a partir de l’URL provesida. Es siá mal formatada o siá conten pas cap de donada JSON Excalidraw valida.",
-    "resetLibrary": "Aquò suprimirà vòstra bibliotèca. O volètz vertadièrament ?",
-    "removeItemsFromsLibrary": "Suprimir {{count}} element(s) de la bibliotèca ?",
     "invalidEncryptionKey": "La clau de chiframent deu conténer 22 caractèrs. La collaboracion en dirèct es desactivada.",
     "collabOfflineWarning": "Cap de connexion pas disponibla.\nVòstras modificacions seràn pas salvadas !",
     "localStorageQuotaExceeded": ""
@@ -270,8 +244,6 @@
     "svgImageInsertError": "Insercion d’imatge SVG impossibla. Las balisas SVG semblan invalidas.",
     "failedToFetchImage": "Fracàs de la recuperacion de l’imatge.",
     "cannotResolveCollabServer": "Connexion impossibla al servidor collab. Mercés de recargar la pagina e tornar ensajar.",
-    "importLibraryError": "Impossible de cargar la bibliotèca",
-    "saveLibraryError": "",
     "collabSaveFailed": "Enregistrament impossible dins la basa de donada del backend. Se lo problèma persistís, deuriatz enregistrar lo fichièr localament per vos assegurar que perdretz pas vòstre trabalh.",
     "collabSaveFailed_sizeExceeded": "Enregistrament impossible dins la basa de donada del backend, lo canabàs sembla tròp pesuc. Deuriatz enregistrar lo fichièr localament per vos assegurar que perdretz pas vòstre trabalh.",
     "imageToolNotSupported": "Los imatges son desactivats.",
@@ -280,11 +252,6 @@
       "line2": "Aquò pòt menar a copar <bold>l’element Tèxte</bold> de vòstres dessenhs.",
       "line3": "Recomandam fòrt de desactivar aqueste paramètre. Podètz seguir <link>aquestas etapas</link> per veire cossí o far.",
       "line4": "Se la desactivacion d'aqueste paramètre corregís pas l'afichatge dels elements de tèxt, vos convidam a dobrir un <issueLink>tiquet</issueLink> sus nòstre GitHub, o a nos escriure sus <discordLink>Discord</discordLink>"
-    },
-    "libraryElementTypeError": {
-      "embeddable": "Los elements integrats se pòdon pas apondre a la bibliotèca.",
-      "iframe": "Los elements d’IFrame se pòdon pas apondre a la bibliotèca.",
-      "image": "La foncionalitat d'apondre d'imatges a la bibliotèca arribarà lèu !"
     },
     "asyncPasteFailedOnRead": "Empegatge impossible (lectura impossibla a partir del quichapapièrs).",
     "asyncPasteFailedOnParse": "Empegatge impossible.",
@@ -301,7 +268,6 @@
     "line": "Linha",
     "freedraw": "Dessenhar",
     "text": "Tèxt",
-    "library": "Bibliotèca",
     "lock": "Mantenir activa l’aisina aprèp dessenhar",
     "penMode": "Mòde estilo - empachar lo contact",
     "link": "",
@@ -356,7 +322,6 @@
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
     "lineEditor_nothingSelected": "",
-    "publishLibrary": "Publicar vòstra pròpria bibliotèca",
     "bindTextToElement": "{{shortcut}} per apondre un tèxt",
     "createFlowchart": "",
     "deepBoxSelect": "",
@@ -442,42 +407,6 @@
   "clearCanvasDialog": {
     "title": "Escafar canabàs"
   },
-  "publishDialog": {
-    "title": "Publicar la bibliotèca",
-    "itemName": "Nom de l’element",
-    "authorName": "Nom de l’autor",
-    "githubUsername": "Nom d’utilizaire GitHub",
-    "twitterUsername": "Nom d’utilizaire Twitter",
-    "libraryName": "Nom de la bibliotèca",
-    "libraryDesc": "Descripcion de la bibliotèca",
-    "website": "Site web",
-    "placeholder": {
-      "authorName": "Vòstre nom o nom d’utilizaire",
-      "libraryName": "Nom de vòstra bibliotèca",
-      "libraryDesc": "Descripcion de vòstra bibliotèca per ajudar lo monde a comprendre son utilizacion",
-      "githubHandle": "GitHub handle(opcional), per poder modificar la bibliotèca un còp enviada per repassa",
-      "twitterHandle": "Nom d’utilizaire Twitter (opcional), per saber qual mercejar quand ne parlam sus Twitter",
-      "website": "Ligam cap a vòstre site web personal o endacòm mai (opcional)"
-    },
-    "errors": {
-      "required": "Requerit",
-      "website": "Picatz una URL valida"
-    },
-    "noteDescription": "Enviatz vòstra bibliotèca per èsser compresa al <link>repertòri public de bibliotèca</link>per que los autres l’utilizen dins lor dessenhs.",
-    "noteGuidelines": "Qualqu’un deu aprovar la bibliotèca manualament per començar. Volgatz legir las <link>linhas directrises</link> abans de sometre. Vos farà mestièr un compte GitHub per comunicar e realizar de modificacions se demandadas, mas es pas complètament obligatòri.",
-    "noteLicense": "En sometent, acceptatz que la bibliotèca siá publicada sota la <link>Licéncia MIT, </link>que significa en brèu que qual que siá pòt l’utilizar sens cap de restriccion.",
-    "noteItems": "Cada element de bibliotèca deu aver un nom pròpri per èsser filtrable. Los elements de bibliotèca seguentas seràn incluses :",
-    "atleastOneLibItem": "Volgatz seleccionar almens un element de bibliotèca per començar",
-    "republishWarning": "Nòta : d’unes elements seleccionats son marcats ja coma publicats/enviats. Deuriatz sonque tornar enviar los elements pendent l’actualizacion d’una bibliotèca existenta o un mandadís."
-  },
-  "publishSuccessDialog": {
-    "title": "Bibliotèca somesa",
-    "content": "Mercés {{authorName}}. Vòstre bibliotèca es estada somesa per repassa. Podètz seguir l’avançament<link>aquí</link>"
-  },
-  "confirmDialog": {
-    "resetLibrary": "Reïnicializar la bibliotèca",
-    "removeItemsFromLib": "Tirar los elements seleccionats de la bibliotèca"
-  },
   "imageExportDialog": {
     "header": "Exportar imatges",
     "label": {
@@ -524,7 +453,6 @@
     "width": "Largor"
   },
   "toast": {
-    "addedToLibrary": "Apondut a la bibliotèca",
     "copyStyles": "Estiles copiats.",
     "copyToClipboard": "Copiats al quichapapièrs.",
     "copyToClipboardAsPng": "{{exportSelection}} copiat coma PNG ({{exportColorScheme}})",
