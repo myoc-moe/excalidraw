@@ -19,7 +19,8 @@ import { ShapeCache } from "@excalidraw/element";
 import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
 import { isHandToolActive } from "../appState";
-import { actionToggleStats } from "../actions";
+import { actionToggleObjectsSnapMode, actionToggleStats } from "../actions";
+import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { trackEvent } from "../analytics";
 import { TunnelsContext, useInitializeTunnels } from "../context/tunnels";
 import { UIAppStateContext } from "../context/ui-appState";
@@ -38,6 +39,7 @@ import { MobileMenu } from "./MobileMenu";
 import { PasteChartDialog } from "./PasteChartDialog";
 import { Section } from "./Section";
 import Stack from "./Stack";
+import { ToolButton } from "./ToolButton";
 import { UserList } from "./UserList";
 import { PenModeButton } from "./PenModeButton";
 import Footer from "./footer/Footer";
@@ -45,7 +47,7 @@ import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
 import MainMenu from "./main-menu/MainMenu";
 import { useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
-import { sidebarRightIcon } from "./icons";
+import { magnetIcon, sidebarRightIcon } from "./icons";
 import { DefaultSidebar } from "./DefaultSidebar";
 import { Stats } from "./Stats";
 import ElementLinkDialog from "./ElementLinkDialog";
@@ -287,6 +289,11 @@ const LayerUI = ({
       appState,
       elements,
     );
+    const canToggleObjectsSnapMode = actionManager.isActionEnabled(
+      actionToggleObjectsSnapMode,
+    );
+    const objectsSnapModeShortcut =
+      getShortcutFromShortcutName("objectsSnapMode");
 
     const shouldShowStats =
       appState.stats.open &&
@@ -367,6 +374,35 @@ const LayerUI = ({
                               UIOptions={UIOptions}
                               app={app}
                             />
+                            {canToggleObjectsSnapMode && (
+                              <>
+                                <div className="App-toolbar__divider" />
+                                <ToolButton
+                                  className={clsx(
+                                    "Shape",
+                                    "App-toolbar__snap-mode-button",
+                                    {
+                                      active:
+                                        appState.objectsSnapModeEnabled,
+                                    },
+                                  )}
+                                  type="button"
+                                  icon={magnetIcon}
+                                  title={`${t(
+                                    "buttons.objectsSnapMode",
+                                  )} (${objectsSnapModeShortcut})`}
+                                  aria-label={t("buttons.objectsSnapMode")}
+                                  aria-keyshortcuts={objectsSnapModeShortcut}
+                                  data-testid="toolbar-objects-snap-mode"
+                                  onClick={() => {
+                                    actionManager.executeAction(
+                                      actionToggleObjectsSnapMode,
+                                      "ui",
+                                    );
+                                  }}
+                                />
+                              </>
+                            )}
                           </Stack.Row>
                         </Island>
                         {isCollaborating && (

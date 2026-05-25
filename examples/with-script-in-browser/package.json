@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@myoc/excalidraw": "0.19.502-d9d5eeb32",
+    "@myoc/excalidraw": "0.19.510",
     "browser-fs-access": "0.38.0",
     "react": "19.0.0",
     "react-dom": "19.0.0"

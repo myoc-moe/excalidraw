@@ -10,6 +10,8 @@ import { trackEvent } from "../analytics";
 import { t } from "../i18n";
 
 import { isHandToolActive } from "../appState";
+import { actionToggleObjectsSnapMode } from "../actions";
+import { getShortcutFromShortcutName } from "../actions/shortcuts";
 
 import { HandButton } from "./HandButton";
 import { ToolButton } from "./ToolButton";
@@ -30,11 +32,13 @@ import {
   MagicIcon,
   LockedIcon,
   UnlockedIcon,
+  magnetIcon,
 } from "./icons";
 
 import "./ToolIcon.scss";
 import "./MobileToolBar.scss";
 
+import type { ActionManager } from "../actions/manager";
 import type { AppClassProperties, ToolType, UIAppState } from "../types";
 
 const SELECTION_TOOLS = [
@@ -52,12 +56,14 @@ const SELECTION_TOOLS = [
 
 type MobileToolBarProps = {
   app: AppClassProperties;
+  actionManager: ActionManager;
   onHandToolToggle: () => void;
   setAppState: React.Component<any, UIAppState>["setState"];
 };
 
 export const MobileToolBar = ({
   app,
+  actionManager,
   onHandToolToggle,
   setAppState,
 }: MobileToolBarProps) => {
@@ -97,6 +103,11 @@ export const MobileToolBar = ({
   const simplifiedShapeTools = SHAPES.filter(
     (s) => s.myocSimplifiedMode === false,
   );
+  const canToggleObjectsSnapMode = actionManager.isActionEnabled(
+    actionToggleObjectsSnapMode,
+  );
+  const objectsSnapModeShortcut =
+    getShortcutFromShortcutName("objectsSnapMode");
 
   const extraTools = [
     "text",
@@ -313,6 +324,19 @@ export const MobileToolBar = ({
           >
             {capitalizeString(t("toolBar.lock-short"))}
           </DropdownMenu.Item>
+          {canToggleObjectsSnapMode && (
+            <DropdownMenu.Item
+              onSelect={() => {
+                actionManager.executeAction(actionToggleObjectsSnapMode, "ui");
+              }}
+              icon={magnetIcon}
+              data-testid="toolbar-objects-snap-mode"
+              selected={app.state.objectsSnapModeEnabled}
+              shortcut={objectsSnapModeShortcut}
+            >
+              {t("buttons.objectsSnapMode")}
+            </DropdownMenu.Item>
+          )}
           {!showTextToolOutside && (
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "text" })}
