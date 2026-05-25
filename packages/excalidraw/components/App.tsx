@@ -28,7 +28,6 @@ import {
   APP_NAME,
   CURSOR_TYPE,
   DEFAULT_TRANSFORM_HANDLE_SPACING,
-  DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
   DEFAULT_VERTICAL_ALIGN,
   DRAGGING_THRESHOLD,
   ELEMENT_SHIFT_TRANSLATE_AMOUNT,
@@ -38,7 +37,6 @@ import {
   IMAGE_MIME_TYPES,
   IMAGE_RENDER_TIMEOUT,
   LINE_CONFIRM_THRESHOLD,
-  MAX_ALLOWED_FILE_BYTES,
   MIME_TYPES,
   MQ_RIGHT_SIDEBAR_MIN_WIDTH,
   POINTER_BUTTON,
@@ -343,7 +341,6 @@ import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 import { ActionManager } from "../actions/manager";
 import { actions } from "../actions/register";
 import { trackEvent } from "../analytics";
-import { AnimationFrameHandler } from "../animation-frame-handler";
 import {
   getDefaultAppState,
   isEraserActive,
@@ -413,7 +410,7 @@ import {
   setCursorForShape,
 } from "../cursor";
 import { ElementCanvasButtons } from "../components/ElementCanvasButtons";
-import { LaserTrails } from "../laser-trails";
+import { LaserTrails } from "../laserTrails";
 import { withBatchedUpdates, withBatchedUpdatesThrottled } from "../reactUtils";
 import { isPointHittingTextAutoResizeHandle } from "../textAutoResizeHandle";
 import { textWysiwyg } from "../wysiwyg/textWysiwyg";
@@ -695,11 +692,9 @@ class App extends React.Component<AppProps, AppState> {
   previousPointerMoveCoords: { x: number; y: number } | null = null;
   lastViewportPosition = { x: 0, y: 0 };
 
-  animationFrameHandler = new AnimationFrameHandler();
-
-  laserTrails = new LaserTrails(this.animationFrameHandler, this);
-  eraserTrail = new EraserTrail(this.animationFrameHandler, this);
-  lassoTrail = new LassoTrail(this.animationFrameHandler, this);
+  laserTrails = new LaserTrails(this);
+  eraserTrail = new EraserTrail(this);
+  lassoTrail = new LassoTrail(this);
 
   onChangeEmitter = new Emitter<
     [
@@ -4600,6 +4595,7 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       if (collaborators) {
+        this.laserTrails.updateCollabTrails(collaborators);
         this.setState({ collaborators });
       }
     },
@@ -8303,10 +8299,7 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private restoreCursorAfterZoomKey = () => {
-    if (
-      this.state.viewModeEnabled &&
-      this.state.activeTool.type !== "laser"
-    ) {
+    if (this.state.viewModeEnabled && this.state.activeTool.type !== "laser") {
       setCursor(this.interactiveCanvas, CURSOR_TYPE.GRAB);
     } else if (isSelectionLikeTool(this.state.activeTool.type)) {
       resetCursor(this.interactiveCanvas);
@@ -11772,9 +11765,11 @@ class App extends React.Component<AppProps, AppState> {
         throw new Error(t("errors.svgImageInsertError"));
       }
     } else if (fileNeedsResizing) {
+      const { maxWidthOrHeight } = this.props.imageOptions;
+
       try {
         imageFile = await this.props.compressImageFile(imageFile, {
-          maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
+          maxWidthOrHeight,
         });
         console.info("Excalidraw: image resized");
       } catch (error: any) {
@@ -11785,10 +11780,12 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    if (imageFile.size > MAX_ALLOWED_FILE_BYTES) {
+    const { maxFileSizeBytes } = this.props.imageOptions;
+
+    if (imageFile.size > maxFileSizeBytes) {
       throw new Error(
         t("errors.fileTooBig", {
-          maxSize: `${Math.trunc(MAX_ALLOWED_FILE_BYTES / 1024 / 1024)}MB`,
+          maxSize: `${Math.trunc(maxFileSizeBytes / 1024 / 1024)}MB`,
         }),
       );
     }
@@ -12229,12 +12226,7 @@ class App extends React.Component<AppProps, AppState> {
       const elements = this.scene.getElementsIncludingDeleted();
       let ret;
       try {
-        ret = await loadFromBlob(
-          file,
-          this.state,
-          elements,
-          fileHandle,
-        );
+        ret = await loadFromBlob(file, this.state, elements, fileHandle);
       } catch (error: any) {
         const imageSceneDataError = error instanceof ImageSceneDataError;
         if (

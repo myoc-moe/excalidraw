@@ -17,17 +17,20 @@ import {
 } from "./fixtures/constants";
 import { INITIALIZED_IMAGE_PROPS } from "./helpers/constants";
 
+import type { ExcalidrawProps } from "../types";
+
 const { h } = window;
 
 export const setupImageTest = async (
   sizes: { width: number; height: number }[],
-  compressImageFile = async (file: File) => file,
+  props: Partial<ExcalidrawProps> = {},
 ) => {
   await render(
     <Excalidraw
-      compressImageFile={compressImageFile}
+      compressImageFile={async (file: File) => file}
       autoFocus={true}
       handleKeyboardGlobally={true}
+      {...props}
     />,
   );
 
@@ -35,6 +38,24 @@ export const setupImageTest = async (
 
   mockMultipleHTMLImageElements(sizes.map((size) => [size.width, size.height]));
 };
+
+describe("resizeImageFile", () => {
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("returns the original file when it already fits the max dimensions", async () => {
+    mockMultipleHTMLImageElements([[100, 100]]);
+
+    const imageFile = new File([new Uint8Array([1, 2, 3])], "image.png", {
+      type: MIME_TYPES.png,
+    });
+
+    await expect(
+      blobModule.resizeImageFile(imageFile, { maxWidthOrHeight: 200 }),
+    ).resolves.toBe(imageFile);
+  });
+});
 
 describe("image insertion", () => {
   beforeEach(() => {
@@ -125,7 +146,7 @@ describe("image insertion", () => {
       type: MIME_TYPES.png,
     });
     const compressImageFile = vi.fn(async () => compressedFile);
-    await setupImageTest([DEER_IMAGE_DIMENSIONS], compressImageFile);
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], { compressImageFile });
     h.state.dontResizeLimitMBs = 0;
 
     const largeFile = await API.loadFile("./fixtures/deer.png");
@@ -139,5 +160,47 @@ describe("image insertion", () => {
       );
     });
     expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
+  });
+
+  it("passes host-configured max image dimensions to the image compressor", async () => {
+    const compressImageFile = vi.fn(async (file: File) => file);
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      compressImageFile,
+      imageOptions: { maxWidthOrHeight: 2048 },
+    });
+    h.state.dontResizeLimitMBs = 0;
+
+    await API.drop([
+      { kind: "file", file: await API.loadFile("./fixtures/deer.png") },
+    ]);
+
+    await waitFor(() => {
+      expect(compressImageFile).toHaveBeenCalledWith(
+        expect.any(File),
+        { maxWidthOrHeight: 2048 },
+      );
+    });
+    expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
+  });
+
+  it("enforces host-configured max image file size", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      imageOptions: { maxFileSizeBytes: 1024 * 1024 },
+    });
+
+    await API.drop([
+      {
+        kind: "file",
+        file: new File([new Uint8Array(2 * 1024 * 1024)], "image.png", {
+          type: MIME_TYPES.png,
+        }),
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(h.state.errorMessage).toBe(
+        "File is too big. Maximum allowed size is 1MB.",
+      );
+    });
   });
 });
