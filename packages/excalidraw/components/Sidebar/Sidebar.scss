@@ -169,6 +169,14 @@
         width: var(--lg-button-size);
 
         border: none;
+
+        &[data-state="active"] {
+          --button-bg: var(--color-primary-light);
+          --button-hover-bg: var(--color-primary-light-darker);
+          --button-hover-color: var(--color-primary);
+          --button-border: var(--color-primary-light);
+          color: var(--color-primary);
+        }
       }
     }
   }
