@@ -685,21 +685,6 @@
       "isSpeaking": "Bruker snakker"
     }
   },
-  "commandPalette": {
-    "title": "Kommandopalett",
-    "shortcuts": {
-      "select": "Velg",
-      "confirm": "Bekreft",
-      "close": "Lukk"
-    },
-    "recents": "Nylig brukt",
-    "search": {
-      "placeholder": "Søk etter menyer, kommandoer og oppdag skjulte skatter",
-      "noMatch": "Ingen treff for kommandoer..."
-    },
-    "itemNotAvailable": "Kommandoen er ikke tilgjengelig...",
-    "shortcutHint": "For kommandopalett, bruk {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

@@ -54,7 +54,6 @@ export type ShortcutName =
     >
   | "saveScene"
   | "imageExport"
-  | "commandPalette"
   | "searchMenu"
   | "toolLock";
 
@@ -63,10 +62,6 @@ const shortcutMap: Record<ShortcutName, string[]> = {
   saveScene: [getShortcutKey("CtrlOrCmd+S")],
   loadScene: [getShortcutKey("CtrlOrCmd+O")],
   imageExport: [getShortcutKey("CtrlOrCmd+Shift+E")],
-  commandPalette: [
-    getShortcutKey("CtrlOrCmd+/"),
-    getShortcutKey("CtrlOrCmd+Shift+P"),
-  ],
   cut: [getShortcutKey("CtrlOrCmd+X")],
   copy: [getShortcutKey("CtrlOrCmd+C")],
   paste: [getShortcutKey("CtrlOrCmd+V")],

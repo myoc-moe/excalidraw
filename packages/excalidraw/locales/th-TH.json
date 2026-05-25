@@ -685,21 +685,6 @@
       "isSpeaking": "ผู้ใช้งานกำลังสนทนาอยู่"
     }
   },
-  "commandPalette": {
-    "title": "คำสั่งทางลัด",
-    "shortcuts": {
-      "select": "เลือก",
-      "confirm": "ยืนยัน",
-      "close": "ปิด"
-    },
-    "recents": "ใช้งานล่าสุด",
-    "search": {
-      "placeholder": "",
-      "noMatch": "ไม่เจอคำสั่ง"
-    },
-    "itemNotAvailable": "",
-    "shortcutHint": ""
-  },
   "keys": {
     "ctrl": "",
     "option": "",

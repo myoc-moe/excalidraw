@@ -685,21 +685,6 @@
       "isSpeaking": "Användaren pratar"
     }
   },
-  "commandPalette": {
-    "title": "Kommandopalett",
-    "shortcuts": {
-      "select": "Välj",
-      "confirm": "Bekräfta",
-      "close": "Stäng"
-    },
-    "recents": "Nyligen använda",
-    "search": {
-      "placeholder": "Sök menyer, kommandon och upptäck dolda pärlor",
-      "noMatch": "Inga matchande kommandon..."
-    },
-    "itemNotAvailable": "Kommandot är inte tillgängligt...",
-    "shortcutHint": "För kommandopalett, använd {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

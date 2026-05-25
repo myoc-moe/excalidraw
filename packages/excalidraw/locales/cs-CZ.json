@@ -685,21 +685,6 @@
       "isSpeaking": "Uživatel hovoří"
     }
   },
-  "commandPalette": {
-    "title": "Paleta příkazů",
-    "shortcuts": {
-      "select": "Vybrat",
-      "confirm": "Potvrdit",
-      "close": "Zavřít"
-    },
-    "recents": "Naposledy použito",
-    "search": {
-      "placeholder": "",
-      "noMatch": "Žádné odpovídající příkazy..."
-    },
-    "itemNotAvailable": "Příkaz není k dispozici...",
-    "shortcutHint": ""
-  },
   "keys": {
     "ctrl": "",
     "option": "",

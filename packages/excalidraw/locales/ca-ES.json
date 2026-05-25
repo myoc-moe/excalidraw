@@ -685,21 +685,6 @@
       "isSpeaking": "L'usuari parla ara"
     }
   },
-  "commandPalette": {
-    "title": "Paleta d'ordres",
-    "shortcuts": {
-      "select": "Selecciona",
-      "confirm": "Confirma",
-      "close": "Tanca"
-    },
-    "recents": "Usats recentment",
-    "search": {
-      "placeholder": "Cerca menús, ordres i descobreix joies amagades",
-      "noMatch": "No hi ha ordres coincidents..."
-    },
-    "itemNotAvailable": "Ordre no disponible...",
-    "shortcutHint": "Per obrir la paleta d'ordres, utilitza {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

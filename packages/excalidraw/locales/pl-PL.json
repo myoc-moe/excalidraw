@@ -685,21 +685,6 @@
       "isSpeaking": "Użytkownik przemawia"
     }
   },
-  "commandPalette": {
-    "title": "Paleta poleceń",
-    "shortcuts": {
-      "select": "Wybierz",
-      "confirm": "Potwierdź",
-      "close": "Zamknij"
-    },
-    "recents": "Ostatnio używane",
-    "search": {
-      "placeholder": "Szukaj w menu, poleceniach i odkrywaj ukryte funkcje",
-      "noMatch": "Brak pasujących komend..."
-    },
-    "itemNotAvailable": "Polecenie jest niedostępne...",
-    "shortcutHint": "Przywołaj paletę poleceń za pomocą {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Option",

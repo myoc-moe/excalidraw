@@ -685,21 +685,6 @@
       "isSpeaking": "کاربر در حال صحبت است"
     }
   },
-  "commandPalette": {
-    "title": "تخته فرمان‌ها",
-    "shortcuts": {
-      "select": "انتخاب",
-      "confirm": "تایید",
-      "close": "بستن"
-    },
-    "recents": "اخیراً استفاده شده",
-    "search": {
-      "placeholder": "در فهرست‌ها و دستورها را جستجو کنید هم سنگهای پنهان را کشف کنید",
-      "noMatch": "دستوری یافت نشد..."
-    },
-    "itemNotAvailable": "دستور در دسترس نیست...",
-    "shortcutHint": "برای تخته دستور ها {{shortcut}} را بکار بگیرید"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

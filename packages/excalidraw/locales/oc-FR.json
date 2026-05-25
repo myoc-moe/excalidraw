@@ -685,21 +685,6 @@
       "isSpeaking": "La persona parla"
     }
   },
-  "commandPalette": {
-    "title": "Paleta de comanda",
-    "shortcuts": {
-      "select": "Seleccionar",
-      "confirm": "Confirmar",
-      "close": "Tampar"
-    },
-    "recents": "Utilizada recentament",
-    "search": {
-      "placeholder": "",
-      "noMatch": ""
-    },
-    "itemNotAvailable": "La comanda es pas disponibla...",
-    "shortcutHint": "Per contrarotlar la paleta, utilizatz {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Opcion",

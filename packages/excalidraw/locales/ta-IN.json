@@ -685,21 +685,6 @@
       "isSpeaking": "பயனர் பேசுகிறார்"
     }
   },
-  "commandPalette": {
-    "title": "கட்டளை பட்டை",
-    "shortcuts": {
-      "select": "தேர்ந்தெடு",
-      "confirm": "உறுதிசெய்",
-      "close": "மூடு"
-    },
-    "recents": "அண்மையில் பயன்படுத்தியவை",
-    "search": {
-      "placeholder": "மெனு & கட்டளைகள் தேடு, மறைந்த வசதிகளைக் கண்டறி",
-      "noMatch": "பொருந்தும் கட்டளைகள் எதுவும் இல்லை…"
-    },
-    "itemNotAvailable": "கட்டளை கிடைக்கவில்லை...",
-    "shortcutHint": "கட்டளை பட்டை பயன்படுத்த {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

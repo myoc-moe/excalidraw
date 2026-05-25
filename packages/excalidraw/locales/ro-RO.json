@@ -685,21 +685,6 @@
       "isSpeaking": "Utilizatorul vorbește"
     }
   },
-  "commandPalette": {
-    "title": "Paletă de comenzi",
-    "shortcuts": {
-      "select": "Selectare",
-      "confirm": "Confirmare",
-      "close": "Închidere"
-    },
-    "recents": "Utilizate recent",
-    "search": {
-      "placeholder": "Caută meniuri, comenzi și descoperă nestemate ascunse",
-      "noMatch": "Nicio comandă potrivită..."
-    },
-    "itemNotAvailable": "Comanda nu este disponibilă...",
-    "shortcutHint": "Pentru paleta de comenzi, folosește {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Opțiune",

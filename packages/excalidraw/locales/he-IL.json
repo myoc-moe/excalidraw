@@ -685,21 +685,6 @@
       "isSpeaking": "המשתמש מדבר"
     }
   },
-  "commandPalette": {
-    "title": "לוח פקודות",
-    "shortcuts": {
-      "select": "בחירה",
-      "confirm": "אישור",
-      "close": "סגירה"
-    },
-    "recents": "בשימוש לאחרונה",
-    "search": {
-      "placeholder": "תפריטי חיפוש, פקודות ואבני חן נעלמות",
-      "noMatch": "אין פקודות תואמות…"
-    },
-    "itemNotAvailable": "הפקודה לא זמינה…",
-    "shortcutHint": "ללוח פקודות, יש להשתמש ב־{{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

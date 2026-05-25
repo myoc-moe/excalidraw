@@ -1,7 +1,6 @@
 import { isFirefox, KEYS } from "@excalidraw/common";
 import { SHAPES } from "@excalidraw/element/shapes";
 
-import { getShortcutFromShortcutName } from "../../actions/shortcuts";
 import { probablySupportsClipboardBlob } from "../../clipboard";
 import { t } from "../../i18n";
 import { getShortcutKey } from "../../shortcut";
@@ -113,17 +112,6 @@ export default function BasicHelpDialog() {
         <Shortcut
           label={t("buttons.objectsSnapMode")}
           shortcuts={[getShortcutKey("Alt+S")]}
-        />
-        <Shortcut
-          label={t("commandPalette.title")}
-          shortcuts={
-            isFirefox
-              ? [getShortcutFromShortcutName("commandPalette")]
-              : [
-                  getShortcutFromShortcutName("commandPalette"),
-                  getShortcutFromShortcutName("commandPalette", 1),
-                ]
-          }
         />
       </ShortcutIsland>
       <ShortcutIsland

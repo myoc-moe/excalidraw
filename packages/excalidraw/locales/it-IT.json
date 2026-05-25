@@ -685,21 +685,6 @@
       "isSpeaking": "L'utente sta parlando"
     }
   },
-  "commandPalette": {
-    "title": "Comando della tavolozza",
-    "shortcuts": {
-      "select": "Selezione",
-      "confirm": "Conferma",
-      "close": "Chiudi"
-    },
-    "recents": "Usate di recente",
-    "search": {
-      "placeholder": "Cerca menu, comandi e scopri gemme nascoste",
-      "noMatch": "Nessun comando corrisponde..."
-    },
-    "itemNotAvailable": "Il comando non è disponibile...",
-    "shortcutHint": "Per i comandi della tavolozza, usa {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Opzione",

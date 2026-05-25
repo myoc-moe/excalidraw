@@ -685,21 +685,6 @@
       "isSpeaking": "Benutzer spricht"
     }
   },
-  "commandPalette": {
-    "title": "Befehlspalette",
-    "shortcuts": {
-      "select": "Auswählen",
-      "confirm": "Bestätigen",
-      "close": "Schließen"
-    },
-    "recents": "Zuletzt verwendet",
-    "search": {
-      "placeholder": "Suche in Menüs und Befehlen, entdecke versteckte Funktionen",
-      "noMatch": "Keine passenden Befehle..."
-    },
-    "itemNotAvailable": "Befehl ist nicht verfügbar...",
-    "shortcutHint": "Benutze {{shortcut}} für Befehlspalette"
-  },
   "keys": {
     "ctrl": "Strg",
     "option": "",

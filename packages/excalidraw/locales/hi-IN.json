@@ -685,21 +685,6 @@
       "isSpeaking": "व्यक्ति अभी बोलने मैं व्यस्त हैं"
     }
   },
-  "commandPalette": {
-    "title": "आदेश फ़लक",
-    "shortcuts": {
-      "select": "चुनें",
-      "confirm": "पुष्टि करें",
-      "close": "बंद करें"
-    },
-    "recents": "हाल ही में उपयोग किया गया",
-    "search": {
-      "placeholder": "मेनू, आदेशों कों धूंड़े और गुप्त नग प्राप्त करें",
-      "noMatch": "कोई आदेश मेल नाही खा सका....."
-    },
-    "itemNotAvailable": "आदेश उपलब्ध नाही हैं.",
-    "shortcutHint": "आदेश फलक के लिए, {{shortcut}} का उपयोग कीजिए"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

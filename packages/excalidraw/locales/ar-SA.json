@@ -629,21 +629,6 @@
       "isSpeaking": "المستخدم يتحدث"
     }
   },
-  "commandPalette": {
-    "title": "لوحة الأوامر",
-    "shortcuts": {
-      "select": "اختر",
-      "confirm": "تأكيد",
-      "close": "إغلاق"
-    },
-    "recents": "المستخدمة مؤخرًا",
-    "search": {
-      "placeholder": "ابحث في القوائم، الأوامر، واكتشف الجواهر المخفية",
-      "noMatch": "لا توجد أوامر مطابقة..."
-    },
-    "itemNotAvailable": "الأمر غير متوفر...",
-    "shortcutHint": "للحصول على لوحة الأوامر، استخدم {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

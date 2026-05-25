@@ -685,21 +685,6 @@
       "isSpeaking": ""
     }
   },
-  "commandPalette": {
-    "title": "",
-    "shortcuts": {
-      "select": "Valitse",
-      "confirm": "Vahvista",
-      "close": "Sulje"
-    },
-    "recents": "Viimeksi käytetty",
-    "search": {
-      "placeholder": "Hae valikoita, komentoja ja löydä piilotettuja helmiä",
-      "noMatch": "Ei vastaavia komentoja..."
-    },
-    "itemNotAvailable": "Komento ei ole käytettävissä...",
-    "shortcutHint": ""
-  },
   "keys": {
     "ctrl": "",
     "option": "",

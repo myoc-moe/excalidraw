@@ -663,21 +663,6 @@
       "isSpeaking": "User is speaking"
     }
   },
-  "commandPalette": {
-    "title": "Command palette",
-    "shortcuts": {
-      "select": "Select",
-      "confirm": "Confirm",
-      "close": "Close"
-    },
-    "recents": "Recently used",
-    "search": {
-      "placeholder": "Search menus, commands, and discover hidden gems",
-      "noMatch": "No matching commands..."
-    },
-    "itemNotAvailable": "Command is not available...",
-    "shortcutHint": "For Command palette, use {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Option",

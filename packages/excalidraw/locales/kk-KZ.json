@@ -685,21 +685,6 @@
       "isSpeaking": ""
     }
   },
-  "commandPalette": {
-    "title": "",
-    "shortcuts": {
-      "select": "",
-      "confirm": "",
-      "close": ""
-    },
-    "recents": "",
-    "search": {
-      "placeholder": "",
-      "noMatch": ""
-    },
-    "itemNotAvailable": "",
-    "shortcutHint": ""
-  },
   "keys": {
     "ctrl": "",
     "option": "",

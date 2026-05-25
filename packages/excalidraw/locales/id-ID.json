@@ -685,21 +685,6 @@
       "isSpeaking": "Pengguna sedang berbicara"
     }
   },
-  "commandPalette": {
-    "title": "Daftar Perintah",
-    "shortcuts": {
-      "select": "Pilih",
-      "confirm": "Konfirmasi",
-      "close": "Keluar"
-    },
-    "recents": "Baru digunakan",
-    "search": {
-      "placeholder": "Cari menu, perintah dan temukan hidden gems",
-      "noMatch": "Tidak ada perintah yang sesuai..."
-    },
-    "itemNotAvailable": "Perintah tidak tersedia...",
-    "shortcutHint": "Untuk palet perintah, gunakan {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

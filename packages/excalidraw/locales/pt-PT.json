@@ -685,21 +685,6 @@
       "isSpeaking": "O utilizador está a falar"
     }
   },
-  "commandPalette": {
-    "title": "Paleta de comandos",
-    "shortcuts": {
-      "select": "Selecionar",
-      "confirm": "Confirmar",
-      "close": "Fechar"
-    },
-    "recents": "Usado recentemente",
-    "search": {
-      "placeholder": "Procure menus, comandos e descubra pedras preciosas ocultas",
-      "noMatch": "Nenhum comando correspondente..."
-    },
-    "itemNotAvailable": "Comando não está disponível...",
-    "shortcutHint": "Para a paleta de comandos, use {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

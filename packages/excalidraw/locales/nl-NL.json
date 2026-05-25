@@ -685,21 +685,6 @@
       "isSpeaking": "Gebruiker praat"
     }
   },
-  "commandPalette": {
-    "title": "Opdrachtenpalet",
-    "shortcuts": {
-      "select": "Selecteer",
-      "confirm": "Bevestigen",
-      "close": "Sluiten"
-    },
-    "recents": "Laatst gebruikt",
-    "search": {
-      "placeholder": "Zoek in menu's, commando's en ontdek geheimpjes",
-      "noMatch": "Geen overeenkomende opdrachten..."
-    },
-    "itemNotAvailable": "Opdracht is niet beschikbaar...",
-    "shortcutHint": "Gebruik {{shortcut}} voor het palet"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Optie",

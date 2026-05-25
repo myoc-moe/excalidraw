@@ -685,21 +685,6 @@
       "isSpeaking": "व्यक्ति सध्या बोलत आहे"
     }
   },
-  "commandPalette": {
-    "title": "आदेशांचं चयन पलट",
-    "shortcuts": {
-      "select": "निवडा",
-      "confirm": "निश्चित करा",
-      "close": "बंद करा"
-    },
-    "recents": "अलिकडेच वापरलेले",
-    "search": {
-      "placeholder": "निवड़क, आदेश शोधा आणि लपलेले नग प्राप्त करा",
-      "noMatch": "कोणतेही जुळणारे आदेश नाहीत..."
-    },
-    "itemNotAvailable": "आदेश उपलब्ध नाही...",
-    "shortcutHint": "आदेश फलक साठी, {{shortcut}} वापरा"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

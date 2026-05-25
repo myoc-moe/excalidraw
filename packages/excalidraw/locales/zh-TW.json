@@ -685,21 +685,6 @@
       "isSpeaking": "使用者說話中"
     }
   },
-  "commandPalette": {
-    "title": "指令面板",
-    "shortcuts": {
-      "select": "選取",
-      "confirm": "確認",
-      "close": "關閉"
-    },
-    "recents": "最近使用",
-    "search": {
-      "placeholder": "搜尋選單與指令並找出隱藏功能",
-      "noMatch": "沒有符合的指令…"
-    },
-    "itemNotAvailable": "指令無法使用…",
-    "shortcutHint": "使用 {{shortcut}} 開啟指令面板"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

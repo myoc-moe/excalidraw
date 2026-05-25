@@ -685,21 +685,6 @@
       "isSpeaking": "Používateľ hovorí"
     }
   },
-  "commandPalette": {
-    "title": "Paleta príkazov",
-    "shortcuts": {
-      "select": "Vybrať",
-      "confirm": "Potvrdiť",
-      "close": "Zavrieť"
-    },
-    "recents": "Nedávno použité",
-    "search": {
-      "placeholder": "Prehľadávajte menu, príkazy a objavte skryté poklady",
-      "noMatch": "Žiadne vyhovujúce príkazy..."
-    },
-    "itemNotAvailable": "Príkaz nie je dostupný...",
-    "shortcutHint": "Použite paletu príkazov pomocou {{shortcut}}"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Option",

@@ -685,21 +685,6 @@
       "isSpeaking": "Пользователь говорит"
     }
   },
-  "commandPalette": {
-    "title": "Палитра команд",
-    "shortcuts": {
-      "select": "Выбрать",
-      "confirm": "Подтвердить",
-      "close": "Закрыть"
-    },
-    "recents": "Недавно использованные",
-    "search": {
-      "placeholder": "Поиск меню, команд и скрытых сокровищ",
-      "noMatch": "Нет подходящих команд..."
-    },
-    "itemNotAvailable": "Команда недоступна...",
-    "shortcutHint": "Используйте {{shortcut}} для командной палитры"
-  },
   "keys": {
     "ctrl": "Ctrl",
     "option": "Option",

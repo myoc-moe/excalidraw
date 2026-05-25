@@ -685,21 +685,6 @@
       "isSpeaking": "Kullanıcı konuşuyor"
     }
   },
-  "commandPalette": {
-    "title": "Komut paleti",
-    "shortcuts": {
-      "select": "Seç",
-      "confirm": "Onayla",
-      "close": "Kapat"
-    },
-    "recents": "Son kullanılan",
-    "search": {
-      "placeholder": "Menülerde, komutlarda arama yapın ve saklı kalmış hazineleri keşfedin",
-      "noMatch": "Eşleşen komut yok..."
-    },
-    "itemNotAvailable": "Komut mevcut değil...",
-    "shortcutHint": "Komut paleti için {{shortcut}} kullanın"
-  },
   "keys": {
     "ctrl": "",
     "option": "",

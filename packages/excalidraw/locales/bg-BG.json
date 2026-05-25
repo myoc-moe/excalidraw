@@ -629,21 +629,6 @@
       "isSpeaking": "Потребителят говори"
     }
   },
-  "commandPalette": {
-    "title": "Палитра команди",
-    "shortcuts": {
-      "select": "Избери",
-      "confirm": "Потвърди",
-      "close": "Затвори"
-    },
-    "recents": "Наскоро използвани",
-    "search": {
-      "placeholder": "",
-      "noMatch": ""
-    },
-    "itemNotAvailable": "",
-    "shortcutHint": ""
-  },
   "keys": {
     "ctrl": "",
     "option": "",

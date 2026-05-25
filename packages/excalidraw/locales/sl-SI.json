@@ -685,21 +685,6 @@
       "isSpeaking": "Uporabnik govori"
     }
   },
-  "commandPalette": {
-    "title": "Paleta ukazov",
-    "shortcuts": {
-      "select": "Izberi",
-      "confirm": "Potrdi",
-      "close": "Zapri"
-    },
-    "recents": "Nedavno uporabljeno",
-    "search": {
-      "placeholder": "Išči po menijih, ukazih in odkrij skrite funkcije",
-      "noMatch": "Ni ustreznih ukazov ..."
-    },
-    "itemNotAvailable": "Ukaz ni na voljo ...",
-    "shortcutHint": "Za paleto ukazov uporabi {{shortcut}}"
-  },
   "keys": {
     "ctrl": "",
     "option": "",
