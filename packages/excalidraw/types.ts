@@ -992,7 +992,7 @@ export interface ExcalidrawImperativeAPI {
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;
   addImageElementsToScene: (
-    imageFiles: File[],
+    imageFiles: { file: File; customData: Record<string, any> }[],
     sceneX: number,
     sceneY: number,
   ) => Promise<void>;

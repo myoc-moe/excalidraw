@@ -3724,7 +3724,13 @@ class App extends React.Component<AppProps, AppState> {
 
     if (imageFiles.length > 0) {
       if (this.isToolSupported("image")) {
-        await this.insertImages(imageFiles, sceneX, sceneY);
+        await this.insertImages(
+          imageFiles.map((file) => ({
+            file,
+          })),
+          sceneX,
+          sceneY,
+        );
       } else {
         this.setState({ errorMessage: t("errors.imageToolNotSupported") });
       }
@@ -4043,7 +4049,13 @@ class App extends React.Component<AppProps, AppState> {
       const imageFiles = responses
         .filter((response): response is { file: File } => !!response.file)
         .map((response) => response.file);
-      await this.insertImages(imageFiles, sceneX, sceneY);
+      await this.insertImages(
+        imageFiles.map((file) => ({
+          file,
+        })),
+        sceneX,
+        sceneY,
+      );
       const error = responses.find((response) => !!response.errorMessage);
       if (error && error.errorMessage) {
         this.setState({ errorMessage: error.errorMessage });
@@ -9226,10 +9238,12 @@ class App extends React.Component<AppProps, AppState> {
     sceneX,
     sceneY,
     addToFrameUnderCursor = true,
+    customData,
   }: {
     sceneX: number;
     sceneY: number;
     addToFrameUnderCursor?: boolean;
+    customData?: Record<string, any>;
   }) => {
     const [gridX, gridY] = getGridPoint(
       sceneX,
@@ -9264,6 +9278,7 @@ class App extends React.Component<AppProps, AppState> {
       y: gridY - placeholderSize / 2,
       width: placeholderSize,
       height: placeholderSize,
+      customData,
     });
   };
 
@@ -11903,7 +11918,13 @@ class App extends React.Component<AppProps, AppState> {
         multiple: true,
       });
 
-      this.insertImages(imageFiles, x, y);
+      this.insertImages(
+        imageFiles.map((f) => ({
+          file: f,
+        })),
+        x,
+        y,
+      );
     } catch (error: any) {
       if (error.name !== "AbortError") {
         console.error(error);
@@ -12072,14 +12093,16 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private insertImages = async (
-    imageFiles: File[],
+    imageFiles: { file: File; customData?: Record<string, any> }[],
     sceneX: number,
     sceneY: number,
   ) => {
     const gridPadding = 50 / this.state.zoom.value;
     // Create, position, and insert placeholders
     const placeholders = positionElementsOnGrid(
-      imageFiles.map(() => this.newImagePlaceholder({ sceneX, sceneY })),
+      imageFiles.map(({ customData }) =>
+        this.newImagePlaceholder({ sceneX, sceneY, customData }),
+      ),
       sceneX,
       sceneY,
       gridPadding,
@@ -12092,7 +12115,7 @@ class App extends React.Component<AppProps, AppState> {
         try {
           return await this.initializeImage(
             placeholder,
-            await normalizeFile(imageFiles[i]),
+            await normalizeFile(imageFiles[i].file),
           );
         } catch (error: any) {
           this.setState({
@@ -12181,7 +12204,13 @@ class App extends React.Component<AppProps, AppState> {
       .filter((file) => isSupportedImageFile(file));
 
     if (imageFiles.length > 0 && this.isToolSupported("image")) {
-      return this.insertImages(imageFiles, sceneX, sceneY);
+      return this.insertImages(
+        imageFiles.map((file) => ({
+          file,
+        })),
+        sceneX,
+        sceneY,
+      );
     }
 
     if (fileItems.length > 0) {
