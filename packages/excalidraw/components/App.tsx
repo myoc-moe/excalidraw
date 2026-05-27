@@ -11764,6 +11764,7 @@ class App extends React.Component<AppProps, AppState> {
       throw new Error(t("errors.unsupportedFileType"));
     }
     const mimeType = imageFile.type;
+    let fileName = imageFile.name;
     const fileNeedsResizing =
       imageFile.size >= this.state.dontResizeLimitMBs * 1024 * 1024;
 
@@ -11786,6 +11787,14 @@ class App extends React.Component<AppProps, AppState> {
         imageFile = await this.props.compressImageFile(imageFile, {
           maxWidthOrHeight,
         });
+        const extensionIndex = imageFile.name.lastIndexOf(".");
+        fileName =
+          extensionIndex > 0
+            ? `${imageFile.name.slice(
+                0,
+                extensionIndex,
+              )}-resized${imageFile.name.slice(extensionIndex)}`
+            : `${imageFile.name}-resized`;
         console.info("Excalidraw: image resized");
       } catch (error: any) {
         console.error(
@@ -11827,7 +11836,7 @@ class App extends React.Component<AppProps, AppState> {
           let initializedImageElement = this.getLatestInitializedImageElement(
             placeholderImageElement,
             fileId,
-            imageFile.name,
+            fileName,
           );
 
           this.addMissingFiles([
@@ -11861,7 +11870,7 @@ class App extends React.Component<AppProps, AppState> {
             initializedImageElement = this.getLatestInitializedImageElement(
               placeholderImageElement,
               fileId,
-              imageFile.name,
+              fileName,
             );
 
             const naturalDimensions = this.getImageNaturalDimensions(

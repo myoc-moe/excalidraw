@@ -177,6 +177,15 @@ describe("image insertion", () => {
         expect.objectContaining({ maxWidthOrHeight: expect.any(Number) }),
       );
     });
+    await waitFor(() => {
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+          fileName: "large-resized.png",
+        }),
+      ]);
+    });
     expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
   });
 
