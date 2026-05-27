@@ -1,6 +1,6 @@
 {
   "name": "@myoc/element",
-  "version": "0.19.514",
+  "version": "0.19.515",
   "type": "module",
   "types": "./dist/types/element/src/index.d.ts",
   "main": "./dist/prod/index.js",
