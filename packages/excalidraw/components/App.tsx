@@ -11796,8 +11796,6 @@ class App extends React.Component<AppProps, AppState> {
       imageFile,
     ) as Promise<FileId>) || generateIdFromFile(imageFile));
 
-    console.info("Excalidraw File ID:", fileId);
-
     if (!fileId) {
       console.warn(
         "Couldn't generate file id or the supplied `generateIdForFile` didn't resolve to one.",
@@ -12694,6 +12692,11 @@ class App extends React.Component<AppProps, AppState> {
     type: "canvas" | "element",
   ): ContextMenuItems => {
     const options: ContextMenuItems = [];
+    const imageContextMenuItems = this.getImageContextMenuItems();
+    const imageContextMenuSection: ContextMenuItems =
+      imageContextMenuItems.length > 0
+        ? [CONTEXT_MENU_SEPARATOR, ...imageContextMenuItems]
+        : [];
 
     // canvas contextMenu
     // -------------------------------------------------------------------------
@@ -12726,7 +12729,9 @@ class App extends React.Component<AppProps, AppState> {
     options.push(copyText);
 
     if (this.state.viewModeEnabled) {
-      return [actionCopy, ...options];
+      const viewModeItems: ContextMenuItems = [actionCopy];
+      viewModeItems.push(...imageContextMenuSection, ...options);
+      return viewModeItems;
     }
 
     const zIndexActions: ContextMenuItems =
@@ -12740,11 +12745,19 @@ class App extends React.Component<AppProps, AppState> {
           ]
         : [];
 
-    return [
+    const elementItems: ContextMenuItems = [
       CONTEXT_MENU_SEPARATOR,
       actionCut,
       actionCopy,
       actionPaste,
+    ];
+
+    elementItems.push(...imageContextMenuSection);
+    if (imageContextMenuItems.length > 0) {
+      elementItems.push(CONTEXT_MENU_SEPARATOR);
+    }
+
+    elementItems.push(
       CONTEXT_MENU_SEPARATOR,
       actionSelectAllElementsInFrame,
       actionRemoveAllElementsFromFrame,
@@ -12777,6 +12790,28 @@ class App extends React.Component<AppProps, AppState> {
       actionToggleElementLock,
       CONTEXT_MENU_SEPARATOR,
       actionDeleteSelected,
+    );
+
+    return elementItems;
+  };
+
+  private getImageContextMenuItems = (): ContextMenuItems => {
+    if (!this.props.imageContextMenuItems) {
+      return [];
+    }
+
+    const selectedElements = this.scene.getSelectedElements(this.state);
+    if (
+      selectedElements.length === 0 ||
+      !selectedElements.every((element) => isImageElement(element))
+    ) {
+      return [];
+    }
+
+    return [
+      ...this.props.imageContextMenuItems(
+        selectedElements.map((element) => element.id),
+      ),
     ];
   };
 

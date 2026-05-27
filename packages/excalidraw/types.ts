@@ -55,7 +55,10 @@ import type { Action } from "./actions/types";
 import type { Spreadsheet } from "./charts";
 import type { ClipboardData } from "./clipboard";
 import type App from "./components/App";
-import type { ContextMenuItems } from "./components/ContextMenu";
+import type {
+  ContextMenuCustomItem,
+  ContextMenuItems,
+} from "./components/ContextMenu";
 import type { SnapLine } from "./snapping";
 import type { ImportedDataState } from "./data/types";
 
@@ -140,6 +143,8 @@ export type BinaryFileData = {
 export type BinaryFileMetadata = Omit<BinaryFileData, "dataURL">;
 
 export type BinaryFiles = Record<ExcalidrawElement["id"], BinaryFileData>;
+
+export type ImageContextMenuItem = ContextMenuCustomItem;
 
 export type ToolType =
   | "selection"
@@ -677,6 +682,9 @@ export interface ExcalidrawProps {
       nativeEvent: MouseEvent | React.PointerEvent<HTMLCanvasElement>;
     }>,
   ) => void;
+  imageContextMenuItems?: (
+    imageIds: readonly ExcalidrawElement["id"][],
+  ) => readonly ImageContextMenuItem[];
   onPointerDown?: (
     activeTool: AppState["activeTool"],
     pointerDownState: PointerDownState,

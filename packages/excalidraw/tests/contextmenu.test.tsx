@@ -23,7 +23,7 @@ const mouse = new Pointer("mouse");
 
 const queryContextMenuItem = (
   contextMenu: HTMLElement | null,
-  item: ActionName | ShortcutName,
+  item: ActionName | ShortcutName | string,
 ) =>
   contextMenu?.querySelector(`li[data-testid="${item}"]`) as HTMLElement | null;
 
@@ -260,5 +260,239 @@ describe("contextMenu element", () => {
       expect.objectContaining({ id: rectangle1.id }),
       expect.objectContaining({ id: rectangle2.id }),
     ]);
+  });
+
+  it("renders host image context menu items after paste and before wrap in frame", async () => {
+    unmountComponent();
+
+    const onSave = vi.fn();
+    const imageContextMenuItems = vi.fn((imageIds: readonly string[]) => [
+      {
+        key: "saveImageToDevice",
+        label: `Save ${imageIds.length}`,
+        onSelect: onSave,
+      },
+      {
+        key: "shareImage",
+        label: "Share Image",
+        onSelect: vi.fn(),
+      },
+    ]);
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        imageContextMenuItems={imageContextMenuItems}
+      />,
+    );
+
+    const image = API.createElement({
+      type: "image",
+      id: "image_1",
+      fileId: "file_1",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    API.setElements([image]);
+    API.setSelectedElements([image]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(imageContextMenuItems).toHaveBeenLastCalledWith([image.id]);
+
+    const items = getContextMenuItems();
+    expect(items.indexOf("cut")).toBeLessThan(
+      items.indexOf("saveImageToDevice"),
+    );
+    expect(items.indexOf("copy")).toBeLessThan(
+      items.indexOf("saveImageToDevice"),
+    );
+    expect(items.indexOf("paste")).toBeLessThan(
+      items.indexOf("saveImageToDevice"),
+    );
+    expect(items.indexOf("shareImage")).toBeLessThan(
+      items.indexOf("wrapSelectionInFrame"),
+    );
+
+    fireEvent.click(
+      queryContextMenuItem(UI.queryContextMenu(), "saveImageToDevice")!,
+    );
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it("passes all selected image ids to the host callback", async () => {
+    unmountComponent();
+
+    const imageContextMenuItems = vi.fn(() => []);
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        imageContextMenuItems={imageContextMenuItems}
+      />,
+    );
+
+    const imageA = API.createElement({
+      type: "image",
+      id: "image_A",
+      fileId: "file_A",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    const imageB = API.createElement({
+      type: "image",
+      id: "image_B",
+      fileId: "file_B",
+      x: 110,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+
+    API.setElements([imageA, imageB]);
+    API.setSelectedElements([imageA, imageB]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(imageContextMenuItems).toHaveBeenLastCalledWith([
+      imageA.id,
+      imageB.id,
+    ]);
+  });
+
+  it("does not call the host image context menu callback for non-image selections", async () => {
+    unmountComponent();
+
+    const imageContextMenuItems = vi.fn(() => [
+      {
+        key: "saveImageToDevice",
+        label: "Save Image",
+        onSelect: vi.fn(),
+      },
+    ]);
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        imageContextMenuItems={imageContextMenuItems}
+      />,
+    );
+
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    API.setElements([rectangle]);
+    API.setSelectedElements([rectangle]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(imageContextMenuItems).not.toHaveBeenCalled();
+    expect(
+      queryContextMenuItem(UI.queryContextMenu(), "saveImageToDevice"),
+    ).toBeNull();
+  });
+
+  it("does not insert an extra image section when the host returns no items", async () => {
+    unmountComponent();
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        imageContextMenuItems={() => []}
+      />,
+    );
+
+    const image = API.createElement({
+      type: "image",
+      id: "image_2",
+      fileId: "file_2",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    API.setElements([image]);
+    API.setSelectedElements([image]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(getContextMenuItems().slice(0, 4)).toEqual([
+      "cut",
+      "copy",
+      "paste",
+      "wrapSelectionInFrame",
+    ]);
+  });
+
+  it("renders host image context menu items in view mode", async () => {
+    unmountComponent();
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        viewModeEnabled={true}
+        imageContextMenuItems={() => [
+          {
+            key: "saveImageToDevice",
+            label: "Save Image",
+            onSelect: vi.fn(),
+          },
+        ]}
+      />,
+    );
+
+    const image = API.createElement({
+      type: "image",
+      id: "image_view",
+      fileId: "file_view",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    API.setElements([image]);
+    API.setSelectedElements([image]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(getContextMenuItems()).toEqual(["copy", "saveImageToDevice"]);
   });
 });

@@ -16,7 +16,16 @@ import type { Action } from "../actions/types";
 
 import type { TranslationKeys } from "../i18n";
 
-export type ContextMenuItem = typeof CONTEXT_MENU_SEPARATOR | Action;
+export type ContextMenuCustomItem = {
+  key: string;
+  label: string;
+  onSelect: () => void;
+};
+
+export type ContextMenuItem =
+  | typeof CONTEXT_MENU_SEPARATOR
+  | Action
+  | ContextMenuCustomItem;
 
 export type ContextMenuItems = (ContextMenuItem | false | null | undefined)[];
 
@@ -30,22 +39,38 @@ type ContextMenuProps = {
 
 export const CONTEXT_MENU_SEPARATOR = "separator";
 
+const isCustomContextMenuItem = (
+  item: Action | ContextMenuCustomItem,
+): item is ContextMenuCustomItem => "onSelect" in item;
+
 export const ContextMenu = React.memo(
   ({ actionManager, items, top, left, onClose }: ContextMenuProps) => {
     const appState = useExcalidrawAppState();
     const elements = useExcalidrawElements();
 
     const filteredItems = items.reduce((acc: ContextMenuItem[], item) => {
+      if (!item) {
+        return acc;
+      }
+
+      if (item === CONTEXT_MENU_SEPARATOR) {
+        acc.push(item);
+        return acc;
+      }
+
+      if (isCustomContextMenuItem(item)) {
+        acc.push(item);
+        return acc;
+      }
+
       if (
-        item &&
-        (item === CONTEXT_MENU_SEPARATOR ||
-          !item.predicate ||
-          item.predicate(
-            elements,
-            appState,
-            actionManager.app.props,
-            actionManager.app,
-          ))
+        !item.predicate ||
+        item.predicate(
+          elements,
+          appState,
+          actionManager.app.props,
+          actionManager.app,
+        )
       ) {
         acc.push(item);
       }
@@ -79,6 +104,25 @@ export const ContextMenu = React.memo(
                 return null;
               }
               return <hr key={idx} className="context-menu-item-separator" />;
+            }
+
+            if (isCustomContextMenuItem(item)) {
+              return (
+                <li
+                  key={item.key}
+                  data-testid={item.key}
+                  onClick={() => {
+                    onClose(() => {
+                      item.onSelect();
+                    });
+                  }}
+                >
+                  <button type="button" className="context-menu-item">
+                    <div className="context-menu-item__label">{item.label}</div>
+                    <kbd className="context-menu-item__shortcut" />
+                  </button>
+                </li>
+              );
             }
 
             const actionName = item.name;

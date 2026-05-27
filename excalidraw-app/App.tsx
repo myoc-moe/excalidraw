@@ -64,6 +64,7 @@ import type {
   ExcalidrawInitialDataState,
   UIAppState,
   ExcalidrawProps,
+  ImageContextMenuItem,
 } from "@excalidraw/excalidraw/types";
 import type { ResolutionType } from "@excalidraw/common/utility-types";
 import type { ResolvablePromise } from "@excalidraw/common/utils";
@@ -825,6 +826,20 @@ const ExcalidrawWrapper = () => {
     );
   }
 
+  const getActionsForImageIds = (
+    ids: readonly string[],
+  ): ImageContextMenuItem[] => {
+    return [
+      {
+        label: "Alert ID",
+        key: "alert-id",
+        onSelect: () => {
+          alert(`Image ID: ${ids.join(", ")}`);
+        },
+      },
+    ];
+  };
+
   return (
     <div
       style={{ height: "100%" }}
@@ -833,6 +848,7 @@ const ExcalidrawWrapper = () => {
       })}
     >
       <Excalidraw
+        imageContextMenuItems={getActionsForImageIds}
         wheelZoomsOnDefault
         compressImageFile={resizeImageFile}
         onChange={onChange}

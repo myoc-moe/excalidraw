@@ -15,6 +15,7 @@ All `props` are _optional_.
 | [`onLibraryChange`](#onlibrarychange) | `function` | \_ | The callback if supplied is triggered when the library is updated and receives the library items. |
 | [`generateLinkForSelection`](#generatelinkforselection) | `function` | \_ | Allows you to override `url` generation when linking to Excalidraw elements. |
 | [`onLinkOpen`](#onlinkopen) | `function` | \_ | The callback if supplied is triggered when any link is opened. |
+| [`imageContextMenuItems`](#imagecontextmenuitems) | `function` | \_ | Allows the host to inject custom context menu items for all-image selections. |
 | [`langCode`](#langcode) | `string` | `en` | Language code string to be used in Excalidraw |
 | [`renderTopRightUI`](/docs/@excalidraw/excalidraw/api/props/render-props#rendertoprightui) | `function` | \_ | Render function that renders custom UI in top right corner |
 | [`renderCustomStats`](/docs/@excalidraw/excalidraw/api/props/render-props#rendercustomstats) | `function` | \_ | Render function that can be used to render custom stats on the stats dialog. |
@@ -188,6 +189,23 @@ const onLinkOpen: ExcalidrawProps["onLinkOpen"] = useCallback(
   [history],
 );
 ```
+
+### imageContextMenuItems
+
+Use this prop to inject custom context menu items when the current selection contains only image elements.
+
+```tsx
+(imageIds: readonly string[]) =>
+  readonly {
+    key: string;
+    label: string;
+    onSelect: () => void;
+  }[];
+```
+
+The callback receives the selected image element ids, not file ids. This keeps the menu generation cheap and lets the host resolve file data through the Excalidraw API if needed.
+
+Returned items are rendered below the built-in cut, copy, and paste actions, and above wrap in frame.
 
 ### langCode
 

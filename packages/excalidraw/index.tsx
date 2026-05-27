@@ -97,6 +97,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     onPointerUp,
     onScrollChange,
     onDuplicate,
+    imageContextMenuItems,
     children,
     validateEmbeddable,
     renderEmbeddable,
@@ -219,6 +220,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           onPointerUp={onPointerUp}
           onScrollChange={onScrollChange}
           onDuplicate={onDuplicate}
+          imageContextMenuItems={imageContextMenuItems}
           validateEmbeddable={validateEmbeddable}
           renderEmbeddable={renderEmbeddable}
           // aiEnabled={false} // Myoc does not support AI generative features
@@ -407,6 +409,7 @@ export type {
   CompressImageFile,
   CompressImageFileOpts,
   EditorPreferences,
+  ImageContextMenuItem,
   NormalisePreferences,
   SmartZoomPreferences,
 } from "./types";
