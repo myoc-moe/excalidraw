@@ -82,11 +82,7 @@ import {
   getNormalizedZoom,
 } from "../scene";
 
-import type {
-  AppState,
-  BinaryFiles,
-  NormalizedZoomValue,
-} from "../types";
+import type { AppState, BinaryFiles, NormalizedZoomValue } from "../types";
 import type { ImportedDataState, LegacyAppState } from "./types";
 
 type RestoredAppState = Omit<
@@ -488,6 +484,7 @@ export const restoreElement = (
       return restoreElementWithProperties(element, {
         status: element.status || "pending",
         fileId: element.fileId,
+        fileName: element.fileName ?? null,
         scale: element.scale || [1, 1],
         crop: element.crop ?? null,
       });

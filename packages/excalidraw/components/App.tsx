@@ -11827,6 +11827,7 @@ class App extends React.Component<AppProps, AppState> {
           let initializedImageElement = this.getLatestInitializedImageElement(
             placeholderImageElement,
             fileId,
+            imageFile.name,
           );
 
           this.addMissingFiles([
@@ -11860,6 +11861,7 @@ class App extends React.Component<AppProps, AppState> {
             initializedImageElement = this.getLatestInitializedImageElement(
               placeholderImageElement,
               fileId,
+              imageFile.name,
             );
 
             const naturalDimensions = this.getImageNaturalDimensions(
@@ -11888,6 +11890,7 @@ class App extends React.Component<AppProps, AppState> {
   private getLatestInitializedImageElement = (
     imagePlaceholder: ExcalidrawImageElement,
     fileId: FileId,
+    fileName: string,
   ) => {
     const latestImageElement =
       this.scene.getElement(imagePlaceholder.id) ?? imagePlaceholder;
@@ -11896,6 +11899,7 @@ class App extends React.Component<AppProps, AppState> {
       latestImageElement as InitializedExcalidrawImageElement,
       {
         fileId,
+        fileName,
       },
     );
   };

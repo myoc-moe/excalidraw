@@ -141,6 +141,24 @@ describe("image insertion", () => {
     await assert();
   });
 
+  it("preserves the original file name on the initialized image element", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+
+    await API.drop([
+      { kind: "file", file: await API.loadFile("./fixtures/deer.png") },
+    ]);
+
+    await waitFor(() => {
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+          fileName: "deer.png",
+        }),
+      ]);
+    });
+  });
+
   it("should use the provided image compressor for oversized images", async () => {
     const compressedFile = new File(["compressed"], "large.png", {
       type: MIME_TYPES.png,
@@ -175,10 +193,9 @@ describe("image insertion", () => {
     ]);
 
     await waitFor(() => {
-      expect(compressImageFile).toHaveBeenCalledWith(
-        expect.any(File),
-        { maxWidthOrHeight: 2048 },
-      );
+      expect(compressImageFile).toHaveBeenCalledWith(expect.any(File), {
+        maxWidthOrHeight: 2048,
+      });
     });
     expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
   });

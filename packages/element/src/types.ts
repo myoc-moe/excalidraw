@@ -147,6 +147,7 @@ export type ExcalidrawImageElement = _ExcalidrawElementBase &
   Readonly<{
     type: "image";
     fileId: FileId | null;
+    fileName: string | null;
     /** whether respective file is persisted */
     status: "pending" | "saved" | "error";
     /** X and Y scale factors <-1, 1>, used for image axis flipping */
