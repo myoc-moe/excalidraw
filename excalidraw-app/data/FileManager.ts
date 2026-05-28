@@ -247,6 +247,7 @@ export const encodeFilesForUpload = async ({
       metadata: {
         id,
         mimeType: fileData.mimeType,
+        fileName: fileData.fileName,
         created: Date.now(),
         lastRetrieved: Date.now(),
       },

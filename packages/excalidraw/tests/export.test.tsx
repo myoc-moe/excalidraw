@@ -25,7 +25,7 @@ const testElements = [
     ...API.createElement({
       type: "text",
       id: "A",
-      text: "ðŸE",
+      text: "ï¿½E",
     }),
     // can't get jsdom text measurement to work so this is a temp hack
     // to ensure the element isn't stripped as invisible
@@ -61,7 +61,7 @@ describe("export", () => {
 
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸE" }),
+        expect.objectContaining({ type: "text", text: "ï¿½E" }),
       ]);
     });
   });
@@ -78,7 +78,7 @@ describe("export", () => {
       decodeSvgBase64Payload({ svg: metadataElement.innerHTML }),
     );
     expect(decoded.elements).toEqual([
-      expect.objectContaining({ type: "text", text: "ðŸE" }),
+      expect.objectContaining({ type: "text", text: "ï¿½E" }),
     ]);
   });
 
@@ -119,7 +119,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸE" }),
+        expect.objectContaining({ type: "text", text: "ï¿½E" }),
       ]);
     });
   });
@@ -147,7 +147,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "ðŸE" }),
+        expect.objectContaining({ type: "text", text: "ï¿½E" }),
       ]);
     });
   });
@@ -205,6 +205,7 @@ describe("export", () => {
         mimeType: "image/png",
         created: Date.now(),
         lastRetrieved: Date.now(),
+        fileName: "deer.png",
       },
     } as const;
 

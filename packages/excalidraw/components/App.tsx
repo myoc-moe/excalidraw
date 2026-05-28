@@ -11843,6 +11843,7 @@ class App extends React.Component<AppProps, AppState> {
             {
               mimeType,
               id: fileId,
+              fileName,
               dataURL,
               created: Date.now(),
               lastRetrieved: Date.now(),

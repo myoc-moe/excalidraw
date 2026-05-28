@@ -120,6 +120,7 @@ export type BinaryFileData = {
     // future user or unknown file type
     | typeof MIME_TYPES.binary;
   id: FileId;
+  fileName: string;
   dataURL: DataURL;
   /**
    * Epoch timestamp in milliseconds
