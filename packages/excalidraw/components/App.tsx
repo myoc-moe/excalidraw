@@ -12217,14 +12217,100 @@ class App extends React.Component<AppProps, AppState> {
       .map((data) => data.file)
       .filter((file) => isSupportedImageFile(file));
 
-    if (imageFiles.length > 0 && this.isToolSupported("image")) {
-      return this.insertImages(
-        imageFiles.map((file) => ({
-          file,
-        })),
-        sceneX,
-        sceneY,
-      );
+    if (imageFiles.length > 0) {
+      if (this.isToolSupported("image")) {
+        const parseDroppedImageDetails = (): Record<
+          string,
+          string | undefined
+        >[] => {
+          const htmlImageSources: string[] = [];
+          const textImageSources: string[] = [];
+          const imageAlts: string[] = [];
+
+          const pushUnique = (values: string[], value: string | null) => {
+            const trimmedValue = value?.trim();
+
+            if (trimmedValue && !values.includes(trimmedValue)) {
+              values.push(trimmedValue);
+            }
+          };
+
+          dataTransferList.forEach((item) => {
+            if (item.kind !== "string") {
+              return;
+            }
+
+            if (item.type === MIME_TYPES.html) {
+              try {
+                const doc = new DOMParser().parseFromString(
+                  item.value,
+                  MIME_TYPES.html,
+                );
+
+                for (const img of Array.from(
+                  doc.body.querySelectorAll("img"),
+                )) {
+                  pushUnique(htmlImageSources, img.getAttribute("src"));
+                  pushUnique(imageAlts, img.getAttribute("alt"));
+                }
+              } catch {
+                // ignore malformed HTML payloads
+              }
+            } else if (item.type === MIME_TYPES.text) {
+              pushUnique(textImageSources, item.value);
+            }
+          });
+
+          const imageSources = [
+            ...htmlImageSources,
+            ...textImageSources.filter(
+              (src) => !htmlImageSources.includes(src),
+            ),
+          ];
+
+          const imageDetails: Record<string, string | undefined>[] =
+            imageFiles.map(() => ({}));
+
+          imageDetails.forEach((detail, index) => {
+            const source = imageSources[index];
+            const alt = imageAlts[index];
+
+            if (source) {
+              detail.src = source;
+            }
+
+            if (alt) {
+              detail.alt = alt;
+            }
+          });
+
+          const additionalUrls = imageSources.slice(imageDetails.length);
+
+          const firstImageDetails = imageDetails[0];
+
+          if (firstImageDetails && additionalUrls.length > 0) {
+            additionalUrls.forEach((url, index) => {
+              firstImageDetails[`additionalUrl${index + 1}`] = url;
+            });
+          }
+
+          return imageDetails;
+        };
+
+        const droppedImageDetails = parseDroppedImageDetails();
+
+        return this.insertImages(
+          imageFiles.map((file, index) => ({
+            file,
+            customData: droppedImageDetails[index] ?? undefined,
+          })),
+          sceneX,
+          sceneY,
+        );
+      }
+
+      this.setState({ errorMessage: t("errors.imageToolNotSupported") });
+      return;
     }
 
     if (fileItems.length > 0) {
