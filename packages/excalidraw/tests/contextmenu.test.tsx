@@ -376,6 +376,68 @@ describe("contextMenu element", () => {
     ]);
   });
 
+  it("passes the clicked grouped image id to the host callback", async () => {
+    unmountComponent();
+
+    const imageContextMenuItems = vi.fn(() => [
+      {
+        key: "saveImageToDevice",
+        label: "Save Image",
+        onSelect: vi.fn(),
+      },
+    ]);
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+        imageContextMenuItems={imageContextMenuItems}
+      />,
+    );
+
+    const imageA = API.createElement({
+      type: "image",
+      id: "image_group_A",
+      fileId: "file_group_A",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+      groupIds: ["g1"],
+    });
+    const imageB = API.createElement({
+      type: "image",
+      id: "image_group_B",
+      fileId: "file_group_B",
+      x: 110,
+      y: 0,
+      width: 100,
+      height: 100,
+      groupIds: ["g1"],
+    });
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 220,
+      y: 0,
+      width: 100,
+      height: 100,
+      groupIds: ["g1"],
+    });
+    API.setElements([imageA, imageB, rectangle]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 160,
+      clientY: 50,
+    });
+
+    expect(imageContextMenuItems).toHaveBeenLastCalledWith([imageB.id]);
+    expect(
+      queryContextMenuItem(UI.queryContextMenu(), "saveImageToDevice"),
+    ).not.toBeNull();
+  });
+
   it("does not call the host image context menu callback for non-image selections", async () => {
     unmountComponent();
 

@@ -1,4 +1,5 @@
 import React from "react";
+import { vi } from "vitest";
 
 import { CURSOR_TYPE, KEYS } from "@excalidraw/common";
 
@@ -6,7 +7,16 @@ import { Excalidraw } from "../index";
 
 import { API } from "./helpers/api";
 import { Keyboard, Pointer, UI } from "./helpers/ui";
-import { render, GlobalTestState } from "./test-utils";
+import {
+  fireEvent,
+  render,
+  GlobalTestState,
+  mockBoundingClientRect,
+  restoreOriginalGetBoundingClientRect,
+  unmountComponent,
+} from "./test-utils";
+
+import type { ExcalidrawProps } from "../types";
 
 const mouse = new Pointer("mouse");
 const touch = new Pointer("touch");
@@ -14,6 +24,14 @@ const pen = new Pointer("pen");
 const pointerTypes = [mouse, touch, pen];
 
 describe("view mode", () => {
+  beforeAll(() => {
+    mockBoundingClientRect();
+  });
+
+  afterAll(() => {
+    restoreOriginalGetBoundingClientRect();
+  });
+
   beforeEach(async () => {
     await render(<Excalidraw compressImageFile={async (file) => file} />);
   });
@@ -66,5 +84,69 @@ describe("view mode", () => {
         CURSOR_TYPE.GRAB,
       );
     });
+  });
+
+  it("does not open links on right click and opens them from the context menu", async () => {
+    unmountComponent();
+
+    const onLinkOpenSpy = vi.fn();
+    const onLinkOpen: NonNullable<ExcalidrawProps["onLinkOpen"]> = (
+      ...args
+    ) => {
+      onLinkOpenSpy(...args);
+      args[1].preventDefault();
+    };
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        onLinkOpen={onLinkOpen}
+        viewModeEnabled={true}
+      />,
+    );
+
+    const linkedRect = API.createElement({
+      type: "rectangle",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+    API.setElements([linkedRect]);
+    API.updateElement(linkedRect, {
+      link: "https://example.com",
+    });
+
+    const elementCenterX = linkedRect.x + linkedRect.width / 2;
+    const elementCenterY = linkedRect.y + linkedRect.height / 2;
+
+    fireEvent.pointerDown(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: elementCenterX,
+      clientY: elementCenterY,
+      pointerType: "mouse",
+      pointerId: 1,
+    });
+    fireEvent.pointerUp(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: elementCenterX,
+      clientY: elementCenterY,
+      pointerType: "mouse",
+      pointerId: 1,
+    });
+
+    expect(onLinkOpenSpy).not.toHaveBeenCalled();
+
+    API.setSelectedElements([linkedRect]);
+    mouse.rightClickAt(elementCenterX, elementCenterY);
+
+    const openLinkItem = UI.queryContextMenu()?.querySelector(
+      'li[data-testid="openLink"]',
+    );
+    expect(openLinkItem).not.toBeNull();
+
+    fireEvent.click(openLinkItem!);
+    expect(onLinkOpenSpy).toHaveBeenCalledTimes(1);
+    expect(onLinkOpenSpy.mock.calls[0][0].link).toBe("https://example.com");
   });
 });
