@@ -350,7 +350,7 @@ const ExcalidrawWrapper = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const isCollabDisabled = isRunningInIframe();
 
-  const { editorTheme, appTheme, setAppTheme } = useHandleAppTheme();
+  const { editorTheme, appTheme } = useHandleAppTheme();
 
   const [langCode, setLangCode] = useAppLangCode();
 
@@ -934,7 +934,6 @@ const ExcalidrawWrapper = () => {
             isCollaborating={isCollaborating}
             isCollabEnabled={!isCollabDisabled}
             theme={appTheme}
-            setTheme={(theme) => setAppTheme(theme)}
             refresh={() => forceRefresh((prev) => !prev)}
           />
         )}
