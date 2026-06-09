@@ -41,11 +41,13 @@ const Footer = ({
       >
         <Stack.Col gap={2}>
           <Section heading="canvasActions">
-            <Tooltip label={t("labels.viewMode")}>
-              <div className={clsx("view-mode-button")}>
-                {actionManager.renderAction("viewMode")}
-              </div>
-            </Tooltip>
+            {!appState.viewModeOnly && (
+              <Tooltip label={t("labels.viewMode")}>
+                <div className={clsx("view-mode-button")}>
+                  {actionManager.renderAction("viewMode")}
+                </div>
+              </Tooltip>
+            )}
 
             <Tooltip label={t("buttons.smartZoom")}>
               <div className={clsx("smart-zoom-button")}>

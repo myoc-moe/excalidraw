@@ -80,6 +80,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderTopRightUI,
     langCode = defaultLang.code,
     viewModeEnabled,
+    viewModeOnly,
     zenModeEnabled,
     gridModeEnabled,
     theme,
@@ -203,6 +204,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           renderTopRightUI={renderTopRightUI}
           langCode={langCode}
           viewModeEnabled={viewModeEnabled}
+          viewModeOnly={viewModeOnly}
           zenModeEnabled={zenModeEnabled}
           gridModeEnabled={gridModeEnabled}
           theme={theme}

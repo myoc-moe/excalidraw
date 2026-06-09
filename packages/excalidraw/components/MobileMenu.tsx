@@ -140,7 +140,7 @@ export const MobileMenu = ({
         <div className="App-bottom-bar-item">
           <Island>
             <div className="mobile-toolbar">
-              {actionManager.renderAction("viewMode")}
+              {!appState.viewModeOnly && actionManager.renderAction("viewMode")}
               {actionManager.renderAction("smartZoom")}
             </div>
           </Island>

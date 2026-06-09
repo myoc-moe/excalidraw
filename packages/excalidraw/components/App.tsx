@@ -786,6 +786,7 @@ class App extends React.Component<AppProps, AppState> {
     const defaultAppState = getDefaultAppState();
     const {
       viewModeEnabled = false,
+      viewModeOnly = false,
       zenModeEnabled = false,
       gridModeEnabled = false,
       objectsSnapModeEnabled = false,
@@ -800,7 +801,8 @@ class App extends React.Component<AppProps, AppState> {
       exportWithDarkMode: theme === THEME.DARK,
       isLoading: true,
       ...this.getCanvasOffsets(),
-      viewModeEnabled,
+      viewModeEnabled: viewModeOnly || viewModeEnabled,
+      viewModeOnly,
       zenModeEnabled,
       objectsSnapModeEnabled,
       gridModeEnabled: gridModeEnabled ?? defaultAppState.gridModeEnabled,
@@ -2775,6 +2777,10 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (actionResult.appState || editingTextElement || this.state.contextMenu) {
+      const viewModeOnly =
+        this.props.viewModeOnly ??
+        actionResult?.appState?.viewModeOnly ??
+        this.state.viewModeOnly;
       let viewModeEnabled = actionResult?.appState?.viewModeEnabled || false;
       let zenModeEnabled = actionResult?.appState?.zenModeEnabled || false;
       const theme =
@@ -2784,6 +2790,9 @@ class App extends React.Component<AppProps, AppState> {
         actionResult?.appState?.errorMessage ?? this.state.errorMessage;
       if (typeof this.props.viewModeEnabled !== "undefined") {
         viewModeEnabled = this.props.viewModeEnabled;
+      }
+      if (this.props.viewModeOnly ?? viewModeOnly) {
+        viewModeEnabled = true;
       }
 
       if (typeof this.props.zenModeEnabled !== "undefined") {
@@ -2822,6 +2831,7 @@ class App extends React.Component<AppProps, AppState> {
           contextMenu: null,
           editingTextElement,
           viewModeEnabled,
+          viewModeOnly,
           zenModeEnabled,
           theme,
           name,
@@ -3462,8 +3472,20 @@ class App extends React.Component<AppProps, AppState> {
       this.eraserTrail.endPath();
     }
 
-    if (prevProps.viewModeEnabled !== this.props.viewModeEnabled) {
-      this.setState({ viewModeEnabled: !!this.props.viewModeEnabled });
+    if (
+      prevProps.viewModeEnabled !== this.props.viewModeEnabled ||
+      prevProps.viewModeOnly !== this.props.viewModeOnly
+    ) {
+      const viewModeOnly = this.props.viewModeOnly ?? this.state.viewModeOnly;
+      const viewModeEnabled = viewModeOnly
+        ? true
+        : typeof this.props.viewModeEnabled !== "undefined"
+        ? !!this.props.viewModeEnabled
+        : this.state.viewModeEnabled;
+      this.setState({
+        viewModeEnabled,
+        viewModeOnly,
+      });
     }
 
     if (prevState.viewModeEnabled !== this.state.viewModeEnabled) {
@@ -4195,7 +4217,43 @@ class App extends React.Component<AppProps, AppState> {
     state,
     callback,
   ) => {
-    this.setState(state, callback);
+    const normalizeViewModeOnlyState = (
+      nextState: Partial<AppState> | Pick<AppState, keyof AppState> | null,
+      prevState: AppState,
+    ) => {
+      if (!nextState) {
+        return nextState;
+      }
+
+      const nextAppState = nextState as Partial<AppState>;
+      const viewModeOnly =
+        this.props.viewModeOnly ??
+        nextAppState.viewModeOnly ??
+        prevState.viewModeOnly;
+      if (viewModeOnly) {
+        return {
+          ...nextState,
+          viewModeEnabled: true,
+        };
+      }
+
+      return nextState;
+    };
+
+    if (typeof state === "function") {
+      this.setState((prevState, props) => {
+        return normalizeViewModeOnlyState(
+          state(prevState, props) as Partial<AppState> | null,
+          prevState,
+        ) as any;
+      }, callback);
+      return;
+    }
+
+    this.setState(
+      normalizeViewModeOnlyState(state, this.state) as any,
+      callback,
+    );
   };
 
   removePointer = (event: React.PointerEvent<HTMLElement> | PointerEvent) => {
@@ -4600,7 +4658,7 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       if (appState) {
-        this.setState(appState as Pick<AppState, K> | null);
+        this.setAppState(appState as Pick<AppState, K> | null);
       }
 
       if (elements) {
@@ -5035,7 +5093,10 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       // view mode hardcoded from upstream -> disable tool switching for now
-      const shouldPreventToolSwitching = this.props.viewModeEnabled === true;
+      const shouldPreventToolSwitching =
+        this.props.viewModeEnabled === true ||
+        this.props.viewModeOnly === true ||
+        this.state.viewModeOnly;
 
       if (
         !shouldPreventToolSwitching &&
@@ -12852,7 +12913,11 @@ class App extends React.Component<AppProps, AppState> {
 
     if (type === "canvas") {
       if (this.state.viewModeEnabled) {
-        return [actionToggleGridMode, actionToggleViewMode, actionToggleStats];
+        return [
+          actionToggleGridMode,
+          !this.state.viewModeOnly && actionToggleViewMode,
+          actionToggleStats,
+        ];
       }
 
       return [
@@ -12867,7 +12932,7 @@ class App extends React.Component<AppProps, AppState> {
         actionToggleObjectsSnapMode,
         actionToggleArrowBinding,
         actionToggleMidpointSnapping,
-        actionToggleViewMode,
+        !this.state.viewModeOnly && actionToggleViewMode,
         actionToggleStats,
       ];
     }

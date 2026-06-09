@@ -326,6 +326,12 @@ const initializeScene = async (opts: {
 const getDefaultEditorPreferences = (): ResolvedEditorPreferences =>
   getEffectiveEditorPreferences(getDefaultAppState());
 
+const isViewModeOnlyEnabled = () => {
+  const value = new URLSearchParams(window.location.search).get("viewModeOnly");
+
+  return value !== null && value !== "false";
+};
+
 const mergeEditorPreferences = (
   current: ResolvedEditorPreferences,
   next: EditorPreferences,
@@ -895,6 +901,7 @@ const ExcalidrawWrapper = () => {
         detectScroll={false}
         handleKeyboardGlobally={true}
         autoFocus={true}
+        viewModeOnly={isViewModeOnlyEnabled()}
         theme={editorTheme}
         renderTopRightUI={(isMobile) => {
           if (isMobile || !collabAPI || isCollabDisabled) {

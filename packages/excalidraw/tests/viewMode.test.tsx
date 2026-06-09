@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import { CURSOR_TYPE, KEYS } from "@excalidraw/common";
 
 import { Excalidraw } from "../index";
+import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 
 import { API } from "./helpers/api";
 import { Keyboard, Pointer, UI } from "./helpers/ui";
@@ -14,6 +15,7 @@ import {
   mockBoundingClientRect,
   restoreOriginalGetBoundingClientRect,
   unmountComponent,
+  act,
 } from "./test-utils";
 
 import type { ExcalidrawProps } from "../types";
@@ -148,5 +150,39 @@ describe("view mode", () => {
     fireEvent.click(openLinkItem!);
     expect(onLinkOpenSpy).toHaveBeenCalledTimes(1);
     expect(onLinkOpenSpy.mock.calls[0][0].link).toBe("https://example.com");
+  });
+
+  it("viewModeOnly hides toggles and prevents leaving view mode", async () => {
+    unmountComponent();
+
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        viewModeOnly={true}
+      />,
+    );
+
+    expect(window.h.state.viewModeOnly).toBe(true);
+    expect(window.h.state.viewModeEnabled).toBe(true);
+    expect(document.querySelector('[data-testid="button-view-mode"]')).toBe(
+      null,
+    );
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 1,
+      clientY: 1,
+    });
+    expect(
+      UI.queryContextMenu()?.querySelector('li[data-testid="viewMode"]'),
+    ).toBeNull();
+
+    API.executeAction(actionToggleViewMode);
+    expect(window.h.state.viewModeEnabled).toBe(true);
+
+    act(() => {
+      window.h.app.setAppState({ viewModeEnabled: false });
+    });
+    expect(window.h.state.viewModeEnabled).toBe(true);
   });
 });

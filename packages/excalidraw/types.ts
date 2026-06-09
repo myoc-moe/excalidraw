@@ -473,6 +473,7 @@ export interface AppState {
   gridStep: number;
   gridModeEnabled: boolean;
   viewModeEnabled: boolean;
+  viewModeOnly: boolean;
 
   /** top-most selected groups (i.e. does not include nested groups) */
   selectedGroupIds: { [groupId: string]: boolean };
@@ -655,6 +656,7 @@ export interface ExcalidrawProps {
   ) => JSX.Element | null;
   langCode?: Language["code"];
   viewModeEnabled?: boolean;
+  viewModeOnly?: boolean;
   zenModeEnabled?: boolean;
   gridModeEnabled?: boolean;
   objectsSnapModeEnabled?: boolean;

@@ -21,6 +21,10 @@ export const actionToggleViewMode = register({
     predicate: (appState) => !appState.viewModeEnabled,
   },
   perform(elements, appState) {
+    if (appState.viewModeOnly) {
+      return false;
+    }
+
     return {
       appState: {
         ...appState,
@@ -31,21 +35,31 @@ export const actionToggleViewMode = register({
   },
   checked: (appState) => appState.viewModeEnabled,
   predicate: (elements, appState, appProps) => {
-    return typeof appProps.viewModeEnabled === "undefined";
+    return (
+      !appState.viewModeOnly &&
+      !appProps.viewModeOnly &&
+      typeof appProps.viewModeEnabled === "undefined"
+    );
   },
   keyTest: (event) =>
     !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.R,
-  PanelComponent: ({ data, updateData, appState }) => (
-    <ToolButton
-      type="button"
-      icon={eyeIcon}
-      aria-label={t("labels.viewMode")}
-      onClick={() => updateData(null)}
-      size={data?.size || "medium"}
-      data-testid="button-view-mode"
-      className={clsx({
-        enabled: appState.viewModeEnabled,
-      })}
-    />
-  ),
+  PanelComponent: ({ data, updateData, appState, appProps }) => {
+    if (appState.viewModeOnly || appProps.viewModeOnly) {
+      return null;
+    }
+
+    return (
+      <ToolButton
+        type="button"
+        icon={eyeIcon}
+        aria-label={t("labels.viewMode")}
+        onClick={() => updateData(null)}
+        size={data?.size || "medium"}
+        data-testid="button-view-mode"
+        className={clsx({
+          enabled: appState.viewModeEnabled,
+        })}
+      />
+    );
+  },
 });
