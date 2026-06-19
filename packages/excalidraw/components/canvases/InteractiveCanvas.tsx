@@ -88,6 +88,32 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
   const rendererParams = useRef(null as InteractiveSceneRenderConfig | null);
 
   useEffect(() => {
+    let scheduledFrame: number | null = null;
+    const unsubscribe = props.app.imageLoadingProgressEmitter.on(() => {
+      if (scheduledFrame !== null) {
+        return;
+      }
+      scheduledFrame = requestAnimationFrame(() => {
+        scheduledFrame = null;
+        if (!rendererParams.current) {
+          return;
+        }
+        renderInteractiveScene({
+          ...rendererParams.current,
+          callback: () => {},
+        });
+      });
+    });
+
+    return () => {
+      unsubscribe();
+      if (scheduledFrame !== null) {
+        cancelAnimationFrame(scheduledFrame);
+      }
+    };
+  }, [props.app]);
+
+  useEffect(() => {
     if (!isComponentMounted.current) {
       isComponentMounted.current = true;
       return;

@@ -530,6 +530,7 @@ export const newImageElement = (
     status?: ExcalidrawImageElement["status"];
     fileId?: ExcalidrawImageElement["fileId"];
     fileName?: ExcalidrawImageElement["fileName"];
+    thumbHash?: ExcalidrawImageElement["thumbHash"];
     scale?: ExcalidrawImageElement["scale"];
     crop?: ExcalidrawImageElement["crop"];
   } & ElementConstructorOpts,
@@ -542,6 +543,7 @@ export const newImageElement = (
     status: opts.status ?? "pending",
     fileId: opts.fileId ?? null,
     fileName: opts.fileName ?? null,
+    thumbHash: opts.thumbHash ?? null,
     scale: opts.scale ?? [1, 1],
     crop: opts.crop ?? null,
   };

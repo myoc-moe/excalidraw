@@ -485,6 +485,8 @@ export const restoreElement = (
         status: element.status || "pending",
         fileId: element.fileId,
         fileName: element.fileName ?? null,
+        thumbHash:
+          typeof element.thumbHash === "string" ? element.thumbHash : null,
         scale: element.scale || [1, 1],
         crop: element.crop ?? null,
       });

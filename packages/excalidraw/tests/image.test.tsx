@@ -10,7 +10,7 @@ import { createPasteEvent } from "../clipboard";
 import { API } from "./helpers/api";
 import { mockMultipleHTMLImageElements } from "./helpers/mocks";
 import { UI } from "./helpers/ui";
-import { GlobalTestState, render, waitFor } from "./test-utils";
+import { act, GlobalTestState, render, waitFor } from "./test-utils";
 import {
   DEER_IMAGE_DIMENSIONS,
   SMILEY_IMAGE_DIMENSIONS,
@@ -79,6 +79,11 @@ describe("image insertion", () => {
 
   const setup = () =>
     setupImageTest([DEER_IMAGE_DIMENSIONS, SMILEY_IMAGE_DIMENSIONS]);
+
+  it("defaults placeholder transitions to 300ms", async () => {
+    await setup();
+    expect(h.app.props.imageOptions.placeholderTransitionDuration).toBe(300);
+  });
 
   const assert = async () => {
     await waitFor(() => {
@@ -154,8 +159,104 @@ describe("image insertion", () => {
           ...INITIALIZED_IMAGE_PROPS,
           ...DEER_IMAGE_DIMENSIONS,
           fileName: "deer.png",
+          thumbHash: expect.any(String),
         }),
       ]);
+    });
+
+    const imageElement = h.elements[0];
+    if (imageElement.type !== "image" || !imageElement.fileId) {
+      throw new Error("Expected an initialized image element");
+    }
+    expect(h.app.files[imageElement.fileId].thumbHash).toBe(
+      imageElement.thumbHash,
+    );
+  });
+
+  it("stores image loading progress outside app state and suppresses unchanged values", async () => {
+    await setup();
+
+    const fileId = "progress-file" as FileId;
+    const progressListener = vi.fn();
+    const onChange = vi.fn();
+    const unsubscribeProgress =
+      h.app.imageLoadingProgressEmitter.on(progressListener);
+    const unsubscribeChange = h.app.api.onChange(onChange);
+
+    h.app.api.setImageLoadingProgress(fileId, 0.25);
+    h.app.api.setImageLoadingProgress(fileId, 0.25);
+    expect(h.app.imageLoadingProgress.get(fileId)).toBe(0.25);
+    expect(progressListener).toHaveBeenCalledTimes(1);
+
+    h.app.api.setImageLoadingProgress(fileId, 2);
+    expect(h.app.imageLoadingProgress.get(fileId)).toBe(1);
+    expect(progressListener).toHaveBeenCalledTimes(2);
+
+    h.app.api.setImageLoadingProgress(fileId, null);
+    expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
+    expect(progressListener).toHaveBeenCalledTimes(3);
+    expect(onChange).not.toHaveBeenCalled();
+
+    unsubscribeProgress();
+    unsubscribeChange();
+  });
+
+  it("keeps temporary image placeholders out of files and replaces them with canonical files", async () => {
+    await setupImageTest(
+      [
+        { width: 32, height: 32 },
+        { width: 64, height: 64 },
+      ],
+      { imageOptions: { placeholderTransitionDuration: 10_000 } },
+    );
+
+    const fileId = "placeholder-file" as FileId;
+    API.setElements([
+      API.createElement({
+        type: "image",
+        fileId,
+        width: 100,
+        height: 100,
+      }),
+    ]);
+    const file = await API.loadFile("./fixtures/deer.png");
+    const onChange = vi.fn();
+    const unsubscribeChange = h.app.api.onChange(onChange);
+
+    await h.app.api.addImagePlaceholder(fileId, file);
+    const temporaryImage = h.app.imageCache.get(fileId)?.image;
+    expect(temporaryImage).toBeInstanceOf(HTMLImageElement);
+    expect(h.app.api.getFiles()[fileId]).toBeUndefined();
+    expect(onChange).not.toHaveBeenCalled();
+    unsubscribeChange();
+
+    h.app.api.setImageLoadingProgress(fileId, 1);
+    const fileDataURL = await blobModule.getDataURL(file);
+    act(() => {
+      h.app.api.addFiles([
+        {
+          id: fileId,
+          fileName: file.name,
+          mimeType: MIME_TYPES.png,
+          dataURL: fileDataURL,
+          created: Date.now(),
+        },
+      ]);
+    });
+
+    await waitFor(() => {
+      expect(h.app.api.getFiles()[fileId]).toBeDefined();
+      expect(h.app.imageCache.get(fileId)?.image).toBeInstanceOf(
+        HTMLImageElement,
+      );
+      expect(h.app.imageCache.get(fileId)?.image).not.toBe(temporaryImage);
+      expect(h.app.imageCache.get(fileId)?.placeholderImage).toBe(
+        temporaryImage,
+      );
+      expect(h.app.imageCache.get(fileId)?.transitionStart).toEqual(
+        expect.any(Number),
+      );
+      expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
     });
   });
 

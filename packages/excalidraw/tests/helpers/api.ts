@@ -203,6 +203,8 @@ export class API {
     points?: T extends "arrow" | "line" | "freedraw" ? readonly LocalPoint[] : never;
     locked?: boolean;
     fileId?: T extends "image" ? string : never;
+    fileName?: T extends "image" ? string : never;
+    thumbHash?: T extends "image" ? string : never;
     scale?: T extends "image" ? ExcalidrawImageElement["scale"] : never;
     status?: T extends "image" ? ExcalidrawImageElement["status"] : never;
     startBinding?: T extends "arrow"
@@ -353,6 +355,8 @@ export class API {
           height,
           type,
           fileId: (rest.fileId as string as FileId) ?? null,
+          fileName: rest.fileName ?? null,
+          thumbHash: rest.thumbHash ?? null,
           status: rest.status || "saved",
           scale: rest.scale || [1, 1],
         });

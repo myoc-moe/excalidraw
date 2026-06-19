@@ -43,6 +43,27 @@ describe("restoreElements", () => {
     expect(restoredElements.length).toBe(elements.length);
   });
 
+  it("restores image ThumbHashes and defaults legacy images to null", () => {
+    const imageWithThumbHash = API.createElement({
+      type: "image",
+      fileId: "image-with-thumbhash",
+      thumbHash: "dGh1bWJoYXNo",
+    });
+    const legacyImage: any = API.createElement({
+      type: "image",
+      fileId: "legacy-image",
+    });
+    delete legacyImage.thumbHash;
+
+    const [restoredImage, restoredLegacyImage] = restore.restoreElements(
+      [imageWithThumbHash, legacyImage],
+      null,
+    );
+
+    expect(restoredImage).toMatchObject({ thumbHash: "dGh1bWJoYXNo" });
+    expect(restoredLegacyImage).toMatchObject({ thumbHash: null });
+  });
+
   it("when imported data state is null it should return an empty array of elements", () => {
     const restoredElements = restore.restoreElements(null, null);
     expect(restoredElements.length).toBe(0);

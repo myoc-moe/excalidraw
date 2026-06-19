@@ -67,6 +67,7 @@ import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 
 import { ShapeCache } from "./shape";
+import { getThumbHashPlaceholder } from "./image";
 
 import type {
   ExcalidrawElement,
@@ -363,6 +364,20 @@ const drawImagePlaceholder = (
   context: CanvasRenderingContext2D,
   theme: StaticCanvasRenderConfig["theme"],
 ) => {
+  if (element.status !== "error" && element.thumbHash) {
+    const thumbHashPlaceholder = getThumbHashPlaceholder(element.thumbHash);
+    if (thumbHashPlaceholder) {
+      context.drawImage(
+        thumbHashPlaceholder,
+        0,
+        0,
+        element.width,
+        element.height,
+      );
+      return;
+    }
+  }
+
   context.fillStyle = theme === THEME.DARK ? "#2E2E2E" : "#E7E7E7";
   context.fillRect(0, 0, element.width, element.height);
 
@@ -456,6 +471,41 @@ const drawElementOnCanvas = (
             getCornerRadius(Math.min(element.width, element.height), element),
           );
           context.clip();
+        }
+
+        const transitionDuration = renderConfig.imageTransitionDuration ?? 0;
+        if (
+          !renderConfig.isExporting &&
+          cacheEntry?.transitionStart !== undefined
+        ) {
+          if (transitionDuration > 0) {
+            const transitionProgress = Math.min(
+              1,
+              (performance.now() - cacheEntry.transitionStart) /
+                transitionDuration,
+            );
+
+            if (transitionProgress < 1) {
+              if (cacheEntry.placeholderImage) {
+                context.drawImage(
+                  cacheEntry.placeholderImage,
+                  0,
+                  0,
+                  element.width,
+                  element.height,
+                );
+              } else {
+                drawImagePlaceholder(element, context, renderConfig.theme);
+              }
+              context.globalAlpha *= transitionProgress;
+            } else {
+              delete cacheEntry.placeholderImage;
+              delete cacheEntry.transitionStart;
+            }
+          } else {
+            delete cacheEntry.placeholderImage;
+            delete cacheEntry.transitionStart;
+          }
         }
 
         const { x, y, width, height } = element.crop
@@ -624,6 +674,9 @@ const generateElementWithCanvas = (
   const boundTextElement = getBoundTextElement(element, elementsMap);
   const boundTextElementVersion = boundTextElement?.version || null;
   const imageCrop = isImageElement(element) ? element.crop : null;
+  const hasActiveImageTransition =
+    isInitializedImageElement(element) &&
+    renderConfig.imageCache.get(element.fileId)?.transitionStart !== undefined;
 
   const containingFrameOpacity =
     getContainingFrame(element, elementsMap)?.opacity || 100;
@@ -634,6 +687,7 @@ const generateElementWithCanvas = (
     prevElementWithCanvas.theme !== appState.theme ||
     prevElementWithCanvas.boundTextElementVersion !== boundTextElementVersion ||
     prevElementWithCanvas.imageCrop !== imageCrop ||
+    hasActiveImageTransition ||
     prevElementWithCanvas.containingFrameOpacity !== containingFrameOpacity ||
     // since we rotate the canvas when copying from cached canvas, we don't
     // regenerate the cached canvas. But we need to in case of labels which are

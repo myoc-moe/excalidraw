@@ -14,10 +14,15 @@ import type {
   RenderableElementsMap,
   StaticCanvasRenderConfig,
 } from "../../scene/types";
-import type { AppState, StaticCanvasAppState } from "../../types";
+import type {
+  AppClassProperties,
+  AppState,
+  StaticCanvasAppState,
+} from "../../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 
 type StaticCanvasProps = {
+  app: AppClassProperties;
   canvas: HTMLCanvasElement;
   rc: RoughCanvas;
   elementsMap: RenderableElementsMap;
@@ -33,6 +38,68 @@ type StaticCanvasProps = {
 const StaticCanvas = (props: StaticCanvasProps) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const isComponentMounted = useRef(false);
+  const propsRef = useRef(props);
+  const renderCanvasRef = useRef<() => void>(() => {});
+  const transitionFrameRef = useRef<number | null>(null);
+  propsRef.current = props;
+
+  const renderCanvas = React.useCallback(() => {
+    const currentProps = propsRef.current;
+    const wrapper = wrapperRef.current;
+    if (!wrapper) {
+      return;
+    }
+
+    const gridColorBold = getComputedStyle(wrapper)
+      .getPropertyValue("--color-grid-bold")
+      .trim();
+    const gridColorRegular = getComputedStyle(wrapper)
+      .getPropertyValue("--color-grid-regular")
+      .trim();
+
+    renderStaticScene(
+      {
+        canvas: currentProps.canvas,
+        rc: currentProps.rc,
+        scale: currentProps.scale,
+        elementsMap: currentProps.elementsMap,
+        allElementsMap: currentProps.allElementsMap,
+        visibleElements: currentProps.visibleElements,
+        appState: currentProps.appState,
+        renderConfig: {
+          ...currentProps.renderConfig,
+          gridColorBold,
+          gridColorRegular,
+        },
+      },
+      isRenderThrottlingEnabled(),
+    );
+
+    const transitionDuration =
+      currentProps.renderConfig.imageTransitionDuration ?? 0;
+    const hasActiveTransition =
+      transitionDuration > 0 &&
+      currentProps.visibleElements.some((element) => {
+        if (element.type !== "image" || !element.fileId) {
+          return false;
+        }
+        const transitionStart = currentProps.renderConfig.imageCache.get(
+          element.fileId,
+        )?.transitionStart;
+        return (
+          transitionStart !== undefined &&
+          performance.now() - transitionStart < transitionDuration
+        );
+      });
+
+    if (hasActiveTransition && transitionFrameRef.current === null) {
+      transitionFrameRef.current = requestAnimationFrame(() => {
+        transitionFrameRef.current = null;
+        renderCanvasRef.current();
+      });
+    }
+  }, []);
+  renderCanvasRef.current = renderCanvas;
 
   useEffect(() => {
     props.canvas.style.width = `${props.appState.width}px`;
@@ -56,31 +123,37 @@ const StaticCanvas = (props: StaticCanvasProps) => {
       canvas.classList.add("excalidraw__canvas", "static");
     }
 
-    const gridColorBold = getComputedStyle(wrapper)
-      .getPropertyValue("--color-grid-bold")
-      .trim();
-    const gridColorRegular = getComputedStyle(wrapper)
-      .getPropertyValue("--color-grid-regular")
-      .trim();
-
-    renderStaticScene(
-      {
-        canvas,
-        rc: props.rc,
-        scale: props.scale,
-        elementsMap: props.elementsMap,
-        allElementsMap: props.allElementsMap,
-        visibleElements: props.visibleElements,
-        appState: props.appState,
-        renderConfig: {
-          ...props.renderConfig,
-          gridColorBold,
-          gridColorRegular,
-        },
-      },
-      isRenderThrottlingEnabled(),
-    );
+    renderCanvas();
   });
+
+  useEffect(() => {
+    let scheduledFrame: number | null = null;
+    const unsubscribe = props.app.imagePlaceholderUpdateEmitter.on(() => {
+      if (scheduledFrame !== null) {
+        return;
+      }
+      scheduledFrame = requestAnimationFrame(() => {
+        scheduledFrame = null;
+        renderCanvas();
+      });
+    });
+
+    return () => {
+      unsubscribe();
+      if (scheduledFrame !== null) {
+        cancelAnimationFrame(scheduledFrame);
+      }
+    };
+  }, [props.app, renderCanvas]);
+
+  useEffect(
+    () => () => {
+      if (transitionFrameRef.current !== null) {
+        cancelAnimationFrame(transitionFrameRef.current);
+      }
+    },
+    [],
+  );
 
   return <div className="excalidraw__canvas-wrapper" ref={wrapperRef} />;
 };

@@ -330,6 +330,7 @@ export const MAX_ALLOWED_FILE_BYTES = 100 * 1024 * 1024; // Myoc file up to 100M
 export const DEFAULT_IMAGE_OPTIONS: AppProps["imageOptions"] = {
   maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
   maxFileSizeBytes: MAX_ALLOWED_FILE_BYTES,
+  placeholderTransitionDuration: 300,
 };
 
 export const SVG_NS = "http://www.w3.org/2000/svg";

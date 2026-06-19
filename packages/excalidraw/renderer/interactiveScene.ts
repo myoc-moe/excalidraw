@@ -77,6 +77,7 @@ import type {
   ExcalidrawTextElement,
   GroupId,
   NonDeleted,
+  NonDeletedExcalidrawElement,
   NonDeletedSceneElementsMap,
 } from "@excalidraw/element/types";
 
@@ -1549,6 +1550,65 @@ const renderResetAutoResizeHandle = (
   context.restore();
 };
 
+const renderImageLoadingProgress = (
+  context: CanvasRenderingContext2D,
+  visibleElements: readonly NonDeletedExcalidrawElement[],
+  elementsMap: RenderableElementsMap,
+  app: AppClassProperties,
+  appState: InteractiveCanvasAppState,
+  selectionColor: InteractiveCanvasRenderConfig["selectionColor"],
+) => {
+  for (const element of visibleElements) {
+    if (
+      !isImageElement(element) ||
+      !element.fileId ||
+      element.status === "error"
+    ) {
+      continue;
+    }
+
+    const progress = app.imageLoadingProgress.get(element.fileId);
+    if (progress === undefined) {
+      continue;
+    }
+
+    const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+    const centerX = (x1 + x2) / 2 + appState.scrollX;
+    const centerY = (y1 + y2) / 2 + appState.scrollY;
+    const zoom = appState.zoom.value;
+    const radius = Math.min(14, (Math.min(x2 - x1, y2 - y1) * zoom) / 4) / zoom;
+    const lineWidth = Math.min(3 / zoom, radius / 2);
+    if (radius <= 0 || lineWidth <= 0) {
+      continue;
+    }
+
+    context.save();
+    context.lineWidth = lineWidth;
+    context.lineCap = "round";
+    context.strokeStyle =
+      appState.theme === THEME.DARK
+        ? "rgba(255, 255, 255, 0.35)"
+        : "rgba(0, 0, 0, 0.25)";
+    context.beginPath();
+    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    context.stroke();
+
+    if (progress > 0) {
+      context.strokeStyle = selectionColor;
+      context.beginPath();
+      context.arc(
+        centerX,
+        centerY,
+        radius,
+        -Math.PI / 2,
+        -Math.PI / 2 + Math.PI * 2 * progress,
+      );
+      context.stroke();
+    }
+    context.restore();
+  }
+};
+
 const _renderInteractiveScene = ({
   app,
   canvas,
@@ -2028,6 +2088,15 @@ const _renderInteractiveScene = ({
   });
 
   renderSnaps(context, appState);
+
+  renderImageLoadingProgress(
+    context,
+    visibleElements,
+    elementsMap,
+    app,
+    appState,
+    renderConfig.selectionColor,
+  );
 
   context.restore();
 

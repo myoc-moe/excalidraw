@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------------------
 
 import { MIME_TYPES, SVG_NS } from "@excalidraw/common";
+import { rgbaToThumbHash, thumbHashToRGBA } from "thumbhash";
 
 import type {
   AppClassProperties,
@@ -17,6 +18,83 @@ import type {
   FileId,
   InitializedExcalidrawImageElement,
 } from "./types";
+
+const THUMB_HASH_MAX_DIMENSION = 100;
+const thumbHashCanvasCache = new Map<string, HTMLCanvasElement>();
+const invalidThumbHashes = new Set<string>();
+
+const bytesToBase64 = (bytes: Uint8Array) => {
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+};
+
+const base64ToBytes = (base64: string) => {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+  return bytes;
+};
+
+export const generateThumbHash = (image: HTMLImageElement) => {
+  const naturalWidth = image.naturalWidth || image.width;
+  const naturalHeight = image.naturalHeight || image.height;
+  if (!naturalWidth || !naturalHeight) {
+    return null;
+  }
+
+  const scale = Math.min(
+    1,
+    THUMB_HASH_MAX_DIMENSION / Math.max(naturalWidth, naturalHeight),
+  );
+  const width = Math.max(1, Math.round(naturalWidth * scale));
+  const height = Math.max(1, Math.round(naturalHeight * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return null;
+  }
+
+  context.drawImage(image, 0, 0, width, height);
+  const imageData = context.getImageData(0, 0, width, height);
+  return bytesToBase64(rgbaToThumbHash(width, height, imageData.data));
+};
+
+export const getThumbHashPlaceholder = (thumbHash: string) => {
+  if (invalidThumbHashes.has(thumbHash)) {
+    return null;
+  }
+  const cached = thumbHashCanvasCache.get(thumbHash);
+  if (cached) {
+    return cached;
+  }
+
+  try {
+    const { w, h, rgba } = thumbHashToRGBA(base64ToBytes(thumbHash));
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return null;
+    }
+    const imageData = context.createImageData(w, h);
+    imageData.data.set(rgba);
+    context.putImageData(imageData, 0, 0);
+    thumbHashCanvasCache.set(thumbHash, canvas);
+    return canvas;
+  } catch (error) {
+    invalidThumbHashes.add(thumbHash);
+    console.warn("Invalid ThumbHash", error);
+    return null;
+  }
+};
 
 export const loadHTMLImageElement = (dataURL: DataURL) => {
   return new Promise<HTMLImageElement>((resolve, reject) => {

@@ -166,6 +166,8 @@ import {
   maybeParseEmbedSrc,
   getEmbedLink,
   getInitializedImageElements,
+  generateThumbHash,
+  loadHTMLImageElement,
   normalizeSVG,
   updateImageCache as _updateImageCache,
   getBoundTextElement,
@@ -638,6 +640,10 @@ class App extends React.Component<AppProps, AppState> {
 
   public files: BinaryFiles = {};
   public imageCache: AppClassProperties["imageCache"] = new Map();
+  public imageLoadingProgress = new Map<FileId, number>();
+  public imageLoadingProgressEmitter = new Emitter<[]>();
+  public imagePlaceholderUpdateEmitter = new Emitter<[]>();
+  private imageTransitionPlaceholders = new Map<FileId, HTMLImageElement>();
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
    * Indicates whether the embeddable's url has been validated for rendering.
@@ -743,6 +749,8 @@ class App extends React.Component<AppProps, AppState> {
       applyDeltas: this.applyDeltas,
       mutateElement: this.mutateElement,
       addFiles: this.addFiles,
+      addImagePlaceholder: this.addImagePlaceholder,
+      setImageLoadingProgress: this.setImageLoadingProgress,
       addImageElementsToScene: this.addImageElementsToScene,
       resetScene: this.resetScene,
       getSceneElementsIncludingDeleted: this.getSceneElementsIncludingDeleted,
@@ -2315,6 +2323,7 @@ class App extends React.Component<AppProps, AppState> {
                             />
                           )}
                           <StaticCanvas
+                            app={this}
                             canvas={this.canvas}
                             rc={this.rc}
                             elementsMap={elementsMap}
@@ -2328,6 +2337,9 @@ class App extends React.Component<AppProps, AppState> {
                             appState={this.state}
                             renderConfig={{
                               imageCache: this.imageCache,
+                              imageTransitionDuration:
+                                this.props.imageOptions
+                                  .placeholderTransitionDuration,
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               canvasBackgroundColor:
@@ -2351,6 +2363,9 @@ class App extends React.Component<AppProps, AppState> {
                               allElementsMap={allElementsMap}
                               renderConfig={{
                                 imageCache: this.imageCache,
+                                imageTransitionDuration:
+                                  this.props.imageOptions
+                                    .placeholderTransitionDuration,
                                 isExporting: false,
                                 renderGrid: false,
                                 canvasBackgroundColor:
@@ -3201,6 +3216,10 @@ class App extends React.Component<AppProps, AppState> {
     this.renderer = new Renderer(this.scene);
     this.files = {};
     this.imageCache.clear();
+    this.imageLoadingProgress.clear();
+    this.imageTransitionPlaceholders.clear();
+    this.imageLoadingProgressEmitter.clear();
+    this.imagePlaceholderUpdateEmitter.clear();
     this.resizeObserver?.disconnect();
     this.unmounted = true;
     this.removeEventListeners();
@@ -4575,12 +4594,114 @@ class App extends React.Component<AppProps, AppState> {
     (files) => {
       const { addedFiles } = this.addMissingFiles(files);
 
+      for (const fileId of Object.keys(addedFiles) as FileId[]) {
+        const cacheEntry = this.imageCache.get(fileId);
+        if (
+          cacheEntry?.isPlaceholder &&
+          !(cacheEntry.image instanceof Promise)
+        ) {
+          this.imageTransitionPlaceholders.set(fileId, cacheEntry.image);
+        }
+      }
+
       this.clearImageShapeCache(addedFiles);
       this.scene.triggerUpdate();
 
-      this.addNewImagesToImageCache();
+      this.addNewImagesToImageCache().then(() => {
+        for (const fileId of Object.keys(addedFiles) as FileId[]) {
+          const cacheEntry = this.imageCache.get(fileId);
+          if (cacheEntry && !(cacheEntry.image instanceof Promise)) {
+            this.clearImageLoadingProgress(fileId);
+          }
+          this.imageTransitionPlaceholders.delete(fileId);
+        }
+      });
     },
   );
+
+  public addImagePlaceholder: ExcalidrawImperativeAPI["addImagePlaceholder"] =
+    async (fileId, file) => {
+      if (this.files[fileId]) {
+        return;
+      }
+
+      let normalizedFile = await normalizeFile(file);
+      if (!isSupportedImageFile(normalizedFile)) {
+        throw new Error(t("errors.unsupportedFileType"));
+      }
+
+      if (normalizedFile.type === MIME_TYPES.svg) {
+        normalizedFile = SVGStringToFile(
+          normalizeSVG(await normalizedFile.text()),
+          normalizedFile.name,
+        );
+      }
+
+      const dataURL = await getDataURL(normalizedFile);
+      if (this.files[fileId]) {
+        return;
+      }
+
+      const imagePromise = loadHTMLImageElement(dataURL);
+      const placeholderEntry = {
+        image: imagePromise,
+        mimeType: normalizedFile.type as ValueOf<typeof IMAGE_MIME_TYPES>,
+        isPlaceholder: true,
+      };
+      this.imageCache.set(fileId, placeholderEntry);
+
+      try {
+        const image = await imagePromise;
+        if (
+          this.imageCache.get(fileId) !== placeholderEntry ||
+          this.files[fileId]
+        ) {
+          return;
+        }
+
+        this.imageCache.set(fileId, { ...placeholderEntry, image });
+        this.clearImageShapeCacheForFileId(fileId);
+        this.imagePlaceholderUpdateEmitter.trigger();
+      } catch (error) {
+        if (this.imageCache.get(fileId) === placeholderEntry) {
+          this.imageCache.delete(fileId);
+          this.imagePlaceholderUpdateEmitter.trigger();
+        }
+        throw error;
+      }
+    };
+
+  public setImageLoadingProgress: ExcalidrawImperativeAPI["setImageLoadingProgress"] =
+    (fileId, progress) => {
+      if (progress === null) {
+        this.clearImageLoadingProgress(fileId);
+        return;
+      }
+      if (!Number.isFinite(progress)) {
+        return;
+      }
+
+      const nextProgress = clamp(progress, 0, 1);
+      if (this.imageLoadingProgress.get(fileId) === nextProgress) {
+        return;
+      }
+      this.imageLoadingProgress.set(fileId, nextProgress);
+      this.imageLoadingProgressEmitter.trigger();
+    };
+
+  private clearImageLoadingProgress = (fileId: FileId) => {
+    if (this.imageLoadingProgress.delete(fileId)) {
+      this.imageLoadingProgressEmitter.trigger();
+    }
+  };
+
+  private clearImageShapeCacheForFileId = (fileId: FileId) => {
+    for (const element of this.scene.getNonDeletedElements()) {
+      if (isInitializedImageElement(element) && element.fileId === fileId) {
+        ShapeCache.delete(element);
+      }
+    }
+  };
 
   private addMissingFiles = (
     files: BinaryFiles | BinaryFileData[],
@@ -11925,9 +12046,16 @@ class App extends React.Component<AppProps, AppState> {
             },
           ]);
 
-          if (!this.imageCache.get(fileId)) {
-            this.addNewImagesToImageCache();
+          if (this.imageCache.get(fileId)?.isPlaceholder) {
+            const cacheEntry = this.imageCache.get(fileId);
+            if (cacheEntry && !(cacheEntry.image instanceof Promise)) {
+              this.imageTransitionPlaceholders.set(fileId, cacheEntry.image);
+            }
+            this.imageCache.delete(fileId);
+            this.clearImageShapeCacheForFileId(fileId);
+          }
 
+          if (!this.imageCache.get(fileId)) {
             const { erroredFiles } = await this.updateImageCache([
               initializedImageElement,
             ]);
@@ -11939,25 +12067,39 @@ class App extends React.Component<AppProps, AppState> {
 
           const imageHTML = await this.imageCache.get(fileId)?.image;
 
-          if (
-            imageHTML &&
-            this.state.newElement?.id !== initializedImageElement.id
-          ) {
+          let thumbHash: string | null = null;
+          if (imageHTML) {
+            try {
+              thumbHash = generateThumbHash(imageHTML);
+            } catch (error) {
+              console.warn("Failed to generate image ThumbHash", error);
+            }
+          }
+
+          if (thumbHash && this.files[fileId]) {
+            this.files[fileId].thumbHash = thumbHash;
+          }
+
+          if (imageHTML) {
             initializedImageElement = this.getLatestInitializedImageElement(
               placeholderImageElement,
               fileId,
               fileName,
+              thumbHash,
             );
 
-            const naturalDimensions = this.getImageNaturalDimensions(
-              initializedImageElement,
-              imageHTML,
-            );
+            if (this.state.newElement?.id !== initializedImageElement.id) {
+              const naturalDimensions = this.getImageNaturalDimensions(
+                initializedImageElement,
+                imageHTML,
+              );
 
-            // no need to create a new instance anymore, just assign the natural dimensions
-            Object.assign(initializedImageElement, naturalDimensions);
+              // no need to create a new instance anymore, just assign the natural dimensions
+              Object.assign(initializedImageElement, naturalDimensions);
+            }
           }
 
+          this.clearImageLoadingProgress(fileId);
           resolve(initializedImageElement);
         } catch (error: any) {
           console.error(error);
@@ -11976,6 +12118,7 @@ class App extends React.Component<AppProps, AppState> {
     imagePlaceholder: ExcalidrawImageElement,
     fileId: FileId,
     fileName: string,
+    thumbHash: string | null = null,
   ) => {
     const latestImageElement =
       this.scene.getElement(imagePlaceholder.id) ?? imagePlaceholder;
@@ -11985,6 +12128,7 @@ class App extends React.Component<AppProps, AppState> {
       {
         fileId,
         fileName,
+        thumbHash,
       },
     );
   };
@@ -12074,7 +12218,24 @@ class App extends React.Component<AppProps, AppState> {
       files,
     });
 
+    const transitionStart = performance.now();
+    for (const fileId of updatedFiles.keys()) {
+      const cacheEntry = this.imageCache.get(fileId);
+      if (cacheEntry && !(cacheEntry.image instanceof Promise)) {
+        this.imageCache.set(fileId, {
+          ...cacheEntry,
+          placeholderImage: this.imageTransitionPlaceholders.get(fileId),
+          transitionStart,
+        });
+      }
+      this.imageTransitionPlaceholders.delete(fileId);
+    }
+
     if (erroredFiles.size) {
+      for (const fileId of erroredFiles.keys()) {
+        this.imageTransitionPlaceholders.delete(fileId);
+        this.clearImageLoadingProgress(fileId);
+      }
       this.store.scheduleAction(CaptureUpdateAction.NEVER);
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((element) => {

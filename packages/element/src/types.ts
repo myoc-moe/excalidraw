@@ -148,6 +148,8 @@ export type ExcalidrawImageElement = _ExcalidrawElementBase &
     type: "image";
     fileId: FileId | null;
     fileName: string | null;
+    /** compact base64-encoded ThumbHash used while the image is unavailable */
+    thumbHash: string | null;
     /** whether respective file is persisted */
     status: "pending" | "saved" | "error";
     /** X and Y scale factors <-1, 1>, used for image axis flipping */

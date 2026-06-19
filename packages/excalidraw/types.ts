@@ -122,6 +122,8 @@ export type BinaryFileData = {
   id: FileId;
   fileName: string;
   dataURL: DataURL;
+  /** compact image placeholder, also stored on the corresponding image element */
+  thumbHash?: string;
   /**
    * Epoch timestamp in milliseconds
    */
@@ -768,6 +770,8 @@ export type ExportOpts = {
 export type ImageOptions = Partial<{
   maxWidthOrHeight: number;
   maxFileSizeBytes: number;
+  /** duration of the placeholder-to-full-image crossfade in milliseconds */
+  placeholderTransitionDuration: number;
 }>;
 
 // NOTE at the moment, if action name corresponds to canvasAction prop, its
@@ -840,8 +844,14 @@ export type AppClassProperties = {
     {
       image: HTMLImageElement | Promise<HTMLImageElement>;
       mimeType: ValueOf<typeof IMAGE_MIME_TYPES>;
+      isPlaceholder?: boolean;
+      placeholderImage?: HTMLImageElement;
+      transitionStart?: number;
     }
   >;
+  imageLoadingProgress: App["imageLoadingProgress"];
+  imageLoadingProgressEmitter: App["imageLoadingProgressEmitter"];
+  imagePlaceholderUpdateEmitter: App["imagePlaceholderUpdateEmitter"];
   files: BinaryFiles;
   editorInterface: App["editorInterface"];
   scene: App["scene"];
@@ -1000,6 +1010,8 @@ export interface ExcalidrawImperativeAPI {
   refresh: InstanceType<typeof App>["refresh"];
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;
+  addImagePlaceholder: (fileId: FileId, file: File) => Promise<void>;
+  setImageLoadingProgress: (fileId: FileId, progress: number | null) => void;
   addImageElementsToScene: (
     imageFiles: { file: File; customData: Record<string, any> }[],
     sceneX: number,
