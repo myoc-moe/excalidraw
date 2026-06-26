@@ -5,6 +5,7 @@ import type {
   MIME_TYPES,
   ColorTuple,
   EditorInterface,
+  StrokeWidthKey,
 } from "@excalidraw/common";
 
 import type { LinearElementEditor } from "@excalidraw/element";
@@ -35,6 +36,7 @@ import type {
   ArrangeAlgorithms,
   BindMode,
   ExcalidrawTextElement,
+  StrokeVariability,
 } from "@excalidraw/element/types";
 
 import type {
@@ -409,9 +411,10 @@ export interface AppState {
   currentItemStrokeColor: string;
   currentItemBackgroundColor: string;
   currentItemFillStyle: ExcalidrawElement["fillStyle"];
-  currentItemStrokeWidth: number;
+  currentItemStrokeWidthKey: StrokeWidthKey;
   currentItemStrokeStyle: ExcalidrawElement["strokeStyle"];
   currentItemRoughness: number;
+  currentItemStrokeVariability: StrokeVariability;
   currentItemOpacity: number;
   currentItemFontFamily: FontFamilyValues;
   currentItemFontSize: number;

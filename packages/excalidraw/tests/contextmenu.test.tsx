@@ -1,4 +1,5 @@
 import React from "react";
+import { vi } from "vitest";
 
 import { setDateTimeForTests } from "@excalidraw/common";
 import { KEYS, reseed } from "@excalidraw/common";

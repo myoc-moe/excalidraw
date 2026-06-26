@@ -67,7 +67,7 @@ yarn release --tag=next
 Stable release:
 
 ```powershell
-yarn release --tag=latest --version=0.19.507
+yarn release --tag=latest --version=0.19.519
 ```
 
 What the root release script does:
