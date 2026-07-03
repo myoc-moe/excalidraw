@@ -694,6 +694,8 @@ export interface ExcalidrawProps {
   imageContextMenuItems?: (
     imageIds: readonly ExcalidrawElement["id"][],
   ) => readonly ImageContextMenuItem[];
+  /** @internal Myoc app-only diagnostics for mobile drag/drop payloads. */
+  showDropEventDebugAlert?: boolean;
   onPointerDown?: (
     activeTool: AppState["activeTool"],
     pointerDownState: PointerDownState,

@@ -111,6 +111,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     backgroundColorTopPicks,
     renderScrollbars,
     imageOptions,
+    showDropEventDebugAlert,
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
@@ -239,6 +240,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           backgroundColorTopPicks={backgroundColorTopPicks}
           renderScrollbars={renderScrollbars}
           imageOptions={normalizedImageOptions}
+          showDropEventDebugAlert={showDropEventDebugAlert}
         >
           {children}
         </App>
@@ -354,6 +356,11 @@ export {
 
 export { serializeAsJSON } from "./data/json";
 export { loadFromBlob } from "./data/blob";
+export {
+  captureDragEventData,
+  parseDataTransferEvent,
+  parseDragImageMetadata,
+} from "./clipboard";
 export { isLinearElement } from "@excalidraw/element";
 
 export {
@@ -422,6 +429,14 @@ export type {
   NormalisePreferences,
   SmartZoomPreferences,
 } from "./types";
+
+export type {
+  DragImageMetadata,
+  ParsedDataTranferList,
+  ParsedDataTransferFile,
+  DragDataSnapshot,
+  RawDragData,
+} from "./clipboard";
 
 export {
   renderSpreadsheet,

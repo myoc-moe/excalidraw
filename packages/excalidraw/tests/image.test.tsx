@@ -115,6 +115,52 @@ describe("image insertion", () => {
     await assert();
   });
 
+  it("stores dropped text/uri-list url in image custom data", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+
+    const url = "https://example.com/image.jpg";
+
+    await API.drop([
+      {
+        kind: "string",
+        type: "text/uri-list",
+        value: `# source image\n${url}`,
+      },
+      { kind: "file", file: await API.loadFile("./fixtures/deer.png") },
+    ]);
+
+    await waitFor(() => {
+      expect(h.elements[0]).toEqual(
+        expect.objectContaining({
+          customData: expect.objectContaining({
+            src: url,
+            rawDragData: expect.objectContaining({
+              types: expect.arrayContaining(["text/uri-list", "Files"]),
+              data: expect.objectContaining({
+                "text/uri-list": `# source image\n${url}`,
+              }),
+              parsedItems: expect.arrayContaining([
+                {
+                  kind: "string",
+                  type: "text/uri-list",
+                  value: `# source image\n${url}`,
+                },
+                expect.objectContaining({
+                  kind: "file",
+                  type: MIME_TYPES.png,
+                  file: expect.objectContaining({
+                    name: "deer.png",
+                    type: MIME_TYPES.png,
+                  }),
+                }),
+              ]),
+            }),
+          }),
+        }),
+      );
+    });
+  });
+
   it("should eventually initialize all pasted images", async () => {
     await setup();
 

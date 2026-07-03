@@ -527,7 +527,10 @@ export class API {
         }),
         // https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/getData
         getData: (type: string) => {
-          return items.find((item) => item.type === "string" && item.type === type) || "";
+          const stringItem = items.find(
+            (item) => item.kind === "string" && item.type === type,
+          ) as { kind: "string"; value: string; type: string } | undefined;
+          return stringItem?.value || "";
         },
         // https://developer.mozilla.org/en-US/docs/Web/API/DataTransfer/types
         types: Array.from(new Set(items.map((item) => item.kind === "file" ? "Files" : item.type))),

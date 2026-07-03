@@ -855,6 +855,7 @@ const ExcalidrawWrapper = () => {
     >
       <Excalidraw
         imageContextMenuItems={getActionsForImageIds}
+        showDropEventDebugAlert
         wheelZoomsOnDefault
         compressImageFile={resizeImageFile}
         onChange={onChange}

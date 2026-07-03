@@ -405,6 +405,38 @@ export type ParsedDataTranferList = ParsedDataTransferItem[] & {
   getFiles: typeof getDataTransferFiles;
 };
 
+export type DragDataSnapshot = {
+  items: { kind: string; type: string }[];
+  files: {
+    name: string;
+    type: string;
+    size: number;
+    lastModified?: number;
+  }[];
+  types: string[];
+  data: Record<string, string>;
+};
+
+export type RawDragData = DragDataSnapshot & {
+  parsedItems: {
+    kind: string;
+    type: string;
+    value?: string;
+    file?: {
+      name: string;
+      type: string;
+      size: number;
+      lastModified?: number;
+    };
+  }[];
+};
+
+export type DragImageMetadata = Record<string, unknown> & {
+  src?: string;
+  alt?: string;
+  rawDragData?: RawDragData;
+};
+
 const findDataTransferItemType = function <
   T extends ValueOf<typeof STRING_MIME_TYPES>,
 >(this: ParsedDataTranferList, type: T): ParsedDataTransferItemType<T> | null {
@@ -438,6 +470,170 @@ const getDataTransferFiles = function (
   return this.filter(
     (item): item is ParsedDataTransferFile => item.kind === "file",
   );
+};
+
+export const captureDragEventData = (
+  event: ClipboardEvent | DragEvent | React.DragEvent<HTMLDivElement>,
+): DragDataSnapshot => {
+  const dataTransfer = isClipboardEvent(event)
+    ? event.clipboardData
+    : event.dataTransfer;
+
+  const types = Array.from(dataTransfer?.types ?? []);
+  const dataTypes = Array.from(
+    new Set([
+      ...types.filter((type) => type !== "Files"),
+      MIME_TYPES.text,
+      MIME_TYPES.html,
+      "text/uri-list",
+      "public.url",
+      "public.plain-text",
+      "text/x-moz-url",
+    ]),
+  );
+  const data: Record<string, string> = {};
+
+  for (const type of dataTypes) {
+    try {
+      const value = dataTransfer?.getData(type);
+      if (value) {
+        data[type] = value;
+      }
+    } catch {
+      // Some browsers throw for file-only or unsupported transfer types.
+    }
+  }
+
+  return {
+    items: Array.from(dataTransfer?.items ?? []).map((item) => ({
+      kind: item.kind,
+      type: item.type,
+    })),
+    files: Array.from(dataTransfer?.files ?? []).map((file) => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      lastModified: file.lastModified,
+    })),
+    types,
+    data,
+  };
+};
+
+const getParsedRawDragItems = (dataTransferList: ParsedDataTranferList) =>
+  dataTransferList.map((item) => {
+    if (item.kind === "string") {
+      return {
+        kind: item.kind,
+        type: item.type,
+        value: item.value,
+      };
+    }
+
+    return {
+      kind: item.kind,
+      type: item.type,
+      file: {
+        name: item.file.name,
+        type: item.file.type,
+        size: item.file.size,
+        lastModified: item.file.lastModified,
+      },
+    };
+  });
+
+export const parseDragImageMetadata = (
+  dataTransferList: ParsedDataTranferList,
+  imageCount: number,
+  dragDataSnapshot?: DragDataSnapshot,
+): DragImageMetadata[] => {
+  const htmlImageSources: string[] = [];
+  const textImageSources: string[] = [];
+  const imageAlts: string[] = [];
+
+  const pushUnique = (values: string[], value: string | null) => {
+    const trimmedValue = value?.trim();
+
+    if (trimmedValue && !values.includes(trimmedValue)) {
+      values.push(trimmedValue);
+    }
+  };
+
+  const pushUriList = (values: string[], value: string) => {
+    value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"))
+      .forEach((line) => pushUnique(values, line));
+  };
+
+  dataTransferList.forEach((item) => {
+    if (item.kind !== "string") {
+      return;
+    }
+
+    if (item.type === MIME_TYPES.html) {
+      try {
+        const doc = new DOMParser().parseFromString(item.value, MIME_TYPES.html);
+
+        for (const img of Array.from(doc.body.querySelectorAll("img"))) {
+          pushUnique(htmlImageSources, img.getAttribute("src"));
+          pushUnique(imageAlts, img.getAttribute("alt"));
+        }
+      } catch {
+        // ignore malformed HTML payloads
+      }
+    } else if (item.type === MIME_TYPES.text) {
+      pushUnique(textImageSources, item.value);
+    } else if (item.type === "text/uri-list") {
+      pushUriList(textImageSources, item.value);
+    }
+  });
+
+  const imageSources = [
+    ...htmlImageSources,
+    ...textImageSources.filter((src) => !htmlImageSources.includes(src)),
+  ];
+
+  const imageDetails: DragImageMetadata[] = Array.from(
+    { length: imageCount },
+    () => ({}),
+  );
+  const rawDragData: RawDragData = {
+    ...(dragDataSnapshot ?? {
+      items: [],
+      files: [],
+      types: [],
+      data: {},
+    }),
+    parsedItems: getParsedRawDragItems(dataTransferList),
+  };
+
+  imageDetails.forEach((detail, index) => {
+    const source = imageSources[index];
+    const alt = imageAlts[index];
+
+    if (source) {
+      detail.src = source;
+    }
+
+    if (alt) {
+      detail.alt = alt;
+    }
+
+    detail.rawDragData = rawDragData;
+  });
+
+  const additionalUrls = imageSources.slice(imageDetails.length);
+  const firstImageDetails = imageDetails[0];
+
+  if (firstImageDetails && additionalUrls.length > 0) {
+    additionalUrls.forEach((url, index) => {
+      firstImageDetails[`additionalUrl${index + 1}`] = url;
+    });
+  }
+
+  return imageDetails;
 };
 
 /** @returns list of MIME types, synchronously */
