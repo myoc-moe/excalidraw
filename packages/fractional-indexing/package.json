@@ -1,5 +1,5 @@
 {
-  "version": "0.19.520",
+  "version": "0.19.521",
   "name": "@myoc/fractional-indexing",
   "description": "Provides functions for generating ordering strings",
   "type": "module",
