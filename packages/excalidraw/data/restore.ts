@@ -71,6 +71,7 @@ import type {
   ExcalidrawTextElement,
   FixedPointBinding,
   FontFamilyValues,
+  NonDeleted,
   NonDeletedSceneElementsMap,
   OrderedExcalidrawElement,
   StrokeVariability,
@@ -210,6 +211,8 @@ export const AllowedExcalidrawActiveTools: Record<
   hand: true,
   laser: false,
   magicframe: false,
+  autoshape: false,
+  bucketfill: false,
 };
 
 export type RestoredDataState = {
@@ -367,8 +370,8 @@ const repairBinding = <T extends ExcalidrawArrowElement>(
               { value: 1 as NormalizedZoomValue },
             ) || p;
       const { fixedPoint } = calculateFixedPointForNonElbowArrowBinding(
-        safeElement,
-        boundElement,
+        safeElement as NonDeleted<ExcalidrawArrowElement>,
+        boundElement as NonDeleted<ExcalidrawBindableElement>,
         startOrEnd,
         elementsMap,
         focusPoint,

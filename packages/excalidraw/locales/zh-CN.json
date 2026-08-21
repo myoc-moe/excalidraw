@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "粘贴",
     "pasteAsPlaintext": "粘贴为纯文本",
     "pasteCharts": "粘贴图表",
+    "chartType_bar": "条形图",
+    "chartType_line": "折线图",
+    "chartType_radar": "雷达图",
+    "chartType_plaintext": "纯文本",
     "selectAll": "全部选中",
     "multiSelect": "添加元素到选区",
     "moveCanvas": "移动画布",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "虚线",
     "strokeStyle_dotted": "点虚线",
     "sloppiness": "线条风格",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "透明度",
     "textAlign": "文本对齐",
     "edges": "边角",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "鸦爪标记（多）",
     "arrowhead_crowfoot_one": "鸦爪标记（一）",
     "arrowhead_crowfoot_one_or_many": "鸦爪标记（一或多）",
+    "arrowhead_cardinality_one": "基数（一个）",
+    "arrowhead_cardinality_many": "基数（多个）",
+    "arrowhead_cardinality_one_or_many": "基数（一个或多个）",
+    "arrowhead_cardinality_exactly_one": "基数（仅有一个）",
+    "arrowhead_cardinality_zero_or_one": "基数（零个或一个）",
+    "arrowhead_cardinality_zero_or_many": "基数（零个或多个）",
     "more_options": "更多选项",
+    "cardinality": "基数",
     "arrowtypes": "箭头类型",
     "arrowtype_sharp": "直箭头",
     "arrowtype_round": "曲线箭头",
@@ -95,6 +111,7 @@
     "group": "编组",
     "ungroup": "解除编组",
     "collaborators": "协作者",
+    "you": "",
     "toggleGrid": "切换网格显示",
     "loadingScene": "正在加载绘图…",
     "loadScene": "从文件加载绘图",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "选择画框中的所有元素",
     "removeAllElementsFromFrame": "分离出画框中的所有元素",
     "eyeDropper": "从画布上取色",
-    "textToDiagram": "文字至图表",
-    "prompt": "Prompt",
     "followUs": "关注我们",
     "discordChat": "Discord 群组",
     "zoomToFitViewport": "缩放以适应视图",
@@ -164,7 +179,14 @@
     "linkToElement": "链接到对象",
     "wrapSelectionInFrame": "用选中的元素创建画框",
     "tab": "Tab",
-    "shapeSwitch": "切换形状"
+    "shapeSwitch": "切换形状",
+    "preferences": "首选项",
+    "preferences_toolLock": "工具锁",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "箭头绑定",
+    "midpointSnapping": "吸附到中点"
   },
   "elementLink": {
     "title": "链接到对象",
@@ -273,13 +295,17 @@
     "link": "为选定的形状添加或更改链接",
     "eraser": "橡皮",
     "frame": "画框工具",
-    "magicframe": "线框图至代码",
     "embeddable": "嵌入网页",
     "laser": "激光笔",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "抓手（平移工具）",
     "extraTools": "更多工具",
-    "mermaidToExcalidraw": "Mermaid 至 Excalidraw",
     "convertElementType": "切换形状种类"
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "矩形",
@@ -292,7 +318,6 @@
     "image": "图片",
     "group": "组",
     "frame": "画框",
-    "magicframe": "线框图至代码",
     "embeddable": "嵌入网页",
     "selection": "选择",
     "iframe": "IFrame"
@@ -307,10 +332,11 @@
     "canvasPanning": "要移动画布，请按住{{shortcut_1}}或{{shortcut_2}}同时拖拽鼠标，或使用抓手工具。",
     "linearElement": "点击创建多个点 拖动创建直线",
     "arrowTool": "点击创建多个点，拖动创建直线。按 {{shortcut}} 切换箭头类型。",
-    "arrowBindModifiers": "",
+    "arrowBindModifiers": "按住{{shortcut_1}}取消绑定，或按住{{shortcut_2}}绑定到固定点",
     "freeDraw": "点击并拖动，完成时松开",
     "text": "提示：您也可以使用选择工具双击任意位置来添加文字",
     "embeddable": "点击并拖动以创建嵌入网页",
+    "autoshape": "",
     "text_selected": "双击或按{{shortcut}}编辑文本",
     "text_editing": "按{{shortcut_1}}或{{shortcut_2}}完成编辑",
     "linearElementMulti": "点击最后的点或按{{shortcut_1}}或{{shortcut_2}}完成",
@@ -318,6 +344,7 @@
     "resize": "缩放时按住{{shortcut_1}}可以约束宽高比例，\n按住{{shortcut_2}}可以从中间缩放",
     "resizeImage": "按住{{shortcut_1}}可以自由缩放，\n按住{{shortcut_2}}可以从中间缩放",
     "rotate": "旋转时可以按住{{shortcut}}来约束角度",
+    "toggleArrowhead": "",
     "lineEditor_info": "按住{{shortcut_1}}双击，或者按{{shortcut_2}}编辑点",
     "lineEditor_line_info": "双击或按{{shortcut}}编辑点",
     "lineEditor_pointSelected": "按{{shortcut_1}}移除点，按{{shortcut_2}}复制点，拖拽移动点",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "错误"
+  },
+  "progressDialog": {
+    "title": "正在保存",
+    "defaultMessage": "正在准备保存…"
   },
   "exportDialog": {
     "disk_title": "保存到本地",
@@ -485,9 +516,9 @@
   },
   "welcomeScreen": {
     "app": {
-      "center_heading": "",
-      "center_heading_line2": "",
-      "center_heading_line3": "",
+      "center_heading": "您的绘图已保存在您的浏览器存储中。",
+      "center_heading_line2": "浏览器存储可能会被无意清除。",
+      "center_heading_line3": "将您的工作定期保存到一个文件，以避免丢失。",
       "center_heading_plus": "是否前往 Excalidraw+ ？",
       "menuHint": "导出、首选项、语言……"
     },
@@ -504,7 +535,11 @@
     "colors": "颜色",
     "shades": "色调明暗",
     "hexCode": "十六进制值",
-    "noShades": "此颜色没有可用的明暗变化"
+    "noShades": "此颜色没有可用的明暗变化",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "加载外部绘图将<bold>替换您现有的内容</bold>。<br></br>您可以先使用下列方式备份您的绘图。"
       }
     }
-  },
-  "mermaid": {
-    "title": "Mermaid 至 Excalidraw",
-    "button": "插入",
-    "description": "目前仅支持<flowchartLink>流程图</flowchartLink>、<sequenceLink>序列图</sequenceLink>和<classLink>类图</classLink>。其他类型在 Excalidraw 中将以图像呈现。",
-    "syntax": "Mermaid 语法",
-    "preview": "预览",
-    "label": "",
-    "inputPlaceholder": ""
-  },
-  "ttd": {
-    "error": ""
-  },
-  "chat": {
-    "inputPlaceholder": "",
-    "inputPlaceholderWithMessages": "",
-    "generating": "",
-    "rateLimitRemaining": "",
-    "role": {
-      "user": "",
-      "assistant": "",
-      "system": ""
-    },
-    "aiBeta": "",
-    "label": "",
-    "menu": "",
-    "newChat": "",
-    "deleteChat": "",
-    "deleteMessage": "",
-    "viewAsMermaid": "",
-    "placeholder": {
-      "title": "",
-      "description": "",
-      "hint": ""
-    },
-    "preview": "",
-    "insert": "",
-    "retry": "",
-    "errors": {
-      "promptTooShort": "",
-      "promptTooLong": "",
-      "generationFailed": "",
-      "invalidDiagram": "",
-      "fixInMermaid": "",
-      "aiRepair": "",
-      "requestAborted": "",
-      "requestFailed": "",
-      "mermaidParseError": ""
-    },
-    "rateLimit": {
-      "messageLimit": "",
-      "generalRateLimit": "",
-      "messageLimitInputPlaceholder": ""
-    },
-    "upsellBtnLabel": ""
   },
   "quickSearch": {
     "placeholder": "快速搜索"

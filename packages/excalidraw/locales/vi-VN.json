@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "Dán",
     "pasteAsPlaintext": "Dán kiểu văn bản thuần",
     "pasteCharts": "Dán biểu đồ",
+    "chartType_bar": "",
+    "chartType_line": "",
+    "chartType_radar": "",
+    "chartType_plaintext": "",
     "selectAll": "Chọn tất cả",
     "multiSelect": "Chọn thêm đối tượng này",
     "moveCanvas": "Di chuyển canvas",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "Gạch ngang",
     "strokeStyle_dotted": "Nhiều chấm",
     "sloppiness": "Hoa văn nét",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "Độ trong suốt",
     "textAlign": "Căn chỉnh văn bản",
     "edges": "Cạnh",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "",
     "arrowhead_crowfoot_one": "",
     "arrowhead_crowfoot_one_or_many": "",
+    "arrowhead_cardinality_one": "",
+    "arrowhead_cardinality_many": "",
+    "arrowhead_cardinality_one_or_many": "",
+    "arrowhead_cardinality_exactly_one": "",
+    "arrowhead_cardinality_zero_or_one": "",
+    "arrowhead_cardinality_zero_or_many": "",
     "more_options": "Tùy chọn khác",
+    "cardinality": "",
     "arrowtypes": "Loại mũi tên",
     "arrowtype_sharp": "Mũi tên nhọn",
     "arrowtype_round": "Mũi tên cong",
@@ -95,6 +111,7 @@
     "group": "Gộp nhóm lại lựa chọn",
     "ungroup": "Tách nhóm lựa chọn",
     "collaborators": "Cộng tác viên",
+    "you": "",
     "toggleGrid": "Bật/tắt lưới",
     "loadingScene": "Đang tải về…",
     "loadScene": "Tải bản vẽ từ tệp",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "Chọn tất cả phần tử trong khung",
     "removeAllElementsFromFrame": "Loại bỏ tất cả các phần tử trong khung",
     "eyeDropper": "Chọn màu từ vùng vẽ",
-    "textToDiagram": "Văn bản sang sơ đồ",
-    "prompt": "Lời nhắc",
     "followUs": "Theo dõi chúng tôi",
     "discordChat": "Trò chuyện Discord",
     "zoomToFitViewport": "Thu phóng vừa với khung nhìn",
@@ -164,7 +179,14 @@
     "linkToElement": "Liên kết đến đối tượng",
     "wrapSelectionInFrame": "Đưa vùng chọn vào khung",
     "tab": "",
-    "shapeSwitch": ""
+    "shapeSwitch": "",
+    "preferences": "",
+    "preferences_toolLock": "",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "",
+    "midpointSnapping": ""
   },
   "elementLink": {
     "title": "Liên kết đến đối tượng",
@@ -273,13 +295,17 @@
     "link": "Thêm / Cập nhật liên kết cho hình đã chọn",
     "eraser": "Xóa",
     "frame": "Công cụ tạo khung",
-    "magicframe": "Wireframe thành code",
     "embeddable": "Nhúng Web",
     "laser": "Con trỏ laser",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "Tay kéo",
     "extraTools": "Công cụ khác",
-    "mermaidToExcalidraw": "Mermaid sang Excalidraw",
     "convertElementType": ""
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "Hình chữ nhật",
@@ -292,7 +318,6 @@
     "image": "Hình ảnh",
     "group": "Nhóm",
     "frame": "Khung hình",
-    "magicframe": "Wireframe thành code",
     "embeddable": "Nhúng Web",
     "selection": "Lựa chọn",
     "iframe": "IFrame"
@@ -311,6 +336,7 @@
     "freeDraw": "Ấn bà kéo, thả khi bạn xong",
     "text": "Mẹo: bạn có thể thêm văn bản tại bất cứ đâu bằng cách ấn hai lần bằng tool lựa chọn",
     "embeddable": "Nhấp và kéo để tạo nội dung nhúng từ website.",
+    "autoshape": "",
     "text_selected": "",
     "text_editing": "",
     "linearElementMulti": "",
@@ -318,6 +344,7 @@
     "resize": "",
     "resizeImage": "",
     "rotate": "Giới hạn góc độ bằng cách giữ {{shortcut}} khi xoay",
+    "toggleArrowhead": "",
     "lineEditor_info": "",
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "Lỗi"
+  },
+  "progressDialog": {
+    "title": "",
+    "defaultMessage": ""
   },
   "exportDialog": {
     "disk_title": "Lưu về máy",
@@ -504,7 +535,11 @@
     "colors": "",
     "shades": "",
     "hexCode": "",
-    "noShades": ""
+    "noShades": "",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": ""
       }
     }
-  },
-  "mermaid": {
-    "title": "",
-    "button": "",
-    "description": "",
-    "syntax": "",
-    "preview": "",
-    "label": "",
-    "inputPlaceholder": ""
-  },
-  "ttd": {
-    "error": ""
-  },
-  "chat": {
-    "inputPlaceholder": "",
-    "inputPlaceholderWithMessages": "",
-    "generating": "",
-    "rateLimitRemaining": "",
-    "role": {
-      "user": "",
-      "assistant": "",
-      "system": ""
-    },
-    "aiBeta": "",
-    "label": "",
-    "menu": "",
-    "newChat": "",
-    "deleteChat": "",
-    "deleteMessage": "",
-    "viewAsMermaid": "",
-    "placeholder": {
-      "title": "",
-      "description": "",
-      "hint": ""
-    },
-    "preview": "",
-    "insert": "",
-    "retry": "",
-    "errors": {
-      "promptTooShort": "",
-      "promptTooLong": "",
-      "generationFailed": "",
-      "invalidDiagram": "",
-      "fixInMermaid": "",
-      "aiRepair": "",
-      "requestAborted": "",
-      "requestFailed": "",
-      "mermaidParseError": ""
-    },
-    "rateLimit": {
-      "messageLimit": "",
-      "generalRateLimit": "",
-      "messageLimitInputPlaceholder": ""
-    },
-    "upsellBtnLabel": ""
   },
   "quickSearch": {
     "placeholder": ""

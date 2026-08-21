@@ -5,7 +5,7 @@ import {
   VERSIONS,
 } from "@excalidraw/common";
 
-import type { ExcalidrawElement, NonDeleted } from "@excalidraw/element/types";
+import type { ExcalidrawElement } from "@excalidraw/element/types";
 
 import type { MaybePromise } from "@excalidraw/common/utility-types";
 
@@ -18,7 +18,7 @@ import type { AppState, BinaryFiles } from "../types";
 import type { ExportedDataState, ImportedDataState } from "./types";
 
 export type JSONExportData = {
-  elements: readonly NonDeleted<ExcalidrawElement>[];
+  elements: readonly ExcalidrawElement[];
   appState: AppState;
   files: BinaryFiles;
 };

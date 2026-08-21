@@ -1,6 +1,8 @@
 import React from "react";
 
-import { CODES } from "@excalidraw/common";
+import { CODES, STROKE_WIDTH } from "@excalidraw/common";
+
+import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
 import { copiedStyles } from "../actions/actionStyles";
 import { Excalidraw } from "../index";
@@ -20,7 +22,7 @@ const mouse = new Pointer("mouse");
 
 describe("actionStyles", () => {
   beforeEach(async () => {
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(<Excalidraw handleKeyboardGlobally={true} />);
   });
 
   afterEach(async () => {
@@ -29,7 +31,7 @@ describe("actionStyles", () => {
     await act(async () => {});
   });
 
-  it("should not copy or paste styles via keyboard", async () => {
+  it("should copy & paste styles via keyboard", async () => {
     UI.clickTool("rectangle");
     mouse.down(10, 10);
     mouse.up(20, 20);
@@ -58,39 +60,29 @@ describe("actionStyles", () => {
 
     mouse.reset();
 
-    API.setSelectedElements([h.elements[1]]);
-    expect(copiedStyles).toBe("{}");
+    API.setSelectedElements([h.elements[1]] as NonDeletedExcalidrawElement[]);
 
     Keyboard.withModifierKeys({ ctrl: true, alt: true }, () => {
       Keyboard.codeDown(CODES.C);
     });
-    expect(copiedStyles).toBe("{}");
+    const secondRect = JSON.parse(copiedStyles)[0];
+    expect(secondRect.id).toBe(h.elements[1].id);
 
     mouse.reset();
     // Paste styles to first rectangle
-    const originalFirstRect = {
-      strokeColor: h.elements[0].strokeColor,
-      backgroundColor: h.elements[0].backgroundColor,
-      fillStyle: h.elements[0].fillStyle,
-      strokeWidth: h.elements[0].strokeWidth,
-      strokeStyle: h.elements[0].strokeStyle,
-      roughness: h.elements[0].roughness,
-      opacity: h.elements[0].opacity,
-    };
-
-    API.setSelectedElements([h.elements[0]]);
+    API.setSelectedElements([h.elements[0]] as NonDeletedExcalidrawElement[]);
     Keyboard.withModifierKeys({ ctrl: true, alt: true }, () => {
       Keyboard.codeDown(CODES.V);
     });
 
     const firstRect = API.getSelectedElement();
     expect(firstRect.id).toBe(h.elements[0].id);
-    expect(firstRect.strokeColor).toBe(originalFirstRect.strokeColor);
-    expect(firstRect.backgroundColor).toBe(originalFirstRect.backgroundColor);
-    expect(firstRect.fillStyle).toBe(originalFirstRect.fillStyle);
-    expect(firstRect.strokeWidth).toBe(originalFirstRect.strokeWidth);
-    expect(firstRect.strokeStyle).toBe(originalFirstRect.strokeStyle);
-    expect(firstRect.roughness).toBe(originalFirstRect.roughness);
-    expect(firstRect.opacity).toBe(originalFirstRect.opacity);
+    expect(firstRect.strokeColor).toBe("#e03131");
+    expect(firstRect.backgroundColor).toBe("#a5d8ff");
+    expect(firstRect.fillStyle).toBe("cross-hatch");
+    expect(firstRect.strokeWidth).toBe(STROKE_WIDTH.bold);
+    expect(firstRect.strokeStyle).toBe("dotted");
+    expect(firstRect.roughness).toBe(2); // Cartoonist: 2
+    expect(firstRect.opacity).toBe(60);
   });
 });

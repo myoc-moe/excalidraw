@@ -140,6 +140,7 @@ export class LinearElementEditor {
     };
     arrowStartIsInside: boolean;
     altFocusPoint: Readonly<GlobalPoint> | null;
+    arrowOtherEndpointInitialBinding: FixedPointBinding | null;
   }>;
 
   /** whether you're dragging a point */
@@ -192,6 +193,7 @@ export class LinearElementEditor {
         added: false,
       },
       arrowStartIsInside: false,
+      arrowOtherEndpointInitialBinding: null,
       altFocusPoint: null,
     };
     this.hoverPointIndex = -1;
@@ -216,7 +218,7 @@ export class LinearElementEditor {
   static getElement<T extends ExcalidrawLinearElement>(
     id: InstanceType<typeof LinearElementEditor>["elementId"],
     elementsMap: ElementsMap,
-  ): T | null {
+  ): NonDeleted<T> | null {
     const element = elementsMap.get(id);
     if (element) {
       return element as NonDeleted<T>;
@@ -358,6 +360,7 @@ export class LinearElementEditor {
       linearElementEditor,
     );
 
+    const angleLocked = shouldRotateWithDiscreteAngle(event);
     LinearElementEditor.movePoints(
       element,
       app.scene,
@@ -369,7 +372,10 @@ export class LinearElementEditor {
       },
       {
         isBindingEnabled: app.state.isBindingEnabled,
-        isMidpointSnappingEnabled: app.state.isMidpointSnappingEnabled,
+        isMidpointSnappingEnabled:
+          app.state.isMidpointSnappingEnabled &&
+          !angleLocked &&
+          !app.state.gridModeEnabled,
       },
     );
     // Set the suggested binding from the updates if available
@@ -426,7 +432,9 @@ export class LinearElementEditor {
                 "start",
                 elementsMap,
                 app.state.zoom,
-                app.state.isMidpointSnappingEnabled,
+                app.state.isMidpointSnappingEnabled &&
+                  !angleLocked &&
+                  !app.state.gridModeEnabled,
               )
             : linearElementEditor.initialState.altFocusPoint,
       },
@@ -553,6 +561,8 @@ export class LinearElementEditor {
       linearElementEditor,
     );
 
+    const angleLocked =
+      shouldRotateWithDiscreteAngle(event) && singlePointDragged;
     LinearElementEditor.movePoints(
       element,
       app.scene,
@@ -564,7 +574,10 @@ export class LinearElementEditor {
       },
       {
         isBindingEnabled: app.state.isBindingEnabled,
-        isMidpointSnappingEnabled: app.state.isMidpointSnappingEnabled,
+        isMidpointSnappingEnabled:
+          app.state.isMidpointSnappingEnabled &&
+          !angleLocked &&
+          !app.state.gridModeEnabled,
       },
     );
 
@@ -660,7 +673,9 @@ export class LinearElementEditor {
                 "start",
                 elementsMap,
                 app.state.zoom,
-                app.state.isMidpointSnappingEnabled,
+                app.state.isMidpointSnappingEnabled &&
+                  !angleLocked &&
+                  !app.state.gridModeEnabled,
               )
             : linearElementEditor.initialState.altFocusPoint,
       },
@@ -763,12 +778,13 @@ export class LinearElementEditor {
         ...editingLinearElement.initialState,
         origin: null,
         arrowStartIsInside: false,
+        arrowOtherEndpointInitialBinding: null,
       },
     };
   }
 
   static getEditorMidPoints = (
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     elementsMap: ElementsMap,
     appState: InteractiveCanvasAppState,
   ): (GlobalPoint | null)[] => {
@@ -892,7 +908,7 @@ export class LinearElementEditor {
   };
 
   static isSegmentTooShort<P extends GlobalPoint | LocalPoint>(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     startPoint: P,
     endPoint: P,
     index: number,
@@ -933,7 +949,7 @@ export class LinearElementEditor {
   }
 
   static getSegmentMidPoint(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     index: number,
     elementsMap: ElementsMap,
   ): GlobalPoint {
@@ -1084,6 +1100,7 @@ export class LinearElementEditor {
             !!app.state.newElement &&
             (app.state.bindMode === "inside" || app.state.bindMode === "skip"),
           altFocusPoint: null,
+          arrowOtherEndpointInitialBinding: element.startBinding,
         },
         selectedPointsIndices: [element.points.length - 1],
         lastUncommittedPoint: null,
@@ -1146,6 +1163,9 @@ export class LinearElementEditor {
           !!app.state.newElement &&
           (app.state.bindMode === "inside" || app.state.bindMode === "skip"),
         altFocusPoint: null,
+        arrowOtherEndpointInitialBinding: nextSelectedPointsIndices?.includes(0)
+          ? element.endBinding
+          : element.startBinding,
       },
       selectedPointsIndices: nextSelectedPointsIndices,
       pointerOffset: targetPoint
@@ -1253,7 +1273,7 @@ export class LinearElementEditor {
 
   /** scene coords */
   static getPointGlobalCoordinates(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     p: LocalPoint,
     elementsMap: ElementsMap,
   ): GlobalPoint {
@@ -1271,7 +1291,7 @@ export class LinearElementEditor {
 
   /** scene coords */
   static getPointsGlobalCoordinates(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     elementsMap: ElementsMap,
   ): GlobalPoint[] {
     const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
@@ -1288,7 +1308,7 @@ export class LinearElementEditor {
   }
 
   static getPointAtIndexGlobalCoordinates(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     indexMaybeFromEnd: number, // -1 for last element
     elementsMap: ElementsMap,
   ): GlobalPoint {
@@ -1311,7 +1331,7 @@ export class LinearElementEditor {
   }
 
   static pointFromAbsoluteCoords(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     absoluteCoords: GlobalPoint,
     elementsMap: ElementsMap,
   ): LocalPoint {
@@ -1335,7 +1355,7 @@ export class LinearElementEditor {
   }
 
   static getPointIndexUnderCursor(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     elementsMap: ElementsMap,
     zoom: AppState["zoom"],
     x: number,
@@ -1363,7 +1383,7 @@ export class LinearElementEditor {
   }
 
   static createPointAt(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     elementsMap: ElementsMap,
     scenePointerX: number,
     scenePointerY: number,
@@ -1797,7 +1817,7 @@ export class LinearElementEditor {
   }
 
   private static _getShiftLockedDelta(
-    element: NonDeleted<ExcalidrawLinearElement>,
+    element: ExcalidrawLinearElement,
     elementsMap: ElementsMap,
     referencePoint: LocalPoint,
     scenePointer: GlobalPoint,
@@ -1838,6 +1858,32 @@ export class LinearElementEditor {
     );
   }
 
+  /**
+   * The point a bound text label is centered on — the middle of the linear
+   * element, whether that's an actual point or the midpoint of the middle
+   * segment.
+   */
+  static getBoundTextElementCenter = (
+    element: ExcalidrawLinearElement,
+    elementsMap: ElementsMap,
+  ): GlobalPoint => {
+    if (element.points.length % 2 === 1) {
+      const index = Math.floor(element.points.length / 2);
+      return LinearElementEditor.getPointGlobalCoordinates(
+        element,
+        element.points[index],
+        elementsMap,
+      );
+    }
+
+    const index = element.points.length / 2 - 1;
+    return LinearElementEditor.getSegmentMidPoint(
+      element,
+      index + 1,
+      elementsMap,
+    );
+  };
+
   static getBoundTextElementPosition = (
     element: ExcalidrawLinearElement,
     boundTextElement: ExcalidrawTextElementWithContainer,
@@ -1850,29 +1896,16 @@ export class LinearElementEditor {
     if (points.length < 2) {
       mutateElement(boundTextElement, elementsMap, { isDeleted: true });
     }
-    let x = 0;
-    let y = 0;
-    if (element.points.length % 2 === 1) {
-      const index = Math.floor(element.points.length / 2);
-      const midPoint = LinearElementEditor.getPointGlobalCoordinates(
-        element,
-        element.points[index],
-        elementsMap,
-      );
-      x = midPoint[0] - boundTextElement.width / 2;
-      y = midPoint[1] - boundTextElement.height / 2;
-    } else {
-      const index = element.points.length / 2 - 1;
-      const midSegmentMidpoint = LinearElementEditor.getSegmentMidPoint(
-        element,
-        index + 1,
-        elementsMap,
-      );
 
-      x = midSegmentMidpoint[0] - boundTextElement.width / 2;
-      y = midSegmentMidpoint[1] - boundTextElement.height / 2;
-    }
-    return { x, y };
+    const center = LinearElementEditor.getBoundTextElementCenter(
+      element,
+      elementsMap,
+    );
+
+    return {
+      x: center[0] - boundTextElement.width / 2,
+      y: center[1] - boundTextElement.height / 2,
+    };
   };
 
   static getMinMaxXYWithBoundText = (
@@ -2175,6 +2208,7 @@ const pointDraggingUpdates = (
       newArrow: !!app.state.newElement,
       angleLocked,
       altKey,
+      gridSize: app.getEffectiveGridSize(),
     },
   );
 
@@ -2408,22 +2442,21 @@ const pointDraggingUpdates = (
       )! as ExcalidrawBindableElement)
     : null;
 
-  const endLocalPoint = startIsDraggingOverEndElement
-    ? nextArrow.points[nextArrow.points.length - 1]
-    : endIsDraggingOverStartElement &&
-      app.state.bindMode !== "inside" &&
-      getFeatureFlag("COMPLEX_BINDINGS")
-    ? nextArrow.points[0]
-    : endBindable
-    ? updateBoundPoint(
-        nextArrow,
-        "endBinding",
-        nextArrow.endBinding,
-        endBindable,
-        elementsMap,
-        endIsDragged,
-      ) || nextArrow.points[nextArrow.points.length - 1]
-    : nextArrow.points[nextArrow.points.length - 1];
+  const endLocalPoint =
+    endIsDraggingOverStartElement &&
+    app.state.bindMode !== "inside" &&
+    getFeatureFlag("COMPLEX_BINDINGS")
+      ? nextArrow.points[0]
+      : endBindable
+      ? updateBoundPoint(
+          nextArrow,
+          "endBinding",
+          nextArrow.endBinding,
+          endBindable,
+          elementsMap,
+          endIsDragged,
+        ) || nextArrow.points[nextArrow.points.length - 1]
+      : nextArrow.points[nextArrow.points.length - 1];
 
   // We need to keep the simulated next arrow up-to-date, because
   // updateBoundPoint looks at the opposite point
@@ -2457,13 +2490,11 @@ const pointDraggingUpdates = (
       : nextArrow.points[0];
 
   const endChanged =
-    !startIsDraggingOverEndElement &&
     !(
       endIsDraggingOverStartElement &&
       app.state.bindMode !== "inside" &&
       getFeatureFlag("COMPLEX_BINDINGS")
-    ) &&
-    !!endBindable;
+    ) && !!endBindable;
   const startChanged =
     pointDistance(startLocalPoint, nextArrow.points[0]) !== 0;
 

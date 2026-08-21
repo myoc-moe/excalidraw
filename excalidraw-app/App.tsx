@@ -32,7 +32,7 @@ import {
   isDevEnv,
 } from "@excalidraw/common";
 import polyfill from "@excalidraw/excalidraw/polyfill";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   loadFromBlob,
   resizeImageFile,
@@ -87,6 +87,7 @@ import Collab, {
   collabAPIAtom,
   isCollaboratingAtom,
   isOfflineAtom,
+  userToFollowAtom,
 } from "./collab/Collab";
 import { AppFooter } from "./components/AppFooter";
 import { AppMainMenu } from "./components/AppMainMenu";
@@ -125,6 +126,7 @@ import DebugCanvas, {
   loadSavedDebugState,
 } from "./components/DebugCanvas";
 import { EditorPreferencesDialog } from "./components/EditorPreferencesDialog";
+import { useSimulatedCollaborators } from "./debugCollaborators";
 import { ExcalidrawPlusIframeExport } from "./ExcalidrawPlusIframeExport";
 
 import "./index.scss";
@@ -393,6 +395,37 @@ const ExcalidrawWrapper = () => {
     return isCollaborationLink(window.location.href);
   });
   const collabError = useAtomValue(collabErrorIndicatorAtom);
+  const userToFollow = useAtomValue(userToFollowAtom);
+
+  const viewportStatusFrame = useMemo(
+    () =>
+      userToFollow
+        ? {
+            border: "var(--color-primary-hover)",
+            label: {
+              label: (
+                <>
+                  Following{" "}
+                  <span
+                    style={{
+                      display: "block",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      maxWidth: 100,
+                    }}
+                    title={userToFollow.username}
+                  >
+                    {userToFollow.username}
+                  </span>
+                </>
+              ),
+              onClose: () => collabAPI?.setUserToFollow(null),
+            },
+          }
+        : null,
+    [userToFollow, collabAPI],
+  );
 
   const [, forceRefresh] = useState(false);
 
@@ -410,6 +443,11 @@ const ExcalidrawWrapper = () => {
       forceRefresh((prev) => !prev);
     }
   }, [excalidrawAPI]);
+
+  // ?collaborators=<N> — populate the canvas with N static fake
+  // collaborators for exercising avatar/UserList UI without a real
+  // collab room
+  useSimulatedCollaborators(excalidrawAPI);
 
   // ---------------------------------------------------------------------------
   // Hoisted loadImages
@@ -858,6 +896,8 @@ const ExcalidrawWrapper = () => {
         showDropEventDebugAlert
         wheelZoomsOnDefault
         compressImageFile={resizeImageFile}
+        viewportStatusFrame={viewportStatusFrame}
+        userToFollow={userToFollow}
         onChange={onChange}
         onExport={onExport}
         editorPreferences={editorPreferences}
@@ -931,7 +971,11 @@ const ExcalidrawWrapper = () => {
         onLinkOpen={(element, event) => {
           if (element.link && isElementLink(element.link)) {
             event.preventDefault();
-            excalidrawAPI?.scrollToContent(element.link, { animate: true });
+            excalidrawAPI?.setViewport({
+              target: element.link,
+              fit: "scale-down",
+              animation: true,
+            });
           }
         }}
       >

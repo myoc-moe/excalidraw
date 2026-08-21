@@ -4,7 +4,7 @@ import { CaptureUpdateAction } from "@excalidraw/element/store";
 
 import { arrowsToEyeIcon } from "../components/icons";
 import { getSelectedElements } from "../scene";
-import { ToolButton } from "../components/ToolButton";
+import { IconButton } from "../components/IconButton";
 import { getEffectiveEditorPreferences } from "../editorPreferences";
 
 import { t } from "../i18n";
@@ -23,13 +23,12 @@ export const actionSmartZoom = register({
       app.props.editorPreferences,
     ).smartZoom;
     const selectedElements = getSelectedElements(elements, appState);
-    if (selectedElements.length < 1) {
-      // Zoom app state to all elements
-      app.scrollToContent(elements, settings);
-    } else {
-      // Zoom app state to all selected ele,ents
-      app.scrollToContent(selectedElements, settings);
-    }
+    app.viewport.setViewport({
+      target: selectedElements.length ? selectedElements : elements,
+      fit: settings.fitToViewport ? "contain" : "none",
+      animation: settings.animate ? { duration: settings.duration } : false,
+      offsets: { ui: true },
+    });
 
     return {
       captureUpdate: CaptureUpdateAction.NEVER,
@@ -41,7 +40,7 @@ export const actionSmartZoom = register({
     !event.altKey &&
     event.key.toLocaleLowerCase() === KEYS.F,
   PanelComponent: ({ data, updateData }) => (
-    <ToolButton
+    <IconButton
       type="button"
       icon={arrowsToEyeIcon}
       aria-label={t("labels.smartZoom")}

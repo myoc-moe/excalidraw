@@ -102,6 +102,7 @@ export const getDefaultAppState = (): Omit<
     scrolledOutside: false,
     scrollX: 0,
     scrollY: 0,
+    scrollConstraints: null,
     selectedElementIds: {},
     hoveredElementIds: {},
     selectedGroupIds: {},
@@ -113,6 +114,7 @@ export const getDefaultAppState = (): Omit<
       panels: STATS_PANELS.generalStats | STATS_PANELS.elementProperties,
     },
     suggestedBinding: null,
+    hoveredArrowTextAnchor: null,
     frameRendering: { enabled: true, clip: true, name: true, outline: true },
     frameToHighlight: null,
     editingFrame: null,
@@ -133,8 +135,6 @@ export const getDefaultAppState = (): Omit<
       y: 0,
     },
     objectsSnapModeEnabled: false,
-    userToFollow: null,
-    followedBy: new Set(),
     isCropping: false,
     croppingElementId: null,
     searchMatches: null,
@@ -142,6 +142,11 @@ export const getDefaultAppState = (): Omit<
     activeLockedId: null,
     bindMode: "orbit",
     boxSelectionMode: "contain",
+    colorTopPicks: {
+      elementStroke: null,
+      elementBackground: null,
+      bucketFill: null,
+    },
   };
 };
 
@@ -244,6 +249,7 @@ const APP_STATE_STORAGE_CONF = (<
   scrolledOutside: { browser: true, export: false, server: false },
   scrollX: { browser: true, export: false, server: false },
   scrollY: { browser: true, export: false, server: false },
+  scrollConstraints: { browser: false, export: false, server: false },
   selectedElementIds: { browser: true, export: false, server: false },
   hoveredElementIds: { browser: false, export: false, server: false },
   selectedGroupIds: { browser: true, export: false, server: false },
@@ -256,6 +262,7 @@ const APP_STATE_STORAGE_CONF = (<
   shouldCacheIgnoreZoom: { browser: true, export: false, server: false },
   stats: { browser: true, export: false, server: false },
   suggestedBinding: { browser: false, export: false, server: false },
+  hoveredArrowTextAnchor: { browser: false, export: false, server: false },
   frameRendering: { browser: false, export: false, server: false },
   frameToHighlight: { browser: false, export: false, server: false },
   editingFrame: { browser: false, export: false, server: false },
@@ -272,14 +279,13 @@ const APP_STATE_STORAGE_CONF = (<
   snapLines: { browser: false, export: false, server: false },
   originSnapOffset: { browser: false, export: false, server: false },
   objectsSnapModeEnabled: { browser: true, export: false, server: false },
-  userToFollow: { browser: false, export: false, server: false },
-  followedBy: { browser: false, export: false, server: false },
   isCropping: { browser: false, export: false, server: false },
   croppingElementId: { browser: false, export: false, server: false },
   searchMatches: { browser: false, export: false, server: false },
   lockedMultiSelections: { browser: true, export: true, server: true },
   activeLockedId: { browser: false, export: false, server: false },
   bindMode: { browser: true, export: false, server: false },
+  colorTopPicks: { browser: true, export: false, server: false },
 });
 
 const _clearAppStateForStorage = <

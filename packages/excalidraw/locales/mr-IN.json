@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "चिटकवा",
     "pasteAsPlaintext": "साधा मजकूर च्या रुपात पेस्ट करा",
     "pasteCharts": "चार्ट चिकटवा",
+    "chartType_bar": "",
+    "chartType_line": "",
+    "chartType_radar": "",
+    "chartType_plaintext": "",
     "selectAll": "समस्त निवडा",
     "multiSelect": "निवडित तत्व जोडा",
     "moveCanvas": "पटल हलवा",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "तुटित तुटित",
     "strokeStyle_dotted": "ठिपके ठिपके",
     "sloppiness": "गबाळेपणा",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "अपारदर्शक्ता",
     "textAlign": "मजकूर संरेखन",
     "edges": "किनारी",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "चिमणि पाय (अनेक)",
     "arrowhead_crowfoot_one": "चिमणि पाय (एक)",
     "arrowhead_crowfoot_one_or_many": "चिमणि पाय (एक अथवा अनेक)",
+    "arrowhead_cardinality_one": "",
+    "arrowhead_cardinality_many": "",
+    "arrowhead_cardinality_one_or_many": "",
+    "arrowhead_cardinality_exactly_one": "",
+    "arrowhead_cardinality_zero_or_one": "",
+    "arrowhead_cardinality_zero_or_many": "",
     "more_options": "आणिक विकल्प",
+    "cardinality": "",
     "arrowtypes": "बाणाचे प्रकार",
     "arrowtype_sharp": "तीक्ष्ण तीर",
     "arrowtype_round": "वक्राकार तीर",
@@ -95,6 +111,7 @@
     "group": "समूह निवड",
     "ungroup": "समूह निवड ला रद्द करा",
     "collaborators": "Sahayog",
+    "you": "",
     "toggleGrid": "जाळी ऑन ऑफ़ करा",
     "loadingScene": "दृश्य लोड होत आहे…",
     "loadScene": "फ़ाइल पासून दृश्य लोड करा",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "चौकटीतले सर्व तत्वांचे चयन करा",
     "removeAllElementsFromFrame": "चौकटीतून सर्व काढून टाका",
     "eyeDropper": "चित्रफलकातून रंग निवडा",
-    "textToDiagram": "लिपि पासून चित्र",
-    "prompt": "प्रश्न",
     "followUs": "आमचं अनुकरण करा",
     "discordChat": "डिस्कोर्ड संवाद",
     "zoomToFitViewport": "पूर्ण दृश्यरूप आकार",
@@ -164,7 +179,14 @@
     "linkToElement": "वस्तू ह्याचा दुवा",
     "wrapSelectionInFrame": "चौकटित निवडलेले गुंडाळा",
     "tab": "",
-    "shapeSwitch": ""
+    "shapeSwitch": "",
+    "preferences": "",
+    "preferences_toolLock": "",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "",
+    "midpointSnapping": ""
   },
   "elementLink": {
     "title": "वस्तू ह्याचा दुवा",
@@ -273,13 +295,17 @@
     "link": "निवडलेल्या आकारासाठी दुवा जोडा/बदल करा",
     "eraser": "खोड रबर",
     "frame": "चौकट यंत्र",
-    "magicframe": "वायरफ़्रेम पासून सांकेतिक लिपि",
     "embeddable": "वेब रुतवा",
     "laser": "लेसर टॉर्च",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "हात ( सरकवण्या चे उपकरण)",
     "extraTools": "आणिक यंत्रे",
-    "mermaidToExcalidraw": "मर्मेड पासून एक्सकाली मधे",
     "convertElementType": ""
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "आयत",
@@ -292,7 +318,6 @@
     "image": "प्रतिमा",
     "group": "गट",
     "frame": "चौकट",
-    "magicframe": "वायरफ़्रेम पासून सांकेतिक लिपि",
     "embeddable": "वेब रुतवा",
     "selection": "निवड",
     "iframe": "आयफ़्रेम"
@@ -311,6 +336,7 @@
     "freeDraw": "क्लिक आणि ड्रैग करा, झालं तेव्हा सोडा",
     "text": "टीप: तुम्हीं निवड यंत्रानी कोठेही दुहेरी क्लिक करून टेक्स्ट जोडू शकता",
     "embeddable": "वेबसाइट रुतोण्या साठी दाबून-खेचा (क्लिक-ड्रैग करा)",
+    "autoshape": "",
     "text_selected": "",
     "text_editing": "",
     "linearElementMulti": "",
@@ -318,6 +344,7 @@
     "resize": "",
     "resizeImage": "",
     "rotate": "",
+    "toggleArrowhead": "",
     "lineEditor_info": "",
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "त्रुटि"
+  },
+  "progressDialog": {
+    "title": "",
+    "defaultMessage": ""
   },
   "exportDialog": {
     "disk_title": "डिस्क मधे जतन करा",
@@ -499,12 +530,16 @@
     }
   },
   "colorPicker": {
-    "color": "",
+    "color": "रंग",
     "mostUsedCustomColors": "सर्वात जास्त वापरणीस रंग",
     "colors": "रंग",
     "shades": "रंगछटा",
     "hexCode": "हेक्स कोड",
-    "noShades": "ह्या रंगाच्या छटा उपलब्ध नाहित"
+    "noShades": "ह्या रंगाच्या छटा उपलब्ध नाहित",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "बाहरी चित्र लोड केल्या वर ते <bold>तुमचा सध्याचा कामा ठिकाणि एईल </bold><br></br> तुम्हीं तुमचं चित्र एकाधं खाली दिलेलं विकल्प निवडुन पहले सुरक्षीत करु शकता."
       }
     }
-  },
-  "mermaid": {
-    "title": "मर्मेड पासून एक्सकाली मधे",
-    "button": "शिरवा",
-    "description": "सध्या फक्त <flowchartLink> प्रवाह चित्र (फ़्लो चार्ट) </flowchartLink> आणि <sequenceLink> क्रम चित्र (सिकवेंस ड़ायग्राम) </sequenceLink> करता येतात. बाक़ीचे चित्र प्रकार एक्सकाली चित्र पद्धति नी चित्रित होतील.",
-    "syntax": "मर्मेड संरचना नियम",
-    "preview": "पूर्वावलोकन",
-    "label": "",
-    "inputPlaceholder": ""
-  },
-  "ttd": {
-    "error": ""
-  },
-  "chat": {
-    "inputPlaceholder": "",
-    "inputPlaceholderWithMessages": "",
-    "generating": "",
-    "rateLimitRemaining": "",
-    "role": {
-      "user": "",
-      "assistant": "",
-      "system": ""
-    },
-    "aiBeta": "",
-    "label": "",
-    "menu": "",
-    "newChat": "",
-    "deleteChat": "",
-    "deleteMessage": "",
-    "viewAsMermaid": "",
-    "placeholder": {
-      "title": "",
-      "description": "",
-      "hint": ""
-    },
-    "preview": "",
-    "insert": "",
-    "retry": "",
-    "errors": {
-      "promptTooShort": "",
-      "promptTooLong": "",
-      "generationFailed": "",
-      "invalidDiagram": "",
-      "fixInMermaid": "",
-      "aiRepair": "",
-      "requestAborted": "",
-      "requestFailed": "",
-      "mermaidParseError": ""
-    },
-    "rateLimit": {
-      "messageLimit": "",
-      "generalRateLimit": "",
-      "messageLimitInputPlaceholder": ""
-    },
-    "upsellBtnLabel": ""
   },
   "quickSearch": {
     "placeholder": "जलद शोध"

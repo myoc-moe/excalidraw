@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "අලවන්න",
     "pasteAsPlaintext": "සරල පෙළ ලෙස අලවන්න",
     "pasteCharts": "ප්‍රස්ථාරය",
+    "chartType_bar": "",
+    "chartType_line": "",
+    "chartType_radar": "",
+    "chartType_plaintext": "",
     "selectAll": "සියල්ලම",
     "multiSelect": "තෝරා ගැනීමට අංගය එකතු කරන්න",
     "moveCanvas": "කැන්වසය චලනය කරන්න",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "කඩකිරීම්",
     "strokeStyle_dotted": "තිත් සහිත",
     "sloppiness": "අනියම් බව",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "පාරදෘශ්‍යතාව",
     "textAlign": "පෙළ පෙළගැස්ම",
     "edges": "දාර",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "",
     "arrowhead_crowfoot_one": "",
     "arrowhead_crowfoot_one_or_many": "",
+    "arrowhead_cardinality_one": "",
+    "arrowhead_cardinality_many": "",
+    "arrowhead_cardinality_one_or_many": "",
+    "arrowhead_cardinality_exactly_one": "",
+    "arrowhead_cardinality_zero_or_one": "",
+    "arrowhead_cardinality_zero_or_many": "",
     "more_options": "",
+    "cardinality": "",
     "arrowtypes": "",
     "arrowtype_sharp": "",
     "arrowtype_round": "",
@@ -95,6 +111,7 @@
     "group": "කණ්ඩායම",
     "ungroup": "කණ්ඩායම් ඉවත් කරන්න",
     "collaborators": "සහයෝගිකයන්",
+    "you": "",
     "toggleGrid": "",
     "loadingScene": "දර්ශනය පූරණය වෙමින්",
     "loadScene": "",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "අඳින ලද රාමුවේ සියලුම අංග තෝරන්න",
     "removeAllElementsFromFrame": "රාමුවෙන් සියලුම අංග ඉවත් කරන්න",
     "eyeDropper": "අක්ෂි බිංදුකරු",
-    "textToDiagram": "පෙළෙන් රූපසටහනකට",
-    "prompt": "ප්‍රේරකය",
     "followUs": "",
     "discordChat": "",
     "zoomToFitViewport": "",
@@ -164,7 +179,14 @@
     "linkToElement": "",
     "wrapSelectionInFrame": "",
     "tab": "",
-    "shapeSwitch": ""
+    "shapeSwitch": "",
+    "preferences": "",
+    "preferences_toolLock": "",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "",
+    "midpointSnapping": ""
   },
   "elementLink": {
     "title": "",
@@ -273,13 +295,17 @@
     "link": "සබැඳිය",
     "eraser": "මකනය",
     "frame": "රාමුව",
-    "magicframe": "මැජික් රාමුව",
     "embeddable": "බිහිදැමිය හැකි",
     "laser": "ලේසර්",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "අත",
     "extraTools": "අමතර මෙවලම්",
-    "mermaidToExcalidraw": "Mermaid වලින් Excalidraw වෙත",
     "convertElementType": ""
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "",
@@ -292,7 +318,6 @@
     "image": "",
     "group": "",
     "frame": "",
-    "magicframe": "",
     "embeddable": "",
     "selection": "",
     "iframe": ""
@@ -311,6 +336,7 @@
     "freeDraw": "නිදහස් ඇඳීම",
     "text": "පෙළ",
     "embeddable": "බිහිදැමිය හැකි",
+    "autoshape": "",
     "text_selected": "",
     "text_editing": "",
     "linearElementMulti": "",
@@ -318,6 +344,7 @@
     "resize": "",
     "resizeImage": "",
     "rotate": "",
+    "toggleArrowhead": "",
     "lineEditor_info": "",
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "දෝෂ සංවාද මාතෘකාව"
+  },
+  "progressDialog": {
+    "title": "",
+    "defaultMessage": ""
   },
   "exportDialog": {
     "disk_title": "තැටි මාතෘකාව",
@@ -504,7 +535,11 @@
     "colors": "පාට",
     "shades": "සෙවනැලි",
     "hexCode": "හෙක්ස් කේත",
-    "noShades": "සෙවනැලි නැත"
+    "noShades": "සෙවනැලි නැත",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "බෙදාහැරිය හැකි සබැඳි විස්තර"
       }
     }
-  },
-  "mermaid": {
-    "title": "Mermaid මාතෘකාව",
-    "button": "Mermaid බොත්තම",
-    "description": "Mermaid විස්තර",
-    "syntax": "Mermaid වාක්‍ය ඛණ්ඩය",
-    "preview": "Mermaid පූර්වදර්ශනය",
-    "label": "",
-    "inputPlaceholder": ""
-  },
-  "ttd": {
-    "error": ""
-  },
-  "chat": {
-    "inputPlaceholder": "",
-    "inputPlaceholderWithMessages": "",
-    "generating": "",
-    "rateLimitRemaining": "",
-    "role": {
-      "user": "",
-      "assistant": "",
-      "system": ""
-    },
-    "aiBeta": "",
-    "label": "",
-    "menu": "",
-    "newChat": "",
-    "deleteChat": "",
-    "deleteMessage": "",
-    "viewAsMermaid": "",
-    "placeholder": {
-      "title": "",
-      "description": "",
-      "hint": ""
-    },
-    "preview": "",
-    "insert": "",
-    "retry": "",
-    "errors": {
-      "promptTooShort": "",
-      "promptTooLong": "",
-      "generationFailed": "",
-      "invalidDiagram": "",
-      "fixInMermaid": "",
-      "aiRepair": "",
-      "requestAborted": "",
-      "requestFailed": "",
-      "mermaidParseError": ""
-    },
-    "rateLimit": {
-      "messageLimit": "",
-      "generalRateLimit": "",
-      "messageLimitInputPlaceholder": ""
-    },
-    "upsellBtnLabel": ""
   },
   "quickSearch": {
     "placeholder": ""

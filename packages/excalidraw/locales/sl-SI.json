@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "Prilepi",
     "pasteAsPlaintext": "Prilepi kot navadno besedilo",
     "pasteCharts": "Prilepi grafikone",
+    "chartType_bar": "",
+    "chartType_line": "",
+    "chartType_radar": "",
+    "chartType_plaintext": "",
     "selectAll": "Izberi vse",
     "multiSelect": "Dodaj element v izbor",
     "moveCanvas": "Premakni platno",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "Črtkana",
     "strokeStyle_dotted": "Pikasta",
     "sloppiness": "Površnost",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "Prekrivnost",
     "textAlign": "Poravnava besedila",
     "edges": "Robovi",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "Vranja noga (več)",
     "arrowhead_crowfoot_one": "Vranja noga (ena)",
     "arrowhead_crowfoot_one_or_many": "Vranja noga (ena ali več)",
+    "arrowhead_cardinality_one": "",
+    "arrowhead_cardinality_many": "",
+    "arrowhead_cardinality_one_or_many": "",
+    "arrowhead_cardinality_exactly_one": "",
+    "arrowhead_cardinality_zero_or_one": "",
+    "arrowhead_cardinality_zero_or_many": "",
     "more_options": "Več možnosti",
+    "cardinality": "",
     "arrowtypes": "Vrsta puščice",
     "arrowtype_sharp": "Ostra puščica",
     "arrowtype_round": "Ukrivljena puščica",
@@ -95,6 +111,7 @@
     "group": "Združi izbor",
     "ungroup": "Razdruži izbor",
     "collaborators": "Sodelavci",
+    "you": "",
     "toggleGrid": "Preklopi mrežo",
     "loadingScene": "Nalaganje scene...",
     "loadScene": "Naloži sceno iz datoteke",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "Izberi vse elemente v okvirju",
     "removeAllElementsFromFrame": "Izbriši vse elemente v okvirju",
     "eyeDropper": "Izberi barvo s platna",
-    "textToDiagram": "Besedilo v diagram",
-    "prompt": "Poziv",
     "followUs": "Sledi nas",
     "discordChat": "Klepet v Discordu",
     "zoomToFitViewport": "Približaj na vidno polje",
@@ -164,7 +179,14 @@
     "linkToElement": "Povezava do objekta",
     "wrapSelectionInFrame": "Zavij izbor v okvir",
     "tab": "",
-    "shapeSwitch": ""
+    "shapeSwitch": "",
+    "preferences": "",
+    "preferences_toolLock": "",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "",
+    "midpointSnapping": ""
   },
   "elementLink": {
     "title": "Povezava do objekta",
@@ -273,13 +295,17 @@
     "link": "Dodaj / posodobi povezavo za izbrano obliko",
     "eraser": "Radirka",
     "frame": "Okvir",
-    "magicframe": "Žični okvir v kodo",
     "embeddable": "Spletna vdelava",
     "laser": "Laserski kazalec",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "Roka (orodje za premikanje)",
     "extraTools": "Več orodij",
-    "mermaidToExcalidraw": "Mermaid v Excalidraw",
     "convertElementType": ""
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "Pravokotnik",
@@ -292,7 +318,6 @@
     "image": "Slika",
     "group": "Skupina",
     "frame": "Okvir",
-    "magicframe": "Žični okvir v kodo",
     "embeddable": "Spletna vdelava",
     "selection": "Izbor",
     "iframe": "IFrame"
@@ -311,6 +336,7 @@
     "freeDraw": "Kliknite in povlecite, spustite, ko končate",
     "text": "Namig: besedilo lahko dodate tudi z dvoklikom kjer koli z orodjem za izbiro",
     "embeddable": "Kliknite in povlecite, da ustvarite spletno vdelavo",
+    "autoshape": "",
     "text_selected": "",
     "text_editing": "",
     "linearElementMulti": "",
@@ -318,6 +344,7 @@
     "resize": "",
     "resizeImage": "",
     "rotate": "",
+    "toggleArrowhead": "",
     "lineEditor_info": "",
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "Napaka"
+  },
+  "progressDialog": {
+    "title": "",
+    "defaultMessage": ""
   },
   "exportDialog": {
     "disk_title": "Shrani na disk",
@@ -504,7 +535,11 @@
     "colors": "Barve",
     "shades": "Odtenki",
     "hexCode": "Hex koda",
-    "noShades": "Odtenki za to barvo niso na voljo"
+    "noShades": "Odtenki za to barvo niso na voljo",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "Nalaganje zunanje risbe bo <bold>prepisalo vašo obstoječo vsebino</bold>.<br></br>Svojo risbo lahko najprej varnostno kopirate z eno od spodnjih možnosti."
       }
     }
-  },
-  "mermaid": {
-    "title": "Mermaid v Excalidraw",
-    "button": "Vstavi",
-    "description": "Trenutno so podprti samo <flowchartLink>diagrami poteka</flowchartLink>, <sequenceLink>diagrami zaporedij</sequenceLink> in <classLink>Razredni diagrami</classLink>. Druge vrste bodo upodobljene kot slike v Excalidraw.",
-    "syntax": "Sintaksa Mermaid",
-    "preview": "Predogled",
-    "label": "",
-    "inputPlaceholder": ""
-  },
-  "ttd": {
-    "error": ""
-  },
-  "chat": {
-    "inputPlaceholder": "",
-    "inputPlaceholderWithMessages": "",
-    "generating": "",
-    "rateLimitRemaining": "",
-    "role": {
-      "user": "",
-      "assistant": "",
-      "system": ""
-    },
-    "aiBeta": "",
-    "label": "",
-    "menu": "",
-    "newChat": "",
-    "deleteChat": "",
-    "deleteMessage": "",
-    "viewAsMermaid": "",
-    "placeholder": {
-      "title": "",
-      "description": "",
-      "hint": ""
-    },
-    "preview": "",
-    "insert": "",
-    "retry": "",
-    "errors": {
-      "promptTooShort": "",
-      "promptTooLong": "",
-      "generationFailed": "",
-      "invalidDiagram": "",
-      "fixInMermaid": "",
-      "aiRepair": "",
-      "requestAborted": "",
-      "requestFailed": "",
-      "mermaidParseError": ""
-    },
-    "rateLimit": {
-      "messageLimit": "",
-      "generalRateLimit": "",
-      "messageLimitInputPlaceholder": ""
-    },
-    "upsellBtnLabel": ""
   },
   "quickSearch": {
     "placeholder": "Hitro iskanje"

@@ -10,6 +10,7 @@ export { actionDuplicateSelection } from "./actionDuplicateSelection";
 export {
   actionChangeStrokeColor,
   actionChangeBackgroundColor,
+  actionChangeBucketFillBackgroundColor,
   actionChangeStrokeWidth,
   actionChangeFillStyle,
   actionChangeSloppiness,
@@ -30,8 +31,6 @@ export {
   actionZoomToFit,
   actionToggleTheme,
 } from "./actionCanvas";
-
-export { actionSetEmbeddableAsActiveTool } from "./actionEmbeddable";
 
 export { actionFinalize } from "./actionFinalize";
 export { actionDeselect } from "./actionDeselect";

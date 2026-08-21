@@ -3,6 +3,8 @@ import { pointFrom } from "@excalidraw/math";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  BUCKET_FILL_BACKGROUND_PICKS,
+  COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_PICKS,
   DEFAULT_ELEMENT_STROKE_COLOR_PALETTE,
@@ -27,7 +29,11 @@ import {
   type StrokeWidthKey,
 } from "@excalidraw/common";
 
-import { canBecomePolygon, getNonDeletedElements } from "@excalidraw/element";
+import {
+  canBecomePolygon,
+  getNonDeletedElements,
+  isNonDeletedElement,
+} from "@excalidraw/element";
 
 import {
   bindBindingElement,
@@ -77,17 +83,19 @@ import type {
   ExcalidrawTextElement,
   FontFamilyValues,
   StrokeVariability,
+  NonDeleted,
+  NonDeletedExcalidrawElement,
   TextAlign,
   VerticalAlign,
 } from "@excalidraw/element/types";
 
-import type { Scene } from "@excalidraw/element";
+import type { ElementUpdate, Scene } from "@excalidraw/element";
 
 import type { CaptureUpdateActionType } from "@excalidraw/element";
 
 import { trackEvent } from "../analytics";
 import { RadioSelection } from "../components/RadioSelection";
-import { ToolButton } from "../components/ToolButton";
+import { IconButton } from "../components/IconButton";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
 import { FontPicker } from "../components/FontPicker/FontPicker";
 import { IconPicker } from "../components/IconPicker";
@@ -174,7 +182,7 @@ const getStylesPanelInfo = (app: AppClassProperties) => {
 export const changeProperty = (
   elements: readonly ExcalidrawElement[],
   appState: AppState,
-  callback: (element: ExcalidrawElement) => ExcalidrawElement,
+  callback: (element: NonDeletedExcalidrawElement) => ExcalidrawElement,
   includeBoundText = false,
 ) => {
   const selectedElementIds = arrayToMap(
@@ -188,7 +196,14 @@ export const changeProperty = (
       selectedElementIds.get(element.id) ||
       element.id === appState.editingTextElement?.id
     ) {
-      return callback(element);
+      // selected & editing elements are non-deleted
+      if (!isNonDeletedElement(element)) {
+        // SAFETY: This should never happen, but log it just in case
+        console.error(
+          "[NONDELETED][INVARIANT] changeProperty(): skipping deleted selected/editing element",
+        );
+      }
+      return callback(element as NonDeletedExcalidrawElement);
     }
     return element;
   });
@@ -366,6 +381,7 @@ export const actionChangeStrokeColor = register<
         <ColorPicker
           topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
           palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
+          customizableTopPicks="elementStroke"
           type="elementStroke"
           label={t("labels.stroke")}
           color={getFormValue(
@@ -451,6 +467,7 @@ export const actionChangeBackgroundColor = register<
         <ColorPicker
           topPicks={DEFAULT_ELEMENT_BACKGROUND_PICKS}
           palette={DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE}
+          customizableTopPicks="elementBackground"
           type="elementBackground"
           label={t("labels.background")}
           color={getFormValue(
@@ -460,6 +477,59 @@ export const actionChangeBackgroundColor = register<
             true,
             (hasSelection) =>
               !hasSelection ? appState.currentItemBackgroundColor : null,
+          )}
+          onChange={(color) =>
+            updateData({ currentItemBackgroundColor: color })
+          }
+          elements={elements}
+          appState={appState}
+          updateData={updateData}
+        />
+      </>
+    );
+  },
+});
+
+export const actionChangeBucketFillBackgroundColor = register<
+  Pick<AppState, "currentItemBackgroundColor">
+>({
+  name: "changeBucketFillBackgroundColor",
+  label: "labels.changeBackground",
+  trackEvent: false,
+  // the bucket fill tool has no element to mutate; it shares
+  // `currentItemBackgroundColor` but hides `transparent` (an invisible fill
+  // would be a no-op) and shows the effective fallback color instead
+  perform: (elements, appState, value) => {
+    return {
+      appState: {
+        ...appState,
+        ...value,
+      },
+      captureUpdate: CaptureUpdateAction.EVENTUALLY,
+    };
+  },
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const { stylesPanelMode } = getStylesPanelInfo(app);
+
+    return (
+      <>
+        {stylesPanelMode === "full" && (
+          <h3 aria-hidden="true">{t("labels.background")}</h3>
+        )}
+        <ColorPicker
+          topPicks={BUCKET_FILL_BACKGROUND_PICKS}
+          palette={DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE}
+          // hidden rather than removed from the palette so the remaining
+          // colors keep their usual hotkeys (w for white etc.)
+          excludedColors={[COLOR_PALETTE.transparent]}
+          // customized independently of the background picker's picks even
+          // though both drive `currentItemBackgroundColor` — the bucket
+          // strip's defaults and use case differ (no transparent)
+          customizableTopPicks="bucketFill"
+          type="elementBackground"
+          label={t("labels.background")}
+          color={app.bucketFill.getBucketFillBackgroundColor(
+            appState.currentItemBackgroundColor,
           )}
           onChange={(color) =>
             updateData({ currentItemBackgroundColor: color })
@@ -724,7 +794,7 @@ export const actionChangeFreedrawMode = register<StrokeVariability>({
     if (data?.cycle) {
       const isVariable = strokeVariability === "variable";
       return (
-        <ToolButton
+        <IconButton
           type="button"
           icon={
             isVariable
@@ -1036,7 +1106,7 @@ export const actionChangeFontFamily = register<{
           if (cachedElement) {
             const newElement = newElementWith(element, {
               ...cachedElement,
-            });
+            } as ElementUpdate<NonDeletedExcalidrawElement>);
 
             return newElement;
           }
@@ -2038,13 +2108,13 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
             endBinding,
             fixedSegments: null,
           }),
-        };
+        } as typeof newElement;
       } else {
         const elementsMap = app.scene.getNonDeletedElementsMap();
         if (newElement.startBinding) {
           const startElement = elementsMap.get(
             newElement.startBinding.elementId,
-          ) as ExcalidrawBindableElement;
+          ) as NonDeleted<ExcalidrawBindableElement>;
           if (startElement) {
             bindBindingElement(
               newElement,
@@ -2058,7 +2128,7 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
         if (newElement.endBinding) {
           const endElement = elementsMap.get(
             newElement.endBinding.elementId,
-          ) as ExcalidrawBindableElement;
+          ) as NonDeleted<ExcalidrawBindableElement>;
           if (endElement) {
             bindBindingElement(
               newElement,
@@ -2086,7 +2156,7 @@ export const actionChangeArrowType = register<keyof typeof ARROW_TYPE>({
       const selected = newElements.find((el) => el.id === selectedId);
       if (selected) {
         newState.selectedLinearElement = new LinearElementEditor(
-          selected as ExcalidrawLinearElement,
+          selected as NonDeleted<ExcalidrawLinearElement>,
           arrayToMap(elements),
         );
       }

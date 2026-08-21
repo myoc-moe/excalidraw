@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "Incolla",
     "pasteAsPlaintext": "Incolla come testo normale",
     "pasteCharts": "Incolla grafici",
+    "chartType_bar": "Grafico a barre",
+    "chartType_line": "Grafico a linee",
+    "chartType_radar": "Grafico radar",
+    "chartType_plaintext": "Testo semplice",
     "selectAll": "Seleziona tutto",
     "multiSelect": "Aggiungi elemento alla selezione",
     "moveCanvas": "Sposta tela",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "Tratteggiato",
     "strokeStyle_dotted": "Punteggiato",
     "sloppiness": "Imprecisione",
+    "pressure": "Pressione",
+    "pressure_constant": "Costante",
+    "pressure_variable": "Variabile",
     "opacity": "Opacità",
     "textAlign": "Allineamento del testo",
     "edges": "Bordi",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "Zampe di gallina (molti)",
     "arrowhead_crowfoot_one": "Zampa di gallina (una)",
     "arrowhead_crowfoot_one_or_many": "Zampe di gallina (una o molte)",
+    "arrowhead_cardinality_one": "Cardinalità (uno)",
+    "arrowhead_cardinality_many": "Cardinalità (molti)",
+    "arrowhead_cardinality_one_or_many": "Cardinalità (una o molte)",
+    "arrowhead_cardinality_exactly_one": "Cardinalità (esattamente una)",
+    "arrowhead_cardinality_zero_or_one": "Cardinalità (zero o una)",
+    "arrowhead_cardinality_zero_or_many": "Cardinalità (zero o molte)",
     "more_options": "Altre opzioni",
+    "cardinality": "Cardinalità",
     "arrowtypes": "Tipo di freccia",
     "arrowtype_sharp": "Freccia affilata",
     "arrowtype_round": "Freccia curva",
@@ -95,6 +111,7 @@
     "group": "Crea gruppo da selezione",
     "ungroup": "Dividi gruppo da selezione",
     "collaborators": "Collaboratori",
+    "you": "Tu",
     "toggleGrid": "Attiva/disattiva griglia",
     "loadingScene": "Caricamento della scena…",
     "loadScene": "Carica scena da file",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "Seleziona tutti gli elementi nel riquadro",
     "removeAllElementsFromFrame": "Rimuovi tutti gli elementi dal riquadro",
     "eyeDropper": "Scegli il colore della tela",
-    "textToDiagram": "Testo a diagramma",
-    "prompt": "Prompt",
     "followUs": "Seguici",
     "discordChat": "Chat di Discord",
     "zoomToFitViewport": "Ingrandisci per adattarsi alla vista",
@@ -164,7 +179,14 @@
     "linkToElement": "Link all'oggetto",
     "wrapSelectionInFrame": "Avvolgi la selezione nella cornice",
     "tab": "Scheda",
-    "shapeSwitch": "Cambia forma"
+    "shapeSwitch": "Cambia forma",
+    "preferences": "Preferenze",
+    "preferences_toolLock": "Blocco strumento",
+    "boxSelectionMode": "Seleziona su",
+    "boxSelectionContain": "Avvolgi",
+    "boxSelectionOverlap": "Sovrapponi",
+    "arrowBinding": "Legatura a freccia",
+    "midpointSnapping": "Aggancia ai punti medi"
   },
   "elementLink": {
     "title": "Link all'oggetto",
@@ -273,13 +295,17 @@
     "link": "Aggiungi / aggiorna collegamento per una forma selezionata",
     "eraser": "Gomma",
     "frame": "Strumento riquadro",
-    "magicframe": "Dal wireframe al codice",
     "embeddable": "Incorporamento Web",
     "laser": "Puntatore laser",
+    "autoshape": "Disegna per la forma",
+    "bucketfill": "Secchiello riempimento",
     "hand": "Mano (strumento di panoramica)",
     "extraTools": "Altri strumenti",
-    "mermaidToExcalidraw": "Da Mermaid a Excalidraw",
     "convertElementType": "Attiva tipo di forma"
+  },
+  "bucketfill": {
+    "noRegion": "Impossibile trovare una regione racchiusa da riempire qui.",
+    "tooComplex": "Questa regione è troppo complessa da riempire."
   },
   "element": {
     "rectangle": "Rettangolo",
@@ -292,7 +318,6 @@
     "image": "Immagine",
     "group": "Gruppo",
     "frame": "Cornice",
-    "magicframe": "Dal wireframe al codice",
     "embeddable": "Incorporamento Web",
     "selection": "Selezione",
     "iframe": "IFrame"
@@ -311,6 +336,7 @@
     "freeDraw": "Clicca e trascina, rilascia quando avrai finito",
     "text": "Suggerimento: puoi anche aggiungere del testo facendo doppio clic ovunque con lo strumento di selezione",
     "embeddable": "Fare click e trascina per creare un incorporamento web",
+    "autoshape": "Disegna rettangoli, cerchi, diamanti, linee e frecce",
     "text_selected": "Fare doppio clic o premere {{shortcut}} per modificare il testo",
     "text_editing": "Premi {{shortcut_1}} o {{shortcut_2}} per terminare la modifica",
     "linearElementMulti": "Clicca sull'ultimo punto o premi {{shortcut_1}} o {{shortcut_2}} per terminare",
@@ -318,6 +344,7 @@
     "resize": "Puoi limitare le proporzioni tenendo premuto {{shortcut_1}} durante il ridimensionamento,\ntenendo premuto {{shortcut_2}} per ridimensionare dal centro",
     "resizeImage": "Puoi ridimensionare liberamente tenendo premuto {{shortcut_1}},\ntenendo premuto {{shortcut_2}} per ridimensionare dal centro",
     "rotate": "Puoi limitare gli angoli tenendo premuto {{shortcut}} durante la rotazione",
+    "toggleArrowhead": "Doppio clic per attivare o disattivare la freccia",
     "lineEditor_info": "Tieni premuto {{shortcut_1}} e fai doppio clic oppure premi {{shortcut_2}} per modificare i punti",
     "lineEditor_line_info": "Fare doppio clic o premere {{shortcut}} per modificare i punti",
     "lineEditor_pointSelected": "Premi {{shortcut_1}} per rimuovere punto(i),\n{{shortcut_2}} per duplicare, o trascinare per spostare",
@@ -359,6 +386,10 @@
   },
   "errorDialog": {
     "title": "Errore"
+  },
+  "progressDialog": {
+    "title": "Salvataggio",
+    "defaultMessage": "Preparazione per il salvataggio..."
   },
   "exportDialog": {
     "disk_title": "Salva su disco",
@@ -485,9 +516,9 @@
   },
   "welcomeScreen": {
     "app": {
-      "center_heading": "",
-      "center_heading_line2": "",
-      "center_heading_line3": "",
+      "center_heading": "I tuoi disegni vengono salvati nella memoria del tuo browser.",
+      "center_heading_line2": "La memoria del browser potrebbe essere cancellata inaspettatamente.",
+      "center_heading_line3": "Salva regolarmente il tuo lavoro in un file per evitare di perderlo.",
       "center_heading_plus": "Volevi invece andare su Excalidraw+?",
       "menuHint": "Esporta, preferenze, lingue, ..."
     },
@@ -504,7 +535,11 @@
     "colors": "Colori",
     "shades": "Sfumature",
     "hexCode": "Codice esadecimale",
-    "noShades": "Nessuna sfumatura disponibile per questo colore"
+    "noShades": "Nessuna sfumatura disponibile per questo colore",
+    "invalidColor": "Colore non valido",
+    "invalidHexLength": "Il codice esadecimale deve essere di 3, 4, 6 o 8 caratteri",
+    "topPicksTip": "Suggerimento: trascina qualsiasi colore sulle tue selezioni superiori per bloccarlo",
+    "resetTopPicks": "Ripristina le selezioni superiori predefinite"
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "Il caricamento da file sostituirà <bold>il contenuto esistente</bold>.<br></br>Puoi salvare il tuo disegno prima usando una delle opzioni qui sotto."
       }
     }
-  },
-  "mermaid": {
-    "title": "Da Mermaid a Excalidraw",
-    "button": "Inserisci",
-    "description": "Attualmente sono supportati solo diagrammi di <flowchartLink>flusso</flowchartLink>,<sequenceLink> sequenza, </sequenceLink> e <classLink>classe </classLink>. Gli altri tipi saranno rappresentati come immagini in Excalidraw.",
-    "syntax": "Sintassi Mermaid",
-    "preview": "Anteprima",
-    "label": "Mermaid",
-    "inputPlaceholder": "Scrivi qui la definizione del diagramma Mermaid..."
-  },
-  "ttd": {
-    "error": "Errore!"
-  },
-  "chat": {
-    "inputPlaceholder": "Inizia a digitare qui la tua idea per il diagramma... ({{shortcut}} per una nuova riga)",
-    "inputPlaceholderWithMessages": "Continua a perfezionare il tuo diagramma...",
-    "generating": "Generazione in corso...",
-    "rateLimitRemaining": "{{count}} richieste rimaste oggi",
-    "role": {
-      "user": "Tu",
-      "assistant": "Assistente IA",
-      "system": "Sistema"
-    },
-    "aiBeta": "IA Beta",
-    "label": "Chat",
-    "menu": "Menu",
-    "newChat": "Nuova Chat",
-    "deleteChat": "Elimina Chat",
-    "deleteMessage": "Cancella messaggio",
-    "viewAsMermaid": "Visualizza come Mermaid",
-    "placeholder": {
-      "title": "Progettiamo il tuo diagramma",
-      "description": "Descrivi il diagramma che vuoi creare e noi lo genereremo per te.",
-      "hint": "Al momento conosciamo i diagrammi di flusso, di sequenza e di classe."
-    },
-    "preview": "Anteprima",
-    "insert": "Inserisci",
-    "retry": "Riprova",
-    "errors": {
-      "promptTooShort": "Il prompt è troppo corto (min {{min}} caratteri)",
-      "promptTooLong": "Il prompt è troppo lungo (max {{max}} caratteri)",
-      "generationFailed": "Generazione non riuscita",
-      "invalidDiagram": "È stato generato un diagramma non valido :(. Puoi modificarlo manualmente, riprovare con la correzione automatica o provare un prompt diverso.",
-      "fixInMermaid": "Modifica Mermaid manualmente→",
-      "aiRepair": "Rigenera (correzione automatica) →",
-      "requestAborted": "Richiesta annullata",
-      "requestFailed": "Richiesta non riuscita",
-      "mermaidParseError": "Errore di sintassi Mermaid"
-    },
-    "rateLimit": {
-      "messageLimit": "Hai raggiunto il tuo limite di IA sul piano gratuito. Prova Excalidraw+ per saperne di più o torna domani.",
-      "generalRateLimit": "Fermati, sei troppo veloce per noi! Attendi un attimo prima di riprovare.",
-      "messageLimitInputPlaceholder": "Hai raggiunto il limite di messaggi"
-    },
-    "upsellBtnLabel": "Aggiorna alla Plus"
   },
   "quickSearch": {
     "placeholder": "Ricerca rapida"

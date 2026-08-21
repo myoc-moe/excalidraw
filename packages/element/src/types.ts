@@ -230,7 +230,7 @@ export type Ordered<TElement extends ExcalidrawElement> = TElement & {
 export type OrderedExcalidrawElement = Ordered<ExcalidrawElement>;
 
 export type NonDeleted<TElement extends ExcalidrawElement> = TElement & {
-  isDeleted: boolean;
+  isDeleted: false;
 };
 
 export type NonDeletedExcalidrawElement = NonDeleted<ExcalidrawElement>;
@@ -453,6 +453,11 @@ export type ArrangeAlgorithms =
   | "bin-packing-center"
   | "bin-packing-max-rects"
   | "bin-packing-binary-tree";
+
+export type NonDeletedElementsMapOrArray =
+  | readonly NonDeletedExcalidrawElement[]
+  | Readonly<NonDeletedElementsMap | NonDeletedSceneElementsMap>;
+
 export type ExcalidrawLinearElementSubType =
   | "line"
   | "sharpArrow"

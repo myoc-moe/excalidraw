@@ -6,22 +6,26 @@ import { Excalidraw } from "../index";
 
 import { API } from "./helpers/api";
 import { Keyboard } from "./helpers/ui";
-import { render, waitFor } from "./test-utils";
+import { fireEvent, render, waitFor } from "./test-utils";
 
 describe("shortcuts", () => {
-  it("Delete shortcut should delete the selected element", async () => {
+  it("Clear canvas shortcut should display confirm dialog", async () => {
     await render(
       <Excalidraw
-        compressImageFile={async (file) => file}
         initialData={{ elements: [API.createElement({ type: "rectangle" })] }}
         handleKeyboardGlobally
       />,
     );
 
     expect(window.h.elements.length).toBe(1);
-    API.setSelectedElements([window.h.elements[0]]);
 
-    Keyboard.keyPress(KEYS.DELETE);
+    Keyboard.withModifierKeys({ ctrl: true }, () => {
+      Keyboard.keyDown(KEYS.DELETE);
+    });
+    const confirmDialog = document.querySelector(".confirm-dialog")!;
+    expect(confirmDialog).not.toBe(null);
+
+    fireEvent.click(confirmDialog.querySelector('[aria-label="Confirm"]')!);
 
     await waitFor(() => {
       expect(window.h.elements[0].isDeleted).toBe(true);

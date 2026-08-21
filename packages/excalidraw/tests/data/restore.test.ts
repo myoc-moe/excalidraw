@@ -694,7 +694,9 @@ describe("restoreElements", () => {
   it("bump versions of local duplicate elements when supplied", () => {
     const rectangle = API.createElement({ type: "rectangle" }); // version=1
     const ellipse = API.createElement({ type: "ellipse" });
-    const rectangle_modified = newElementWith(rectangle, { isDeleted: true }); // version=2
+    const rectangle_modified = newElementWith(rectangle as ExcalidrawElement, {
+      isDeleted: true,
+    }); // version=2
 
     const restoredElements = restore.bumpElementVersions(
       restore.restoreElements([rectangle, ellipse], null),
@@ -991,6 +993,41 @@ describe("restoreAppState", () => {
 });
 
 describe("repairing bindings", () => {
+  it.each(["arrow", "rectangle"] as const)(
+    "should repair bound %s label order and fractional index",
+    (containerType) => {
+      const container = API.createElement({
+        type: containerType,
+        id: "container",
+        index: "b2f" as ExcalidrawElement["index"],
+        boundElements: [{ type: "text", id: "label" }],
+      });
+      const label = API.createElement({
+        type: "text",
+        id: "label",
+        index: "b2a" as ExcalidrawElement["index"],
+        containerId: container.id,
+      });
+
+      const restoredElements = restore.restoreElements(
+        [label, container],
+        null,
+        {
+          repairBindings: true,
+        },
+      );
+
+      expect(restoredElements.map((element) => element.id)).toEqual([
+        container.id,
+        label.id,
+      ]);
+      expect(restoredElements[0].index).toBe(container.index);
+      expect(restoredElements[1].index! > restoredElements[0].index!).toBe(
+        true,
+      );
+    },
+  );
+
   it("should strip arrow binding if repair throws", () => {
     const container = API.createElement({
       type: "rectangle",

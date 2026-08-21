@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "",
+    "signIn": "",
     "paste": "لصق",
     "pasteAsPlaintext": "اللصق كنص عادي",
     "pasteCharts": "لصق الرسوم البيانية",
+    "chartType_bar": "",
+    "chartType_line": "",
+    "chartType_radar": "",
+    "chartType_plaintext": "",
     "selectAll": "تحديد الكل",
     "multiSelect": "إضافة عنصر للتحديد",
     "moveCanvas": "نقل لوح الرسم",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "متقطع",
     "strokeStyle_dotted": "منقط",
     "sloppiness": "الإمالة",
+    "pressure": "",
+    "pressure_constant": "",
+    "pressure_variable": "",
     "opacity": "الشفافية",
     "textAlign": "محاذاة النص",
     "edges": "الحواف",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "Crow's foot (many)",
     "arrowhead_crowfoot_one": "Crow's foot (one)",
     "arrowhead_crowfoot_one_or_many": "Crow's foot (one or many)",
+    "arrowhead_cardinality_one": "",
+    "arrowhead_cardinality_many": "",
+    "arrowhead_cardinality_one_or_many": "",
+    "arrowhead_cardinality_exactly_one": "",
+    "arrowhead_cardinality_zero_or_one": "",
+    "arrowhead_cardinality_zero_or_many": "",
     "more_options": "خيارات إضافية",
+    "cardinality": "",
     "arrowtypes": "نوع السهم",
     "arrowtype_sharp": "سهم حاد",
     "arrowtype_round": "سهم منحني",
@@ -95,6 +111,7 @@
     "group": "تحديد مجموعة",
     "ungroup": "إلغاء تحديد مجموعة",
     "collaborators": "المتعاونون",
+    "you": "",
     "toggleGrid": "تبديل الشبكة",
     "loadingScene": "جارٍ تحميل المشهد…",
     "loadScene": "تحميل المشهد من ملف",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "تحديد جميع العناصر في الإطار",
     "removeAllElementsFromFrame": "إزالة جميع العناصر من الإطار",
     "eyeDropper": "اختيار اللون من القماش",
-    "textToDiagram": "نص إلى رسم بياني",
-    "prompt": "تعليمات",
     "followUs": "تابعنا",
     "discordChat": "دردشة ديسكورد",
     "zoomToFitViewport": "التكبير لتناسب العرض",
@@ -164,7 +179,14 @@
     "linkToElement": "رابط إلى الكائن",
     "wrapSelectionInFrame": "تغليف التحديد في إطار",
     "tab": "",
-    "shapeSwitch": ""
+    "shapeSwitch": "",
+    "preferences": "",
+    "preferences_toolLock": "",
+    "boxSelectionMode": "",
+    "boxSelectionContain": "",
+    "boxSelectionOverlap": "",
+    "arrowBinding": "",
+    "midpointSnapping": ""
   },
   "elementLink": {
     "title": "رابط إلى الكائن",
@@ -177,8 +199,8 @@
     "singleResult": "نتيجة",
     "multipleResults": "نتائج",
     "placeholder": "ابحث عن نص على اللوحة...",
-    "frames": "",
-    "texts": ""
+    "frames": "إطارات",
+    "texts": "نصوص"
   },
   "buttons": {
     "clearReset": "إعادة تعيين اللوحة",
@@ -235,7 +257,7 @@
     "invalidSceneUrl": "تعذر استيراد المشهد من عنوان URL المتوفر. إما أنها مشوهة، أو لا تحتوي على بيانات Excalidraw JSON صالحة.",
     "invalidEncryptionKey": "مفتاح التشفير يجب أن يكون من 22 حرفًا. التعاون المباشر معطل.",
     "collabOfflineWarning": "لا يوجد اتصال بالإنترنت.\nلن يتم حفظ التغييرات التي قمت بها!",
-    "localStorageQuotaExceeded": ""
+    "localStorageQuotaExceeded": "تجاوز حصة تخزين المتصفح. لن تُحفظ التغييرات."
   },
   "errors": {
     "unsupportedFileType": "نوع الملف غير مدعوم.",
@@ -259,7 +281,7 @@
   },
   "toolBar": {
     "selection": "تحديد",
-    "lasso": "",
+    "lasso": "اختيار لاسو",
     "image": "إدراج صورة",
     "rectangle": "مستطيل",
     "diamond": "مضلع",
@@ -273,12 +295,17 @@
     "link": "إضافة/تحديث الرابط للشكل المحدد",
     "eraser": "ممحاة",
     "frame": "أداة الإطار",
-    "magicframe": "Wireframe إلى كود",
     "embeddable": "تضمين ويب",
     "laser": "مؤشر ليزر",
+    "autoshape": "",
+    "bucketfill": "",
     "hand": "يد (أداة الإزاحة)",
     "extraTools": "المزيد من الأدوات",
-    "convertElementType": ""
+    "convertElementType": "تبديل نوع الشكل"
+  },
+  "bucketfill": {
+    "noRegion": "",
+    "tooComplex": ""
   },
   "element": {
     "rectangle": "مستطيل",
@@ -291,7 +318,6 @@
     "image": "صورة",
     "group": "مجموعة",
     "frame": "إطار",
-    "magicframe": "Wireframe إلى كود",
     "embeddable": "تضمين ويب",
     "selection": "تحديد",
     "iframe": "IFrame"
@@ -302,21 +328,23 @@
     "shapes": "الأشكال"
   },
   "hints": {
-    "dismissSearch": "",
-    "canvasPanning": "",
+    "dismissSearch": "{{shortcut}} لإلغاء البحث",
+    "canvasPanning": "لتحريك القماشة، اضغط مطولًا على {{shortcut_1}} أو {{shortcut_2}} أثناء السحب، أو استخدم الأداة اليدوية",
     "linearElement": "انقر لبدء نقاط متعددة، اسحب لخط واحد",
-    "arrowTool": "",
+    "arrowTool": "انقر لبدء نقاط متعدّدة، اسحب لخط واحد. اضغط {{shortcut}} مرة أخرى لتغيير نوع السهم.",
     "arrowBindModifiers": "",
     "freeDraw": "انقر واسحب، أفرج عند الانتهاء",
     "text": "نصيحة: يمكنك أيضًا إضافة نص بالنقر المزدوج في أي مكان بأداة الاختيار",
     "embeddable": "اضغط مع السحب لإنشاء موقع ويب مضمّن",
+    "autoshape": "",
     "text_selected": "",
-    "text_editing": "",
-    "linearElementMulti": "",
-    "lockAngle": "",
-    "resize": "",
-    "resizeImage": "",
+    "text_editing": "اضغط {{shortcut_1}} أو {{shortcut_2}} لإنهاء التحرير",
+    "linearElementMulti": "انقر على النقطة الأخيرة أو اضغط {{shortcut_1}} أو {{shortcut_2}} للإنهاء",
+    "lockAngle": "يمكنك تقييد الزاوية بالضغط على {{shortcut}}",
+    "resize": "يمكنك تقييد النسب بالضغط على {{shortcut_1}} أثناء تغيير الحجم،\nاضغط مطولاً على {{shortcut_2}} لتغيير الحجم من المركز",
+    "resizeImage": "يمكنك تغيير الحجم بحرية بالضغط مطولًا على {{shortcut_1}}،\nاضغط مطولًا على {{shortcut_2}} لتغيير الحجم من المركز",
     "rotate": "",
+    "toggleArrowhead": "",
     "lineEditor_info": "",
     "lineEditor_line_info": "",
     "lineEditor_pointSelected": "",
@@ -327,8 +355,8 @@
     "eraserRevert": "",
     "firefox_clipboard_write": "يمكن على الأرجح تمكين هذه الميزة عن طريق تعيين علم \"dom.events.asyncClipboard.clipboardItem\" إلى \"true\". لتغيير أعلام المتصفح في Firefox، قم بزيارة صفحة \"about:config\".",
     "disableSnapping": "",
-    "enterCropEditor": "",
-    "leaveCropEditor": ""
+    "enterCropEditor": "انقر نقرًا مزدوجًا على الصورة أو اضغط {{shortcut}} لقص الصورة",
+    "leaveCropEditor": "انقر خارج الصورة أو اضغط {{shortcut_1}} أو {{shortcut_2}} لإنهاء القص"
   },
   "canvasError": {
     "cannotShowPreview": "تعذر عرض المعاينة",
@@ -358,6 +386,10 @@
   },
   "errorDialog": {
     "title": "خطأ"
+  },
+  "progressDialog": {
+    "title": "يحفظ",
+    "defaultMessage": "جارٍ الإعداد للحفظ..."
   },
   "exportDialog": {
     "disk_title": "حفظ الملف على الجهاز",
@@ -484,9 +516,9 @@
   },
   "welcomeScreen": {
     "app": {
-      "center_heading": "",
-      "center_heading_line2": "",
-      "center_heading_line3": "",
+      "center_heading": "رسوماتك محفوظة في تخزين متصفحك.",
+      "center_heading_line2": "يُمكن محُ تخزين المتصفح بشكل غير متوقع.",
+      "center_heading_line3": "احفظ عملك في ملف بانتظام لتجنب فقدانه.",
       "center_heading_plus": "هل تريد الانتقال إلى Excalidraw+ بدلاً من ذلك؟",
       "menuHint": "التصدير، التفضيلات، اللغات..."
     },
@@ -498,12 +530,16 @@
     }
   },
   "colorPicker": {
-    "color": "",
+    "color": "اللون",
     "mostUsedCustomColors": "الألوان المخصصة الأكثر استخدامًا",
     "colors": "الألوان",
     "shades": "الدرجات",
     "hexCode": "رمز Hex",
-    "noShades": "لا تتوفر درجات لهذا اللون"
+    "noShades": "لا تتوفر درجات لهذا اللون",
+    "invalidColor": "",
+    "invalidHexLength": "",
+    "topPicksTip": "",
+    "resetTopPicks": ""
   },
   "overwriteConfirm": {
     "action": {
@@ -565,8 +601,8 @@
     "escape": "",
     "enter": "",
     "shift": "",
-    "spacebar": "",
-    "delete": "",
-    "mmb": ""
+    "spacebar": "مسافة",
+    "delete": "احذف",
+    "mmb": "عجلة التمرير"
   }
 }

@@ -3,9 +3,8 @@ import { CODES, KEYS } from "@excalidraw/common";
 import clsx from "clsx";
 import { CaptureUpdateAction } from "@excalidraw/element";
 
+import { IconButton } from "../components/IconButton";
 import { eyeIcon } from "../components/icons";
-
-import { ToolButton } from "../components/ToolButton";
 
 import { t } from "../i18n";
 
@@ -34,11 +33,12 @@ export const actionToggleViewMode = register({
     };
   },
   checked: (appState) => appState.viewModeEnabled,
-  predicate: (elements, appState, appProps) => {
+  predicate: (elements, appState, appProps, app) => {
     return (
       !appState.viewModeOnly &&
       !appProps.viewModeOnly &&
-      typeof appProps.viewModeEnabled === "undefined"
+      typeof appProps.viewModeEnabled === "undefined" &&
+      app.isInteractionEnabled()
     );
   },
   keyTest: (event) =>
@@ -49,7 +49,7 @@ export const actionToggleViewMode = register({
     }
 
     return (
-      <ToolButton
+      <IconButton
         type="button"
         icon={eyeIcon}
         aria-label={t("labels.viewMode")}

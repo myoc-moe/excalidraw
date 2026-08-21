@@ -4,21 +4,20 @@ import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
 import { useTunnels } from "../context/tunnels";
 import { t } from "../i18n";
-import { calculateScrollCenter } from "../scene";
+import { getScrollToContentState } from "../scene";
 import { SCROLLBAR_WIDTH, SCROLLBAR_MARGIN } from "../scene/scrollbars";
 
-import { MobileShapeActions } from "./Actions";
-import { MobileToolBar } from "./MobileToolBar";
+import { ExitViewModeButton, MobileShapeActions } from "./Actions";
+import { MobileToolbar } from "./MobileToolbar";
+import { FixedSideContainer } from "./FixedSideContainer";
 
 import { Island } from "./Island";
 
+import { PenModeButton } from "./PenModeButton";
+import { ViewportStatusBadge } from "./ViewportStatusFrame/ViewportStatusFrame";
+
 import type { ActionManager } from "../actions/manager";
-import type {
-  AppClassProperties,
-  AppProps,
-  AppState,
-  UIAppState,
-} from "../types";
+import type { AppClassProperties, AppState, UIAppState } from "../types";
 import type { JSX } from "react";
 
 type MobileMenuProps = {
@@ -28,7 +27,6 @@ type MobileMenuProps = {
   renderImageExportDialog: () => React.ReactNode;
   setAppState: React.Component<any, AppState>["setState"];
   elements: readonly NonDeletedExcalidrawElement[];
-  onHandToolToggle: () => void;
   onPenModeToggle: AppClassProperties["togglePenMode"];
 
   renderTopRightUI?: (
@@ -41,7 +39,8 @@ type MobileMenuProps = {
   ) => JSX.Element | null;
   renderSidebars: () => JSX.Element | null;
   renderWelcomeScreen: boolean;
-  UIOptions: AppProps["UIOptions"];
+  defaultUIEnabled: boolean;
+  scrollBackToContentUIEnabled: boolean;
   app: AppClassProperties;
 };
 
@@ -50,77 +49,104 @@ export const MobileMenu = ({
   elements,
   actionManager,
   setAppState,
-  onHandToolToggle,
   renderTopLeftUI,
   renderTopRightUI,
   renderSidebars,
   renderWelcomeScreen,
-  UIOptions,
+  defaultUIEnabled,
+  scrollBackToContentUIEnabled,
   app,
   onPenModeToggle,
 }: MobileMenuProps) => {
   const {
     WelcomeScreenCenterTunnel,
-    // MainMenuTunnel,
-    // DefaultSidebarTriggerTunnel,
+    MainMenuTunnel,
+    DefaultSidebarTriggerTunnel,
   } = useTunnels();
-  // const renderAppTopBar = () => {
-  //   if (appState.openDialog?.name === "elementLinkSelector") {
-  //     return null;
-  //   }
+  const renderAppTopBar = () => {
+    if (appState.openDialog?.name === "elementLinkSelector") {
+      return null;
+    }
 
-  //   const topRightUI = (
-  //     <div className="excalidraw-ui-top-right">
-  //       {renderTopRightUI?.(true, appState) ??
-  //         (!appState.viewModeEnabled && (
-  //           <>
-  //             <PenModeButton
-  //               checked={appState.penMode}
-  //               onChange={() => onPenModeToggle(null)}
-  //               title={t("toolBar.penMode")}
-  //               isMobile
-  //               penDetected={appState.penDetected}
-  //             />
-  //             <DefaultSidebarTriggerTunnel.Out />
-  //           </>
-  //         ))}
-  //       {appState.viewModeEnabled && (
-  //         <ExitViewModeButton actionManager={actionManager} />
-  //       )}
-  //     </div>
-  //   );
+    const topRightUI = (
+      <div className="excalidraw-ui-top-right">
+        {renderTopRightUI?.(true, appState) ??
+          (!appState.viewModeEnabled && (
+            <>
+              {defaultUIEnabled && (
+                <PenModeButton
+                  checked={appState.penMode}
+                  onChange={() => onPenModeToggle(null)}
+                  title={t("toolBar.penMode")}
+                  isMobile
+                  penDetected={appState.penDetected}
+                />
+              )}
+              <DefaultSidebarTriggerTunnel.Out />
+            </>
+          ))}
+        {defaultUIEnabled &&
+          appState.viewModeEnabled &&
+          app.isInteractionEnabled() && (
+            <ExitViewModeButton actionManager={actionManager} />
+          )}
+      </div>
+    );
 
-  //   const topLeftUI = (
-  //     <div className="excalidraw-ui-top-left">
-  //       {renderTopLeftUI?.(true, appState)}
-  //       <MainMenuTunnel.Out />
-  //     </div>
-  //   );
+    const topLeftUI = (
+      <div className="excalidraw-ui-top-left">
+        {renderTopLeftUI?.(true, appState)}
+        <MainMenuTunnel.Out />
+      </div>
+    );
 
-  //   return (
-  //     <div
-  //       className="App-toolbar-content"
-  //       style={{
-  //         display: "flex",
-  //         flexDirection: "row",
-  //         justifyContent: "space-between",
-  //       }}
-  //     >
-  //       {topLeftUI}
-  //       {topRightUI}
-  //     </div>
-  //   );
-  // };
-  const renderToolbar = () => {
     return (
-      <MobileToolBar
-        app={app}
-        actionManager={actionManager}
-        onHandToolToggle={onHandToolToggle}
-        setAppState={setAppState}
-      />
+      <div
+        className="App-toolbar-content"
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: "space-between",
+        }}
+      >
+        {topLeftUI}
+        {topRightUI}
+      </div>
     );
   };
+
+  const renderToolbar = () => {
+    return <MobileToolbar app={app} setAppState={setAppState} />;
+  };
+
+  const shouldRenderScrollBackToContent =
+    scrollBackToContentUIEnabled && appState.scrolledOutside;
+  const shouldRenderDefaultBottomBar =
+    defaultUIEnabled && !appState.viewModeEnabled;
+  const scrollBackToContentButton =
+    shouldRenderScrollBackToContent &&
+    !appState.openMenu &&
+    !appState.openSidebar ? (
+      <button
+        type="button"
+        className="scroll-back-to-content"
+        onClick={() => {
+          setAppState((appState) => ({
+            ...getScrollToContentState(elements, appState),
+          }));
+        }}
+      >
+        {t("buttons.scrollBackToContent")}
+      </button>
+    ) : null;
+
+  const viewportStatusLabel = app.props.viewportStatusFrame?.label;
+  const viewportStatusBadge = viewportStatusLabel ? (
+    <ViewportStatusBadge
+      label={viewportStatusLabel}
+      border={app.props.viewportStatusFrame?.border}
+    />
+  ) : null;
 
   return (
     <>
@@ -131,56 +157,48 @@ export const MobileMenu = ({
         {renderWelcomeScreen && <WelcomeScreenCenterTunnel.Out />}
       </div>
 
-      <div
-        className="App-bottom-bar-container"
-        style={{
-          marginBottom: SCROLLBAR_WIDTH + SCROLLBAR_MARGIN,
-        }}
-      >
-        <div className="App-bottom-bar-item">
-          <Island>
-            <div className="mobile-toolbar">
-              {!appState.viewModeOnly && actionManager.renderAction("viewMode")}
-              {actionManager.renderAction("smartZoom")}
+      {shouldRenderDefaultBottomBar && (
+        <div
+          className="App-bottom-bar"
+          style={{
+            marginBottom: SCROLLBAR_WIDTH + SCROLLBAR_MARGIN,
+          }}
+          data-viewport-ui="bottom"
+        >
+          {scrollBackToContentButton && (
+            <div className="floating-status-stack">
+              {scrollBackToContentButton}
             </div>
+          )}
+
+          <MobileShapeActions
+            appState={appState}
+            elementsMap={app.scene.getNonDeletedElementsMap()}
+            renderAction={actionManager.renderAction}
+            app={app}
+            setAppState={setAppState}
+          />
+
+          <Island className="App-toolbar">
+            {appState.openDialog?.name !== "elementLinkSelector" &&
+              renderToolbar()}
           </Island>
         </div>
-        {!appState.viewModeEnabled && (
-          <div className="App-bottom-bar-item">
-            <MobileShapeActions
-              appState={appState}
-              elementsMap={app.scene.getNonDeletedElementsMap()}
-              renderAction={actionManager.renderAction}
-              app={app}
-              setAppState={setAppState}
-            />
-            <Island className="App-toolbar">
-              {!appState.viewModeEnabled &&
-                appState.openDialog?.name !== "elementLinkSelector" &&
-                renderToolbar()}
-              {appState.scrolledOutside &&
-                !appState.openMenu &&
-                !appState.openSidebar && (
-                  <button
-                    type="button"
-                    className="scroll-back-to-content"
-                    onClick={() => {
-                      setAppState((appState) => ({
-                        ...calculateScrollCenter(elements, appState),
-                      }));
-                    }}
-                  >
-                    {t("buttons.scrollBackToContent")}
-                  </button>
-                )}
-            </Island>
-          </div>
-        )}
-      </div>
+      )}
 
-      {/* <FixedSideContainer side="top" className="App-top-bar">
+      {!shouldRenderDefaultBottomBar && scrollBackToContentButton && (
+        <div className="floating-status-stack">{scrollBackToContentButton}</div>
+      )}
+
+      {viewportStatusBadge && (
+        <div className="viewport-status-frame__badge-row">
+          {viewportStatusBadge}
+        </div>
+      )}
+
+      <FixedSideContainer side="top" className="App-top-bar">
         {renderAppTopBar()}
-      </FixedSideContainer> */}
+      </FixedSideContainer>
     </>
   );
 };

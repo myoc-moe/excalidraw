@@ -117,7 +117,7 @@ export const actionPasteStyles = register({
             const fontFamily =
               (elementStylesToCopyFrom as ExcalidrawTextElement).fontFamily ||
               DEFAULT_FONT_FAMILY;
-            newElement = newElementWith(newElement, {
+            const newTextElement = newElementWith(newElement, {
               fontSize,
               fontFamily,
               textAlign:
@@ -127,17 +127,16 @@ export const actionPasteStyles = register({
                 (elementStylesToCopyFrom as ExcalidrawTextElement).lineHeight ||
                 getLineHeight(fontFamily),
             });
+            newElement = newTextElement;
             let container = null;
-            if (newElement.containerId) {
+            if (newTextElement.containerId) {
               container =
                 selectedElements.find(
-                  (element) =>
-                    isTextElement(newElement) &&
-                    element.id === newElement.containerId,
+                  (element) => element.id === newTextElement.containerId,
                 ) || null;
             }
 
-            redrawTextBoundingBox(newElement, container, app.scene);
+            redrawTextBoundingBox(newTextElement, container, app.scene);
           }
 
           if (

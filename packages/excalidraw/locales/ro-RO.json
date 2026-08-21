@@ -1,8 +1,14 @@
 {
   "labels": {
+    "signUp": "Înscrie-te",
+    "signIn": "Conectează-te",
     "paste": "Lipire",
     "pasteAsPlaintext": "Inserare ca text simplu",
     "pasteCharts": "Lipire diagrame",
+    "chartType_bar": "Diagramă cu bare",
+    "chartType_line": "Diagramă cu linii",
+    "chartType_radar": "Diagramă radar",
+    "chartType_plaintext": "Text simplu",
     "selectAll": "Selectare totală",
     "multiSelect": "Adaugă element la selecție",
     "moveCanvas": "Mutare pânză",
@@ -31,6 +37,9 @@
     "strokeStyle_dashed": "Liniuțe",
     "strokeStyle_dotted": "Punctat",
     "sloppiness": "Aspectul trasării",
+    "pressure": "Presiune",
+    "pressure_constant": "Constantă",
+    "pressure_variable": "Variabilă",
     "opacity": "Opacitate",
     "textAlign": "Alinierea textului",
     "edges": "Margini",
@@ -49,7 +58,14 @@
     "arrowhead_crowfoot_many": "Model entitate-asociere (multe)",
     "arrowhead_crowfoot_one": "Model entitate-asociere (unul)",
     "arrowhead_crowfoot_one_or_many": "Model entitate-asociere (unul sau multe)",
+    "arrowhead_cardinality_one": "Cardinalitate (unul)",
+    "arrowhead_cardinality_many": "Cardinalitate (multe)",
+    "arrowhead_cardinality_one_or_many": "Cardinalitate (unul sau multe)",
+    "arrowhead_cardinality_exactly_one": "Cardinalitate (exact unul)",
+    "arrowhead_cardinality_zero_or_one": "Cardinalitate (zero sau unul)",
+    "arrowhead_cardinality_zero_or_many": "Cardinalitate (zero sau multe)",
     "more_options": "Mai multe opțiuni",
+    "cardinality": "Cardinalitate",
     "arrowtypes": "Tip de săgeată",
     "arrowtype_sharp": "Săgeată ascuțită",
     "arrowtype_round": "Săgeată curbată",
@@ -95,6 +111,7 @@
     "group": "Grupare selecție",
     "ungroup": "Degrupare selecție",
     "collaborators": "Colaboratori",
+    "you": "Tu",
     "toggleGrid": "Comutare grilă",
     "loadingScene": "Se încarcă scena…",
     "loadScene": "Încărcare scenă din fișier",
@@ -149,8 +166,6 @@
     "selectAllElementsInFrame": "Selectează toate elementele din cadru",
     "removeAllElementsFromFrame": "Elimină toate elementele din cadru",
     "eyeDropper": "Alegere culoare din pânză",
-    "textToDiagram": "Text la diagramă",
-    "prompt": "Mesaj sistem",
     "followUs": "Urmărește-ne",
     "discordChat": "Conversații pe Discord",
     "zoomToFitViewport": "Transfocare pentru a se potrivi în poarta de vizualizare",
@@ -164,7 +179,14 @@
     "linkToElement": "Link către obiect",
     "wrapSelectionInFrame": "Încapsulare selecție în cadru",
     "tab": "Filă",
-    "shapeSwitch": "Comutare formă"
+    "shapeSwitch": "Comutare formă",
+    "preferences": "Preferințe",
+    "preferences_toolLock": "Blocare instrument",
+    "boxSelectionMode": "Selectare pe",
+    "boxSelectionContain": "Încapsulare",
+    "boxSelectionOverlap": "Suprapunere",
+    "arrowBinding": "Legare săgeată",
+    "midpointSnapping": "Ancorare la punctele medii"
   },
   "elementLink": {
     "title": "Link către obiect",
@@ -273,13 +295,17 @@
     "link": "Adăugare/actualizare link pentru o formă selectată",
     "eraser": "Radieră",
     "frame": "Instrument cadru",
-    "magicframe": "Structură-de-fire la cod",
     "embeddable": "Încorporare web",
     "laser": "Indicator laser",
+    "autoshape": "Desenează la formă",
+    "bucketfill": "Umplere cu culoare",
     "hand": "Mână (instrument de panoramare)",
     "extraTools": "Mai multe instrumente",
-    "mermaidToExcalidraw": "Mermaid la Excalidraw",
     "convertElementType": "Comutare tip formă"
+  },
+  "bucketfill": {
+    "noRegion": "Nu s-a putut găsi o regiune închisă pentru a o umple aici.",
+    "tooComplex": "Această regiune este prea complexă pentru a fi umplută."
   },
   "element": {
     "rectangle": "Dreptunghi",
@@ -292,7 +318,6 @@
     "image": "Imagine",
     "group": "Grup",
     "frame": "Cadru",
-    "magicframe": "Structură-de-fire la cod",
     "embeddable": "Încorporare web",
     "selection": "Selecție",
     "iframe": "iFrame"
@@ -311,6 +336,7 @@
     "freeDraw": "Dă clic pe pânză și glisează cursorul, apoi eliberează-l când ai terminat",
     "text": "Sfat: poți adăuga text și dând dublu clic oriunde cu instrumentul de selecție",
     "embeddable": "Dă clic și trage pentru a crea un cod de încorporare de pagină web",
+    "autoshape": "Desenează dreptunghiuri, cercuri, romburi, linii și săgeți",
     "text_selected": "Dă dublu clic sau apasă {{shortcut}} pentru a edita textul",
     "text_editing": "Apasă {{shortcut_1}} sau {{shortcut_2}} pentru a finaliza editarea",
     "linearElementMulti": "Dă clic pe ultimul punct sau apasă {{shortcut_1}} sau {{shortcut_2}} pentru a finaliza",
@@ -318,12 +344,13 @@
     "resize": "Poți constrânge proporțiile, ținând apăsat {{shortcut_1}} în timp ce redimensionezi,\nține apăsat {{shortcut_2}} pentru a redimensiona de la centru",
     "resizeImage": "Poți constrânge proporțiile, ținând apăsat {{shortcut_1}},\nține apăsat {{shortcut_2}} pentru a redimensiona de la centru",
     "rotate": "Poți constrânge unghiurile, ținând apăsat {{shortcut}} în timp ce rotești",
+    "toggleArrowhead": "Dă dublu clic pentru a comuta săgeta",
     "lineEditor_info": "Ține apăsat {{shortcut_1}} și dă dublu clic sau apasă {{shortcut_2}} pentru a edita punctele",
     "lineEditor_line_info": "Dă dublu clic sau apasă {{shortcut}} pentru a edita punctele",
     "lineEditor_pointSelected": "Apasă {{shortcut_1}} pentru a elimina punctele,\n{{shortcut_2}} pentru a duplica sau glisează pentru a muta",
     "lineEditor_nothingSelected": "Selectează un punct pentru a-l edita (ține apăsat {{shortcut_1}} pentru a selecta mai multe),\nsau ține apăsat {{shortcut_2}} și dă clic pentru a adăuga puncte noi",
     "bindTextToElement": "{{shortcut}} pentru a adăuga text",
-    "createFlowchart": "{{shortcut}} pentru a crea o organigramă",
+    "createFlowchart": "{{shortcut}} pentru a crea o schemă logică",
     "deepBoxSelect": "Ține apăsat {{shortcut}} pentru a efectua selectarea de adâncime și pentru a preveni glisarea",
     "eraserRevert": "Ține apăsat {{shortcut}} pentru a anula elementele marcate pentru ștergere",
     "firefox_clipboard_write": "Această caracteristică poate fi probabil activată prin setarea preferinței „dom.events.asyncClipboard.clipboardItem” ca „true”. Pentru a schimba preferințele navigatorului în Firefox, accesează pagina „about:config”.",
@@ -360,6 +387,10 @@
   "errorDialog": {
     "title": "Eroare"
   },
+  "progressDialog": {
+    "title": "În curs de salvare",
+    "defaultMessage": "Se pregătește salvarea..."
+  },
   "exportDialog": {
     "disk_title": "Salvare pe disc",
     "disk_details": "Exportă datele scenei pe un fișier din care poți importa mai târziu.",
@@ -376,8 +407,8 @@
     "click": "clic",
     "deepSelect": "Selectare de adâncime",
     "deepBoxSelect": "Selectare de adâncime în casetă și prevenire glisare",
-    "createFlowchart": "Crează o organigramă dintr-un element generic",
-    "navigateFlowchart": "Navighează o organigramă",
+    "createFlowchart": "Crează o schemă logică dintr-un element generic",
+    "navigateFlowchart": "Navighează o schemă logică",
     "curvedArrow": "Săgeată curbată",
     "curvedLine": "Linie curbată",
     "documentation": "Documentație",
@@ -504,7 +535,11 @@
     "colors": "Culori",
     "shades": "Nuanțe",
     "hexCode": "Cod hexa",
-    "noShades": "Nu este disponibilă nicio nuanță pentru această culoare"
+    "noShades": "Nu este disponibilă nicio nuanță pentru această culoare",
+    "invalidColor": "Nu este o culoare validă",
+    "invalidHexLength": "Codul hexazecimal trebuie să fie alcătuit din 3, 4, 6 sau 8 caractere",
+    "topPicksTip": "Sfat: trage orice culoare la alegerile tale principale pentru a o fixa",
+    "resetTopPicks": "Resetare la alegerile principale implicite"
   },
   "overwriteConfirm": {
     "action": {
@@ -536,61 +571,6 @@
         "description": "Încărcarea unui desen extern va <bold>înlocui conținutul existent</bold>.<br></br>Poți face mai întâi o copie de rezervă a desenului folosind una dintre opțiunile de mai jos."
       }
     }
-  },
-  "mermaid": {
-    "title": "Mermaid la Excalidraw",
-    "button": "Introducere",
-    "description": "În prezent, numai <flowchartLink>Organigramele</flowchartLink>, <sequenceLink>Diagramele de secvență</sequenceLink> și <classLink>Diagramele de clasă</classLink> sunt acceptate. Celelalte tipuri vor fi redate ca imagine în Excalidraw.",
-    "syntax": "Sintaxă Mermaid",
-    "preview": "Previzualizare",
-    "label": "Mermaid",
-    "inputPlaceholder": "Scrie definiţia diagramei Mermaid aici..."
-  },
-  "ttd": {
-    "error": "Eroare!"
-  },
-  "chat": {
-    "inputPlaceholder": "Începe să îți introduci ideea de diagramă aici... ({{shortcut}} pentru linia nouă)",
-    "inputPlaceholderWithMessages": "Continuă rafinarea diagramei...",
-    "generating": "Se generează...",
-    "rateLimitRemaining": "Cereri rămase astăzi: {{count}}",
-    "role": {
-      "user": "Tu",
-      "assistant": "Asistent IA",
-      "system": "Sistem"
-    },
-    "aiBeta": "Beta IA",
-    "label": "Conversație",
-    "menu": "Meniu",
-    "newChat": "Conversație nouă",
-    "deleteChat": "Ștergere conversație",
-    "deleteMessage": "Ștergere mesaj",
-    "viewAsMermaid": "Vizualizare ca Mermaid",
-    "placeholder": {
-      "title": "Hai să-ți proiectăm diagrama",
-      "description": "Descrie diagrama pe care vrei să o creezi și o vom genera pentru tine.",
-      "hint": "În acest moment cunoaștem organigrame, diagrame de secvență și diagrame de clasă."
-    },
-    "preview": "Previzualizare",
-    "insert": "Introducere",
-    "retry": "Reîncercare",
-    "errors": {
-      "promptTooShort": "Solicitarea este prea scurtă (min. {{min}} caractere)",
-      "promptTooLong": "Solicitarea este prea lungă (max. {{max}} caractere)",
-      "generationFailed": "Generare nereușită",
-      "invalidDiagram": "A generat o diagramă nevalidă :(. Poți edita manual, reîncerca cu funcția de fixare automată sau încerca o altă solicitare.",
-      "fixInMermaid": "Editare Mermaid manual →",
-      "aiRepair": "Regenerare (fixare automată) →",
-      "requestAborted": "Cerere anulată",
-      "requestFailed": "Cerere nereușită",
-      "mermaidParseError": "Eroare de sintaxă Mermaid"
-    },
-    "rateLimit": {
-      "messageLimit": "Ai atins limita IA la planul gratuit. Încearcă Excalidraw+ pentru mai multe sau revino mâine.",
-      "generalRateLimit": "Stai puțin, te grăbești! Așteaptă un moment înainte de a reîncerca.",
-      "messageLimitInputPlaceholder": "Ai atins limita de mesaje"
-    },
-    "upsellBtnLabel": "Actualizare la Plus"
   },
   "quickSearch": {
     "placeholder": "Căutare rapidă"
