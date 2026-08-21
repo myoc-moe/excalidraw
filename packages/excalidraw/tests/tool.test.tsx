@@ -73,6 +73,15 @@ describe("setActiveTool()", () => {
     expect(h.state.activeTool.type).toBe("custom");
     expect(h.state.activeTool.customType).toBe("comment");
   });
+
+  it("should not activate magic frames through the API", async () => {
+    expect(h.state.activeTool.type).toBe("selection");
+    act(() => {
+      excalidrawAPI.setActiveTool({ type: "magicframe" });
+    });
+    expect(h.state.activeTool.type).toBe("selection");
+    expect(h.app.isToolSupported("magicframe")).toBe(false);
+  });
 });
 describe("findShapeByKey()", () => {
   const appWithPreferredTool = (

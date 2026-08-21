@@ -1579,7 +1579,7 @@ const renderResetAutoResizeHandle = (
   context.restore();
 };
 
-const renderImageLoadingProgress = (
+const renderImageStatusOverlays = (
   context: CanvasRenderingContext2D,
   visibleElements: readonly NonDeletedExcalidrawElement[],
   elementsMap: RenderableElementsMap,
@@ -1588,54 +1588,360 @@ const renderImageLoadingProgress = (
   selectionColor: InteractiveCanvasRenderConfig["selectionColor"],
 ) => {
   for (const element of visibleElements) {
-    if (
-      !isImageElement(element) ||
-      !element.fileId ||
-      element.status === "error"
-    ) {
+    if (!isImageElement(element) || !element.fileId) {
       continue;
     }
 
-    const progress = app.imageLoadingProgress.get(element.fileId);
-    if (progress === undefined) {
-      continue;
-    }
+    const imageStatus = app.imageStatus.get(element.fileId);
+    const hasError =
+      element.status === "error" || !!imageStatus?.downloadError;
 
-    const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
-    const centerX = (x1 + x2) / 2 + appState.scrollX;
-    const centerY = (y1 + y2) / 2 + appState.scrollY;
-    const zoom = appState.zoom.value;
-    const radius = Math.min(14, (Math.min(x2 - x1, y2 - y1) * zoom) / 4) / zoom;
-    const lineWidth = Math.min(3 / zoom, radius / 2);
-    if (radius <= 0 || lineWidth <= 0) {
-      continue;
-    }
-
-    context.save();
-    context.lineWidth = lineWidth;
-    context.lineCap = "round";
-    context.strokeStyle =
-      appState.theme === THEME.DARK
-        ? "rgba(255, 255, 255, 0.35)"
-        : "rgba(0, 0, 0, 0.25)";
-    context.beginPath();
-    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    context.stroke();
-
-    if (progress > 0) {
-      context.strokeStyle = selectionColor;
-      context.beginPath();
-      context.arc(
-        centerX,
-        centerY,
-        radius,
-        -Math.PI / 2,
-        -Math.PI / 2 + Math.PI * 2 * progress,
+    if (hasError) {
+      const icon = getImageStatusOverlayPosition(
+        element,
+        elementsMap,
+        appState,
+        "center",
       );
-      context.stroke();
+      if (icon) {
+        renderImageErrorIcon(
+          context,
+          icon.centerX + appState.scrollX,
+          icon.centerY + appState.scrollY,
+          icon.radius,
+          appState,
+          imageStatus?.downloadError ?? undefined,
+        );
+      }
+    } else {
+      const progress = app.imageLoadingProgress.get(element.fileId);
+      if (progress !== undefined) {
+        const icon = getImageStatusOverlayPosition(
+          element,
+          elementsMap,
+          appState,
+          "center",
+        );
+        if (icon) {
+          renderImageProgressCircle(
+            context,
+            icon.centerX + appState.scrollX,
+            icon.centerY + appState.scrollY,
+            icon.radius,
+            icon.lineWidth,
+            progress,
+            appState,
+            selectionColor,
+          );
+        }
+      }
     }
+
+    const uploadProgress = imageStatus?.uploadProgress;
+    if (uploadProgress) {
+      const icon = getImageStatusOverlayPosition(
+        element,
+        elementsMap,
+        appState,
+        "top-right",
+      );
+      if (icon) {
+        renderImageUploadStatusIcon(
+          context,
+          icon.centerX + appState.scrollX,
+          icon.centerY + appState.scrollY,
+          icon.radius,
+          icon.lineWidth,
+          uploadProgress,
+          appState,
+          selectionColor,
+        );
+      }
+    }
+  }
+};
+
+type ImageStatusOverlayPlacement = "center" | "top-right";
+
+export const getImageStatusOverlayPosition = (
+  element: NonDeletedExcalidrawElement,
+  elementsMap: ElementsMap,
+  appState: InteractiveCanvasAppState,
+  placement: ImageStatusOverlayPlacement,
+) => {
+  if (!isImageElement(element)) {
+    return null;
+  }
+
+  const [x1, y1, x2, y2] = getElementAbsoluteCoords(element, elementsMap);
+  const zoom = appState.zoom.value;
+  const minScreenSize = Math.min(x2 - x1, y2 - y1) * zoom;
+  const radius =
+    Math.min(
+      placement === "center" ? 14 : 11.7,
+      minScreenSize / (placement === "center" ? 4 : 4.62),
+    ) / zoom;
+  const lineWidth = Math.min(
+    (placement === "center" ? 3 : 2.6) / zoom,
+    radius / 2,
+  );
+
+  if (radius <= 0 || lineWidth <= 0) {
+    return null;
+  }
+
+  if (placement === "top-right") {
+    const margin = 6 / zoom;
+    return {
+      centerX: x2 - margin - radius,
+      centerY: y1 + margin + radius,
+      radius,
+      lineWidth,
+    };
+  }
+
+  return {
+    centerX: (x1 + x2) / 2,
+    centerY: (y1 + y2) / 2,
+    radius,
+    lineWidth,
+  };
+};
+
+const renderImageProgressCircle = (
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  lineWidth: number,
+  progress: number,
+  appState: InteractiveCanvasAppState,
+  selectionColor: InteractiveCanvasRenderConfig["selectionColor"],
+  style?: {
+    color?: string;
+    trackColor?: string;
+  } | null,
+) => {
+  context.save();
+  context.lineWidth = lineWidth;
+  context.lineCap = "round";
+  context.strokeStyle =
+    style?.trackColor ??
+    (appState.theme === THEME.DARK
+      ? "rgba(255, 255, 255, 0.35)"
+      : "rgba(0, 0, 0, 0.25)");
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.stroke();
+
+  if (progress > 0) {
+    context.strokeStyle = style?.color ?? selectionColor;
+    context.beginPath();
+    context.arc(
+      centerX,
+      centerY,
+      radius,
+      -Math.PI / 2,
+      -Math.PI / 2 + Math.PI * 2 * clamp(progress, 0, 1),
+    );
+    context.stroke();
+  }
+
+  context.restore();
+};
+
+const getCanvasThemeColor = (cssVariable: string, fallback: string) => {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+  return (
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue(cssVariable)
+      .trim() || fallback
+  );
+};
+
+const renderCloudGlyph = (
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  size: number,
+  style: {
+    color: string;
+    lineWidth: number;
+  },
+) => {
+  context.save();
+  context.strokeStyle = style.color;
+  context.lineWidth = style.lineWidth;
+  context.lineCap = "round";
+  context.lineJoin = "round";
+  context.beginPath();
+  context.moveTo(centerX - size * 0.48, centerY + size * 0.26);
+  context.bezierCurveTo(
+    centerX - size * 0.68,
+    centerY + size * 0.14,
+    centerX - size * 0.58,
+    centerY - size * 0.22,
+    centerX - size * 0.34,
+    centerY - size * 0.22,
+  );
+  context.bezierCurveTo(
+    centerX - size * 0.14,
+    centerY - size * 0.48,
+    centerX + size * 0.26,
+    centerY - size * 0.48,
+    centerX + size * 0.34,
+    centerY - size * 0.18,
+  );
+  context.bezierCurveTo(
+    centerX + size * 0.58,
+    centerY - size * 0.2,
+    centerX + size * 0.7,
+    centerY + size * 0.26,
+    centerX + size * 0.42,
+    centerY + size * 0.26,
+  );
+  context.lineTo(centerX - size * 0.48, centerY + size * 0.26);
+  context.stroke();
+  context.restore();
+};
+
+const renderImageUploadStatusIcon = (
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  lineWidth: number,
+  status: {
+    state?: "pending" | "uploading" | "error";
+    progress?: number;
+    color?: string;
+    trackColor?: string;
+  },
+  appState: InteractiveCanvasAppState,
+  selectionColor: InteractiveCanvasRenderConfig["selectionColor"],
+) => {
+  const state = status.state ?? "uploading";
+  const primaryColor =
+    status.color ?? getCanvasThemeColor("--color-primary", selectionColor);
+  const warningColor =
+    status.color ?? getCanvasThemeColor("--color-warning-darkest", "#ec8b14");
+
+  if (state === "uploading") {
+    renderImageProgressCircle(
+      context,
+      centerX,
+      centerY,
+      radius,
+      lineWidth,
+      status.progress ?? 0,
+      appState,
+      selectionColor,
+      {
+        color: primaryColor,
+        trackColor: status.trackColor,
+      },
+    );
+  }
+
+  renderCloudGlyph(context, centerX, centerY - radius * 0.02, radius * 1.125, {
+    color: state === "error" ? warningColor : primaryColor,
+    lineWidth: Math.max(lineWidth * 0.75, 1 / appState.zoom.value),
+  });
+
+  if (state === "error") {
+    context.save();
+    context.strokeStyle = warningColor;
+    context.fillStyle = warningColor;
+    context.lineWidth = Math.max(lineWidth * 0.75, 1 / appState.zoom.value);
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(centerX + radius * 0.42, centerY - radius * 0.34);
+    context.lineTo(centerX + radius * 0.42, centerY + radius * 0.14);
+    context.stroke();
+    context.beginPath();
+    context.arc(
+      centerX + radius * 0.42,
+      centerY + radius * 0.42,
+      radius * 0.1,
+      0,
+      Math.PI * 2,
+    );
+    context.fill();
+    context.restore();
+  } else if (state === "pending") {
+    context.save();
+    context.strokeStyle = primaryColor;
+    context.lineWidth = Math.max(lineWidth * 0.65, 1 / appState.zoom.value);
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(centerX, centerY + radius * 0.072);
+    context.lineTo(centerX, centerY - radius * 0.18);
+    context.moveTo(centerX - radius * 0.144, centerY - radius * 0.036);
+    context.lineTo(centerX, centerY - radius * 0.18);
+    context.lineTo(centerX + radius * 0.144, centerY - radius * 0.036);
+    context.stroke();
     context.restore();
   }
+};
+
+const renderImageErrorIcon = (
+  context: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number,
+  radius: number,
+  appState: InteractiveCanvasAppState,
+  style?: {
+    backgroundColor?: string;
+    color?: string;
+    text?: string;
+  } | null,
+) => {
+  context.save();
+  const color = style?.color ?? "#e03131";
+  const lineWidth = Math.max(radius * 0.16, 1.5 / appState.zoom.value);
+
+  if (style?.backgroundColor) {
+    context.fillStyle = style.backgroundColor;
+    context.beginPath();
+    context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    context.fill();
+  }
+
+  context.strokeStyle = color;
+  context.lineWidth = lineWidth;
+  context.beginPath();
+  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  context.stroke();
+
+  context.strokeStyle = color;
+  context.fillStyle = color;
+  context.lineCap = "round";
+  context.beginPath();
+  context.moveTo(centerX, centerY - radius * 0.45);
+  context.lineTo(centerX, centerY + radius * 0.12);
+  context.stroke();
+  context.beginPath();
+  context.arc(centerX, centerY + radius * 0.48, radius * 0.11, 0, Math.PI * 2);
+  context.fill();
+
+  if (style?.text) {
+    context.font = `600 ${Math.max(
+      11 / appState.zoom.value,
+      radius * 0.65,
+    )}px Assistant, system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "top";
+    context.fillText(
+      style.text,
+      centerX,
+      centerY + radius + 6 / appState.zoom.value,
+    );
+  }
+
+  context.restore();
 };
 
 const _renderInteractiveScene = ({
@@ -2125,7 +2431,7 @@ const _renderInteractiveScene = ({
 
   renderSnaps(context, appState);
 
-  renderImageLoadingProgress(
+  renderImageStatusOverlays(
     context,
     visibleElements,
     elementsMap,

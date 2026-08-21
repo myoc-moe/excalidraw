@@ -444,7 +444,7 @@ import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 import { findShapeByKey, TOGGLE_TOOLS } from "./Tools";
 
 import UnlockPopup from "./UnlockPopup";
-
+import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
 
 import type {
   RenderInteractiveSceneCallback,
@@ -479,6 +479,7 @@ import type {
   ExcalidrawImperativeAPIEventMap,
   NullableGridSize,
   UIConfig,
+  ImageStatus,
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
@@ -635,6 +636,8 @@ class App extends React.Component<AppProps, AppState> {
   public imageCache: AppClassProperties["imageCache"] = new Map();
   public imageLoadingProgress = new Map<FileId, number>();
   public imageLoadingProgressEmitter = new Emitter<[]>();
+  public imageStatus = new Map<FileId, ImageStatus>();
+  public imageStatusEmitter = new Emitter<[]>();
   public imagePlaceholderUpdateEmitter = new Emitter<[]>();
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
@@ -751,7 +754,9 @@ class App extends React.Component<AppProps, AppState> {
       mutateElement: this.mutateElement,
       addFiles: this.addFiles,
       addImagePlaceholder: this.addImagePlaceholder,
-      setImageLoadingProgress: this.setImageLoadingProgress,
+      setDownloadProgress: this.setDownloadProgress,
+      setDownloadError: this.setDownloadError,
+      setUploadProgress: this.setUploadProgress,
       addImageElementsToScene: this.addImageElementsToScene,
       scrollToViewport: this.scrollToViewport,
       scrollToContent: this.scrollToContent,
@@ -972,6 +977,9 @@ class App extends React.Component<AppProps, AppState> {
     tool: T,
     props: Pick<AppProps, "interaction" | "UIOptions"> = this.props,
   ): boolean => {
+    if (tool === "magicframe") {
+      return false;
+    }
     if (
       props.UIOptions.tools?.[
         tool as Extract<T, keyof AppProps["UIOptions"]["tools"]>
@@ -4746,10 +4754,16 @@ class App extends React.Component<AppProps, AppState> {
 
       try {
         const loadedImage = await imagePromise;
-        if (this.imageCache.get(fileId) !== placeholderEntry || this.files[fileId]) {
+        if (
+          this.imageCache.get(fileId) !== placeholderEntry ||
+          this.files[fileId]
+        ) {
           return;
         }
-        this.imageCache.set(fileId, { ...placeholderEntry, image: loadedImage });
+        this.imageCache.set(fileId, {
+          ...placeholderEntry,
+          image: loadedImage,
+        });
         this.clearImageShapeCacheForFileId(fileId);
         this.imagePlaceholderUpdateEmitter.trigger();
       } catch (error) {
@@ -4761,7 +4775,7 @@ class App extends React.Component<AppProps, AppState> {
       }
     };
 
-  public setImageLoadingProgress: ExcalidrawImperativeAPI["setImageLoadingProgress"] =
+  public setDownloadProgress: ExcalidrawImperativeAPI["setDownloadProgress"] =
     (fileId, progress) => {
       if (progress === null) {
         this.clearImageLoadingProgress(fileId);
@@ -4777,6 +4791,90 @@ class App extends React.Component<AppProps, AppState> {
       this.imageLoadingProgress.set(fileId, nextProgress);
       this.imageLoadingProgressEmitter.trigger();
     };
+
+  public setDownloadError: ExcalidrawImperativeAPI["setDownloadError"] = (
+    fileId,
+    error,
+  ) => {
+    this.updateImageStatus(fileId, (previous) => ({
+      ...previous,
+      downloadError: error === true ? {} : error || null,
+    }));
+  };
+
+  public setUploadProgress: ExcalidrawImperativeAPI["setUploadProgress"] =
+    (fileId, progress, status) => {
+      if (progress === null) {
+        this.updateImageStatus(fileId, (previous) => ({
+          ...previous,
+          uploadProgress: null,
+        }));
+        return;
+      }
+      if (typeof progress === "number" && !Number.isFinite(progress)) {
+        return;
+      }
+      this.updateImageStatus(fileId, (previous) => {
+        const previousUpload = previous?.uploadProgress ?? undefined;
+        const options =
+          status === undefined ? previousUpload : status ?? undefined;
+        const isNumericProgress = typeof progress === "number";
+
+        return {
+          ...previous,
+          uploadProgress: {
+            ...options,
+            state: isNumericProgress ? "uploading" : progress,
+            ...(isNumericProgress
+              ? { progress: clamp(progress, 0, 1) }
+              : { progress: undefined }),
+          },
+        };
+      });
+    };
+
+  private updateImageStatus = (
+    fileId: FileId,
+    updater: (previous: ImageStatus | undefined) => ImageStatus,
+  ) => {
+    const previous = this.imageStatus.get(fileId);
+    const next = updater(previous);
+
+    if (this.areImageStatusesEqual(previous, next)) {
+      return;
+    }
+
+    if (!next.downloadError && !next.uploadProgress) {
+      this.imageStatus.delete(fileId);
+    } else {
+      this.imageStatus.set(fileId, next);
+    }
+    this.imageStatusEmitter.trigger();
+  };
+
+  private areImageStatusesEqual = (
+    previous: ImageStatus | undefined,
+    next: ImageStatus | undefined,
+  ) => {
+    return (
+      !!previous?.downloadError === !!next?.downloadError &&
+      !!previous?.uploadProgress === !!next?.uploadProgress &&
+      previous?.downloadError?.backgroundColor ===
+        next?.downloadError?.backgroundColor &&
+      previous?.downloadError?.color === next?.downloadError?.color &&
+      previous?.downloadError?.trackColor === next?.downloadError?.trackColor &&
+      previous?.downloadError?.text === next?.downloadError?.text &&
+      previous?.downloadError?.onClick === next?.downloadError?.onClick &&
+      previous?.uploadProgress?.backgroundColor ===
+        next?.uploadProgress?.backgroundColor &&
+      previous?.uploadProgress?.color === next?.uploadProgress?.color &&
+      previous?.uploadProgress?.trackColor === next?.uploadProgress?.trackColor &&
+      previous?.uploadProgress?.state === next?.uploadProgress?.state &&
+      previous?.uploadProgress?.text === next?.uploadProgress?.text &&
+      previous?.uploadProgress?.onClick === next?.uploadProgress?.onClick &&
+      previous?.uploadProgress?.progress === next?.uploadProgress?.progress
+    );
+  };
 
   private clearImageLoadingProgress = (fileId: FileId) => {
     if (this.imageLoadingProgress.delete(fileId)) {
@@ -6812,6 +6910,15 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    const scenePointer = viewportCoordsToSceneCoords(event, this.state);
+    const imageStatusAction = this.getImageStatusActionAtPosition(scenePointer);
+    if (imageStatusAction) {
+      event.preventDefault();
+      event.stopPropagation();
+      imageStatusAction();
+      return;
+    }
+
     this.lastCompletedCanvasClicks = [
       ...this.lastCompletedCanvasClicks.slice(-1),
       {
@@ -6819,6 +6926,78 @@ class App extends React.Component<AppProps, AppState> {
         y: event.clientY,
       },
     ];
+  };
+
+  private getImageStatusActionAtPosition = (scenePointer: {
+    x: number;
+    y: number;
+  }) => {
+    if (!this.imageStatus.size) {
+      return null;
+    }
+
+    const elementsMap = this.scene.getNonDeletedElementsMap();
+    const elements = this.visibleElements.length
+      ? this.visibleElements
+      : this.scene.getNonDeletedElements();
+    for (let index = elements.length - 1; index >= 0; index--) {
+      const element = elements[index];
+      if (!isImageElement(element) || !element.fileId) {
+        continue;
+      }
+
+      const imageStatus = this.imageStatus.get(element.fileId);
+      const uploadAction = imageStatus?.uploadProgress?.onClick;
+      if (
+        uploadAction &&
+        this.isPointInsideImageStatusOverlay(
+          scenePointer,
+          element,
+          elementsMap,
+          "top-right",
+        )
+      ) {
+        return () => uploadAction(element.fileId!);
+      }
+
+      const errorAction = imageStatus?.downloadError?.onClick;
+      if (
+        errorAction &&
+        this.isPointInsideImageStatusOverlay(
+          scenePointer,
+          element,
+          elementsMap,
+          "center",
+        )
+      ) {
+        return () => errorAction(element.fileId!);
+      }
+    }
+
+    return null;
+  };
+
+  private isPointInsideImageStatusOverlay = (
+    scenePointer: { x: number; y: number },
+    element: NonDeletedExcalidrawElement,
+    elementsMap: NonDeletedSceneElementsMap,
+    placement: "center" | "top-right",
+  ) => {
+    const overlay = getImageStatusOverlayPosition(
+      element,
+      elementsMap,
+      this.state,
+      placement,
+    );
+
+    return (
+      !!overlay &&
+      pointDistance(
+        pointFrom(scenePointer.x, scenePointer.y),
+        pointFrom(overlay.centerX, overlay.centerY),
+      ) <=
+        overlay.radius + 2 / this.state.zoom.value
+    );
   };
 
   private getElementLinkAtPosition = (
@@ -7256,6 +7435,8 @@ class App extends React.Component<AppProps, AppState> {
     ) {
       if (isOverScrollBar) {
         this.cursor.set(CURSOR_TYPE.AUTO);
+      } else if (this.getImageStatusActionAtPosition(scenePointer)) {
+        this.cursor.set(CURSOR_TYPE.POINTER);
       } else {
         this.cursor.applyForTool();
       }
@@ -12637,12 +12818,7 @@ class App extends React.Component<AppProps, AppState> {
       const elements = this.scene.getElementsIncludingDeleted();
       let ret;
       try {
-        ret = await loadFromBlob(
-          file,
-          this.state,
-          elements,
-          fileHandle,
-        );
+        ret = await loadFromBlob(file, this.state, elements, fileHandle);
       } catch (error: any) {
         const imageSceneDataError = error instanceof ImageSceneDataError;
         if (

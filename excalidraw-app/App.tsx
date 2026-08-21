@@ -462,6 +462,93 @@ const ExcalidrawWrapper = () => {
     }
   }, [excalidrawAPI]);
 
+  useEffect(() => {
+    if (!isDevEnv() || !excalidrawAPI) {
+      return;
+    }
+
+    const getDebugImageFileId = () => {
+      const selectedElementIds = excalidrawAPI.getAppState().selectedElementIds;
+      const elements = excalidrawAPI.getSceneElements();
+      const selectedImage = elements.find((element) => {
+        return (
+          selectedElementIds[element.id] && isInitializedImageElement(element)
+        );
+      });
+      if (selectedImage && isInitializedImageElement(selectedImage)) {
+        return selectedImage.fileId;
+      }
+
+      const image = elements.find(isInitializedImageElement);
+
+      if (!image) {
+        console.warn(
+          "myocImageStatusDebug: add or select an image before testing image status overlays.",
+        );
+        return null;
+      }
+
+      return image.fileId;
+    };
+
+    window.myocImageStatusDebug = {
+      downstream: (progress = 0.35) => {
+        const fileId = getDebugImageFileId();
+        if (fileId) {
+          excalidrawAPI.setDownloadProgress(fileId, progress);
+        }
+        return fileId;
+      },
+      upstream: (progress = 0.65) => {
+        const fileId = getDebugImageFileId();
+        if (fileId) {
+          excalidrawAPI.setUploadProgress(fileId, progress, {
+            onClick: (clickedFileId) => {
+              excalidrawAPI.setToast({
+                message: `Clicked upload status for ${clickedFileId}`,
+              });
+            },
+          });
+        }
+        return fileId;
+      },
+      pending: () => {
+        const fileId = getDebugImageFileId();
+        if (fileId) {
+          excalidrawAPI.setUploadProgress(fileId, "pending");
+        }
+        return fileId;
+      },
+      error: (text = "Image failed") => {
+        const fileId = getDebugImageFileId();
+        if (fileId) {
+          excalidrawAPI.setDownloadError(fileId, {
+            text,
+            onClick: (clickedFileId) => {
+              excalidrawAPI.setToast({
+                message: `Clicked error status for ${clickedFileId}`,
+              });
+            },
+          });
+        }
+        return fileId;
+      },
+      clear: () => {
+        const fileId = getDebugImageFileId();
+        if (fileId) {
+          excalidrawAPI.setDownloadProgress(fileId, null);
+          excalidrawAPI.setUploadProgress(fileId, null);
+          excalidrawAPI.setDownloadError(fileId, null);
+        }
+        return fileId;
+      },
+    };
+
+    return () => {
+      delete window.myocImageStatusDebug;
+    };
+  }, [excalidrawAPI]);
+
   // ?collaborators=<N> — populate the canvas with N static fake
   // collaborators for exercising avatar/UserList UI without a real
   // collab room

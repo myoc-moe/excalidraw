@@ -90,7 +90,7 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
 
   useEffect(() => {
     let scheduledFrame: number | null = null;
-    const unsubscribe = props.app.imageLoadingProgressEmitter.on(() => {
+    const scheduleRender = () => {
       if (scheduledFrame !== null) {
         return;
       }
@@ -104,10 +104,15 @@ const InteractiveCanvas = (props: InteractiveCanvasProps) => {
           callback: () => {},
         });
       });
-    });
+    };
+    const unsubscribeLoadingProgress =
+      props.app.imageLoadingProgressEmitter.on(scheduleRender);
+    const unsubscribeImageStatus =
+      props.app.imageStatusEmitter.on(scheduleRender);
 
     return () => {
-      unsubscribe();
+      unsubscribeLoadingProgress();
+      unsubscribeImageStatus();
       if (scheduledFrame !== null) {
         cancelAnimationFrame(scheduledFrame);
       }

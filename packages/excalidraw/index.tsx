@@ -518,6 +518,10 @@ export type {
   CompressImageFileOpts,
   EditorPreferences,
   ImageContextMenuItem,
+  ImageDownloadErrorStatus,
+  ImageUploadProgressStatus,
+  ImageStatus,
+  ImageStatusStyle,
   NormalisePreferences,
   SmartZoomPreferences,
 } from "./types";

@@ -153,6 +153,38 @@ export type BinaryFiles = Record<ExcalidrawElement["id"], BinaryFileData>;
 
 export type ImageContextMenuItem = ContextMenuCustomItem;
 
+export type ImageStatusStyle = {
+  backgroundColor?: string;
+  color?: string;
+  trackColor?: string;
+};
+
+export type ImageDownloadErrorStatus = ImageStatusStyle & {
+  /** Optional error message rendered below the error icon. */
+  text?: string;
+  /** Makes the rendered download error icon actionable when supplied. */
+  onClick?: (fileId: FileId) => void;
+};
+
+export type ImageUploadProgressStatus = ImageStatusStyle & {
+  /**
+   * `pending` renders the cloud indicator before upload starts.
+   * `uploading` renders the progress ring around the cloud.
+   * `error` renders the cloud warning indicator.
+   */
+  state?: "pending" | "uploading" | "error";
+  progress?: number;
+  /** Optional upload error message for host-owned UI/toasts. */
+  text?: string;
+  /** Makes the rendered upload progress indicator actionable when supplied. */
+  onClick?: (fileId: FileId) => void;
+};
+
+export type ImageStatus = {
+  downloadError?: ImageDownloadErrorStatus | null;
+  uploadProgress?: ImageUploadProgressStatus | null;
+};
+
 export type ToolType =
   | "selection"
   | "lasso"
@@ -1145,6 +1177,8 @@ export type AppClassProperties = {
   >;
   imageLoadingProgress: App["imageLoadingProgress"];
   imageLoadingProgressEmitter: App["imageLoadingProgressEmitter"];
+  imageStatus: App["imageStatus"];
+  imageStatusEmitter: App["imageStatusEmitter"];
   imagePlaceholderUpdateEmitter: App["imagePlaceholderUpdateEmitter"];
   files: BinaryFiles;
   editorInterface: App["editorInterface"];
@@ -1315,7 +1349,16 @@ export interface ExcalidrawImperativeAPI {
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;
   addImagePlaceholder: (fileId: FileId, file: File) => Promise<void>;
-  setImageLoadingProgress: (fileId: FileId, progress: number | null) => void;
+  setDownloadProgress: (fileId: FileId, progress: number | null) => void;
+  setDownloadError: (
+    fileId: FileId,
+    error: boolean | ImageDownloadErrorStatus | null,
+  ) => void;
+  setUploadProgress: (
+    fileId: FileId,
+    progress: number | "pending" | "error" | null,
+    status?: Omit<ImageUploadProgressStatus, "progress"> | null,
+  ) => void;
   addImageElementsToScene: (
     imageFiles: { file: File; customData: Record<string, any> }[],
     sceneX: number,

@@ -1,4 +1,9 @@
-import { MIME_TYPES, randomId, reseed } from "@excalidraw/common";
+import {
+  MIME_TYPES,
+  randomId,
+  reseed,
+  sceneCoordsToViewportCoords,
+} from "@excalidraw/common";
 
 import type { FileId } from "@excalidraw/element/types";
 
@@ -10,7 +15,7 @@ import { createPasteEvent } from "../clipboard";
 import { API } from "./helpers/api";
 import { mockMultipleHTMLImageElements } from "./helpers/mocks";
 import { UI } from "./helpers/ui";
-import { act, GlobalTestState, render, waitFor } from "./test-utils";
+import { act, fireEvent, GlobalTestState, render, waitFor } from "./test-utils";
 import {
   DEER_IMAGE_DIMENSIONS,
   SMILEY_IMAGE_DIMENSIONS,
@@ -219,7 +224,7 @@ describe("image insertion", () => {
     );
   });
 
-  it("stores image loading progress outside app state and suppresses unchanged values", async () => {
+  it("stores download progress outside app state and suppresses unchanged values", async () => {
     await setup();
 
     const fileId = "progress-file" as FileId;
@@ -229,22 +234,151 @@ describe("image insertion", () => {
       h.app.imageLoadingProgressEmitter.on(progressListener);
     const unsubscribeChange = h.app.api.onChange(onChange);
 
-    h.app.api.setImageLoadingProgress(fileId, 0.25);
-    h.app.api.setImageLoadingProgress(fileId, 0.25);
+    h.app.api.setDownloadProgress(fileId, 0.25);
+    h.app.api.setDownloadProgress(fileId, 0.25);
     expect(h.app.imageLoadingProgress.get(fileId)).toBe(0.25);
     expect(progressListener).toHaveBeenCalledTimes(1);
 
-    h.app.api.setImageLoadingProgress(fileId, 2);
+    h.app.api.setDownloadProgress(fileId, 2);
     expect(h.app.imageLoadingProgress.get(fileId)).toBe(1);
     expect(progressListener).toHaveBeenCalledTimes(2);
 
-    h.app.api.setImageLoadingProgress(fileId, null);
+    h.app.api.setDownloadProgress(fileId, null);
     expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
     expect(progressListener).toHaveBeenCalledTimes(3);
     expect(onChange).not.toHaveBeenCalled();
 
     unsubscribeProgress();
     unsubscribeChange();
+  });
+
+  it("stores download error and upload status outside app state", async () => {
+    await setup();
+
+    const fileId = "status-file" as FileId;
+    const statusListener = vi.fn();
+    const onChange = vi.fn();
+    const uploadAction = vi.fn();
+    const errorAction = vi.fn();
+    const unsubscribeStatus = h.app.imageStatusEmitter.on(statusListener);
+    const unsubscribeChange = h.app.api.onChange(onChange);
+
+    h.app.api.setDownloadError(fileId, {
+      onClick: errorAction,
+      backgroundColor: "#ff0000",
+      color: "#ffffff",
+      text: "Image failed",
+    });
+    h.app.api.setDownloadError(fileId, {
+      onClick: errorAction,
+      backgroundColor: "#ff0000",
+      color: "#ffffff",
+      text: "Image failed",
+    });
+    expect(h.app.imageStatus.get(fileId)?.downloadError).toEqual({
+      onClick: errorAction,
+      backgroundColor: "#ff0000",
+      color: "#ffffff",
+      text: "Image failed",
+    });
+    expect(statusListener).toHaveBeenCalledTimes(1);
+
+    h.app.api.setUploadProgress(fileId, 0.25, {
+      onClick: uploadAction,
+      color: "#00ff00",
+      trackColor: "#000000",
+    });
+    h.app.api.setUploadProgress(fileId, 0.25);
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
+      progress: 0.25,
+      state: "uploading",
+      onClick: uploadAction,
+      color: "#00ff00",
+      trackColor: "#000000",
+    });
+    expect(statusListener).toHaveBeenCalledTimes(2);
+
+    h.app.api.setUploadProgress(fileId, 2);
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress?.progress).toBe(1);
+    expect(statusListener).toHaveBeenCalledTimes(3);
+
+    h.app.api.setUploadProgress(fileId, null);
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress).toBeNull();
+    expect(statusListener).toHaveBeenCalledTimes(4);
+
+    h.app.api.setUploadProgress(fileId, "pending");
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
+      state: "pending",
+      progress: undefined,
+    });
+    expect(statusListener).toHaveBeenCalledTimes(5);
+
+    h.app.api.setUploadProgress(fileId, "error", {
+      text: "Cloud sync failed",
+    });
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
+      state: "error",
+      progress: undefined,
+      text: "Cloud sync failed",
+    });
+    expect(statusListener).toHaveBeenCalledTimes(6);
+
+    h.app.api.setDownloadError(fileId, null);
+    h.app.api.setUploadProgress(fileId, null);
+    expect(h.app.imageStatus.has(fileId)).toBe(false);
+    expect(statusListener).toHaveBeenCalledTimes(8);
+    expect(onChange).not.toHaveBeenCalled();
+
+    unsubscribeStatus();
+    unsubscribeChange();
+  });
+
+  it("runs image status actions from canvas clicks", async () => {
+    await setup();
+
+    const fileId = "action-file" as FileId;
+    const uploadAction = vi.fn();
+    API.setElements([
+      API.createElement({
+        type: "image",
+        x: 100,
+        y: 100,
+        width: 100,
+        height: 100,
+        fileId,
+      }),
+    ]);
+
+    h.app.api.setUploadProgress(fileId, 0.5, {
+      onClick: uploadAction,
+    });
+
+    const { x: clientX, y: clientY } = sceneCoordsToViewportCoords(
+      { sceneX: 185, sceneY: 115 },
+      h.state,
+    );
+
+    fireEvent.click(GlobalTestState.interactiveCanvas, {
+      button: 0,
+      clientX,
+      clientY,
+    });
+
+    expect(uploadAction).toHaveBeenCalledWith(fileId);
+
+    const uploadStatusAction = vi.fn();
+    h.app.api.setUploadProgress(fileId, "error", {
+      text: "Cloud sync failed",
+      onClick: uploadStatusAction,
+    });
+
+    fireEvent.click(GlobalTestState.interactiveCanvas, {
+      button: 0,
+      clientX,
+      clientY,
+    });
+
+    expect(uploadStatusAction).toHaveBeenCalledWith(fileId);
   });
 
   it("keeps temporary image placeholders out of files and replaces them with canonical files", async () => {
@@ -276,7 +410,7 @@ describe("image insertion", () => {
     expect(onChange).not.toHaveBeenCalled();
     unsubscribeChange();
 
-    h.app.api.setImageLoadingProgress(fileId, 1);
+    h.app.api.setDownloadProgress(fileId, 1);
     const fileDataURL = await blobModule.getDataURL(file);
     act(() => {
       h.app.api.addFiles([
