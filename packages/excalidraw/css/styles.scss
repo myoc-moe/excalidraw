@@ -219,7 +219,7 @@ body.excalidraw-cursor-resize * {
 
   .divider {
     width: 1px;
-    background-color: var(--button-grey-2);
+    background-color: var(--button-gray-2);
     margin: 1px;
   }
 
@@ -302,19 +302,17 @@ body.excalidraw-cursor-resize * {
     z-index: var(--zIndex-layerUI);
   }
 
-  .App-bottom-bar-container {
+  .App-bottom-bar {
     position: absolute;
+    // account for margins
+    width: calc(100% - 28px);
+    max-width: 450px;
     bottom: 0;
-    left: calc(4 * var(--space-factor));
+    left: 50%;
+    transform: translateX(-50%);
+    --bar-padding: calc(4 * var(--space-factor));
     z-index: var(--zIndex-ui-bottom);
     display: flex;
-    gap: calc(4 * var(--space-factor));
-    align-items: flex-end;
-  }
-
-  .App-bottom-bar-item {
-    max-width: 450px;
-    --bar-padding: calc(4 * var(--space-factor));
     flex-direction: column;
 
     pointer-events: none;
@@ -349,17 +347,17 @@ body.excalidraw-cursor-resize * {
   .excalidraw-ui-top-right {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 2px;
+    gap: 0.5rem;
+  }
 
-    .App-toolbar-content {
-      display: flex;
-      flex-direction: column;
+  .App-toolbar-content {
+    display: flex;
+    flex-direction: column;
 
-      pointer-events: none;
-      & > * {
-        pointer-events: var(--ui-pointerEvents);
-      }
+    pointer-events: none;
+
+    & > * {
+      pointer-events: var(--ui-pointerEvents);
     }
   }
 

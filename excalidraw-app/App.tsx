@@ -334,6 +334,24 @@ const isViewModeOnlyEnabled = () => {
   return value !== null && value !== "false";
 };
 
+const forceServedAppSimplifiedMode = <
+  T extends { appState?: ExcalidrawInitialDataState["appState"] | null },
+>(
+  scene: T | null,
+): T | null => {
+  if (!scene) {
+    return scene;
+  }
+
+  return {
+    ...scene,
+    appState: {
+      ...scene.appState,
+      myocSimplifiedMode: true,
+    },
+  };
+};
+
 const mergeEditorPreferences = (
   current: ResolvedEditorPreferences,
   next: EditorPreferences,
@@ -541,7 +559,9 @@ const ExcalidrawWrapper = () => {
 
     initializeScene({ collabAPI, excalidrawAPI }).then(async (data) => {
       loadImages(data, /* isInitialLoad */ true);
-      initialStatePromiseRef.current.promise.resolve(data.scene);
+      initialStatePromiseRef.current.promise.resolve(
+        forceServedAppSimplifiedMode(data.scene),
+      );
     });
 
     const onHashChange = async (event: HashChangeEvent) => {
@@ -557,11 +577,13 @@ const ExcalidrawWrapper = () => {
       initializeScene({ collabAPI, excalidrawAPI }).then((data) => {
         loadImages(data);
         if (data.scene) {
+          const scene = forceServedAppSimplifiedMode(data.scene);
+
           excalidrawAPI.updateScene({
-            elements: restoreElements(data.scene.elements, null, {
+            elements: restoreElements(scene?.elements, null, {
               repairBindings: true,
             }),
-            appState: restoreAppState(data.scene.appState, null),
+            appState: restoreAppState(scene?.appState, null),
             captureUpdate: CaptureUpdateAction.IMMEDIATELY,
           });
         }
@@ -578,7 +600,9 @@ const ExcalidrawWrapper = () => {
       ) {
         // don't sync if local state is newer or identical to browser state
         if (isBrowserStorageStateNewer(STORAGE_KEYS.VERSION_DATA_STATE)) {
-          const localDataState = importFromLocalStorage();
+          const localDataState = forceServedAppSimplifiedMode(
+            importFromLocalStorage(),
+          );
           const username = importUsernameFromLocalStorage();
           setLangCode(getPreferredLanguage());
           excalidrawAPI.updateScene({
