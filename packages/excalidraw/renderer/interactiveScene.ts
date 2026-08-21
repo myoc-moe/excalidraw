@@ -1815,7 +1815,7 @@ const renderImageUploadStatusIcon = (
   radius: number,
   lineWidth: number,
   status: {
-    state?: "pending" | "uploading" | "error";
+    state?: "pending" | "uploading" | "error" | "failed";
     progress?: number;
     color?: string;
     trackColor?: string;
@@ -1828,6 +1828,13 @@ const renderImageUploadStatusIcon = (
     status.color ?? getCanvasThemeColor("--color-primary", selectionColor);
   const warningColor =
     status.color ?? getCanvasThemeColor("--color-warning-darkest", "#ec8b14");
+
+  if (state === "failed") {
+    renderImageErrorIcon(context, centerX, centerY, radius, appState, {
+      color: status.color ?? getCanvasThemeColor("--color-danger", "#e03131"),
+    });
+    return;
+  }
 
   if (state === "uploading") {
     renderImageProgressCircle(

@@ -323,10 +323,17 @@ describe("image insertion", () => {
     });
     expect(statusListener).toHaveBeenCalledTimes(6);
 
+    h.app.api.setUploadProgress(fileId, "failed");
+    expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
+      state: "failed",
+      progress: undefined,
+    });
+    expect(statusListener).toHaveBeenCalledTimes(7);
+
     h.app.api.setDownloadError(fileId, null);
     h.app.api.setUploadProgress(fileId, null);
     expect(h.app.imageStatus.has(fileId)).toBe(false);
-    expect(statusListener).toHaveBeenCalledTimes(8);
+    expect(statusListener).toHaveBeenCalledTimes(9);
     expect(onChange).not.toHaveBeenCalled();
 
     unsubscribeStatus();
