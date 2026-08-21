@@ -328,6 +328,58 @@ body.excalidraw-cursor-resize * {
     }
   }
 
+  .App-bottom-bar__actions-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .mobile-canvas-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 4px;
+    margin-bottom: 4px;
+    pointer-events: var(--ui-pointerEvents);
+
+    .view-mode-button button,
+    .smart-zoom-button button {
+      width: var(--mobile-action-button-size);
+      height: var(--mobile-action-button-size);
+      min-width: var(--mobile-action-button-size);
+      min-height: var(--mobile-action-button-size);
+      margin-inline-start: 0;
+      border-radius: var(--border-radius-lg);
+      background-color: transparent;
+      box-shadow: none;
+
+      &.enabled {
+        background-color: transparent;
+
+        .ToolIcon__icon:hover {
+          background-color: transparent;
+        }
+      }
+
+      .ToolIcon__icon {
+        width: 100%;
+        height: 100%;
+        background-color: transparent;
+      }
+
+      .ToolIcon__keybinding {
+        display: none;
+      }
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+  }
+
   .App-toolbar {
     display: flex;
     justify-content: center;

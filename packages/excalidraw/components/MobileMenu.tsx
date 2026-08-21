@@ -127,8 +127,10 @@ export const MobileMenu = ({
 
   const shouldRenderScrollBackToContent =
     scrollBackToContentUIEnabled && appState.scrolledOutside;
+  const shouldRenderMobileCanvasActions = defaultUIEnabled;
   const shouldRenderDefaultBottomBar =
-    defaultUIEnabled && !appState.viewModeEnabled;
+    defaultUIEnabled &&
+    (!appState.viewModeEnabled || shouldRenderMobileCanvasActions);
   const scrollBackToContentButton =
     shouldRenderScrollBackToContent &&
     !appState.openMenu &&
@@ -177,18 +179,37 @@ export const MobileMenu = ({
             </div>
           )}
 
-          <MobileShapeActions
-            appState={appState}
-            elementsMap={app.scene.getNonDeletedElementsMap()}
-            renderAction={actionManager.renderAction}
-            app={app}
-            setAppState={setAppState}
-          />
+          <div className="App-bottom-bar__actions-row">
+            {shouldRenderMobileCanvasActions && (
+              <Island className="mobile-canvas-actions">
+                {!appState.viewModeOnly && (
+                  <div className="view-mode-button">
+                    {actionManager.renderAction("viewMode")}
+                  </div>
+                )}
+                <div className="smart-zoom-button">
+                  {actionManager.renderAction("smartZoom")}
+                </div>
+              </Island>
+            )}
 
-          <Island className="App-toolbar">
-            {appState.openDialog?.name !== "elementLinkSelector" &&
-              renderToolbar()}
-          </Island>
+            {!appState.viewModeEnabled && (
+              <MobileShapeActions
+                appState={appState}
+                elementsMap={app.scene.getNonDeletedElementsMap()}
+                renderAction={actionManager.renderAction}
+                app={app}
+                setAppState={setAppState}
+              />
+            )}
+          </div>
+
+          {!appState.viewModeEnabled && (
+            <Island className="App-toolbar">
+              {appState.openDialog?.name !== "elementLinkSelector" &&
+                renderToolbar()}
+            </Island>
+          )}
         </div>
       )}
 

@@ -809,6 +809,22 @@ describe("ui={{ enabled: ... }}", () => {
     expect(queryContainer(".scroll-back-to-content")).not.toBe(null);
     expect(queryContainer(".mobile-toolbar")).toBe(null);
   });
+
+  it("renders mobile canvas actions for view mode and smart zoom", async () => {
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "phone" }} />);
+    fireEvent.resize(window);
+    await waitFor(() => expect(h.app.editorInterface.formFactor).toBe("phone"));
+
+    expect(queryContainer(".mobile-canvas-actions .view-mode-button")).not.toBe(
+      null,
+    );
+    expect(queryContainer(".mobile-canvas-actions .smart-zoom-button")).not.toBe(
+      null,
+    );
+    expect(
+      queryContainer(".mobile-canvas-actions [data-testid='button-smart-zoom']"),
+    ).not.toBe(null);
+  });
 });
 
 describe("ui={false} with host UI", () => {
