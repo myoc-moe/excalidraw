@@ -1174,7 +1174,7 @@ describe("interaction={{ enabled: { navigation } }}", () => {
     expect(h.state.scrollY).toBe(scrollY);
   });
 
-  it("supports canvas zoom & zoom-to-fit keyboard shortcuts", () => {
+  it("supports canvas zoom keyboard shortcuts and leaves shifted numbers free", () => {
     // ctrl+"=" zooms in (and is prevented from zooming the browser)
     const zoom = h.state.zoom.value;
     expect(
@@ -1186,10 +1186,12 @@ describe("interaction={{ enabled: { navigation } }}", () => {
     fireEvent.keyDown(document, { ctrlKey: true, code: CODES.ZERO });
     expect(h.state.zoom.value).toBe(1);
 
-    // shift+"1" fits all elements
+    // MyOC regression: shifted numbers are reserved for MyOC/Floref.
     const { scrollX, scrollY } = h.state;
-    fireEvent.keyDown(document, { shiftKey: true, code: CODES.ONE });
-    expect([h.state.scrollX, h.state.scrollY]).not.toEqual([scrollX, scrollY]);
+    for (const code of [CODES.ONE, CODES.TWO, CODES.THREE]) {
+      fireEvent.keyDown(document, { shiftKey: true, code });
+    }
+    expect([h.state.scrollX, h.state.scrollY]).toEqual([scrollX, scrollY]);
   });
 
   it("editor is otherwise inert", () => {

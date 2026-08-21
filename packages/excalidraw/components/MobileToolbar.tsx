@@ -66,16 +66,13 @@ const ObjectsSnapModeButton = ({
   }
 
   const label = t("buttons.objectsSnapMode");
-  const shortcut = getShortcutFromShortcutName("objectsSnapMode");
-
   return (
     <IconButton
       type="toggle"
       icon={magnetIcon}
       checked={app.state.objectsSnapModeEnabled}
-      title={`${label} - ${shortcut}`}
+      title={label}
       aria-label={label}
-      aria-keyshortcuts={shortcut}
       data-testid="toolbar-objects-snap-mode"
       onSelect={() =>
         actionManager.executeAction(actionToggleObjectsSnapMode, "ui")
@@ -88,10 +85,8 @@ const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
   <IconButton
     type="button"
     icon={eyeDropperIcon}
-    title={`${t("labels.eyeDropper")} - ${KEYS.I.toLocaleUpperCase()}`}
+    title={t("labels.eyeDropper")}
     aria-label={t("labels.eyeDropper")}
-    aria-keyshortcuts={KEYS.I.toLocaleUpperCase()}
-    keyBindingLabel={KEYS.I.toLocaleUpperCase()}
     data-testid="toolbar-eyedropper"
     onClick={() =>
       app.openEyeDropper({ type: "stroke", swapPreviewOnAlt: false })
@@ -218,7 +213,7 @@ export const MobileToolbar = ({
       : DotsIcon
     : DotsIcon;
 
-  const toolProps = { app, activeTool };
+  const toolProps = { app, activeTool, hideShortcut: true };
 
   return (
     <div
@@ -447,7 +442,6 @@ export const MobileToolbar = ({
                 icon={laserPointerToolIcon}
                 data-testid="toolbar-laser"
                 selected={laserToolSelected}
-                shortcut={KEYS.K.toLocaleUpperCase()}
                 disabled={isToolButtonDisabled(app, "laser")}
               >
                 {t("toolBar.laser")}

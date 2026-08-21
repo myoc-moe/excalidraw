@@ -522,7 +522,7 @@ const ExcalidrawWrapper = () => {
       failed: () => {
         const fileId = getDebugImageFileId();
         if (fileId) {
-          excalidrawAPI.setUploadProgress(fileId, "failed");
+          excalidrawAPI.setUploadProgress(fileId, "error");
         }
         return fileId;
       },

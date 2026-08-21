@@ -276,13 +276,7 @@ export const actionZoomToFitSelectionInViewport = register({
       },
     };
   },
-  // NOTE shift-2 should have been assigned actionZoomToFitSelection.
-  // TBD on how proceed
-  keyTest: (event) =>
-    event.code === CODES.TWO &&
-    event.shiftKey &&
-    !event.altKey &&
-    !event[KEYS.CTRL_OR_CMD],
+  keyTest: undefined,
 });
 
 export const actionZoomToFitSelection = register({
@@ -319,12 +313,7 @@ export const actionZoomToFitSelection = register({
       },
     };
   },
-  // NOTE this action should use shift-2 per figma, alas
-  keyTest: (event) =>
-    event.code === CODES.THREE &&
-    event.shiftKey &&
-    !event.altKey &&
-    !event[KEYS.CTRL_OR_CMD],
+  keyTest: undefined,
 });
 
 export const actionZoomToFit = register({
@@ -356,11 +345,7 @@ export const actionZoomToFit = register({
       },
     };
   },
-  keyTest: (event) =>
-    event.code === CODES.ONE &&
-    event.shiftKey &&
-    !event.altKey &&
-    !event[KEYS.CTRL_OR_CMD],
+  keyTest: undefined,
 });
 
 export const actionToggleTheme = register<AppState["theme"]>({

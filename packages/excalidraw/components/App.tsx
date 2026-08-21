@@ -5529,16 +5529,20 @@ class App extends React.Component<AppProps, AppState> {
       // eye dropper
       // -----------------------------------------------------------------------
       const lowerCased = event.key.toLocaleLowerCase();
+      const isPlainStrokeEyeDropper =
+        lowerCased === KEYS.I &&
+        !event.shiftKey &&
+        !event[KEYS.CTRL_OR_CMD];
       const isPickingStroke =
         (lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD]) ||
-        (lowerCased === KEYS.I && !event[KEYS.CTRL_OR_CMD]);
+        isPlainStrokeEyeDropper;
       const isPickingBackground =
-        lowerCased === KEYS.G && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
+        lowerCased === KEYS.I && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
 
       if (isPickingStroke || isPickingBackground) {
         this.openEyeDropper({
           type: isPickingStroke ? "stroke" : "background",
-          swapPreviewOnAlt: lowerCased !== KEYS.I,
+          swapPreviewOnAlt: !isPlainStrokeEyeDropper,
         });
       }
       // -----------------------------------------------------------------------

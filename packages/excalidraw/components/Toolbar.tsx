@@ -314,7 +314,6 @@ const ExtraToolsDropdown = ({
               icon={laserPointerToolIcon}
               data-testid="toolbar-laser"
               selected={laserToolSelected}
-              shortcut={KEYS.K.toLocaleUpperCase()}
               disabled={isToolButtonDisabled(app, "laser")}
             >
               {t("toolBar.laser")}

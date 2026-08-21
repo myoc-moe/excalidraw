@@ -131,6 +131,13 @@ describe("findShapeByKey()", () => {
     expect(findShapeByKey("b", app)).toBeNull();
   });
 
+  it("MyOC regression: does not expose laser on K", () => {
+    const app = appWithPreferredTool("selection");
+
+    expect(findShapeByKey("K", app)).toBeNull();
+    expect(findShapeByKey("k", app)).toBeNull();
+  });
+
   it("MyOC regression: does not require shift for draw to shape", () => {
     const app = appWithPreferredTool("selection");
 

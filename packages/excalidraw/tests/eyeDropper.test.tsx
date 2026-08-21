@@ -131,6 +131,50 @@ describe("eye dropper", () => {
     expect(h.state.currentItemBackgroundColor).not.toBe("#0c2238");
   });
 
+  it("MyOC regression: uses Shift+I for background eyedropper", async () => {
+    await render(<Excalidraw autoFocus={true} handleKeyboardGlobally={true} />);
+
+    const ctx = h.app.canvas.getContext("2d")!;
+    vi.spyOn(ctx, "getImageData").mockReturnValue({
+      data: new Uint8ClampedArray([12, 34, 56, 255]),
+    } as ImageData);
+
+    Keyboard.withModifierKeys({ shift: true }, () => {
+      Keyboard.keyPress(KEYS.I);
+    });
+
+    const eyeDropperContainer = await waitFor(() => {
+      const element =
+        GlobalTestState.renderResult.container.querySelector<HTMLDivElement>(
+          ".excalidraw-eye-dropper-backdrop",
+        );
+      expect(element).not.toBeNull();
+      return element!;
+    });
+
+    fireEvent.pointerUp(eyeDropperContainer, {
+      clientX: 50,
+      clientY: 50,
+    });
+
+    expect(h.state.currentItemBackgroundColor).toBe("#0c2238");
+    expect(h.state.currentItemStrokeColor).not.toBe("#0c2238");
+  });
+
+  it("MyOC regression: does not use Shift+G for background eyedropper", async () => {
+    await render(<Excalidraw autoFocus={true} handleKeyboardGlobally={true} />);
+
+    Keyboard.withModifierKeys({ shift: true }, () => {
+      Keyboard.keyPress(KEYS.G);
+    });
+
+    expect(
+      GlobalTestState.renderResult.container.querySelector(
+        ".excalidraw-eye-dropper-backdrop",
+      ),
+    ).toBeNull();
+  });
+
   it("MyOC regression: allows mousewheel zoom while active", async () => {
     mockBoundingClientRect();
     try {

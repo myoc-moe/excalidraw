@@ -181,10 +181,9 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
                 />
               ))}
               <Shortcut label={t("toolBar.frame")} shortcuts={[KEYS.F]} />
-              <Shortcut label={t("toolBar.laser")} shortcuts={[KEYS.K]} />
               <Shortcut
                 label={t("labels.eyeDropper")}
-                shortcuts={[KEYS.I, "Shift+S", "Shift+G"]}
+                shortcuts={[KEYS.I, "Shift+S", "Shift+I"]}
               />
               <Shortcut
                 label={t("helpDialog.editLineArrowPoints")}
@@ -279,10 +278,6 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               <Shortcut
                 label={t("buttons.resetZoom")}
                 shortcuts={[getShortcutKey("CtrlOrCmd+0")]}
-              />
-              <Shortcut
-                label={t("helpDialog.zoomToSelection")}
-                shortcuts={["Shift+2"]}
               />
               <Shortcut
                 label={t("helpDialog.movePageUpDown")}
