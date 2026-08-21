@@ -124,6 +124,15 @@ If publish fails with a registry `404` for `@myoc/excalidraw`, check:
 - The browser example in `examples/with-script-in-browser` should use `@myoc/excalidraw`, not `@excalidraw/excalidraw`.
 - Internal workspace dependencies must match the version being released.
 
+## Fork UI Policy For Upstream Merges
+
+Preserve these Myoc UI removals when merging upstream Excalidraw:
+
+- Keep zen mode unavailable. Do not restore `actionToggleZenMode`, a main-menu/preferences/context-menu toggle, the `Alt+Z` shortcut, or a public `zenModeEnabled` prop. Restored/imported `appState.zenModeEnabled` should stay forced to `false`.
+- Keep omitted right-click context-menu items omitted: `copyAsPng`, `copyAsSvg`, `copyText`, `copyStyles`, and `pasteStyles`.
+- Keep the host image context-menu hook working. `imageContextMenuItems` should receive all selected image ids for all-image selections, the clicked image id for grouped or mixed selections, and should render after `cut` / `copy` / `paste` with a divider above the host image items.
+- Keep the app example's simple image right-click `Alert ID` item so this behavior is easy to verify manually.
+
 ## Before Finishing a Release
 
 Check:

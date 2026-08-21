@@ -20,7 +20,6 @@ All `props` are _optional_.
 | [`renderTopRightUI`](/docs/@excalidraw/excalidraw/api/props/render-props#rendertoprightui) | `function` | \_ | Render function that renders custom UI in top right corner |
 | [`renderCustomStats`](/docs/@excalidraw/excalidraw/api/props/render-props#rendercustomstats) | `function` | \_ | Render function that can be used to render custom stats on the stats dialog. |
 | [`viewModeEnabled`](#viewmodeenabled) | `boolean` | \_ | This indicates if the app is in `view` mode. |
-| [`zenModeEnabled`](#zenmodeenabled) | `boolean` | \_ | This indicates if the `zen` mode is enabled |
 | [`gridModeEnabled`](#gridmodeenabled) | `boolean` | \_ | This indicates if the `grid` mode is enabled |
 | [`libraryReturnUrl`](#libraryreturnurl) | `string` | \_ | What URL should [libraries.excalidraw.com](https://libraries.excalidraw.com) be installed to |
 | [`theme`](#theme) | `"light"` &#124; `"dark"` | `"light"` | The theme of the Excalidraw component |
@@ -223,10 +222,6 @@ import { defaultLang, languages } from "@excalidraw/excalidraw";
 ### viewModeEnabled
 
 This prop indicates whether the app is in `view mode`. When supplied, the value takes precedence over _intialData.appState.viewModeEnabled_, the `view mode` will be fully controlled by the host app, and users won't be able to toggle it from within the app.
-
-### zenModeEnabled
-
-This prop indicates whether the app is in `zen mode`. When supplied, the value takes precedence over _intialData.appState.zenModeEnabled_, the `zen mode` will be fully controlled by the host app, and users won't be able to toggle it from within the app.
 
 ### gridModeEnabled
 

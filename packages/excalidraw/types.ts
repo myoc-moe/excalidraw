@@ -974,7 +974,6 @@ export interface ExcalidrawProps {
   activeTool?:
     | { type: Exclude<ToolType, "image"> }
     | { type: "custom"; customType: string };
-  zenModeEnabled?: boolean;
   gridModeEnabled?: boolean;
   objectsSnapModeEnabled?: boolean;
   theme?: Theme;

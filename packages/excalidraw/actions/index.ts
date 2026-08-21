@@ -79,7 +79,6 @@ export {
 
 export { actionToggleGridMode } from "./actionToggleGridMode";
 export { actionSmartZoom } from "./actionSmartZoom";
-export { actionToggleZenMode } from "./actionToggleZenMode";
 export { actionToggleObjectsSnapMode } from "./actionToggleObjectsSnapMode";
 export { actionToggleArrowBinding } from "./actionToggleArrowBinding";
 export { actionToggleMidpointSnapping } from "./actionToggleMidpointSnapping";

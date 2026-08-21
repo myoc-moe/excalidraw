@@ -12,8 +12,6 @@ import type {
   NonDeletedSceneElementsMap,
 } from "@excalidraw/element/types";
 
-import { actionToggleZenMode } from "../actions";
-
 import { t } from "../i18n";
 import { getTargetElements } from "../scene";
 
@@ -911,10 +909,8 @@ export const UndoRedoActions = ({
 );
 
 export const ExitZenModeButton = ({
-  actionManager,
   showExitZenModeBtn,
 }: {
-  actionManager: ActionManager;
   showExitZenModeBtn: boolean;
 }) => (
   <button
@@ -922,7 +918,6 @@ export const ExitZenModeButton = ({
     className={clsx("disable-zen-mode", {
       "disable-zen-mode--visible": showExitZenModeBtn,
     })}
-    onClick={() => actionManager.executeAction(actionToggleZenMode)}
   >
     {t("buttons.exitZenMode")}
   </button>

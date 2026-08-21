@@ -107,7 +107,6 @@ export default function ExampleApp({
   const [interactiveNavigation, setInteractiveNavigation] = useState(false);
   const [interactiveBrowserZoom, setInteractiveBrowserZoom] = useState(false);
   const [ui, setUi] = useState(true);
-  const [zenModeEnabled, setZenModeEnabled] = useState(false);
   const [gridModeEnabled, setGridModeEnabled] = useState(false);
   const [renderScrollbars, setRenderScrollbars] = useState(false);
   const [blobUrl, setBlobUrl] = useState<string>("");
@@ -208,7 +207,6 @@ export default function ExampleApp({
               },
             },
         ui,
-        zenModeEnabled,
         renderScrollbars,
         gridModeEnabled,
         theme,
@@ -743,14 +741,6 @@ export default function ExampleApp({
           <label>
             <input type="checkbox" checked={!ui} onChange={() => setUi(!ui)} />
             Hide UI
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={zenModeEnabled}
-              onChange={() => setZenModeEnabled(!zenModeEnabled)}
-            />
-            Zen mode
           </label>
           <label>
             <input

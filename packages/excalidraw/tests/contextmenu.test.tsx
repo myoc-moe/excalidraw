@@ -82,6 +82,9 @@ describe("contextMenu element", () => {
         "stats",
       ]),
     );
+    expect(getContextMenuItems()).not.toEqual(
+      expect.arrayContaining(["copyAsPng", "copyAsSvg"]),
+    );
   });
 
   it("shows context menu for a selected element", () => {
@@ -114,7 +117,6 @@ describe("contextMenu element", () => {
       "flipVertical",
       "hyperlink",
       "copyElementLink",
-      "smartZoom",
       "duplicateSelection",
       "toggleElementLock",
       "deleteSelectedElements",
@@ -150,8 +152,6 @@ describe("contextMenu element", () => {
       "copy",
       "paste",
       "wrapSelectionInFrame",
-      "arrangeElements",
-      "normaliseElements",
       "group",
       "sendBackward",
       "bringForward",
@@ -159,7 +159,6 @@ describe("contextMenu element", () => {
       "bringToFront",
       "flipHorizontal",
       "flipVertical",
-      "smartZoom",
       "duplicateSelection",
       "toggleElementLock",
       "deleteSelectedElements",
@@ -199,8 +198,6 @@ describe("contextMenu element", () => {
       "copy",
       "paste",
       "wrapSelectionInFrame",
-      "arrangeElements",
-      "normaliseElements",
       "ungroup",
       "sendBackward",
       "bringForward",
@@ -209,7 +206,6 @@ describe("contextMenu element", () => {
       "flipHorizontal",
       "flipVertical",
       "copyElementLink",
-      "smartZoom",
       "duplicateSelection",
       "toggleElementLock",
       "deleteSelectedElements",
@@ -236,6 +232,9 @@ describe("contextMenu element", () => {
 
     const contextMenu = UI.queryContextMenu();
     expect(queryContextMenuItem(contextMenu, "copyStyles")).toBeNull();
+    expect(queryContextMenuItem(contextMenu, "pasteStyles")).toBeNull();
+    expect(queryContextMenuItem(contextMenu, "copyAsPng")).toBeNull();
+    expect(queryContextMenuItem(contextMenu, "copyAsSvg")).toBeNull();
   });
 
   it("right-clicking on a group selects whole group", () => {
@@ -322,6 +321,21 @@ describe("contextMenu element", () => {
     expect(items.indexOf("shareImage")).toBeLessThan(
       items.indexOf("wrapSelectionInFrame"),
     );
+    expect(
+      Array.from(UI.queryContextMenu()?.children ?? []).map((item) =>
+        item.tagName === "HR"
+          ? "separator"
+          : (item as HTMLElement).dataset.testid,
+      ).slice(0, 7),
+    ).toEqual([
+      "cut",
+      "copy",
+      "paste",
+      "separator",
+      "saveImageToDevice",
+      "shareImage",
+      "separator",
+    ]);
 
     fireEvent.click(
       queryContextMenuItem(UI.queryContextMenu(), "saveImageToDevice")!,

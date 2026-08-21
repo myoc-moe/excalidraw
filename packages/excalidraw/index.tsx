@@ -87,7 +87,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     interaction,
     ui,
     activeTool,
-    zenModeEnabled,
     gridModeEnabled,
     theme,
     renderCustomizations,
@@ -238,7 +237,6 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           interaction={interaction}
           ui={ui}
           activeTool={activeTool}
-          zenModeEnabled={zenModeEnabled}
           gridModeEnabled={gridModeEnabled}
           theme={theme}
           renderCustomizations={renderCustomizations}

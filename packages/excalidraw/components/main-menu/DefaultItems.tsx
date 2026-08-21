@@ -15,7 +15,6 @@ import {
   actionToggleSearchMenu,
   actionToggleStats,
   actionToggleTheme,
-  actionToggleZenMode,
 } from "../../actions";
 import { actionToggleViewMode } from "../../actions/actionToggleViewMode";
 import { getShortcutFromShortcutName } from "../../actions/shortcuts";
@@ -493,24 +492,6 @@ export const PreferencesToggleGridModeItem = () => {
   );
 };
 
-export const PreferencesToggleZenModeItem = () => {
-  const { t } = useI18n();
-  const actionManager = useExcalidrawActionManager();
-  const appState = useUIAppState();
-  return (
-    <DropdownMenuItemCheckbox
-      checked={appState.zenModeEnabled}
-      shortcut={getShortcutFromShortcutName("zenMode")}
-      onSelect={(event) => {
-        actionManager.executeAction(actionToggleZenMode);
-        event.preventDefault();
-      }}
-    >
-      {t("buttons.zenMode")}
-    </DropdownMenuItemCheckbox>
-  );
-};
-
 const PreferencesToggleViewModeItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
@@ -589,7 +570,6 @@ Preferences.ToggleSnapMode = PreferencesToggleSnapModeItem;
 Preferences.ToggleArrowBinding = PreferencesToggleArrowBindingItem;
 Preferences.ToggleMidpointSnapping = PreferencesToggleMidpointSnappingItem;
 Preferences.ToggleGridMode = PreferencesToggleGridModeItem;
-Preferences.ToggleZenMode = PreferencesToggleZenModeItem;
 Preferences.ToggleViewMode = PreferencesToggleViewModeItem;
 Preferences.ToggleElementProperties = PreferencesToggleElementPropertiesItem;
 

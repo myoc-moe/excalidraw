@@ -47,12 +47,17 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
       ).toBe(0);
     });
 
-    it("should not show exit zen mode button and zen mode option in context menu when zenModeEnabled is set", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} zenModeEnabled={true} />);
+    it("should not restore zen mode from initialData", async () => {
+      const { container } = await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          initialData={{ appState: { zenModeEnabled: true } }}
+        />,
+      );
       expect(
         container.getElementsByClassName("disable-zen-mode--visible").length,
       ).toBe(0);
-      expect(h.state.zenModeEnabled).toBe(true);
+      expect(h.state.zenModeEnabled).toBe(false);
 
       fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
         button: 2,
@@ -61,7 +66,7 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
       });
       const contextMenu = document.querySelector(".context-menu");
       expect(queryByText(contextMenu as HTMLElement, "Zen mode")).toBe(null);
-      expect(h.state.zenModeEnabled).toBe(true);
+      expect(h.state.zenModeEnabled).toBe(false);
       expect(
         container.getElementsByClassName("disable-zen-mode--visible").length,
       ).toBe(0);

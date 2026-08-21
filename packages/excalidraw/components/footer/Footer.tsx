@@ -103,10 +103,7 @@ const Footer = ({
         </div>
       )}
       {defaultUIEnabled && (
-        <ExitZenModeButton
-          actionManager={actionManager}
-          showExitZenModeBtn={showExitZenModeBtn}
-        />
+        <ExitZenModeButton showExitZenModeBtn={showExitZenModeBtn} />
       )}
     </footer>
   );

@@ -1147,5 +1147,6 @@ export const restoreAppState = (
       isFiniteNumber(appState.gridStep) ? appState.gridStep : DEFAULT_GRID_STEP,
     ),
     editingFrame: null,
+    zenModeEnabled: false,
   };
 };

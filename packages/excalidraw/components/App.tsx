@@ -294,10 +294,6 @@ import {
   actionBringForward,
   actionBringToFront,
   actionCopy,
-  actionCopyAsPng,
-  actionCopyAsSvg,
-  copyText,
-  actionCopyStyles,
   actionCut,
   actionDeleteSelected,
   actionDuplicateSelection,
@@ -305,13 +301,11 @@ import {
   actionFlipHorizontal,
   actionFlipVertical,
   actionGroup,
-  actionPasteStyles,
   actionSelectAll,
   actionSendBackward,
   actionSendToBack,
   actionToggleGridMode,
   actionToggleStats,
-  actionToggleZenMode,
   actionUnbindText,
   actionBindText,
   actionUngroup,
@@ -802,7 +796,6 @@ class App extends React.Component<AppProps, AppState> {
     const defaultAppState = getDefaultAppState();
     const {
       viewModeEnabled = false,
-      zenModeEnabled = false,
       gridModeEnabled = false,
       objectsSnapModeEnabled = false,
       theme = defaultAppState.theme,
@@ -837,7 +830,7 @@ class App extends React.Component<AppProps, AppState> {
         ? viewModeEnabled
         : true,
       activeTool: forcedActiveTool ?? defaultAppState.activeTool,
-      zenModeEnabled,
+      zenModeEnabled: false,
       objectsSnapModeEnabled,
       gridModeEnabled: gridModeEnabled ?? defaultAppState.gridModeEnabled,
       name,
@@ -2293,10 +2286,7 @@ class App extends React.Component<AppProps, AppState> {
                             renderTopLeftUI={renderTopLeftUI}
                             renderTopRightUI={renderTopRightUI}
                             renderCustomStats={renderCustomStats}
-                            showExitZenModeBtn={
-                              typeof this.props?.zenModeEnabled ===
-                                "undefined" && this.state.zenModeEnabled
-                            }
+                            showExitZenModeBtn={false}
                             UIOptions={this.props.UIOptions}
                             onExportImage={this.onExportImage}
                             renderWelcomeScreen={
@@ -2620,7 +2610,6 @@ class App extends React.Component<AppProps, AppState> {
 
     if (actionResult.appState || editingTextElement || this.state.contextMenu) {
       let viewModeEnabled = actionResult?.appState?.viewModeEnabled || false;
-      let zenModeEnabled = actionResult?.appState?.zenModeEnabled || false;
       const theme =
         actionResult?.appState?.theme || this.props.theme || THEME.LIGHT;
       const name = actionResult?.appState?.name ?? this.state.name;
@@ -2634,10 +2623,6 @@ class App extends React.Component<AppProps, AppState> {
       // result and the host-supplied `viewModeEnabled` prop)
       if (!this.isInteractionEnabled()) {
         viewModeEnabled = true;
-      }
-
-      if (typeof this.props.zenModeEnabled !== "undefined") {
-        zenModeEnabled = this.props.zenModeEnabled;
       }
 
       editingTextElement = actionResult.appState?.editingTextElement || null;
@@ -2668,7 +2653,7 @@ class App extends React.Component<AppProps, AppState> {
           contextMenu: null,
           editingTextElement,
           viewModeEnabled,
-          zenModeEnabled,
+          zenModeEnabled: false,
           theme,
           name,
           errorMessage,
@@ -3749,10 +3734,6 @@ class App extends React.Component<AppProps, AppState> {
       this.setState({
         hoveredElementIds: {},
       });
-    }
-
-    if (prevProps.zenModeEnabled !== this.props.zenModeEnabled) {
-      this.setState({ zenModeEnabled: !!this.props.zenModeEnabled });
     }
 
     if (prevProps.theme !== this.props.theme && this.props.theme) {
@@ -12963,7 +12944,11 @@ class App extends React.Component<AppProps, AppState> {
       },
       () => {
         this.setState({
-          contextMenu: { top, left, items: this.getContextMenuItems(type) },
+          contextMenu: {
+            top,
+            left,
+            items: this.getContextMenuItems(type, element),
+          },
         });
       },
     );
@@ -13319,12 +13304,35 @@ class App extends React.Component<AppProps, AppState> {
     return false;
   };
 
+  private getImageContextMenuItems = (
+    hitElement?: NonDeletedExcalidrawElement | null,
+  ): ContextMenuItems => {
+    const getHostItems = this.props.imageContextMenuItems;
+    if (!getHostItems) {
+      return [];
+    }
+
+    const selectedElements = this.scene.getSelectedElements(this.state);
+    if (
+      selectedElements.length > 0 &&
+      selectedElements.every((element) => isImageElement(element)) &&
+      (!hitElement || this.state.selectedElementIds[hitElement.id])
+    ) {
+      return [...getHostItems(selectedElements.map((element) => element.id))];
+    }
+
+    if (hitElement && isImageElement(hitElement)) {
+      return [...getHostItems([hitElement.id])];
+    }
+
+    return [];
+  };
+
   private getContextMenuItems = (
     type: "canvas" | "element",
+    hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
-    const options: ContextMenuItems = [];
-
-    options.push(actionCopyAsPng, actionCopyAsSvg);
+    const imageContextMenuItems = this.getImageContextMenuItems(hitElement);
 
     // canvas contextMenu
     // -------------------------------------------------------------------------
@@ -13332,9 +13340,7 @@ class App extends React.Component<AppProps, AppState> {
     if (type === "canvas") {
       if (this.state.viewModeEnabled) {
         return [
-          ...options,
           actionToggleGridMode,
-          actionToggleZenMode,
           actionToggleViewMode,
           actionToggleStats,
         ];
@@ -13343,10 +13349,6 @@ class App extends React.Component<AppProps, AppState> {
       return [
         actionPaste,
         CONTEXT_MENU_SEPARATOR,
-        actionCopyAsPng,
-        actionCopyAsSvg,
-        copyText,
-        CONTEXT_MENU_SEPARATOR,
         actionSelectAll,
         actionUnlockAllElements,
         CONTEXT_MENU_SEPARATOR,
@@ -13354,7 +13356,6 @@ class App extends React.Component<AppProps, AppState> {
         actionToggleObjectsSnapMode,
         actionToggleArrowBinding,
         actionToggleMidpointSnapping,
-        actionToggleZenMode,
         actionToggleViewMode,
         actionToggleStats,
       ];
@@ -13363,10 +13364,12 @@ class App extends React.Component<AppProps, AppState> {
     // element contextMenu
     // -------------------------------------------------------------------------
 
-    options.push(copyText);
-
     if (this.state.viewModeEnabled) {
-      return [actionCopy, ...options];
+      return [
+        actionCopy,
+        imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
+        ...imageContextMenuItems,
+      ];
     }
 
     const zIndexActions: ContextMenuItems =
@@ -13385,17 +13388,14 @@ class App extends React.Component<AppProps, AppState> {
       actionCut,
       actionCopy,
       actionPaste,
+      imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
+      ...imageContextMenuItems,
       CONTEXT_MENU_SEPARATOR,
       actionSelectAllElementsInFrame,
       actionRemoveAllElementsFromFrame,
       actionWrapSelectionInFrame,
       CONTEXT_MENU_SEPARATOR,
       actionToggleCropEditor,
-      CONTEXT_MENU_SEPARATOR,
-      ...options,
-      CONTEXT_MENU_SEPARATOR,
-      actionCopyStyles,
-      actionPasteStyles,
       CONTEXT_MENU_SEPARATOR,
       actionGroup,
       actionTextAutoResize,
