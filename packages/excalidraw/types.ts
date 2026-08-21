@@ -185,6 +185,14 @@ export type ImageStatus = {
   uploadProgress?: ImageUploadProgressStatus | null;
 };
 
+export type RenderCustomizations = {
+  /**
+   * Host-controlled color for transient canvas traces whose visibility depends
+   * on the embedding app background, such as eraser and draw-to-shape trails.
+   */
+  traceColor?: string;
+};
+
 export type ToolType =
   | "selection"
   | "lasso"
@@ -970,6 +978,7 @@ export interface ExcalidrawProps {
   gridModeEnabled?: boolean;
   objectsSnapModeEnabled?: boolean;
   theme?: Theme;
+  renderCustomizations?: RenderCustomizations;
   // @TODO come with better API before v0.18.0
   name?: string;
   renderCustomStats?: (

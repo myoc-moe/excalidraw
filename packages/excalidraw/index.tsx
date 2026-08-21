@@ -90,6 +90,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     zenModeEnabled,
     gridModeEnabled,
     theme,
+    renderCustomizations,
     name,
     renderCustomStats,
     editorPreferences,
@@ -240,6 +241,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           zenModeEnabled={zenModeEnabled}
           gridModeEnabled={gridModeEnabled}
           theme={theme}
+          renderCustomizations={renderCustomizations}
           name={name}
           renderCustomStats={renderCustomStats}
           editorPreferences={editorPreferences}
