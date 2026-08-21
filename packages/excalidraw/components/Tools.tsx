@@ -42,9 +42,8 @@ export type ToolConfig = {
   icon: React.ReactNode;
   /** letter shortcut(s) — the first one is shown in tooltips */
   letterKey?: string | readonly string[];
-  /** whether `letterKey` requires Shift to be held (e.g. Shift+X) */
+  /** whether `letterKey` requires Shift to be held */
   shiftKey?: boolean;
-  numericKey?: string;
   /** whether the tool's shapes can be filled — fills the icon when active */
   fillable?: boolean;
   /**
@@ -74,57 +73,47 @@ export const TOOLS = defineTools({
   selection: {
     icon: SelectionIcon,
     letterKey: KEYS.V,
-    numericKey: KEYS["1"],
     fillable: true,
   },
   rectangle: {
     icon: RectangleIcon,
     letterKey: KEYS.R,
-    numericKey: KEYS["2"],
     fillable: true,
   },
   diamond: {
     icon: DiamondIcon,
     letterKey: KEYS.D,
-    numericKey: KEYS["3"],
     fillable: true,
   },
   ellipse: {
     icon: EllipseIcon,
     letterKey: KEYS.O,
-    numericKey: KEYS["4"],
     fillable: true,
   },
   arrow: {
     icon: ArrowIcon,
     letterKey: KEYS.A,
-    numericKey: KEYS["5"],
     fillable: true,
   },
   line: {
     icon: LineIcon,
     letterKey: KEYS.L,
-    numericKey: KEYS["6"],
     fillable: true,
   },
   freedraw: {
     icon: FreedrawIcon,
-    letterKey: [KEYS.P, KEYS.X],
-    numericKey: KEYS["7"],
+    letterKey: KEYS.P,
   },
   text: {
     icon: TextIcon,
     letterKey: KEYS.T,
-    numericKey: KEYS["8"],
   },
   image: {
     icon: ImageIcon,
-    numericKey: KEYS["9"],
   },
   eraser: {
     icon: EraserIcon,
     letterKey: KEYS.E,
-    numericKey: KEYS["0"],
     toggle: true,
   },
   frame: {
@@ -134,7 +123,6 @@ export const TOOLS = defineTools({
   autoshape: {
     icon: drawShapeToolIcon,
     letterKey: KEYS.X,
-    shiftKey: true,
     fillable: false,
   },
   embeddable: {
@@ -146,7 +134,6 @@ export const TOOLS = defineTools({
   },
   bucketfill: {
     icon: bucketFillIcon,
-    letterKey: KEYS.B,
   },
   lasso: {
     icon: LassoIcon,
@@ -155,6 +142,23 @@ export const TOOLS = defineTools({
 });
 
 export type ToolbarToolType = keyof typeof TOOLS;
+
+export const MYOC_SIMPLIFIED_MAIN_TOOL_TYPES = [
+  "selection",
+  "freedraw",
+  "text",
+  "image",
+  "eraser",
+] as const;
+
+export const MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES = [
+  "autoshape",
+  "rectangle",
+  "diamond",
+  "ellipse",
+  "arrow",
+  "line",
+] as const;
 
 /**
  * tools that, when activated while already active, switch back to the
@@ -175,13 +179,14 @@ export const getToolLetter = (type: ToolbarToolType) => {
   return shiftKey ? getShortcutKey(`Shift+${letter}`) : letter;
 };
 
-/** human-readable shortcut hint, e.g. "R or 2", used in tooltips & aria */
+/** human-readable shortcut hint, e.g. "R", used in tooltips & aria */
 export const getToolShortcut = (type: ToolbarToolType) => {
-  const letter = getToolLetter(type);
-  const { numericKey } = TOOLS[type];
-  return letter && numericKey != null
-    ? `${letter} ${t("helpDialog.or")} ${numericKey}`
-    : `${letter || numericKey}`;
+  return getToolLetter(type);
+};
+
+const getToolKeyBindingLabel = (type: ToolbarToolType) => {
+  const shortcut = getToolLetter(type);
+  return shortcut?.length === 1 ? shortcut : undefined;
 };
 
 export const findShapeByKey = (
@@ -195,17 +200,16 @@ export const findShapeByKey = (
   const lowerKey = key.toLowerCase();
 
   for (const type of Object.keys(TOOLS) as ToolbarToolType[]) {
-    const { letterKey, numericKey, shiftKey: requiresShift } = TOOLS[type];
+    const { letterKey, shiftKey: requiresShift } = TOOLS[type];
     // shift-bound tools require shift; plain-bound ones require its absence
     if (shiftKey !== Boolean(requiresShift)) {
       continue;
     }
     if (
-      (numericKey != null && key === numericKey) ||
-      (letterKey &&
-        (typeof letterKey === "string"
-          ? letterKey === lowerKey
-          : letterKey.includes(lowerKey)))
+      letterKey &&
+      (typeof letterKey === "string"
+        ? letterKey === lowerKey
+        : letterKey.includes(lowerKey))
     ) {
       // the selection shortcut activates whichever selection tool the user
       // prefers (selection or lasso)
@@ -286,7 +290,7 @@ const createToolButton = (
         keyBindingLabel={
           hideKeyBinding || hideShortcut
             ? undefined
-            : TOOLS[shortcutType].numericKey || getToolLetter(shortcutType)
+            : getToolKeyBindingLabel(shortcutType)
         }
         aria-label={label}
         aria-keyshortcuts={shortcut ?? undefined}
@@ -326,6 +330,7 @@ export const TextToolButton = createToolButton("text");
 export const ImageToolButton = createToolButton("image");
 export const EraserToolButton = createToolButton("eraser");
 export const FrameToolButton = createToolButton("frame");
+export const AutoshapeToolButton = createToolButton("autoshape");
 
 /**
  * The selection tool button — pointer-clicking it while the selection tool

@@ -768,26 +768,26 @@ describe("autoshape double-click to type", () => {
   });
 });
 
-describe("autoshape tool activation", () => {
+describe("MyOC regression: autoshape tool activation", () => {
   beforeEach(async () => {
     localStorage.clear();
     await render(<Excalidraw handleKeyboardGlobally={true} />);
   });
 
-  it("activates via its keyboard shortcut", () => {
+  it("activates draw to shape via unmodified X", () => {
     expect(h.state.activeTool.type).toBe("selection");
 
-    Keyboard.withModifierKeys({ shift: true }, () => {
-      Keyboard.keyPress(KEYS.X);
-    });
+    Keyboard.keyPress(KEYS.X);
 
     expect(h.state.activeTool.type).toBe("autoshape");
   });
 
-  it("is not activated by an unmodified X (freedraw's shortcut)", () => {
-    Keyboard.keyPress(KEYS.X);
+  it("does not activate draw to shape via Shift+X", () => {
+    Keyboard.withModifierKeys({ shift: true }, () => {
+      Keyboard.keyPress(KEYS.X);
+    });
 
-    expect(h.state.activeTool.type).toBe("freedraw");
+    expect(h.state.activeTool.type).toBe("selection");
   });
 
   it("activates from the extra tools dropdown", () => {
@@ -809,10 +809,13 @@ describe("autoshape tool activation", () => {
 
 describe("autoshape compact toolbar placement", () => {
   it.each(["tablet", "phone"] as const)(
-    "groups autoshape under freedraw on %s",
+    "groups autoshape under freedraw on %s when MyOC simplified mode is off",
     async (formFactor) => {
       const { container } = await render(
-        <Excalidraw UIOptions={{ getFormFactor: () => formFactor }} />,
+        <Excalidraw
+          initialData={{ appState: { myocSimplifiedMode: false } }}
+          UIOptions={{ getFormFactor: () => formFactor }}
+        />,
       );
       fireEvent.resize(window);
       await waitFor(() =>

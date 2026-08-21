@@ -1,8 +1,4 @@
-import {
-  BUCKET_FILL_BACKGROUND_PICKS,
-  COLOR_PALETTE,
-  KEYS,
-} from "@excalidraw/common";
+import { COLOR_PALETTE, KEYS } from "@excalidraw/common";
 import { CaptureUpdateAction } from "@excalidraw/element";
 import { pointFrom } from "@excalidraw/math";
 
@@ -125,28 +121,18 @@ describe("bucket fill tool", () => {
     cursorSetterSpy.mockRestore();
   });
 
-  it("cycles the non-white top picks on repeated B presses", () => {
-    const colorPicks = BUCKET_FILL_BACKGROUND_PICKS.filter(
-      (color) => color !== COLOR_PALETTE.white,
-    );
+  it("MyOC regression: does not activate or cycle bucket fill with B", () => {
     act(() => {
       API.setAppState({ currentItemBackgroundColor: COLOR_PALETTE.white });
     });
 
     Keyboard.keyPress(KEYS.B);
-    expect(h.state.activeTool.type).toBe("bucketfill");
+    expect(h.state.activeTool.type).toBe("selection");
     expect(h.state.currentItemBackgroundColor).toBe(COLOR_PALETTE.white);
 
-    for (const color of colorPicks) {
-      Keyboard.keyPress(KEYS.B);
-      expect(h.state.currentItemBackgroundColor).toBe(color);
-      expect(
-        decodeURIComponent(GlobalTestState.interactiveCanvas.style.cursor),
-      ).toContain(`fill="${color}"`);
-    }
-
     Keyboard.keyPress(KEYS.B);
-    expect(h.state.currentItemBackgroundColor).toBe(colorPicks[0]);
+    expect(h.state.activeTool.type).toBe("selection");
+    expect(h.state.currentItemBackgroundColor).toBe(COLOR_PALETTE.white);
   });
 
   it("temporarily activates the background eye dropper while Alt is held", async () => {
@@ -488,10 +474,10 @@ describe("bucket fill tool", () => {
     expect(fill!.opacity).toBe(60);
   });
 
-  it("selects the tool with the b shortcut", () => {
+  it("MyOC regression: does not select the tool with the b shortcut", () => {
     expect(h.state.activeTool.type).toBe("selection");
     Keyboard.keyPress(KEYS.B);
-    expect(h.state.activeTool.type).toBe("bucketfill");
+    expect(h.state.activeTool.type).toBe("selection");
   });
 
   it("opens the background color popup with the g shortcut", () => {

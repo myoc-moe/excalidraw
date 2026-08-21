@@ -19,7 +19,7 @@ import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 import { actionToggleStats } from "../actions";
 import { TunnelsContext, useInitializeTunnels } from "../context/tunnels";
 import { UIAppStateContext } from "../context/ui-appState";
-import { useAtom, useAtomValue } from "../editor-jotai";
+import { useAtom } from "../editor-jotai";
 
 import { t } from "../i18n";
 import { getScrollToContentState } from "../scene";
@@ -33,7 +33,6 @@ import Stack from "./Stack";
 import { UserList } from "./UserList";
 import { PenModeButton } from "./PenModeButton";
 import Footer from "./footer/Footer";
-import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
 import MainMenu from "./main-menu/MainMenu";
 import { useAppProps, useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
@@ -354,6 +353,7 @@ const LayerUI = ({
                           appState={appState}
                           setAppState={setAppState}
                           UIOptions={UIOptions}
+                          actionManager={actionManager}
                           onPenModeToggle={onPenModeToggle}
                           onLockToggle={onLockToggle}
                           heading={heading}

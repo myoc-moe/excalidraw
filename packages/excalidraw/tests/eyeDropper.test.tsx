@@ -5,7 +5,14 @@ import { KEYS, THEME } from "@excalidraw/common";
 import { Excalidraw } from "../index";
 
 import { Keyboard } from "./helpers/ui";
-import { fireEvent, GlobalTestState, render, waitFor } from "./test-utils";
+import {
+  fireEvent,
+  GlobalTestState,
+  mockBoundingClientRect,
+  render,
+  restoreOriginalGetBoundingClientRect,
+  waitFor,
+} from "./test-utils";
 
 const { h } = window;
 
@@ -56,7 +63,7 @@ describe("eye dropper", () => {
     expect(preview.style.top).toBe("225px");
   });
 
-  it("applies the unfiltered color in dark mode", async () => {
+  it("MyOC regression: applies the I eyedropper to stroke in dark mode", async () => {
     await render(
       <Excalidraw
         autoFocus={true}
@@ -84,9 +91,76 @@ describe("eye dropper", () => {
     fireEvent.pointerUp(eyeDropperContainer, {
       clientX: 50,
       clientY: 50,
+      altKey: true,
     });
 
-    expect(h.state.currentItemBackgroundColor).toBe("#ffffff");
+    expect(h.state.currentItemStrokeColor).toBe("#ffffff");
+    expect(h.state.currentItemBackgroundColor).not.toBe("#ffffff");
+  });
+
+  it("MyOC regression: opens stroke eyedropper from the toolbar button", async () => {
+    await render(<Excalidraw autoFocus={true} handleKeyboardGlobally={true} />);
+
+    const ctx = h.app.canvas.getContext("2d")!;
+    vi.spyOn(ctx, "getImageData").mockReturnValue({
+      data: new Uint8ClampedArray([12, 34, 56, 255]),
+    } as ImageData);
+
+    fireEvent.click(
+      GlobalTestState.renderResult.container.querySelector(
+        '[data-testid="toolbar-eyedropper"]',
+      )!,
+    );
+
+    const eyeDropperContainer = await waitFor(() => {
+      const element =
+        GlobalTestState.renderResult.container.querySelector<HTMLDivElement>(
+          ".excalidraw-eye-dropper-backdrop",
+        );
+      expect(element).not.toBeNull();
+      return element!;
+    });
+
+    fireEvent.pointerUp(eyeDropperContainer, {
+      clientX: 50,
+      clientY: 50,
+      altKey: true,
+    });
+
+    expect(h.state.currentItemStrokeColor).toBe("#0c2238");
+    expect(h.state.currentItemBackgroundColor).not.toBe("#0c2238");
+  });
+
+  it("MyOC regression: allows mousewheel zoom while active", async () => {
+    mockBoundingClientRect();
+    try {
+      await render(
+        <Excalidraw
+          autoFocus={true}
+          handleKeyboardGlobally={true}
+          wheelZoomsOnDefault={true}
+        />,
+      );
+      await waitFor(() => expect(h.state.width).toBe(200));
+
+      Keyboard.keyPress(KEYS.I);
+
+      const eyeDropperContainer = await waitFor(() => {
+        const element =
+          GlobalTestState.renderResult.container.querySelector<HTMLDivElement>(
+            ".excalidraw-eye-dropper-backdrop",
+          );
+        expect(element).not.toBeNull();
+        return element!;
+      });
+
+      const zoom = h.state.zoom.value;
+      fireEvent.wheel(eyeDropperContainer, { deltaY: -100 });
+
+      expect(h.state.zoom.value).toBeGreaterThan(zoom);
+    } finally {
+      restoreOriginalGetBoundingClientRect();
+    }
   });
 
   it("contrasts the preview border with the sampled color", async () => {

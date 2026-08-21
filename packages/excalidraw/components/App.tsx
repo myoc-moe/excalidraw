@@ -807,6 +807,7 @@ class App extends React.Component<AppProps, AppState> {
       objectsSnapModeEnabled = false,
       theme = defaultAppState.theme,
       name = `${t("labels.untitled")}-${getDateTime()}`,
+      wheelZoomsOnDefault = false,
     } = props;
 
     // seed the host-forced tool so the first render already has it
@@ -842,6 +843,7 @@ class App extends React.Component<AppProps, AppState> {
       name,
       width: window.innerWidth,
       height: window.innerHeight,
+      wheelZoomsOnDefault,
     };
 
     this.refreshEditorInterface();
@@ -2532,15 +2534,22 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
-  private openEyeDropper = ({ type }: { type: "stroke" | "background" }) => {
+  public openEyeDropper = ({
+    type,
+    swapPreviewOnAlt = true,
+  }: {
+    type: "stroke" | "background";
+    swapPreviewOnAlt?: boolean;
+  }) => {
     this.updateEditorAtom(activeEyeDropperAtom, {
-      swapPreviewOnAlt: true,
+      swapPreviewOnAlt,
       colorPickerType:
         type === "stroke" ? "elementStroke" : "elementBackground",
       onSelect: (color, event) => {
         const shouldUpdateStrokeColor =
-          (type === "background" && event.altKey) ||
-          (type === "stroke" && !event.altKey);
+          type === "stroke"
+            ? !swapPreviewOnAlt || !event.altKey
+            : swapPreviewOnAlt && event.altKey;
         const selectedElements = this.scene.getSelectedElements(this.state);
         if (
           !selectedElements.length ||
@@ -5521,13 +5530,15 @@ class App extends React.Component<AppProps, AppState> {
       // -----------------------------------------------------------------------
       const lowerCased = event.key.toLocaleLowerCase();
       const isPickingStroke =
-        lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
+        (lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD]) ||
+        (lowerCased === KEYS.I && !event[KEYS.CTRL_OR_CMD]);
       const isPickingBackground =
-        event.key === KEYS.I || (lowerCased === KEYS.G && event.shiftKey);
+        lowerCased === KEYS.G && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
 
       if (isPickingStroke || isPickingBackground) {
         this.openEyeDropper({
           type: isPickingStroke ? "stroke" : "background",
+          swapPreviewOnAlt: lowerCased !== KEYS.I,
         });
       }
       // -----------------------------------------------------------------------
@@ -13420,7 +13431,10 @@ class App extends React.Component<AppProps, AppState> {
           event.target instanceof HTMLTextAreaElement ||
           event.target instanceof HTMLIFrameElement ||
           (event.target instanceof HTMLElement &&
-            event.target.classList.contains(CLASSES.FRAME_NAME))
+            (event.target.classList.contains(CLASSES.FRAME_NAME) ||
+              event.target.classList.contains(
+                "excalidraw-eye-dropper-backdrop",
+              )))
         )
       ) {
         // prevent zooming the browser (but allow scrolling DOM)
@@ -13439,7 +13453,7 @@ class App extends React.Component<AppProps, AppState> {
 
       const { deltaX, deltaY } = event;
       // note that event.ctrlKey is necessary to handle pinch zooming
-      if (event.metaKey || event.ctrlKey) {
+      if (event.metaKey || event.ctrlKey || this.state.wheelZoomsOnDefault) {
         const sign = Math.sign(deltaY);
         const MAX_STEP = ZOOM_STEP * 100;
         const absDelta = Math.abs(deltaY);

@@ -99,14 +99,20 @@ describe("findShapeByKey()", () => {
     const app = appWithPreferredTool("selection");
 
     expect(findShapeByKey("v", app)).toBe("selection");
-    expect(findShapeByKey("1", app)).toBe("selection");
   });
 
   it("selection shortcuts activate lasso when it's preferred", () => {
     const app = appWithPreferredTool("lasso");
 
     expect(findShapeByKey("v", app)).toBe("lasso");
-    expect(findShapeByKey("1", app)).toBe("lasso");
+  });
+
+  it("MyOC regression: does not reserve number keys for drawing tools", () => {
+    const app = appWithPreferredTool("selection");
+
+    for (const key of ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]) {
+      expect(findShapeByKey(key, app)).toBeNull();
+    }
   });
 
   it("letter shortcuts are CapsLock-insensitive", () => {
@@ -114,16 +120,23 @@ describe("findShapeByKey()", () => {
 
     expect(findShapeByKey("V", app)).toBe("selection");
     expect(findShapeByKey("R", app)).toBe("rectangle");
-    expect(findShapeByKey("X", app)).toBe("freedraw");
+    expect(findShapeByKey("P", app)).toBe("freedraw");
+    expect(findShapeByKey("X", app)).toBe("autoshape");
   });
 
-  it("matches shift-bound tools only when shift is held", () => {
+  it("MyOC regression: does not expose bucket fill on B", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("X", app, true)).toBe("autoshape");
-    expect(findShapeByKey("x", app, true)).toBe("autoshape");
-    // Pressing "X" while CapsLock is active (no shift) stays freedraw
-    expect(findShapeByKey("X", app, false)).toBe("freedraw");
+    expect(findShapeByKey("B", app)).toBeNull();
+    expect(findShapeByKey("b", app)).toBeNull();
+  });
+
+  it("MyOC regression: does not require shift for draw to shape", () => {
+    const app = appWithPreferredTool("selection");
+
+    expect(findShapeByKey("X", app)).toBe("autoshape");
+    expect(findShapeByKey("x", app)).toBe("autoshape");
+    expect(findShapeByKey("X", app, true)).toBeNull();
   });
 
   it("does not match plain-bound tools when shift is held", () => {
@@ -131,6 +144,111 @@ describe("findShapeByKey()", () => {
 
     expect(findShapeByKey("R", app, true)).toBeNull();
     expect(findShapeByKey("V", app, true)).toBeNull();
+  });
+});
+
+describe("MyOC regression: simplified toolbar", () => {
+  const queryToolbarItem = (type: string) =>
+    GlobalTestState.renderResult.container.querySelector<HTMLButtonElement>(
+      `[data-testid="toolbar-${type}"]`,
+    );
+
+  const queryDocumentToolbarItem = (type: string) =>
+    document.querySelector<HTMLButtonElement>(
+      `[data-testid="toolbar-${type}"]`,
+    );
+
+  const queryAllDocumentToolbarItems = (type: string) =>
+    document.querySelectorAll<HTMLButtonElement>(
+      `[data-testid="toolbar-${type}"]`,
+    );
+
+  const openExtraTools = () => {
+    fireEvent.click(
+      GlobalTestState.renderResult.container.querySelector(
+        ".App-toolbar__extra-tools-trigger",
+      )!,
+    );
+  };
+
+  it("keeps the main toolbar to the MyOC simplified tool list", async () => {
+    await render(<Excalidraw />);
+
+    expect(window.h.state.myocSimplifiedMode).toBe(true);
+    expect(queryToolbarItem("selection")).not.toBe(null);
+    expect(queryToolbarItem("freedraw")).not.toBe(null);
+    expect(queryToolbarItem("text")).not.toBe(null);
+    expect(queryToolbarItem("image")).not.toBe(null);
+    expect(queryToolbarItem("eyedropper")).not.toBe(null);
+    expect(queryToolbarItem("eraser")).not.toBe(null);
+    expect(queryToolbarItem("autoshape")).toBe(null);
+    expect(queryToolbarItem("objects-snap-mode")).not.toBe(null);
+    expect(
+      document.querySelector("[data-testid='button-smart-zoom']"),
+    ).not.toBe(null);
+
+    expect(queryToolbarItem("rectangle")).toBe(null);
+    expect(queryToolbarItem("diamond")).toBe(null);
+    expect(queryToolbarItem("ellipse")).toBe(null);
+    expect(queryToolbarItem("arrow")).toBe(null);
+    expect(queryToolbarItem("line")).toBe(null);
+
+    expect(
+      queryToolbarItem("eyedropper")!.compareDocumentPosition(
+        queryToolbarItem("image")!,
+      ),
+    ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+
+    openExtraTools();
+
+    expect(queryDocumentToolbarItem("autoshape")).not.toBe(null);
+    expect(queryDocumentToolbarItem("rectangle")).not.toBe(null);
+    expect(queryDocumentToolbarItem("diamond")).not.toBe(null);
+    expect(queryDocumentToolbarItem("ellipse")).not.toBe(null);
+    expect(queryDocumentToolbarItem("arrow")).not.toBe(null);
+    expect(queryDocumentToolbarItem("line")).not.toBe(null);
+    expect(queryDocumentToolbarItem("frame")).toBe(null);
+    expect(queryDocumentToolbarItem("embeddable")).toBe(null);
+    expect(queryDocumentToolbarItem("laser")).toBe(null);
+    expect(queryDocumentToolbarItem("bucketfill")).toBe(null);
+    expect(queryAllDocumentToolbarItems("objects-snap-mode")).toHaveLength(1);
+    expect(queryDocumentToolbarItem("lock")).not.toBe(null);
+  });
+
+  it("MyOC regression: keeps draw to shape above shape tools in the menu", async () => {
+    await render(<Excalidraw />);
+
+    openExtraTools();
+
+    const drawToShape = queryDocumentToolbarItem("autoshape")!;
+
+    for (const type of ["rectangle", "diamond", "ellipse", "arrow", "line"]) {
+      expect(
+        drawToShape.compareDocumentPosition(queryDocumentToolbarItem(type)!),
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+  });
+
+  it("keeps the expanded upstream toolbar when MyOC simplified mode is off", async () => {
+    await render(
+      <Excalidraw initialData={{ appState: { myocSimplifiedMode: false } }} />,
+    );
+
+    expect(queryToolbarItem("rectangle")).not.toBe(null);
+    expect(queryToolbarItem("diamond")).not.toBe(null);
+    expect(queryToolbarItem("ellipse")).not.toBe(null);
+    expect(queryToolbarItem("arrow")).not.toBe(null);
+    expect(queryToolbarItem("line")).not.toBe(null);
+
+    openExtraTools();
+
+    expect(queryDocumentToolbarItem("frame")).not.toBe(null);
+    expect(queryDocumentToolbarItem("embeddable")).not.toBe(null);
+    expect(queryDocumentToolbarItem("autoshape")).not.toBe(null);
+    expect(queryDocumentToolbarItem("laser")).not.toBe(null);
+    expect(queryDocumentToolbarItem("bucketfill")).not.toBe(null);
+    expect(queryDocumentToolbarItem("objects-snap-mode")).not.toBe(null);
+    expect(queryDocumentToolbarItem("lock")).not.toBe(null);
   });
 });
 
@@ -266,6 +384,7 @@ describe("props.activeTool (forced tool)", () => {
       <Excalidraw
         activeTool={{ type: "rectangle" }}
         handleKeyboardGlobally={true}
+        initialData={{ appState: { myocSimplifiedMode: false } }}
       />,
     );
 

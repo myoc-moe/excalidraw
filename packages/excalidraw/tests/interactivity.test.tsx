@@ -49,6 +49,12 @@ const wheelPan = () => {
   });
 };
 
+const plainWheelZoomIn = () => {
+  fireEvent.wheel(GlobalTestState.interactiveCanvas, {
+    deltaY: -100,
+  });
+};
+
 // zoom shortcuts' keyTest matches on `event.code` (CODES.EQUAL/MINUS/ZERO)
 const pressZoomShortcut = (code: string) => {
   Keyboard.withModifierKeys({ ctrl: true }, () => {
@@ -133,6 +139,41 @@ describe("baseline (interactive & ui enabled by default)", () => {
     expect(queryContainer(".App-toolbar")).not.toBe(null);
     expect(queryContainer(".excalidraw--non-interactive")).toBe(null);
     expect(queryContainer(".excalidraw--ui-hidden")).toBe(null);
+  });
+});
+
+describe("MyOC regression: wheelZoomsOnDefault", () => {
+  beforeEach(async () => {
+    mockBoundingClientRect();
+    await render(
+      <Excalidraw
+        autoFocus={true}
+        handleKeyboardGlobally={true}
+        wheelZoomsOnDefault={true}
+      />,
+    );
+    await waitFor(() => expect(h.state.width).toBe(200));
+    Object.assign(document, {
+      elementFromPoint: () => GlobalTestState.canvas,
+    });
+  });
+
+  afterEach(() => {
+    restoreOriginalGetBoundingClientRect();
+  });
+
+  it("zooms on plain wheel when enabled", () => {
+    expect(h.state.wheelZoomsOnDefault).toBe(true);
+
+    const zoom = h.state.zoom.value;
+    const { scrollX, scrollY } = h.state;
+    plainWheelZoomIn();
+
+    expect(h.state.zoom.value).toBeGreaterThan(zoom);
+    expect([h.state.scrollX, h.state.scrollY]).not.toEqual([
+      scrollX - 0 / zoom,
+      scrollY - -100 / zoom,
+    ]);
   });
 });
 
