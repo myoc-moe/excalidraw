@@ -325,7 +325,7 @@ describe("image insertion", () => {
 
     h.app.api.setUploadProgress(fileId, "error");
     expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
-      state: "failed",
+      state: "error",
       progress: undefined,
     });
     expect(statusListener).toHaveBeenCalledTimes(7);
