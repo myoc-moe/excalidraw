@@ -128,10 +128,37 @@ If publish fails with a registry `404` for `@myoc/excalidraw`, check:
 
 Preserve these Myoc UI removals when merging upstream Excalidraw:
 
+- Take ordinary upstream editor changes, but keep Myoc's policy removals: AI/generative behavior, Mermaid/TTD, command palette, and built-in library/publishing surfaces should stay unavailable unless intentionally reintroduced.
+- These removals can span actions, types, app state, exports, locales, tests, and UI wiring. Do not rely on removing only the visible import or button.
 - Keep zen mode unavailable. Do not restore `actionToggleZenMode`, a main-menu/preferences/context-menu toggle, the `Alt+Z` shortcut, or a public `zenModeEnabled` prop. Restored/imported `appState.zenModeEnabled` should stay forced to `false`.
 - Keep omitted right-click context-menu items omitted: `copyAsPng`, `copyAsSvg`, `copyText`, `copyStyles`, and `pasteStyles`.
 - Keep the host image context-menu hook working. `imageContextMenuItems` should receive all selected image ids for all-image selections, the clicked image id for grouped or mixed selections, and should render after `cut` / `copy` / `paste` with a divider above the host image items.
 - Keep the app example's simple image right-click `Alert ID` item so this behavior is easy to verify manually.
+- Preserve the Myoc simplified toolbar shape after upstream toolbar merges:
+  - main toolbar tools are selection/lasso selector, freedraw, text, stroke eyedropper, image, and eraser
+  - draw-to-shape belongs in the more-tools menu above rectangle, diamond, ellipse, arrow, and line
+  - snap-to-objects remains a top-level magnet button to the right of the more-tools menu
+  - lock active tool belongs in the more-tools menu
+  - smart zoom remains visible in the lower-left controls
+- Preserve Myoc shortcut policy:
+  - number keys `1` through `0`, including shifted number combinations, are reserved for Myoc/Floref and must not select drawing tools or trigger zoom-to-fit actions
+  - `P` selects pen/freedraw
+  - `X` selects draw-to-shape without Shift
+  - `B` must not activate bucket/background fill
+  - `K` must not activate laser
+  - `I` opens the stroke eyedropper
+  - `Shift+I` opens the background eyedropper
+  - `Shift+G` must not open the background eyedropper
+  - `Alt+S` toggles snap-to-objects
+  - `Q` toggles lock active tool
+  - `wheelZoomsOnDefault` should make plain mousewheel zoom by default, including while the eyedropper is active
+- Label tests that protect fork-specific toolbar or shortcut behavior with `MyOC regression:` so future upstream merges do not mistake them for generic upstream expectations.
+
+Merge validation rules:
+
+- Do not treat a conflict-free tree as mergeable by itself. Whole-file resolutions in central contracts like `packages/excalidraw/types.ts`, `packages/excalidraw/components/App.tsx`, `packages/excalidraw/index.tsx`, `packages/excalidraw/appState.ts`, and element types can silently combine callers from one branch with contracts from the other.
+- Before choosing upstream or fork behavior for disputed symbols, verify ownership with history, for example `git log -S<symbol>` plus ancestry checks. Myoc-owned image placeholder/compression behavior, including `thumbHash` / blur / smooth-blur APIs from commit `9ab00a057`, should be preserved unless proven obsolete.
+- Before committing or publishing a merge, run `yarn workspace @myoc/excalidraw gen:types`. This validates the package declarations at `dist/types/excalidraw/index.d.ts`; if it fails, the checkout is not safe for future builds even if existing published consumers are unaffected.
 
 ## Before Finishing a Release
 
