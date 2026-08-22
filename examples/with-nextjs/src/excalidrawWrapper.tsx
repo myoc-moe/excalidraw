@@ -4,9 +4,9 @@ import { Excalidraw } from "@excalidraw/excalidraw";
 
 import "@excalidraw/excalidraw/index.css";
 
-import App from "../../with-script-in-browser/components/ExampleApp";
-
 import type { CompressImageFile } from "@excalidraw/excalidraw";
+
+import App from "../../with-script-in-browser/components/ExampleApp";
 
 const compressImageFile: CompressImageFile = async (file) => file;
 

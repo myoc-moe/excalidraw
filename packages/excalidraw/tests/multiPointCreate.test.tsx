@@ -45,7 +45,9 @@ describe("remove shape in non linear elements", () => {
   });
 
   it("rectangle", async () => {
-    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+    const { getByToolName, container } = await render(
+      <Excalidraw compressImageFile={async (file) => file} />,
+    );
     // select tool
     const tool = getByToolName("rectangle");
     fireEvent.click(tool);
@@ -61,7 +63,9 @@ describe("remove shape in non linear elements", () => {
   });
 
   it("ellipse", async () => {
-    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+    const { getByToolName, container } = await render(
+      <Excalidraw compressImageFile={async (file) => file} />,
+    );
     // select tool
     const tool = getByToolName("ellipse");
     fireEvent.click(tool);
@@ -76,7 +80,9 @@ describe("remove shape in non linear elements", () => {
   });
 
   it("diamond", async () => {
-    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+    const { getByToolName, container } = await render(
+      <Excalidraw compressImageFile={async (file) => file} />,
+    );
     // select tool
     const tool = getByToolName("diamond");
     fireEvent.click(tool);
@@ -93,7 +99,9 @@ describe("remove shape in non linear elements", () => {
 
 describe("multi point mode in linear elements", () => {
   it("arrow", async () => {
-    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+    const { getByToolName, container } = await render(
+      <Excalidraw compressImageFile={async (file) => file} />,
+    );
     // select tool
     const tool = getByToolName("arrow");
     fireEvent.click(tool);
@@ -139,7 +147,9 @@ describe("multi point mode in linear elements", () => {
   });
 
   it("line", async () => {
-    const { getByToolName, container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+    const { getByToolName, container } = await render(
+      <Excalidraw compressImageFile={async (file) => file} />,
+    );
     // select tool
     const tool = getByToolName("line");
     fireEvent.click(tool);

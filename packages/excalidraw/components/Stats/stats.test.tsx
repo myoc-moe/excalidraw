@@ -97,7 +97,12 @@ describe("binding with linear elements", () => {
     reseed(19);
     setDateTimeForTests("201933152653");
 
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     API.setElements([]);
 
@@ -161,7 +166,12 @@ describe("stats for a generic element", () => {
     reseed(7);
     setDateTimeForTests("201933152653");
 
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     API.setElements([]);
 
@@ -335,7 +345,12 @@ describe("stats for a non-generic element", () => {
     reseed(7);
     setDateTimeForTests("201933152653");
 
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     API.setElements([]);
 
@@ -491,7 +506,12 @@ describe("stats for multiple elements", () => {
     reseed(7);
     setDateTimeForTests("201933152653");
 
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     API.setElements([]);
 
@@ -722,7 +742,12 @@ describe("frame resizing behavior", () => {
     reseed(7);
     setDateTimeForTests("201933152653");
 
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     API.setElements([]);
 

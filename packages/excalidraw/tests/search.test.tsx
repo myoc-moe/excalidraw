@@ -32,7 +32,12 @@ const querySearchInput = async () => {
 
 describe("search", () => {
   beforeEach(async () => {
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally
+      />,
+    );
     API.setAppState({
       openSidebar: null,
     });

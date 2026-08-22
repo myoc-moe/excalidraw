@@ -575,7 +575,10 @@ export const parseDragImageMetadata = (
 
     if (item.type === MIME_TYPES.html) {
       try {
-        const doc = new DOMParser().parseFromString(item.value, MIME_TYPES.html);
+        const doc = new DOMParser().parseFromString(
+          item.value,
+          MIME_TYPES.html,
+        );
 
         for (const img of Array.from(doc.body.querySelectorAll("img"))) {
           pushUnique(htmlImageSources, img.getAttribute("src"));

@@ -69,7 +69,12 @@ describe("Arrow binding  Enon-default case (bindingPreference: disabled)", () 
   beforeEach(async () => {
     localStorage.clear();
     reseed(7);
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
     h.state.width = 1920;
     h.state.height = 1080;
   });

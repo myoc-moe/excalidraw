@@ -14,11 +14,7 @@ import type {
 } from "../types";
 import type React from "react";
 
-export type ActionSource =
-  | "ui"
-  | "keyboard"
-  | "contextMenu"
-  | "api";
+export type ActionSource = "ui" | "keyboard" | "contextMenu" | "api";
 
 /** if false, the action should be prevented */
 export type ActionResult =

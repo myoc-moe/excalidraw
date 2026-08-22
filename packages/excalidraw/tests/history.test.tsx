@@ -145,7 +145,12 @@ describe("history", () => {
 
   describe("singleplayer undo/redo", () => {
     it("should not collapse when applying corrupted history entry", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       const rect = API.createElement({ type: "rectangle" });
 
       API.setElements([rect]);
@@ -203,7 +208,12 @@ describe("history", () => {
     });
 
     it("should not end up with history entry when there are no appstate changes", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       const rect1 = API.createElement({ type: "rectangle", groupIds: ["A"] });
       const rect2 = API.createElement({ type: "rectangle", groupIds: ["A"] });
 
@@ -222,7 +232,12 @@ describe("history", () => {
     });
 
     it("should not end up with history entry when there are no elements changes", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect1 = API.createElement({ type: "rectangle" });
       const rect2 = API.createElement({ type: "rectangle" });
@@ -254,7 +269,8 @@ describe("history", () => {
     it("should not modify anything on unrelated appstate change", async () => {
       const rect = API.createElement({ type: "rectangle" });
       await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           handleKeyboardGlobally={true}
           initialData={{
             elements: [rect],
@@ -283,7 +299,12 @@ describe("history", () => {
     });
 
     it("should not clear the redo stack on standalone appstate change", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect1 = UI.createElement("rectangle", { x: 10 });
       const rect2 = UI.createElement("rectangle", { x: 20 });
@@ -337,7 +358,12 @@ describe("history", () => {
     });
 
     it("should not override appstate changes when redo stack is not cleared", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect = UI.createElement("rectangle", { x: 10 });
       togglePopover("Background");
@@ -417,7 +443,12 @@ describe("history", () => {
     });
 
     it("should clear the redo stack on elements change", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect1 = UI.createElement("rectangle", { x: 10 });
 
@@ -452,7 +483,12 @@ describe("history", () => {
     });
 
     it("should iterate through the history when selection changes do not produce visible change", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect = UI.createElement("rectangle", { x: 10 });
 
@@ -502,7 +538,8 @@ describe("history", () => {
 
     it("should end up with no history entry after initializing scene", async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           initialData={{
             elements: [API.createElement({ type: "rectangle", id: "A" })],
             appState: {
@@ -554,7 +591,8 @@ describe("history", () => {
 
     it("should create new history entry on scene import via drag&drop", async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           initialData={{
             elements: [API.createElement({ type: "rectangle", id: "A" })],
             appState: {
@@ -625,7 +663,12 @@ describe("history", () => {
     });
 
     it("should create new history entry on embeddable link drag&drop", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const link = "https://www.youtube.com/watch?v=gkGMXY0wekg";
       await API.drop([
@@ -763,7 +806,11 @@ describe("history", () => {
 
     it("should create new history entry on embeddable link paste", async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file} autoFocus={true} handleKeyboardGlobally={true} />,
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          autoFocus={true}
+          handleKeyboardGlobally={true}
+        />,
       );
 
       const link = "https://www.youtube.com/watch?v=gkGMXY0wekg";
@@ -812,7 +859,8 @@ describe("history", () => {
 
     it("should support appstate name or viewBackgroundColor change", async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           handleKeyboardGlobally={true}
           initialData={{
             appState: {
@@ -887,7 +935,12 @@ describe("history", () => {
     });
 
     it("should support element creation, deletion and appstate element selection change", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect1 = UI.createElement("rectangle", { x: 10 });
       const rect2 = UI.createElement("rectangle", { x: 20, y: 20 });
@@ -998,7 +1051,12 @@ describe("history", () => {
     });
 
     it("should support linear element creation and points manipulation through the editor", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       // create three point arrow
       UI.clickTool("arrow");
@@ -1247,7 +1305,12 @@ describe("history", () => {
     });
 
     it("should create entry when selecting freedraw", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       UI.clickTool("rectangle");
       mouse.down(-10, -10);
@@ -1311,7 +1374,12 @@ describe("history", () => {
     });
 
     it("should support duplication of groups, appstate group selection and editing group", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       const rect1 = API.createElement({
         type: "rectangle",
         groupIds: ["A"],
@@ -1460,7 +1528,12 @@ describe("history", () => {
     });
 
     it("should support changes in elements' order", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
 
       const rect1 = UI.createElement("rectangle", { x: 10 });
       const rect2 = UI.createElement("rectangle", { x: 20, y: 20 });
@@ -1553,7 +1626,12 @@ describe("history", () => {
       } as const;
 
       beforeEach(async () => {
-        await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+        await render(
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            handleKeyboardGlobally={true}
+          />,
+        );
 
         rect1 = API.createElement({ ...rect1Props });
         text = API.createElement({ ...textProps });
@@ -1987,7 +2065,8 @@ describe("history", () => {
 
     it("should disable undo/redo buttons when stacks empty", async () => {
       const { container } = await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           initialData={{
             elements: [API.createElement({ type: "rectangle", id: "A" })],
           }}
@@ -2037,7 +2116,8 @@ describe("history", () => {
 
     it("remounting undo/redo buttons should initialize undo/redo state correctly", async () => {
       const { container } = await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           initialData={{
             elements: [API.createElement({ type: "rectangle", id: "A" })],
           }}
@@ -2119,7 +2199,11 @@ describe("history", () => {
 
     beforeEach(async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} isCollaborating={true} />,
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+          isCollaborating={true}
+        />,
       );
     });
 

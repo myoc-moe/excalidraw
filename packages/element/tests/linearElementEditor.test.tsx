@@ -65,7 +65,12 @@ describe("Test Linear Elements", () => {
     renderInteractiveScene.mockClear();
     renderStaticScene.mockClear();
     reseed(7);
-    const comp = await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    const comp = await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
     h.state.width = 1000;
     h.state.height = 1000;
     container = comp.container;

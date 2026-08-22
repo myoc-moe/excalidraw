@@ -818,11 +818,13 @@ describe("ui={{ enabled: ... }}", () => {
     expect(queryContainer(".mobile-canvas-actions .view-mode-button")).not.toBe(
       null,
     );
-    expect(queryContainer(".mobile-canvas-actions .smart-zoom-button")).not.toBe(
-      null,
-    );
     expect(
-      queryContainer(".mobile-canvas-actions [data-testid='button-smart-zoom']"),
+      queryContainer(".mobile-canvas-actions .smart-zoom-button"),
+    ).not.toBe(null);
+    expect(
+      queryContainer(
+        ".mobile-canvas-actions [data-testid='button-smart-zoom']",
+      ),
     ).not.toBe(null);
   });
 });

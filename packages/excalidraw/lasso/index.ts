@@ -6,11 +6,7 @@ import {
 
 import { getElementLineSegments } from "@excalidraw/element";
 import { LinearElementEditor } from "@excalidraw/element/linearElementEditor";
-import {
-  isFrameLikeElement,
-  isLinearElement,
-  isTextElement,
-} from "@excalidraw/element";
+import { isFrameLikeElement, isLinearElement } from "@excalidraw/element";
 
 import { getFrameChildren } from "@excalidraw/element";
 import { selectGroupsForSelectedElements } from "@excalidraw/element";

@@ -18,7 +18,6 @@ import {
 } from "@excalidraw/math";
 
 import {
-  COLOR_PALETTE,
   CODES,
   shouldResizeFromCenter,
   shouldMaintainAspectRatio,
@@ -151,7 +150,6 @@ import {
   isUsingAdaptiveRadius,
   isIframeElement,
   isIframeLikeElement,
-  isMagicFrameElement,
   isTextBindableContainer,
   isElbowArrow,
   isBindableElement,
@@ -188,7 +186,6 @@ import {
   updateFrameMembershipOfSelectedElements,
   isElementInFrame,
   getFrameLikeTitle,
-  getElementsOverlappingFrame,
   filterElementsEligibleAsFrameChildren,
   hitElementBoundText,
   hitElementBoundingBoxOnly,
@@ -274,9 +271,7 @@ import type {
   NonDeletedExcalidrawElement,
   ExcalidrawTextContainer,
   ExcalidrawFrameLikeElement,
-  ExcalidrawMagicFrameElement,
   ExcalidrawIframeLikeElement,
-  ExcalidrawIframeElement,
   ExcalidrawEmbeddableElement,
   Ordered,
   ExcalidrawArrowElement,
@@ -331,7 +326,6 @@ import { actionTextAutoResize } from "../actions/actionTextAutoResize";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
 import { ActionManager } from "../actions/manager";
 import { actions } from "../actions/register";
-import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { trackEvent } from "../analytics";
 import {
   getDefaultAppState,
@@ -339,7 +333,6 @@ import {
   isHandToolActive,
 } from "../appState";
 import {
-  copyTextToSystemClipboard,
   parseClipboard,
   parseDataTransferEvent,
   type ParsedDataTransferFile,
@@ -12853,6 +12846,7 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      // eslint-disable-next-line no-lone-blocks
       {
         // restore the fractional indices by mutating elements
         syncInvalidIndices(elements.concat(ret.elements));

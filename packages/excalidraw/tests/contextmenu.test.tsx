@@ -322,11 +322,13 @@ describe("contextMenu element", () => {
       items.indexOf("wrapSelectionInFrame"),
     );
     expect(
-      Array.from(UI.queryContextMenu()?.children ?? []).map((item) =>
-        item.tagName === "HR"
-          ? "separator"
-          : (item as HTMLElement).dataset.testid,
-      ).slice(0, 7),
+      Array.from(UI.queryContextMenu()?.children ?? [])
+        .map((item) =>
+          item.tagName === "HR"
+            ? "separator"
+            : (item as HTMLElement).dataset.testid,
+        )
+        .slice(0, 7),
     ).toEqual([
       "cut",
       "copy",

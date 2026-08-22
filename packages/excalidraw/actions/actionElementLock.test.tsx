@@ -21,7 +21,8 @@ describe("element locking", () => {
 
   it("should unlock all elements and select them when using unlockAllElements action in contextMenu", async () => {
     await render(
-      <Excalidraw compressImageFile={async (file) => file}
+      <Excalidraw
+        compressImageFile={async (file) => file}
         initialData={{
           elements: [
             API.createElement({

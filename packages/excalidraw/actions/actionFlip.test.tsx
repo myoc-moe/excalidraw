@@ -59,7 +59,12 @@ describe("flipping re-centers selection", () => {
         elbowed: true,
       }),
     ];
-    await render(<Excalidraw compressImageFile={async (file) => file} initialData={{ elements }} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        initialData={{ elements }}
+      />,
+    );
 
     API.setSelectedElements(elements);
 

@@ -24,7 +24,12 @@ describe("laser tool interactions", () => {
       onLinkOpenSpy(...args);
       args[1].preventDefault();
     };
-    await render(<Excalidraw compressImageFile={async (file) => file} onLinkOpen={onLinkOpen} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        onLinkOpen={onLinkOpen}
+      />,
+    );
 
     const linkedRect = API.createElement({
       type: "rectangle",

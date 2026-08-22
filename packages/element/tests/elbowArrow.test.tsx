@@ -33,7 +33,12 @@ const mouse = new Pointer("mouse");
 describe("elbow arrow segment move", () => {
   beforeEach(async () => {
     localStorage.clear();
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
   });
 
   it("can move the second segment of a fully connected elbow arrow", () => {
@@ -134,7 +139,12 @@ describe("elbow arrow segment move", () => {
 describe("elbow arrow routing", () => {
   beforeEach(async () => {
     localStorage.clear();
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
   });
 
   it("can properly generate orthogonal arrow points", () => {
@@ -210,7 +220,12 @@ describe("elbow arrow routing", () => {
 describe("elbow arrow ui", () => {
   beforeEach(async () => {
     localStorage.clear();
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
 
     fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
       button: 2,

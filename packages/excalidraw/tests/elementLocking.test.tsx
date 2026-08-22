@@ -17,7 +17,12 @@ const h = window.h;
 
 describe("element locking", () => {
   beforeEach(async () => {
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
     API.setElements([]);
   });
 

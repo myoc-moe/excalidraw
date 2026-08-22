@@ -29,7 +29,8 @@ describe("appState", () => {
 
     await render(
       <div>
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           initialData={{
             elements: [
               API.createElement({
@@ -112,7 +113,13 @@ describe("appState", () => {
 
   it("moving by page up/down/left/right", async () => {
     mockBoundingClientRect();
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />, {});
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+      {},
+    );
 
     const scrollTest = () => {
       const initialScrollY = h.state.scrollY;

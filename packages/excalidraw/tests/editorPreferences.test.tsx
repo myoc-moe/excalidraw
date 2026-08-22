@@ -106,7 +106,10 @@ describe("editorPreferences", () => {
     };
 
     const rendered = await render(
-      <Excalidraw compressImageFile={async (file) => file} editorPreferences={initialPreferences} />,
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        editorPreferences={initialPreferences}
+      />,
     );
     const setViewportSpy = vi.spyOn(h.app.viewport, "setViewport");
     const rectangle = API.createElement({ type: "rectangle" });
@@ -127,7 +130,12 @@ describe("editorPreferences", () => {
     );
 
     act(() => {
-      rendered.rerender(<Excalidraw compressImageFile={async (file) => file} editorPreferences={nextPreferences} />);
+      rendered.rerender(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          editorPreferences={nextPreferences}
+        />,
+      );
     });
 
     await waitFor(() => {
@@ -184,7 +192,8 @@ describe("editorPreferences", () => {
     const arrangeSpy = vi.spyOn(arrangeModule, "arrangeElements");
 
     await render(
-      <Excalidraw compressImageFile={async (file) => file}
+      <Excalidraw
+        compressImageFile={async (file) => file}
         editorPreferences={{
           arrange: {
             algorithm: "bin-packing-binary-tree",
@@ -228,7 +237,8 @@ describe("editorPreferences", () => {
     const normaliseSpy = vi.spyOn(normaliseModule, "normaliseElements");
 
     await render(
-      <Excalidraw compressImageFile={async (file) => file}
+      <Excalidraw
+        compressImageFile={async (file) => file}
         editorPreferences={{
           normalise: {
             mode: "first",

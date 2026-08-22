@@ -15,7 +15,10 @@ describe("FontPicker", () => {
       };
 
     const { queryByTestId } = await render(
-      <Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />,
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
     );
 
     Keyboard.keyPress(KEYS.T);

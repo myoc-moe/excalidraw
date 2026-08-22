@@ -28,7 +28,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
   describe("Test zenModeEnabled prop", () => {
     it('should not show zen mode option in context menu when zenModeEnabled is "undefined"', async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} />,
+      );
       expect(
         container.getElementsByClassName("disable-zen-mode--visible").length,
       ).toBe(0);
@@ -105,7 +107,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
   describe("Test gridModeEnabled prop", () => {
     it('should show grid mode in context menu when gridModeEnabled is "undefined"', async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} />,
+      );
       expect(h.state.gridModeEnabled).toBe(false);
 
       expect(
@@ -123,7 +127,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
     it('should not show grid mode in context menu when gridModeEnabled is not "undefined"', async () => {
       const { container } = await render(
-        <Excalidraw compressImageFile={async (file) => file} gridModeEnabled={false} />,
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          gridModeEnabled={false}
+        />,
       );
       expect(h.state.gridModeEnabled).toBe(false);
 
@@ -145,7 +152,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
     describe("Test canvasActions", () => {
       it('should render menu with default items when "UIOPtions" is "undefined"', async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={undefined} />,
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={undefined}
+          />,
         );
         //open menu
         toggleMenu(container);
@@ -161,7 +171,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide export button when export is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={{ canvasActions: { export: false } }} />,
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={{ canvasActions: { export: false } }}
+          />,
         );
         //open menu
         toggleMenu(container);
@@ -170,7 +183,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide 'Save as image' button when 'saveAsImage' is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={{ canvasActions: { saveAsImage: false } }} />,
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={{ canvasActions: { saveAsImage: false } }}
+          />,
         );
         //open menu
         toggleMenu(container);
@@ -179,7 +195,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide load button when loadScene is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={{ canvasActions: { loadScene: false } }} />,
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={{ canvasActions: { loadScene: false } }}
+          />,
         );
 
         expect(queryByTestId(container, "load-button")).toBeNull();
@@ -187,7 +206,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide save as button when saveFileToDisk is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file}
+          <Excalidraw
+            compressImageFile={async (file) => file}
             UIOptions={{ canvasActions: { export: { saveFileToDisk: false } } }}
           />,
         );
@@ -198,7 +218,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide save button when saveToActiveFile is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file}
+          <Excalidraw
+            compressImageFile={async (file) => file}
             UIOptions={{ canvasActions: { saveToActiveFile: false } }}
           />,
         );
@@ -209,7 +230,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide the canvas background picker when changeViewBackgroundColor is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file}
+          <Excalidraw
+            compressImageFile={async (file) => file}
             UIOptions={{ canvasActions: { changeViewBackgroundColor: false } }}
           />,
         );
@@ -221,7 +243,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide the canvas background picker even if passed if the `canvasActions.changeViewBackgroundColor` is set to false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file}
+          <Excalidraw
+            compressImageFile={async (file) => file}
             UIOptions={{ canvasActions: { changeViewBackgroundColor: false } }}
           >
             <MainMenu>
@@ -237,7 +260,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should hide the theme toggle when theme is false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={{ canvasActions: { toggleTheme: false } }} />,
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={{ canvasActions: { toggleTheme: false } }}
+          />,
         );
         //open menu
         toggleMenu(container);
@@ -246,7 +272,10 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
       it("should not render default items in custom menu even if passed if the prop in `canvasActions` is set to false", async () => {
         const { container } = await render(
-          <Excalidraw compressImageFile={async (file) => file} UIOptions={{ canvasActions: { loadScene: false } }}>
+          <Excalidraw
+            compressImageFile={async (file) => file}
+            UIOptions={{ canvasActions: { loadScene: false } }}
+          >
             <MainMenu>
               <MainMenu.ItemCustom>
                 <button
@@ -270,7 +299,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
   describe("Test theme prop", () => {
     it("should show the theme toggle by default", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} />,
+      );
       expect(h.state.theme).toBe(THEME.LIGHT);
       //open menu
       toggleMenu(container);
@@ -279,7 +310,12 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
     });
 
     it("should not show theme toggle when the theme prop is defined", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} theme={THEME.DARK} />);
+      const { container } = await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          theme={THEME.DARK}
+        />,
+      );
 
       expect(h.state.theme).toBe(THEME.DARK);
       //open menu
@@ -289,7 +325,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
     it("should show theme mode toggle when `UIOptions.canvasActions.toggleTheme` is true", async () => {
       const { container } = await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           theme={THEME.DARK}
           UIOptions={{ canvasActions: { toggleTheme: true } }}
         />,
@@ -303,7 +340,8 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
     it("should not show theme toggle when `UIOptions.canvasActions.toggleTheme` is false", async () => {
       const { container } = await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           UIOptions={{ canvasActions: { toggleTheme: false } }}
           theme={THEME.DARK}
         />,
@@ -316,7 +354,12 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
     });
 
     it("should sync export theme with the UI theme when there is no session override", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} theme={THEME.DARK} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          theme={THEME.DARK}
+        />,
+      );
 
       expect(h.state.exportWithDarkMode).toBe(true);
 
@@ -330,7 +373,12 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
     });
 
     it("should keep the export theme override for the current session", async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} theme={THEME.LIGHT} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          theme={THEME.LIGHT}
+        />,
+      );
 
       act(() => {
         (h.app as any).actionManager.executeAction(
@@ -359,7 +407,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
   describe("Test name prop", () => {
     it("should allow editing name", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} />,
+      );
       //open menu
       toggleMenu(container);
       fireEvent.click(queryByTestId(container, "image-export-button")!);
@@ -372,7 +422,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
     it('should set the name when the name prop is present"', async () => {
       const name = "test";
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} name={name} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} name={name} />,
+      );
       //open menu
       toggleMenu(container);
       await fireEvent.click(queryByTestId(container, "image-export-button")!);
@@ -386,7 +438,9 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
 
   describe("Test autoFocus prop", () => {
     it("should not focus when autoFocus is false", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} />);
+      const { container } = await render(
+        <Excalidraw compressImageFile={async (file) => file} />,
+      );
 
       expect(
         container.querySelector(".excalidraw") === document.activeElement,
@@ -394,7 +448,12 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
     });
 
     it("should focus when autoFocus is true", async () => {
-      const { container } = await render(<Excalidraw compressImageFile={async (file) => file} autoFocus={true} />);
+      const { container } = await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          autoFocus={true}
+        />,
+      );
 
       expect(
         container.querySelector(".excalidraw") === document.activeElement,
@@ -452,7 +511,11 @@ describe("<Excalidraw compressImageFile={async (file) => file}/>", () => {
           );
         }, []);
 
-        return <Excalidraw compressImageFile={async (file) => file}>{customMenu}</Excalidraw>;
+        return (
+          <Excalidraw compressImageFile={async (file) => file}>
+            {customMenu}
+          </Excalidraw>
+        );
       };
 
       const { container } = await render(<CustomExcalidraw />);

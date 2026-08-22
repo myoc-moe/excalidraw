@@ -35,7 +35,10 @@ export const assertExcalidrawWithSidebar = async (
   test: () => void,
 ) => {
   await render(
-    <Excalidraw compressImageFile={async (file) => file} initialData={{ appState: { openSidebar: { name } } }}>
+    <Excalidraw
+      compressImageFile={async (file) => file}
+      initialData={{ appState: { openSidebar: { name } } }}
+    >
       {sidebar}
     </Excalidraw>,
   );

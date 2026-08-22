@@ -161,7 +161,7 @@ export const loadFromBlob = async (
             fileHandle: fileHandle || blob.handle || null,
             ...cleanAppStateForExport(data.appState || {}),
             ...(localAppState
-                ? getScrollToContentState(data.elements || [], localAppState)
+              ? getScrollToContentState(data.elements || [], localAppState)
               : {}),
           },
           localAppState,

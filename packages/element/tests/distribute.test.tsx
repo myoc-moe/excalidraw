@@ -71,7 +71,12 @@ describe("distributing", () => {
     await act(() => {
       return setLanguage(defaultLang);
     });
-    await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        handleKeyboardGlobally={true}
+      />,
+    );
   });
 
   it("should distribute selected elements horizontally", async () => {
