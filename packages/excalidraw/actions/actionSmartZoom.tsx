@@ -27,7 +27,7 @@ export const actionSmartZoom = register({
       target: selectedElements.length ? selectedElements : elements,
       fit: settings.fitToViewport ? "contain" : "none",
       animation: settings.animate ? { duration: settings.duration } : false,
-      offsets: { ui: true },
+      offsets: settings.respectUIElements ? { ui: true } : undefined,
       viewportZoomFactor: settings.viewportZoomFactor,
     });
 

@@ -105,6 +105,7 @@ describe("contextMenu element", () => {
     });
 
     expect(getContextMenuItems()).toEqual([
+      "smartZoom",
       "cut",
       "copy",
       "paste",
@@ -148,6 +149,7 @@ describe("contextMenu element", () => {
     });
 
     expect(getContextMenuItems()).toEqual([
+      "smartZoom",
       "cut",
       "copy",
       "paste",
@@ -194,6 +196,7 @@ describe("contextMenu element", () => {
     });
 
     expect(getContextMenuItems()).toEqual([
+      "smartZoom",
       "cut",
       "copy",
       "paste",
@@ -328,8 +331,10 @@ describe("contextMenu element", () => {
             ? "separator"
             : (item as HTMLElement).dataset.testid,
         )
-        .slice(0, 7),
+        .slice(0, 9),
     ).toEqual([
+      "smartZoom",
+      "separator",
       "cut",
       "copy",
       "paste",
@@ -527,7 +532,8 @@ describe("contextMenu element", () => {
       clientY: 50,
     });
 
-    expect(getContextMenuItems().slice(0, 4)).toEqual([
+    expect(getContextMenuItems().slice(0, 5)).toEqual([
+      "smartZoom",
       "cut",
       "copy",
       "paste",
@@ -572,6 +578,10 @@ describe("contextMenu element", () => {
       clientY: 50,
     });
 
-    expect(getContextMenuItems()).toEqual(["copy", "saveImageToDevice"]);
+    expect(getContextMenuItems()).toEqual([
+      "smartZoom",
+      "copy",
+      "saveImageToDevice",
+    ]);
   });
 });

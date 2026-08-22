@@ -185,4 +185,49 @@ describe("view mode", () => {
     });
     expect(window.h.state.viewModeEnabled).toBe(true);
   });
+
+  it("shows smart zoom in the view-mode canvas context menu", async () => {
+    API.setAppState({ viewModeEnabled: true });
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 1,
+      clientY: 1,
+    });
+
+    expect(
+      UI.queryContextMenu()?.querySelector('li[data-testid="smartZoom"]'),
+    ).not.toBeNull();
+  });
+
+  it("smart zooms to a right-clicked element in view mode", async () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+
+    API.setElements([rectangle]);
+    API.setAppState({ viewModeEnabled: true });
+
+    mouse.rightClickAt(80, 65);
+
+    const smartZoomItem = UI.queryContextMenu()?.querySelector(
+      'li[data-testid="smartZoom"]',
+    );
+    expect(smartZoomItem).not.toBeNull();
+    expect(smartZoomItem?.querySelector("kbd")?.textContent).toBe("F");
+
+    fireEvent.click(smartZoomItem!);
+
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        target: [rectangle],
+      }),
+    );
+    expect(window.h.state.viewModeEnabled).toBe(true);
+  });
 });

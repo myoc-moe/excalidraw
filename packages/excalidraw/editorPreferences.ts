@@ -20,6 +20,7 @@ export const DEFAULT_SMART_ZOOM_PREFERENCES: ResolvedSmartZoomPreferences = {
   fitToViewport: true,
   animate: true,
   duration: 200,
+  respectUIElements: false,
   viewportZoomFactor: 0.8,
 };
 

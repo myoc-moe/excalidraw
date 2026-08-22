@@ -300,6 +300,7 @@ import {
   actionSelectAll,
   actionSendBackward,
   actionSendToBack,
+  actionSmartZoom,
   actionToggleGridMode,
   actionToggleStats,
   actionUnbindText,
@@ -2620,7 +2621,8 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     if (actionResult.appState || editingTextElement || this.state.contextMenu) {
-      let viewModeEnabled = actionResult?.appState?.viewModeEnabled || false;
+      let viewModeEnabled =
+        actionResult?.appState?.viewModeEnabled ?? this.state.viewModeEnabled;
       const theme =
         actionResult?.appState?.theme || this.props.theme || THEME.LIGHT;
       const name = actionResult?.appState?.name ?? this.state.name;
@@ -13558,7 +13560,12 @@ class App extends React.Component<AppProps, AppState> {
 
     if (type === "canvas") {
       if (this.state.viewModeEnabled) {
-        return [actionToggleGridMode, actionToggleViewMode, actionToggleStats];
+        return [
+          actionSmartZoom,
+          actionToggleGridMode,
+          actionToggleViewMode,
+          actionToggleStats,
+        ];
       }
 
       return [
@@ -13581,6 +13588,7 @@ class App extends React.Component<AppProps, AppState> {
 
     if (this.state.viewModeEnabled) {
       return [
+        actionSmartZoom,
         actionCopy,
         imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
         ...imageContextMenuItems,
@@ -13599,6 +13607,8 @@ class App extends React.Component<AppProps, AppState> {
         : [];
 
     return [
+      CONTEXT_MENU_SEPARATOR,
+      actionSmartZoom,
       CONTEXT_MENU_SEPARATOR,
       actionCut,
       actionCopy,

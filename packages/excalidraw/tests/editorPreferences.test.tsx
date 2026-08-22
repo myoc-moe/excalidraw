@@ -43,6 +43,7 @@ describe("editorPreferences", () => {
       expect.objectContaining({
         animation: { duration: DEFAULT_SMART_ZOOM_PREFERENCES.duration },
         fit: "contain",
+        offsets: undefined,
         viewportZoomFactor: DEFAULT_SMART_ZOOM_PREFERENCES.viewportZoomFactor,
       }),
     );
@@ -93,6 +94,7 @@ describe("editorPreferences", () => {
         animate: false,
         duration: 90,
         fitToViewport: false,
+        respectUIElements: false,
         viewportZoomFactor: 0.6,
       },
     };
@@ -101,6 +103,7 @@ describe("editorPreferences", () => {
         animate: true,
         duration: 320,
         fitToViewport: true,
+        respectUIElements: true,
         viewportZoomFactor: 0.5,
       },
     };
@@ -125,6 +128,7 @@ describe("editorPreferences", () => {
       expect.objectContaining({
         animation: false,
         fit: "none",
+        offsets: undefined,
         viewportZoomFactor: initialPreferences.smartZoom!.viewportZoomFactor,
       }),
     );
@@ -148,6 +152,7 @@ describe("editorPreferences", () => {
       expect.objectContaining({
         animation: { duration: nextPreferences.smartZoom!.duration },
         fit: "contain",
+        offsets: { ui: true },
         viewportZoomFactor: nextPreferences.smartZoom!.viewportZoomFactor,
       }),
     );
@@ -161,6 +166,7 @@ describe("editorPreferences", () => {
           smartZoom: {
             animate: false,
             fitToViewport: true,
+            respectUIElements: true,
             viewportZoomFactor: 0.5,
           },
         }}

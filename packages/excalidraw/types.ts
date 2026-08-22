@@ -333,6 +333,7 @@ export type SmartZoomPreferences = {
   fitToViewport?: boolean;
   animate?: boolean;
   duration?: number;
+  respectUIElements?: boolean;
   viewportZoomFactor?: number;
 };
 

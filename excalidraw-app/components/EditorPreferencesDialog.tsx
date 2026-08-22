@@ -98,6 +98,21 @@ export const EditorPreferencesDialog = ({
             />
             <span>Animate</span>
           </label>
+          <label className="EditorPreferencesDialog__checkbox">
+            <input
+              data-testid="editor-preferences-smartzoom-respect-ui"
+              type="checkbox"
+              checked={editorPreferences.smartZoom.respectUIElements}
+              onChange={(event) =>
+                onChange({
+                  smartZoom: {
+                    respectUIElements: event.target.checked,
+                  },
+                })
+              }
+            />
+            <span>Respect UI elements</span>
+          </label>
           <label className="EditorPreferencesDialog__field">
             <span>Duration (ms)</span>
             <input
