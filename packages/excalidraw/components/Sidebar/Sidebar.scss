@@ -193,19 +193,9 @@
       border: 1px solid var(--sidebar-border-color);
       border-radius: var(--border-radius-lg);
       background: var(--sidebar-bg-color);
-      box-shadow: none;
+      box-shadow: var(--sidebar-shadow);
       isolation: isolate;
-      overflow: visible;
-
-      &::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        border-radius: inherit;
-        box-shadow: var(--sidebar-shadow);
-        pointer-events: none;
-      }
+      overflow: hidden;
 
       :root[dir="rtl"] & {
         right: auto;
@@ -216,14 +206,14 @@
       .sidebar-tabs-root {
         display: block;
         padding: 0;
-        overflow: visible;
+        overflow: hidden;
         border-radius: inherit;
         background: var(--sidebar-bg-color);
       }
 
       [role="tabpanel"] {
         display: block;
-        overflow: visible;
+        overflow: hidden;
       }
     }
   }
