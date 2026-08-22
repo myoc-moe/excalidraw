@@ -92,6 +92,32 @@ describe("scale-down", () => {
     expect(h.state.zoom.value).toBeLessThanOrEqual(0.1);
   });
 
+  it("MyOC regression: accepts viewportZoomFactor for padded setViewport fits", async () => {
+    await render(<Excalidraw compressImageFile={async (file) => file} />);
+
+    h.state.width = 1000;
+    h.state.height = 1000;
+
+    const rectElement = API.createElement({
+      width: 100,
+      height: 100,
+      x: 0,
+      y: 0,
+    });
+    API.setElements([rectElement]);
+
+    act(() => {
+      h.app.viewport.setViewport({
+        target: rectElement,
+        fit: "contain",
+        animation: false,
+        viewportZoomFactor: 0.5,
+      });
+    });
+
+    expect(h.state.zoom.value).toBe(5);
+  });
+
   it("should zoom to fit multiple elements", async () => {
     await render(<Excalidraw compressImageFile={async (file) => file} />);
 

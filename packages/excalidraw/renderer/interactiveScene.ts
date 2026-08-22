@@ -1594,7 +1594,9 @@ const renderImageStatusOverlays = (
 
     const imageStatus = app.imageStatus.get(element.fileId);
     const hasError =
-      element.status === "error" || !!imageStatus?.downloadError;
+      imageStatus?.downloadError === null
+        ? false
+        : element.status === "error" || !!imageStatus?.downloadError;
 
     if (hasError) {
       const icon = getImageStatusOverlayPosition(
@@ -1865,18 +1867,13 @@ const renderImageUploadStatusIcon = (
     context.lineWidth = Math.max(lineWidth * 0.75, 1 / appState.zoom.value);
     context.lineCap = "round";
     context.beginPath();
-    context.moveTo(centerX + radius * 0.42, centerY - radius * 0.34);
-    context.lineTo(centerX + radius * 0.42, centerY + radius * 0.14);
+    const size = radius * 0.18;
+    const markCenterY = centerY - radius * 0.09;
+    context.moveTo(centerX - size, markCenterY - size);
+    context.lineTo(centerX + size, markCenterY + size);
+    context.moveTo(centerX + size, markCenterY - size);
+    context.lineTo(centerX - size, markCenterY + size);
     context.stroke();
-    context.beginPath();
-    context.arc(
-      centerX + radius * 0.42,
-      centerY + radius * 0.42,
-      radius * 0.1,
-      0,
-      Math.PI * 2,
-    );
-    context.fill();
     context.restore();
   } else if (state === "pending") {
     context.save();

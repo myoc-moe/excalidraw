@@ -75,7 +75,12 @@ describe("textWysiwyg", () => {
   describe("start text editing", () => {
     const { h } = window;
     beforeEach(async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       API.setElements([]);
     });
 
@@ -409,7 +414,12 @@ describe("textWysiwyg", () => {
     });
 
     beforeEach(async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       // @ts-ignore
       h.app.refreshEditorInterface();
 
@@ -516,7 +526,12 @@ describe("textWysiwyg", () => {
     });
 
     beforeEach(async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       // @ts-ignore
       h.app.refreshEditorInterface();
 
@@ -728,7 +743,12 @@ describe("textWysiwyg", () => {
     const { h } = window;
 
     beforeEach(async () => {
-      await render(<Excalidraw compressImageFile={async (file) => file} handleKeyboardGlobally={true} />);
+      await render(
+        <Excalidraw
+          compressImageFile={async (file) => file}
+          handleKeyboardGlobally={true}
+        />,
+      );
       API.setElements([]);
 
       rectangle = UI.createElement("rectangle", {
@@ -1923,7 +1943,8 @@ describe("textWysiwyg", () => {
 
     beforeEach(async () => {
       await render(
-        <Excalidraw compressImageFile={async (file) => file}
+        <Excalidraw
+          compressImageFile={async (file) => file}
           handleKeyboardGlobally={true}
           initialData={{
             appState: {

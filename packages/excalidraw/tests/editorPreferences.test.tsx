@@ -29,7 +29,7 @@ describe("editorPreferences", () => {
 
   it("preserves smart zoom defaults when no editorPreferences prop is provided", async () => {
     await render(<Excalidraw compressImageFile={async (file) => file} />);
-    const scrollSpy = vi.spyOn(h.app, "scrollToContent");
+    const setViewportSpy = vi.spyOn(h.app.viewport, "setViewport");
     const rectangle = API.createElement({ type: "rectangle" });
 
     API.updateScene({
@@ -39,9 +39,12 @@ describe("editorPreferences", () => {
 
     API.executeAction(actionSmartZoom);
 
-    expect(scrollSpy).toHaveBeenLastCalledWith(
-      expect.any(Array),
-      expect.objectContaining(DEFAULT_SMART_ZOOM_PREFERENCES),
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        animation: { duration: DEFAULT_SMART_ZOOM_PREFERENCES.duration },
+        fit: "contain",
+        viewportZoomFactor: DEFAULT_SMART_ZOOM_PREFERENCES.viewportZoomFactor,
+      }),
     );
   });
 
@@ -105,7 +108,7 @@ describe("editorPreferences", () => {
     const rendered = await render(
       <Excalidraw compressImageFile={async (file) => file} editorPreferences={initialPreferences} />,
     );
-    const scrollSpy = vi.spyOn(h.app, "scrollToContent");
+    const setViewportSpy = vi.spyOn(h.app.viewport, "setViewport");
     const rectangle = API.createElement({ type: "rectangle" });
 
     API.updateScene({
@@ -115,9 +118,12 @@ describe("editorPreferences", () => {
 
     API.executeAction(actionSmartZoom);
 
-    expect(scrollSpy).toHaveBeenLastCalledWith(
-      expect.any(Array),
-      expect.objectContaining(initialPreferences.smartZoom!),
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        animation: false,
+        fit: "none",
+        viewportZoomFactor: initialPreferences.smartZoom!.viewportZoomFactor,
+      }),
     );
 
     act(() => {
@@ -130,10 +136,48 @@ describe("editorPreferences", () => {
 
     API.executeAction(actionSmartZoom);
 
-    expect(scrollSpy).toHaveBeenLastCalledWith(
-      expect.any(Array),
-      expect.objectContaining(nextPreferences.smartZoom!),
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        animation: { duration: nextPreferences.smartZoom!.duration },
+        fit: "contain",
+        viewportZoomFactor: nextPreferences.smartZoom!.viewportZoomFactor,
+      }),
     );
+  });
+
+  it("MyOC regression: applies smart zoom viewportZoomFactor through setViewport", async () => {
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        editorPreferences={{
+          smartZoom: {
+            animate: false,
+            fitToViewport: true,
+            viewportZoomFactor: 0.5,
+          },
+        }}
+      />,
+    );
+
+    h.state.width = 1000;
+    h.state.height = 1000;
+
+    const rectangle = API.createElement({
+      type: "rectangle",
+      width: 100,
+      height: 100,
+      x: 0,
+      y: 0,
+    });
+
+    API.updateScene({
+      elements: [rectangle],
+      captureUpdate: CaptureUpdateAction.NEVER,
+    });
+
+    API.executeAction(actionSmartZoom);
+
+    expect(h.state.zoom.value).toBeCloseTo(4.76);
   });
 
   it("passes overridden arrange preferences into arrangeElements", async () => {

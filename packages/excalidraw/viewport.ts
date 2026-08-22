@@ -104,6 +104,12 @@ export type SetViewportOptions = {
    * combination. See {@link ViewportOffsets}.
    */
   offsets?: ViewportOffsets;
+
+  /**
+   * Multiplier applied to fit zooms to leave extra breathing room around the
+   * target. Ignored for `fit: "none"`.
+   */
+  viewportZoomFactor?: number;
 };
 
 type Viewport = Pick<AppState, "scrollX" | "scrollY" | "zoom">;
@@ -286,6 +292,7 @@ export const zoomToFitBounds = ({
   minZoom = -Infinity,
   maxZoom = Infinity,
   steppedZoom = false,
+  viewportZoomFactor = 1,
 }: {
   bounds: SceneBounds;
   canvasOffsets?: Offsets;
@@ -294,6 +301,7 @@ export const zoomToFitBounds = ({
   minZoom?: number;
   maxZoom?: number;
   steppedZoom?: boolean;
+  viewportZoomFactor?: number;
 }) => {
   const [x1, y1, x2, y2] = bounds;
   const centerX = (x1 + x2) / 2;
@@ -329,10 +337,13 @@ export const zoomToFitBounds = ({
     });
   }
 
+  const scaledZoomValue =
+    fit === "none" ? adjustedZoomValue : adjustedZoomValue * viewportZoomFactor;
+
   const targetZoomValue =
     steppedZoom && fit !== "none"
-      ? roundToStep(adjustedZoomValue, ZOOM_STEP, "floor")
-      : adjustedZoomValue;
+      ? roundToStep(scaledZoomValue, ZOOM_STEP, "floor")
+      : scaledZoomValue;
 
   const newZoomValue = getNormalizedZoom(
     clamp(targetZoomValue, minZoom, maxZoom),

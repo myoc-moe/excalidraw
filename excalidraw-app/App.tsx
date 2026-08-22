@@ -526,17 +526,21 @@ const ExcalidrawWrapper = () => {
         }
         return fileId;
       },
-      error: (text = "Image failed") => {
+      error: (text: string | null) => {
         const fileId = getDebugImageFileId();
         if (fileId) {
-          excalidrawAPI.setDownloadError(fileId, {
-            text,
-            onClick: (clickedFileId) => {
-              excalidrawAPI.setToast({
-                message: `Clicked error status for ${clickedFileId}`,
-              });
-            },
-          });
+          if (!text) {
+            excalidrawAPI.setDownloadError(fileId, null);
+          } else {
+            excalidrawAPI.setDownloadError(fileId, {
+              text,
+              onClick: (clickedFileId) => {
+                excalidrawAPI.setToast({
+                  message: `Clicked error status for ${clickedFileId}`,
+                });
+              },
+            });
+          }
         }
         return fileId;
       },

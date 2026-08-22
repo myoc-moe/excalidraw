@@ -189,6 +189,7 @@ const getTargetViewport = (
   bounds: Bounds,
   fit: SetViewportOptions["fit"] = "scale-down",
   offsets?: Offsets,
+  viewportZoomFactor?: SetViewportOptions["viewportZoomFactor"],
 ): Viewport => {
   const { appState } = zoomToFitBounds({
     bounds,
@@ -196,6 +197,7 @@ const getTargetViewport = (
     fit,
     canvasOffsets: offsets,
     steppedZoom: false,
+    viewportZoomFactor,
   });
 
   return {
@@ -216,9 +218,18 @@ const getConstrainedTargetViewport = (
     fit,
     offsets,
     lock,
-  }: Pick<SetViewportOptions, "fit" | "lock"> & { offsets?: Offsets },
+    viewportZoomFactor,
+  }: Pick<SetViewportOptions, "fit" | "lock" | "viewportZoomFactor"> & {
+    offsets?: Offsets;
+  },
 ): Viewport & { scrollConstraints: ScrollConstraints | null } => {
-  const viewport = getTargetViewport(appState, bounds, fit, offsets);
+  const viewport = getTargetViewport(
+    appState,
+    bounds,
+    fit,
+    offsets,
+    viewportZoomFactor,
+  );
 
   if (!lock?.scroll && !lock?.zoom) {
     return { ...viewport, scrollConstraints: null };
@@ -643,7 +654,7 @@ export class AppViewport {
       return;
     }
 
-    const { target, fit, lock, animation } = opts;
+    const { target, fit, lock, animation, viewportZoomFactor } = opts;
     const offsets = this.resolveOffsets(opts.offsets);
     const { bounds, type } = resolveViewportTarget(
       target,
@@ -667,7 +678,7 @@ export class AppViewport {
     const viewportUpdate = getConstrainedTargetViewport(
       this.app.state,
       bounds,
-      { fit, offsets, lock },
+      { fit, offsets, lock, viewportZoomFactor },
     );
     const duration = resolveAnimationDuration(animation);
     const from = {

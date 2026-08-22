@@ -327,13 +327,23 @@ describe("image insertion", () => {
     expect(h.app.imageStatus.get(fileId)?.uploadProgress).toEqual({
       state: "error",
       progress: undefined,
+      text: "Cloud sync failed",
+    });
+    expect(statusListener).toHaveBeenCalledTimes(6);
+
+    h.app.api.setDownloadError(fileId, null);
+    expect(h.app.imageStatus.get(fileId)).toEqual({
+      downloadError: null,
+      uploadProgress: null,
     });
     expect(statusListener).toHaveBeenCalledTimes(7);
 
-    h.app.api.setDownloadError(fileId, null);
     h.app.api.setUploadProgress(fileId, null);
-    expect(h.app.imageStatus.has(fileId)).toBe(false);
-    expect(statusListener).toHaveBeenCalledTimes(9);
+    expect(h.app.imageStatus.get(fileId)).toEqual({
+      downloadError: null,
+      uploadProgress: null,
+    });
+    expect(statusListener).toHaveBeenCalledTimes(7);
     expect(onChange).not.toHaveBeenCalled();
 
     unsubscribeStatus();

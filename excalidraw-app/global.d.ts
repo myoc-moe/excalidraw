@@ -8,7 +8,7 @@ type MyocImageStatusDebug = {
   upstream: (progress?: number) => FileId | null;
   pending: () => FileId | null;
   failed: () => FileId | null;
-  error: (text?: string) => FileId | null;
+  error: (text: string | null) => FileId | null;
   clear: () => FileId | null;
 };
 

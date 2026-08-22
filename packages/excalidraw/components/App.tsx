@@ -409,6 +409,8 @@ import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import { tryParseSpreadsheet } from "../charts";
 
+import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
+
 import ConvertElementTypePopup, {
   getConversionTypeFromElements,
   convertElementTypePopupAtom,
@@ -438,7 +440,6 @@ import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 import { findShapeByKey, TOGGLE_TOOLS } from "./Tools";
 
 import UnlockPopup from "./UnlockPopup";
-import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
 
 import type {
   RenderInteractiveSceneCallback,
@@ -4765,63 +4766,76 @@ class App extends React.Component<AppProps, AppState> {
       }
     };
 
-  public setDownloadProgress: ExcalidrawImperativeAPI["setDownloadProgress"] =
-    (fileId, progress) => {
-      if (progress === null) {
-        this.clearImageLoadingProgress(fileId);
-        return;
-      }
-      if (!Number.isFinite(progress)) {
-        return;
-      }
-      const nextProgress = clamp(progress, 0, 1);
-      if (this.imageLoadingProgress.get(fileId) === nextProgress) {
-        return;
-      }
-      this.imageLoadingProgress.set(fileId, nextProgress);
-      this.imageLoadingProgressEmitter.trigger();
-    };
+  public setDownloadProgress: ExcalidrawImperativeAPI["setDownloadProgress"] = (
+    fileId,
+    progress,
+  ) => {
+    if (progress === null) {
+      this.clearImageLoadingProgress(fileId);
+      return;
+    }
+    if (!Number.isFinite(progress)) {
+      return;
+    }
+    const nextProgress = clamp(progress, 0, 1);
+    if (this.imageLoadingProgress.get(fileId) === nextProgress) {
+      return;
+    }
+    this.imageLoadingProgress.set(fileId, nextProgress);
+    this.imageLoadingProgressEmitter.trigger();
+  };
 
   public setDownloadError: ExcalidrawImperativeAPI["setDownloadError"] = (
     fileId,
     error,
   ) => {
-    this.updateImageStatus(fileId, (previous) => ({
-      ...previous,
-      downloadError: error === true ? {} : error || null,
-    }));
+    this.updateImageStatus(fileId, (previous) => {
+      const uploadProgress =
+        error === null && previous?.uploadProgress?.state === "error"
+          ? null
+          : previous?.uploadProgress;
+
+      return {
+        ...previous,
+        downloadError: error === true ? {} : error || null,
+        uploadProgress,
+      };
+    });
   };
 
-  public setUploadProgress: ExcalidrawImperativeAPI["setUploadProgress"] =
-    (fileId, progress, status) => {
-      if (progress === null) {
-        this.updateImageStatus(fileId, (previous) => ({
-          ...previous,
-          uploadProgress: null,
-        }));
-        return;
-      }
-      if (typeof progress === "number" && !Number.isFinite(progress)) {
-        return;
-      }
-      this.updateImageStatus(fileId, (previous) => {
-        const previousUpload = previous?.uploadProgress ?? undefined;
-        const options =
-          status === undefined ? previousUpload : status ?? undefined;
-        const isNumericProgress = typeof progress === "number";
+  public setUploadProgress: ExcalidrawImperativeAPI["setUploadProgress"] = (
+    fileId,
+    progress,
+    status,
+  ) => {
+    if (progress === null) {
+      this.updateImageStatus(fileId, (previous) => ({
+        ...previous,
+        uploadProgress: null,
+      }));
+      return;
+    }
+    if (typeof progress === "number" && !Number.isFinite(progress)) {
+      return;
+    }
+    this.updateImageStatus(fileId, (previous) => {
+      const previousUpload = previous?.uploadProgress ?? undefined;
+      const options =
+        status === undefined ? previousUpload : status ?? undefined;
+      const isNumericProgress = typeof progress === "number";
 
-        return {
-          ...previous,
-          uploadProgress: {
-            ...options,
-            state: isNumericProgress ? "uploading" : progress,
-            ...(isNumericProgress
-              ? { progress: clamp(progress, 0, 1) }
-              : { progress: undefined }),
-          },
-        };
-      });
-    };
+      return {
+        ...previous,
+        uploadProgress: {
+          ...options,
+          state: isNumericProgress ? "uploading" : progress,
+          ...(isNumericProgress
+            ? { progress: clamp(progress, 0, 1) }
+            : { progress: undefined }),
+        },
+      };
+    });
+  };
 
   private updateImageStatus = (
     fileId: FileId,
@@ -4834,7 +4848,7 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
-    if (!next.downloadError && !next.uploadProgress) {
+    if (next.downloadError === undefined && !next.uploadProgress) {
       this.imageStatus.delete(fileId);
     } else {
       this.imageStatus.set(fileId, next);
@@ -4858,7 +4872,8 @@ class App extends React.Component<AppProps, AppState> {
       previous?.uploadProgress?.backgroundColor ===
         next?.uploadProgress?.backgroundColor &&
       previous?.uploadProgress?.color === next?.uploadProgress?.color &&
-      previous?.uploadProgress?.trackColor === next?.uploadProgress?.trackColor &&
+      previous?.uploadProgress?.trackColor ===
+        next?.uploadProgress?.trackColor &&
       previous?.uploadProgress?.state === next?.uploadProgress?.state &&
       previous?.uploadProgress?.text === next?.uploadProgress?.text &&
       previous?.uploadProgress?.onClick === next?.uploadProgress?.onClick &&
@@ -5511,9 +5526,7 @@ class App extends React.Component<AppProps, AppState> {
       // -----------------------------------------------------------------------
       const lowerCased = event.key.toLocaleLowerCase();
       const isPlainStrokeEyeDropper =
-        lowerCased === KEYS.I &&
-        !event.shiftKey &&
-        !event[KEYS.CTRL_OR_CMD];
+        lowerCased === KEYS.I && !event.shiftKey && !event[KEYS.CTRL_OR_CMD];
       const isPickingStroke =
         (lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD]) ||
         isPlainStrokeEyeDropper;
@@ -13339,11 +13352,7 @@ class App extends React.Component<AppProps, AppState> {
 
     if (type === "canvas") {
       if (this.state.viewModeEnabled) {
-        return [
-          actionToggleGridMode,
-          actionToggleViewMode,
-          actionToggleStats,
-        ];
+        return [actionToggleGridMode, actionToggleViewMode, actionToggleStats];
       }
 
       return [
