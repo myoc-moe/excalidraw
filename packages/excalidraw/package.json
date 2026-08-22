@@ -1,6 +1,6 @@
 {
   "name": "@myoc/excalidraw",
-  "version": "0.19.523",
+  "version": "0.19.524",
   "type": "module",
   "types": "./dist/types/excalidraw/index.d.ts",
   "main": "./dist/prod/index.js",
