@@ -663,12 +663,10 @@ class App extends React.Component<AppProps, AppState> {
   public bucketFill: AppBucketFill = new AppBucketFill(this);
   public flowchart: AppFlowchart = new AppFlowchart(this);
   public cursor: AppCursor = new AppCursor(this);
-  private zDragZoom:
-    | {
-        origin: { clientX: number; clientY: number };
-        initialZoom: number;
-      }
-    | null = null;
+  private zDragZoom: {
+    origin: { clientX: number; clientY: number };
+    initialZoom: number;
+  } | null = null;
   public arrowText: AppArrowText = new AppArrowText(this);
   public viewport: AppViewport = new AppViewport(this, {
     getContainer: () => this.excalidrawContainerRef.current,
