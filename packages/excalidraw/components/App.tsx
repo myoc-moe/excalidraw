@@ -4870,15 +4870,9 @@ class App extends React.Component<AppProps, AppState> {
     error,
   ) => {
     this.updateImageStatus(fileId, (previous) => {
-      const uploadProgress =
-        error === null && previous?.uploadProgress?.state === "error"
-          ? null
-          : previous?.uploadProgress;
-
       return {
         ...previous,
         downloadError: error === true ? {} : error || null,
-        uploadProgress,
       };
     });
   };
