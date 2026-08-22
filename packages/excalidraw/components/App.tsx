@@ -12747,17 +12747,24 @@ class App extends React.Component<AppProps, AppState> {
       });
     }
 
-    if (erroredFiles.size) {
+    if (erroredFiles.size || updatedFiles.size) {
       this.store.scheduleAction(CaptureUpdateAction.NEVER);
       this.scene.replaceAllElements(
         this.scene.getElementsIncludingDeleted().map((element) => {
-          if (
-            isInitializedImageElement(element) &&
-            erroredFiles.has(element.fileId)
-          ) {
-            return newElementWith(element, {
-              status: "error",
-            });
+          if (isInitializedImageElement(element)) {
+            if (erroredFiles.has(element.fileId)) {
+              return newElementWith(element, {
+                status: "error",
+              });
+            }
+            if (
+              updatedFiles.has(element.fileId) &&
+              element.status === "error"
+            ) {
+              return newElementWith(element, {
+                status: "saved",
+              });
+            }
           }
           return element;
         }),

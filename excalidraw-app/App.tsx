@@ -585,6 +585,7 @@ const ExcalidrawWrapper = () => {
               excalidrawAPI.addFiles(loadedFiles);
               updateStaleImageStatuses({
                 excalidrawAPI,
+                loadedFiles,
                 erroredFiles,
                 elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
               });
@@ -614,6 +615,7 @@ const ExcalidrawWrapper = () => {
             excalidrawAPI.addFiles(loadedFiles);
             updateStaleImageStatuses({
               excalidrawAPI,
+              loadedFiles,
               erroredFiles,
               elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
             });
@@ -634,6 +636,7 @@ const ExcalidrawWrapper = () => {
                 }
                 updateStaleImageStatuses({
                   excalidrawAPI,
+                  loadedFiles,
                   erroredFiles,
                   elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
                 });
@@ -733,6 +736,7 @@ const ExcalidrawWrapper = () => {
                 }
                 updateStaleImageStatuses({
                   excalidrawAPI,
+                  loadedFiles,
                   erroredFiles,
                   elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
                 });

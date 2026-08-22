@@ -1593,10 +1593,7 @@ const renderImageStatusOverlays = (
     }
 
     const imageStatus = app.imageStatus.get(element.fileId);
-    const hasError =
-      imageStatus?.downloadError === null
-        ? false
-        : element.status === "error" || !!imageStatus?.downloadError;
+    const hasError = !!imageStatus?.downloadError;
 
     if (hasError) {
       const icon = getImageStatusOverlayPosition(

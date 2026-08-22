@@ -802,6 +802,7 @@ class Collab extends PureComponent<CollabProps, CollabState> {
 
     updateStaleImageStatuses({
       excalidrawAPI: this.excalidrawAPI,
+      loadedFiles,
       erroredFiles,
       elements: this.excalidrawAPI.getSceneElementsIncludingDeleted(),
     });

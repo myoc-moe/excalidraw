@@ -272,23 +272,33 @@ export const encodeFilesForUpload = async ({
 
 export const updateStaleImageStatuses = (params: {
   excalidrawAPI: ExcalidrawImperativeAPI;
+  loadedFiles: BinaryFileData[];
   erroredFiles: Map<FileId, true>;
   elements: readonly ExcalidrawElement[];
 }) => {
-  if (!params.erroredFiles.size) {
+  const loadedFileIds = new Set(params.loadedFiles.map((file) => file.id));
+
+  if (!params.erroredFiles.size && !loadedFileIds.size) {
     return;
   }
   params.excalidrawAPI.updateScene({
     elements: params.excalidrawAPI
       .getSceneElementsIncludingDeleted()
       .map((element) => {
-        if (
-          isInitializedImageElement(element) &&
-          params.erroredFiles.has(element.fileId)
-        ) {
-          return newElementWith(element, {
-            status: "error",
-          });
+        if (isInitializedImageElement(element)) {
+          if (params.erroredFiles.has(element.fileId)) {
+            return newElementWith(element, {
+              status: "error",
+            });
+          }
+          if (
+            loadedFileIds.has(element.fileId) &&
+            element.status === "error"
+          ) {
+            return newElementWith(element, {
+              status: "saved",
+            });
+          }
         }
         return element;
       }),
