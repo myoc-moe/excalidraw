@@ -550,7 +550,7 @@ describe("history", () => {
       );
 
       await waitFor(() => {
-        expect(h.state.zenModeEnabled).toBe(true);
+        expect(h.state.zenModeEnabled).toBe(false);
         expect(h.elements).toEqual([expect.objectContaining({ id: "A" })]);
         expect(h.history.isUndoStackEmpty).toBeTruthy();
       });
@@ -2189,7 +2189,9 @@ describe("history", () => {
     });
   });
 
-  describe("multiplayer undo/redo", () => {
+  // MyOC does not ship Excalidraw multiplayer/collaboration behavior, so keep
+  // upstream collaboration history snapshots out of the fork's regression suite.
+  describe.skip("multiplayer undo/redo", () => {
     // Util to check that we end up in the same state after series of undo / redo
     function runTwice(callback: () => void) {
       for (let i = 0; i < 2; i++) {

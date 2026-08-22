@@ -562,6 +562,7 @@ let didTapTwice: boolean = false;
 let tappedTwiceTimer = 0;
 let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
+let isHoldingZ: boolean = false;
 let isPanning: boolean = false;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
@@ -662,6 +663,12 @@ class App extends React.Component<AppProps, AppState> {
   public bucketFill: AppBucketFill = new AppBucketFill(this);
   public flowchart: AppFlowchart = new AppFlowchart(this);
   public cursor: AppCursor = new AppCursor(this);
+  private zDragZoom:
+    | {
+        origin: { clientX: number; clientY: number };
+        initialZoom: number;
+      }
+    | null = null;
   public arrowText: AppArrowText = new AppArrowText(this);
   public viewport: AppViewport = new AppViewport(this, {
     getContainer: () => this.excalidrawContainerRef.current,
@@ -2754,6 +2761,7 @@ class App extends React.Component<AppProps, AppState> {
     this.maybeCleanupAfterMissingPointerUp(null);
 
     isHoldingSpace = false;
+    isHoldingZ = false;
     isPanning = false;
     isDraggingScrollBar = false;
     lastPointerUp = null;
@@ -5459,6 +5467,17 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       if (
+        event.key.toLowerCase() === KEYS.Z &&
+        !event[KEYS.CTRL_OR_CMD] &&
+        !event.altKey &&
+        !event.shiftKey
+      ) {
+        isHoldingZ = true;
+        this.cursor.set("zoom-in");
+        event.preventDefault();
+      }
+
+      if (
         (event.key === KEYS.G || event.key === KEYS.S) &&
         !event.altKey &&
         !event[KEYS.CTRL_OR_CMD]
@@ -5559,6 +5578,11 @@ class App extends React.Component<AppProps, AppState> {
         });
       }
       isHoldingSpace = false;
+    }
+
+    if (event.key.toLowerCase() === KEYS.Z) {
+      isHoldingZ = false;
+      this.cursor.reset();
     }
 
     if (event.key === KEYS.ALT) {
@@ -7383,6 +7407,36 @@ class App extends React.Component<AppProps, AppState> {
     );
   };
 
+  private updateZDragZoom = (
+    event: React.PointerEvent<HTMLCanvasElement>,
+  ): void => {
+    if (!this.zDragZoom) {
+      return;
+    }
+
+    const { origin, initialZoom } = this.zDragZoom;
+    const deltaX = event.clientX - origin.clientX;
+    const nextZoom = getNormalizedZoom(
+      initialZoom * Math.max(0.1, 1 + deltaX / 100),
+    );
+
+    this.viewport.translate(
+      (state) => ({
+        ...getViewportForZoomWithScrollConstraints(
+          {
+            viewportX: origin.clientX,
+            viewportY: origin.clientY,
+            nextZoom,
+          },
+          state,
+        ),
+        shouldCacheIgnoreZoom: true,
+      }),
+      { zoomPreConstrained: true },
+    );
+    this.resetShouldCacheIgnoreZoomDebounced();
+  };
+
   private handleCanvasPointerMove = (
     event: React.PointerEvent<HTMLCanvasElement>,
   ) => {
@@ -7411,6 +7465,11 @@ class App extends React.Component<AppProps, AppState> {
       x: scenePointerX,
       y: scenePointerY,
     };
+
+    if (this.zDragZoom) {
+      this.updateZDragZoom(event);
+      return;
+    }
 
     this.updateMultiTouchGesture(event);
 
@@ -8202,6 +8261,17 @@ class App extends React.Component<AppProps, AppState> {
 
     this.updateGestureOnPointerDown(event);
 
+    if (isHoldingZ) {
+      event.preventDefault();
+      this.focusContainer();
+      this.zDragZoom = {
+        origin: { clientX: event.clientX, clientY: event.clientY },
+        initialZoom: this.state.zoom.value,
+      };
+      this.setState({ cursorButton: "down" });
+      return;
+    }
+
     // if dragging element is freedraw and another pointerdown event occurs
     // a second finger is on the screen
     // discard the freedraw element if it is very short because it is likely
@@ -8650,6 +8720,13 @@ class App extends React.Component<AppProps, AppState> {
       x: scenePointerX,
       y: scenePointerY,
     };
+
+    if (this.zDragZoom) {
+      this.updateZDragZoom(event);
+      this.zDragZoom = null;
+      this.setState({ cursorButton: "up" });
+      return;
+    }
 
     if (this.handleIframeLikeCenterClick()) {
       return;
