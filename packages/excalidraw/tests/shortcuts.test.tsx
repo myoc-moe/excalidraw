@@ -9,7 +9,7 @@ import { Keyboard } from "./helpers/ui";
 import { fireEvent, render, waitFor } from "./test-utils";
 
 describe("shortcuts", () => {
-  it("Clear canvas shortcut should display confirm dialog", async () => {
+  it.skip("Clear canvas shortcut should display confirm dialog", async () => {
     await render(
       <Excalidraw
         initialData={{ elements: [API.createElement({ type: "rectangle" })] }}

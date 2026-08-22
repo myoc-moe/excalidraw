@@ -135,6 +135,7 @@ export const updateImageCache = async ({
                 throw new Error("Only images can be added to ImageCache");
               }
 
+              const previousCacheEntry = imageCache.get(fileId);
               const imagePromise = loadHTMLImageElement(fileData.dataURL);
               const data = {
                 image: imagePromise,
@@ -146,7 +147,16 @@ export const updateImageCache = async ({
 
               const image = await imagePromise;
 
-              imageCache.set(fileId, { ...data, image });
+              if (previousCacheEntry?.isPlaceholder) {
+                imageCache.set(fileId, {
+                  ...data,
+                  image,
+                  placeholderImage: await previousCacheEntry.image,
+                  transitionStart: performance.now(),
+                });
+              } else {
+                imageCache.set(fileId, { ...data, image });
+              }
             } catch (error: any) {
               erroredFiles.set(fileId, true);
             }

@@ -158,6 +158,7 @@ import {
   isElementCompletelyInViewport,
   isElementInViewport,
   isInvisiblySmallElement,
+  generateThumbHash,
   getCornerRadius,
   isPathALoop,
   embeddableURLValidator,
@@ -333,8 +334,11 @@ import {
   isHandToolActive,
 } from "../appState";
 import {
+  captureDragEventData,
   parseClipboard,
   parseDataTransferEvent,
+  parseDragImageMetadata,
+  type DragImageMetadata,
   type ParsedDataTransferFile,
 } from "../clipboard";
 
@@ -795,6 +799,7 @@ class App extends React.Component<AppProps, AppState> {
     const defaultAppState = getDefaultAppState();
     const {
       viewModeEnabled = false,
+      viewModeOnly = false,
       gridModeEnabled = false,
       objectsSnapModeEnabled = false,
       theme = defaultAppState.theme,
@@ -826,8 +831,9 @@ class App extends React.Component<AppProps, AppState> {
       // non-interactive editor implies view mode so that all edit-mode
       // gates apply
       viewModeEnabled: this.isInteractionEnabled(props)
-        ? viewModeEnabled
+        ? viewModeOnly || viewModeEnabled
         : true,
+      viewModeOnly,
       activeTool: forcedActiveTool ?? defaultAppState.activeTool,
       zenModeEnabled: false,
       objectsSnapModeEnabled,
@@ -2367,6 +2373,9 @@ class App extends React.Component<AppProps, AppState> {
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
+                              imageTransitionDuration:
+                                this.props.imageOptions
+                                  .placeholderTransitionDuration,
                               canvasBackgroundColor:
                                 this.state.viewBackgroundColor,
                               embedsValidationStatus:
@@ -2389,6 +2398,9 @@ class App extends React.Component<AppProps, AppState> {
                               renderConfig={{
                                 imageCache: this.imageCache,
                                 isExporting: false,
+                                imageTransitionDuration:
+                                  this.props.imageOptions
+                                    .placeholderTransitionDuration,
                                 renderGrid: false,
                                 canvasBackgroundColor:
                                   this.state.viewBackgroundColor,
@@ -3072,6 +3084,11 @@ class App extends React.Component<AppProps, AppState> {
     restoredAppState = {
       ...restoredAppState,
       theme: this.props.theme || restoredAppState.theme,
+      viewModeOnly: this.props.viewModeOnly || restoredAppState.viewModeOnly,
+      viewModeEnabled:
+        this.props.viewModeOnly ||
+        this.props.viewModeEnabled ||
+        restoredAppState.viewModeEnabled,
       // we're falling back to current (pre-init) state when deciding
       // whether to open the library, to handle a case where we
       // update the state outside of initialData (e.g. when loading the app
@@ -4502,7 +4519,31 @@ class App extends React.Component<AppProps, AppState> {
     state,
     callback,
   ) => {
-    this.setState(state, callback);
+    const preserveViewModeOnly = (
+      nextState: Partial<AppState> | null,
+    ): Partial<AppState> | null => {
+      if (!nextState || !this.state.viewModeOnly) {
+        return nextState;
+      }
+
+      return {
+        ...nextState,
+        viewModeOnly: true,
+        viewModeEnabled: true,
+      };
+    };
+
+    const nextState =
+      typeof state === "function"
+        ? (((prevState, props) =>
+            preserveViewModeOnly(state(prevState, props))) as Parameters<
+            React.Component<any, AppState>["setState"]
+          >[0])
+        : (preserveViewModeOnly(state) as Parameters<
+            React.Component<any, AppState>["setState"]
+          >[0]);
+
+    this.setState(nextState, callback);
   };
 
   removePointer = (event: React.PointerEvent<HTMLElement> | PointerEvent) => {
@@ -4700,12 +4741,50 @@ class App extends React.Component<AppProps, AppState> {
    * */
   public addFiles: ExcalidrawImperativeAPI["addFiles"] = withBatchedUpdates(
     (files) => {
+      const placeholderImages = new Map<FileId, Promise<HTMLImageElement>>();
+      for (const file of files) {
+        const fileId = file.id as FileId;
+        const cacheEntry = this.imageCache.get(fileId);
+        if (cacheEntry && !this.files[fileId]) {
+          placeholderImages.set(fileId, Promise.resolve(cacheEntry.image));
+        }
+      }
+
       const { addedFiles } = this.addMissingFiles(files);
 
       this.clearImageShapeCache(addedFiles);
       this.scene.triggerUpdate();
 
-      this.addNewImagesToImageCache();
+      const placeholderFileIds = new Set(placeholderImages.keys());
+
+      const refreshImageCache = _updateImageCache({
+        imageCache: this.imageCache,
+        fileIds: Array.from(placeholderFileIds),
+        files: this.files,
+      });
+
+      refreshImageCache.then(async ({ updatedFiles }) => {
+        for (const [fileId, placeholderImagePromise] of placeholderImages) {
+          const cacheEntry = this.imageCache.get(fileId);
+          if (!cacheEntry || !updatedFiles.has(fileId)) {
+            continue;
+          }
+
+          this.imageCache.set(fileId, {
+            ...cacheEntry,
+            placeholderImage: await placeholderImagePromise,
+            transitionStart: performance.now(),
+          });
+          this.clearImageLoadingProgress(fileId);
+        }
+
+        if (placeholderFileIds.size) {
+          this.imagePlaceholderUpdateEmitter.trigger();
+        }
+      });
+      if (!placeholderFileIds.size) {
+        this.addNewImagesToImageCache();
+      }
     },
   );
 
@@ -9823,10 +9902,12 @@ class App extends React.Component<AppProps, AppState> {
     sceneX,
     sceneY,
     addToFrameUnderCursor = true,
+    customData,
   }: {
     sceneX: number;
     sceneY: number;
     addToFrameUnderCursor?: boolean;
+    customData?: DragImageMetadata;
   }) => {
     const [gridX, gridY] = getGridPoint(
       sceneX,
@@ -9857,6 +9938,7 @@ class App extends React.Component<AppProps, AppState> {
       opacity: this.state.currentItemOpacity,
       locked: false,
       frameId: topLayerFrame ? topLayerFrame.id : null,
+      customData,
       x: gridX - placeholderSize / 2,
       y: gridY - placeholderSize / 2,
       width: placeholderSize,
@@ -12444,14 +12526,12 @@ class App extends React.Component<AppProps, AppState> {
       const { maxWidthOrHeight, maxFileSizeBytes } = this.props.imageOptions;
 
       try {
-        imageFile = await resizeImageFile(imageFile, {
-          maxWidthOrHeight,
-        });
-      } catch (error: any) {
-        console.error(
-          "Error trying to resizing image file on insertion",
-          error,
+        imageFile = await (this.props.compressImageFile ?? resizeImageFile)(
+          imageFile,
+          { maxWidthOrHeight },
         );
+      } catch (error: any) {
+        console.error("Error trying to resize image file on insertion", error);
       }
 
       if (imageFile.size > maxFileSizeBytes) {
@@ -12498,6 +12578,7 @@ class App extends React.Component<AppProps, AppState> {
           }
 
           const imageHTML = await this.imageCache.get(fileId)?.image;
+          const thumbHash = imageHTML ? generateThumbHash(imageHTML) : null;
 
           if (
             imageHTML &&
@@ -12516,6 +12597,21 @@ class App extends React.Component<AppProps, AppState> {
             // no need to create a new instance anymore, just assign the natural dimensions
             Object.assign(initializedImageElement, naturalDimensions);
           }
+
+          initializedImageElement = newElementWith(initializedImageElement, {
+            fileName: imageFile.name,
+            thumbHash,
+            status: "saved",
+          });
+
+          this.files = {
+            ...this.files,
+            [fileId]: {
+              ...this.files[fileId],
+              fileName: imageFile.name,
+              thumbHash: thumbHash ?? undefined,
+            },
+          };
 
           resolve(initializedImageElement);
         } catch (error: any) {
@@ -12619,11 +12715,35 @@ class App extends React.Component<AppProps, AppState> {
     elements: readonly InitializedExcalidrawImageElement[],
     files = this.files,
   ) => {
+    const placeholderImages = new Map<FileId, Promise<HTMLImageElement>>();
+    for (const element of elements) {
+      const cacheEntry = this.imageCache.get(element.fileId);
+      if (cacheEntry) {
+        placeholderImages.set(
+          element.fileId,
+          Promise.resolve(cacheEntry.image),
+        );
+      }
+    }
+
     const { updatedFiles, erroredFiles } = await _updateImageCache({
       imageCache: this.imageCache,
       fileIds: elements.map((element) => element.fileId),
       files,
     });
+
+    for (const [fileId, placeholderImagePromise] of placeholderImages) {
+      const cacheEntry = this.imageCache.get(fileId);
+      if (!cacheEntry || !updatedFiles.has(fileId)) {
+        continue;
+      }
+
+      this.imageCache.set(fileId, {
+        ...cacheEntry,
+        placeholderImage: await placeholderImagePromise,
+        transitionStart: performance.now(),
+      });
+    }
 
     if (erroredFiles.size) {
       this.store.scheduleAction(CaptureUpdateAction.NEVER);
@@ -12741,11 +12861,18 @@ class App extends React.Component<AppProps, AppState> {
     imageFiles: File[],
     sceneX: number,
     sceneY: number,
+    imageMetadata?: DragImageMetadata[],
   ) => {
     const gridPadding = 50 / this.state.zoom.value;
     // Create, position, and insert placeholders
     const placeholders = positionElementsOnGrid(
-      imageFiles.map(() => this.newImagePlaceholder({ sceneX, sceneY })),
+      imageFiles.map((_, index) =>
+        this.newImagePlaceholder({
+          sceneX,
+          sceneY,
+          customData: imageMetadata?.[index],
+        }),
+      ),
       sceneX,
       sceneY,
       gridPadding,
@@ -12810,6 +12937,7 @@ class App extends React.Component<AppProps, AppState> {
       event,
       this.state,
     );
+    const dragDataSnapshot = captureDragEventData(event);
     const dataTransferList = await parseDataTransferEvent(event);
 
     // must be retrieved first, in the same frame
@@ -12853,7 +12981,16 @@ class App extends React.Component<AppProps, AppState> {
       .filter((file) => isSupportedImageFile(file));
 
     if (imageFiles.length > 0 && this.isToolSupported("image")) {
-      return this.insertImages(imageFiles, sceneX, sceneY);
+      return this.insertImages(
+        imageFiles,
+        sceneX,
+        sceneY,
+        parseDragImageMetadata(
+          dataTransferList,
+          imageFiles.length,
+          dragDataSnapshot,
+        ),
+      );
     }
     if (fileItems.length > 0) {
       const { file, fileHandle } = fileItems[0];

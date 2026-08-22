@@ -48,6 +48,7 @@ import {
   searchIcon,
   frameToolIcon,
   TextIcon,
+  CloseIcon,
 } from "./icons";
 
 import "./SearchMenu.scss";
@@ -379,6 +380,18 @@ export const SearchMenu = () => {
           }}
           selectOnRender
         />
+        <Button
+          data-testid="sidebar-close"
+          className="layer-ui__search-close"
+          onSelect={() => {
+            setAppState({
+              openSidebar: null,
+            });
+          }}
+          aria-label={t("buttons.close")}
+        >
+          {CloseIcon}
+        </Button>
       </div>
 
       <div className="layer-ui__search-count">
@@ -490,7 +503,7 @@ const MatchListBase = (props: MatchListProps) => {
   );
 
   return (
-    <div>
+    <div className="layer-ui__search-results">
       {frameNameMatches.length > 0 && (
         <div className="layer-ui__search-result-container">
           <div className="layer-ui__search-result-title">

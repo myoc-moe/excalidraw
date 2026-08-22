@@ -44,6 +44,7 @@ import { FixedSideContainer } from "./FixedSideContainer";
 import { HelpDialog } from "./HelpDialog";
 import { ImageExportDialog } from "./ImageExportDialog";
 import { Island } from "./Island";
+import { DefaultSidebar } from "./DefaultSidebar";
 import { JSONExportDialog } from "./JSONExportDialog";
 import { LaserPointerButton } from "./LaserPointerButton";
 import { Toast } from "./Toast";
@@ -419,7 +420,7 @@ const LayerUI = ({
     );
   };
 
-  const renderSidebars = () => null;
+  const renderSidebars = () => <DefaultSidebar />;
   const isSidebarDockedAndFits = false;
 
   const layerUIJSX = (

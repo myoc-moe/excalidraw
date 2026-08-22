@@ -12,6 +12,8 @@ import {
   DEFAULT_ELEMENT_PROPS,
   DEFAULT_GRID_SIZE,
   DEFAULT_GRID_STEP,
+  COLOR_TOP_PICKS_SLOTS,
+  colorToHex,
   randomId,
   getUpdatedTimestamp,
   updateActiveTool,
@@ -1056,6 +1058,61 @@ const LegacyAppStateMigrations: {
   },
 };
 
+type ImportedColorTopPicks = ImportedDataState["appState"] extends infer T
+  ? T extends null | undefined
+    ? never
+    : T extends { colorTopPicks?: infer C }
+    ? C
+    : never
+  : never;
+
+const restoreColorTopPicks = (
+  colorTopPicks: ImportedColorTopPicks | undefined,
+  defaultColorTopPicks: AppState["colorTopPicks"],
+): AppState["colorTopPicks"] => {
+  if (!colorTopPicks) {
+    return defaultColorTopPicks;
+  }
+
+  const restorePicks = (picks: unknown) => {
+    if (!Array.isArray(picks)) {
+      return null;
+    }
+
+    const seen = new Set<string>();
+    const restored: string[] = [];
+
+    for (const pick of picks) {
+      if (typeof pick !== "string") {
+        continue;
+      }
+
+      const normalized = colorToHex(pick);
+      if (!normalized) {
+        continue;
+      }
+      if (seen.has(normalized)) {
+        continue;
+      }
+
+      seen.add(normalized);
+      restored.push(pick);
+
+      if (restored.length === COLOR_TOP_PICKS_SLOTS) {
+        break;
+      }
+    }
+
+    return restored;
+  };
+
+  return {
+    elementStroke: restorePicks(colorTopPicks?.elementStroke),
+    elementBackground: restorePicks(colorTopPicks?.elementBackground),
+    bucketFill: restorePicks(colorTopPicks?.bucketFill),
+  };
+};
+
 export const restoreAppState = (
   appState: ImportedDataState["appState"],
   localAppState: Partial<AppState> | null | undefined,
@@ -1140,6 +1197,10 @@ export const restoreAppState = (
       typeof (appState.openSidebar as any as string) === "string"
         ? { name: DEFAULT_SIDEBAR.name }
         : nextAppState.openSidebar,
+    colorTopPicks: restoreColorTopPicks(
+      appState.colorTopPicks,
+      defaultAppState.colorTopPicks,
+    ),
     gridSize: getNormalizedGridSize(
       isFiniteNumber(appState.gridSize) ? appState.gridSize : DEFAULT_GRID_SIZE,
     ),

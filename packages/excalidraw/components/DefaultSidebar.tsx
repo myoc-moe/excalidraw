@@ -1,10 +1,6 @@
 import clsx from "clsx";
 
-import {
-  CANVAS_SEARCH_TAB,
-  DEFAULT_SIDEBAR,
-  composeEventHandlers,
-} from "@excalidraw/common";
+import { CANVAS_SEARCH_TAB, DEFAULT_SIDEBAR } from "@excalidraw/common";
 
 import type { MarkOptional, Merge } from "@excalidraw/common/utility-types";
 
@@ -13,11 +9,9 @@ import { useUIAppState } from "../context/ui-appState";
 
 import "../components/dropdownMenu/DropdownMenu.scss";
 
-import { useExcalidrawSetAppState } from "./App";
 import { SearchMenu } from "./SearchMenu";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { withInternalFallback } from "./hoc/withInternalFallback";
-import { searchIcon } from "./icons";
 
 import type { SidebarProps, SidebarTriggerProps } from "./Sidebar/common";
 
@@ -57,7 +51,6 @@ export const DefaultSidebar = Object.assign(
     ({
       children,
       className,
-      onDock,
       docked,
       ...rest
     }: Merge<
@@ -68,45 +61,32 @@ export const DefaultSidebar = Object.assign(
       }
     >) => {
       const appState = useUIAppState();
-      const setAppState = useExcalidrawSetAppState();
 
-      const { DefaultSidebarTabTriggersTunnel } = useTunnels();
-
-      const isForceDocked = appState.openSidebar?.tab === CANVAS_SEARCH_TAB;
+      const isSearchSidebar = appState.openSidebar?.tab === CANVAS_SEARCH_TAB;
 
       return (
         <Sidebar
           {...rest}
           name="default"
           key="default"
-          className={clsx("default-sidebar", className)}
+          className={clsx(
+            "default-sidebar",
+            { "default-sidebar--search-only": isSearchSidebar },
+            className,
+          )}
           docked={
-            isForceDocked || (docked ?? appState.defaultSidebarDockedPreference)
+            isSearchSidebar
+              ? false
+              : docked ?? appState.defaultSidebarDockedPreference
           }
-          onDock={
-            // `onDock=false` disables docking.
-            // if `docked` passed, but no onDock passed, disable manual docking.
-            isForceDocked || onDock === false || (!onDock && docked != null)
-              ? undefined
-              : // compose to allow the host app to listen on default behavior
-                composeEventHandlers(onDock, (docked) => {
-                  setAppState({ defaultSidebarDockedPreference: docked });
-                })
-          }
+          onDock={undefined}
         >
           <Sidebar.Tabs>
-            <Sidebar.Header>
-              <Sidebar.TabTriggers>
-                <Sidebar.TabTrigger tab={CANVAS_SEARCH_TAB}>
-                  {searchIcon}
-                </Sidebar.TabTrigger>
-                <DefaultSidebarTabTriggersTunnel.Out />
-              </Sidebar.TabTriggers>
-            </Sidebar.Header>
+            {!isSearchSidebar && <Sidebar.Header />}
             <Sidebar.Tab tab={CANVAS_SEARCH_TAB}>
               <SearchMenu />
             </Sidebar.Tab>
-            {children}
+            {!isSearchSidebar && children}
           </Sidebar.Tabs>
         </Sidebar>
       );

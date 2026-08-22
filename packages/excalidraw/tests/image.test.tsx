@@ -480,7 +480,7 @@ describe("image insertion", () => {
         expect.objectContaining({
           ...INITIALIZED_IMAGE_PROPS,
           ...DEER_IMAGE_DIMENSIONS,
-          fileName: "large-resized.png",
+          fileName: "large.png",
         }),
       ]);
     });

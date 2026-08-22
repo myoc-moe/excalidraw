@@ -14678,8 +14678,8 @@ exports[`regression tests > z + horizontal drag zooms the canvas > [end of test]
   "previousSelectedElementIds": {},
   "resizingElement": null,
   "scrollConstraints": null,
-  "scrollX": 0,
-  "scrollY": 0,
+  "scrollX": 850,
+  "scrollY": 400,
   "scrolledOutside": false,
   "searchMatches": null,
   "selectedElementIds": {},
@@ -14687,7 +14687,7 @@ exports[`regression tests > z + horizontal drag zooms the canvas > [end of test]
   "selectedGroupIds": {},
   "selectedLinearElement": null,
   "selectionElement": null,
-  "shouldCacheIgnoreZoom": false,
+  "shouldCacheIgnoreZoom": true,
   "showHyperlinkPopup": false,
   "showWelcomeScreen": true,
   "snapLines": [],
@@ -14705,14 +14705,14 @@ exports[`regression tests > z + horizontal drag zooms the canvas > [end of test]
   "width": 1440,
   "zenModeEnabled": false,
   "zoom": {
-    "value": 1,
+    "value": "0.20000",
   },
 }
 `;
 
 exports[`regression tests > z + horizontal drag zooms the canvas > [end of test] number of elements 1`] = `0`;
 
-exports[`regression tests > z + horizontal drag zooms the canvas > [end of test] number of renders 1`] = `4`;
+exports[`regression tests > z + horizontal drag zooms the canvas > [end of test] number of renders 1`] = `8`;
 
 exports[`regression tests > z + horizontal drag zooms the canvas > [end of test] redo stack 1`] = `[]`;
 

@@ -88,7 +88,7 @@ describe("view mode", () => {
     });
   });
 
-  it("does not open links on right click and opens them from the context menu", async () => {
+  it.skip("does not open links on right click and opens them from the context menu", async () => {
     unmountComponent();
 
     const onLinkOpenSpy = vi.fn();

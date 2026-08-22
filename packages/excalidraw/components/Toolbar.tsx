@@ -1,9 +1,12 @@
 import clsx from "clsx";
 import { useState } from "react";
 
-import { KEYS } from "@excalidraw/common";
+import { CANVAS_SEARCH_TAB, DEFAULT_SIDEBAR, KEYS } from "@excalidraw/common";
 
-import { actionToggleObjectsSnapMode } from "../actions";
+import {
+  actionToggleObjectsSnapMode,
+  actionToggleSearchMenu,
+} from "../actions";
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { t } from "../i18n";
 
@@ -26,6 +29,7 @@ import {
   eyeDropperIcon,
   LockedIcon,
   magnetIcon,
+  searchIcon,
   UnlockedIcon,
 } from "./icons";
 import {
@@ -156,6 +160,32 @@ const ObjectsSnapModeButton = ({
   );
 };
 
+const SearchMenuDropdownItem = ({
+  actionManager,
+  appState,
+}: {
+  actionManager: ActionManager;
+  appState: UIAppState;
+}) => {
+  const label = t("search.title");
+  const shortcut = getShortcutFromShortcutName("searchMenu");
+
+  return (
+    <DropdownMenu.Item
+      onSelect={() => actionManager.executeAction(actionToggleSearchMenu, "ui")}
+      icon={searchIcon}
+      data-testid="toolbar-search-menu"
+      selected={
+        appState.openSidebar?.name === DEFAULT_SIDEBAR.name &&
+        appState.openSidebar.tab === CANVAS_SEARCH_TAB
+      }
+      shortcut={shortcut}
+    >
+      {label}
+    </DropdownMenu.Item>
+  );
+};
+
 const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
   <IconButton
     type="button"
@@ -271,9 +301,13 @@ const ExtraToolsDropdown = ({
                 type={type}
               />
             ))}
+            <div className="App-toolbar__dropdown-divider" />
+            <SearchMenuDropdownItem
+              actionManager={actionManager}
+              appState={app.state}
+            />
             {app.props.activeTool == null && (
               <>
-                <div className="App-toolbar__dropdown-divider" />
                 <LockActiveToolDropdownItem app={app} />
               </>
             )}
@@ -342,6 +376,10 @@ const ExtraToolsDropdown = ({
             <ObjectsSnapModeDropdownItem
               actionManager={actionManager}
               app={app}
+            />
+            <SearchMenuDropdownItem
+              actionManager={actionManager}
+              appState={app.state}
             />
             {app.props.activeTool == null && (
               <LockActiveToolDropdownItem app={app} />
