@@ -95,6 +95,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     editorPreferences,
     onEditorPreferencesChange,
     onPaste,
+    viewModeImageInsertBehavior,
+    onViewModeImageInsertRejected,
     detectScroll = true,
     handleKeyboardGlobally = false,
     autoFocus = false,
@@ -246,6 +248,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           onEditorPreferencesChange={onEditorPreferencesChange}
           UIOptions={UIOptions}
           onPaste={onPaste}
+          viewModeImageInsertBehavior={viewModeImageInsertBehavior}
+          onViewModeImageInsertRejected={onViewModeImageInsertRejected}
           detectScroll={detectScroll}
           handleKeyboardGlobally={handleKeyboardGlobally}
           autoFocus={autoFocus}

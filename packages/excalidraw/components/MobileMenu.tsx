@@ -7,7 +7,7 @@ import { t } from "../i18n";
 import { getScrollToContentState } from "../scene";
 import { SCROLLBAR_WIDTH, SCROLLBAR_MARGIN } from "../scene/scrollbars";
 
-import { ExitViewModeButton, MobileShapeActions } from "./Actions";
+import { MobileShapeActions } from "./Actions";
 import { MobileToolbar } from "./MobileToolbar";
 import { FixedSideContainer } from "./FixedSideContainer";
 
@@ -85,11 +85,6 @@ export const MobileMenu = ({
               <DefaultSidebarTriggerTunnel.Out />
             </>
           ))}
-        {defaultUIEnabled &&
-          appState.viewModeEnabled &&
-          app.isInteractionEnabled() && (
-            <ExitViewModeButton actionManager={actionManager} />
-          )}
       </div>
     );
 

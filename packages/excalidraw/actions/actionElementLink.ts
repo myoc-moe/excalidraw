@@ -1,6 +1,4 @@
-import {
-  canCreateLinkFromElements,
-} from "@excalidraw/element";
+import { canCreateLinkFromElements } from "@excalidraw/element";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 

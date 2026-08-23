@@ -87,6 +87,13 @@ const dispatchPaste = async () => {
 const queryContainer = (selector: string) =>
   GlobalTestState.renderResult.container.querySelector(selector);
 
+const getViewModeButtonIconPaths = () =>
+  Array.from(
+    document.querySelectorAll(
+      '[data-testid="button-view-mode"] svg path',
+    ) as NodeListOf<SVGPathElement>,
+  ).map((path) => path.getAttribute("d"));
+
 beforeEach(() => {
   localStorage.clear();
   mouse.reset();
@@ -826,6 +833,23 @@ describe("ui={{ enabled: ... }}", () => {
         ".mobile-canvas-actions [data-testid='button-smart-zoom']",
       ),
     ).not.toBe(null);
+  });
+
+  it("MyOC regression: does not render a separate mobile edit button in view mode", async () => {
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "phone" }} />);
+    fireEvent.resize(window);
+    await waitFor(() =>
+      expect(window.h.app.editorInterface.formFactor).toBe("phone"),
+    );
+    API.setAppState({ viewModeEnabled: true });
+
+    expect(queryContainer(".disable-view-mode")).toBe(null);
+    expect(queryContainer(".mobile-canvas-actions .view-mode-button")).not.toBe(
+      null,
+    );
+    expect(getViewModeButtonIconPaths()).toContain(
+      "M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4",
+    );
   });
 });
 

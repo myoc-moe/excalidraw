@@ -1,4 +1,5 @@
 import { isFiniteNumber, isValidPoint, pointFrom } from "@excalidraw/math";
+import { generateKeyBetween } from "@excalidraw/fractional-indexing";
 
 import {
   type CombineBrandsIfNeeded,
@@ -51,7 +52,10 @@ import {
   isUsingAdaptiveRadius,
 } from "@excalidraw/element";
 
-import { syncInvalidIndices } from "@excalidraw/element";
+import {
+  orderByFractionalIndex,
+  syncInvalidIndices,
+} from "@excalidraw/element";
 
 import { refreshTextDimensions } from "@excalidraw/element";
 
@@ -779,6 +783,17 @@ const repairBoundElement = (
   }
 
   if (
+    boundElement.index != null &&
+    container.index != null &&
+    boundElement.index <= container.index
+  ) {
+    boundElement.index = generateKeyBetween(
+      container.index,
+      null,
+    ) as typeof boundElement.index;
+  }
+
+  if (
     container.boundElements &&
     !container.boundElements.find((binding) => binding.id === boundElement.id)
   ) {
@@ -926,70 +941,72 @@ export const restoreElements = <T extends ExcalidrawElement>(
 
   // NOTE (mtolmacs): Temporary fix for invalid/self-bound elbow arrows
   // Need to iterate again so we have attached text nodes in elementsMap
-  return restoredElements.map((element) => {
-    if (
-      isElbowArrow(element) &&
-      !isArrowBoundToElement(element) &&
-      !validateElbowPoints(element.points)
-    ) {
-      return {
-        ...element,
-        ...updateElbowArrowPoints(
-          element,
-          restoredElementsMap as NonDeletedSceneElementsMap,
-          {
-            points: [
-              pointFrom<LocalPoint>(0, 0),
-              element.points[element.points.length - 1],
-            ],
-          },
-        ),
-        index: element.index,
-      };
-    }
-
-    if (
-      isElbowArrow(element) &&
-      element.startBinding &&
-      element.endBinding &&
-      element.startBinding.elementId === element.endBinding.elementId &&
-      element.points.length > 1 &&
-      element.points.some(
-        ([rx, ry]) => Math.abs(rx) > 1e6 || Math.abs(ry) > 1e6,
-      )
-    ) {
-      console.error("Fixing self-bound elbow arrow", element.id);
-      const boundElement = restoredElementsMap.get(
-        element.startBinding.elementId,
-      );
-      if (!boundElement) {
-        console.error(
-          "Bound element not found",
-          element.startBinding.elementId,
-        );
-        return element;
+  return orderByFractionalIndex(
+    restoredElements.map((element) => {
+      if (
+        isElbowArrow(element) &&
+        !isArrowBoundToElement(element) &&
+        !validateElbowPoints(element.points)
+      ) {
+        return {
+          ...element,
+          ...updateElbowArrowPoints(
+            element,
+            restoredElementsMap as NonDeletedSceneElementsMap,
+            {
+              points: [
+                pointFrom<LocalPoint>(0, 0),
+                element.points[element.points.length - 1],
+              ],
+            },
+          ),
+          index: element.index,
+        };
       }
 
-      return {
-        ...element,
-        x: boundElement.x + boundElement.width / 2,
-        y: boundElement.y - 5,
-        width: boundElement.width,
-        height: boundElement.height,
-        points: [
-          pointFrom<LocalPoint>(0, 0),
-          pointFrom<LocalPoint>(0, -10),
-          pointFrom<LocalPoint>(boundElement.width / 2 + 5, -10),
-          pointFrom<LocalPoint>(
-            boundElement.width / 2 + 5,
-            boundElement.height / 2 + 5,
-          ),
-        ],
-      };
-    }
+      if (
+        isElbowArrow(element) &&
+        element.startBinding &&
+        element.endBinding &&
+        element.startBinding.elementId === element.endBinding.elementId &&
+        element.points.length > 1 &&
+        element.points.some(
+          ([rx, ry]) => Math.abs(rx) > 1e6 || Math.abs(ry) > 1e6,
+        )
+      ) {
+        console.error("Fixing self-bound elbow arrow", element.id);
+        const boundElement = restoredElementsMap.get(
+          element.startBinding.elementId,
+        );
+        if (!boundElement) {
+          console.error(
+            "Bound element not found",
+            element.startBinding.elementId,
+          );
+          return element;
+        }
 
-    return element;
-  }) as CombineBrandsIfNeeded<T, OrderedExcalidrawElement>;
+        return {
+          ...element,
+          x: boundElement.x + boundElement.width / 2,
+          y: boundElement.y - 5,
+          width: boundElement.width,
+          height: boundElement.height,
+          points: [
+            pointFrom<LocalPoint>(0, 0),
+            pointFrom<LocalPoint>(0, -10),
+            pointFrom<LocalPoint>(boundElement.width / 2 + 5, -10),
+            pointFrom<LocalPoint>(
+              boundElement.width / 2 + 5,
+              boundElement.height / 2 + 5,
+            ),
+          ],
+        };
+      }
+
+      return element;
+    }) as OrderedExcalidrawElement[],
+  ) as CombineBrandsIfNeeded<T, OrderedExcalidrawElement>;
 };
 
 /**

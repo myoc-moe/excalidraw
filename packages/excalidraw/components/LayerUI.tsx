@@ -228,6 +228,7 @@ const LayerUI = ({
       <div className="excalidraw-ui-top-left">
         {renderTopLeftUI?.(false, appState)}
         <tunnels.MainMenuTunnel.Out />
+        <tunnels.DefaultSidebarTriggerTunnel.Out />
       </div>
       {renderWelcomeScreen && <tunnels.WelcomeScreenMenuHintTunnel.Out />}
     </div>
@@ -621,9 +622,9 @@ const LayerUI = ({
               </div>
             )}
           </div>
-          {renderSidebars()}
         </>
       )}
+      {renderSidebars()}
     </>
   );
 

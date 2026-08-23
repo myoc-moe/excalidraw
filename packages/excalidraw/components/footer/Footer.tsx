@@ -52,7 +52,13 @@ const Footer = ({
           <Stack.Col gap={2}>
             <Section heading="canvasActions">
               {!appState.viewModeOnly && (
-                <Tooltip label={t("labels.viewMode")}>
+                <Tooltip
+                  label={
+                    appState.viewModeEnabled
+                      ? "Edit mode"
+                      : t("labels.viewMode")
+                  }
+                >
                   <div className={clsx("view-mode-button")}>
                     {actionManager.renderAction("viewMode")}
                   </div>

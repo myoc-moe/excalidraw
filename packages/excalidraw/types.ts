@@ -889,6 +889,24 @@ export interface ExcalidrawProps {
     event: ClipboardEvent | null,
   ) => Promise<boolean> | boolean;
   /**
+   * Controls image paste/drop while the editor is in view mode and not
+   * `viewModeOnly`.
+   *
+   * - `exit-view-mode`: leave view mode and insert the image.
+   * - `reject`: keep view mode and call `onViewModeImageInsertRejected`.
+   *
+   * `viewModeOnly` always rejects because view mode is forced.
+   *
+   * @default "exit-view-mode"
+   */
+  viewModeImageInsertBehavior?: "exit-view-mode" | "reject";
+  onViewModeImageInsertRejected?: (payload: {
+    source: "paste" | "drop";
+    files: readonly File[];
+    data?: ClipboardData;
+    event: ClipboardEvent | React.DragEvent<HTMLDivElement> | null;
+  }) => void;
+  /**
    * Called when element(s) are duplicated so you can listen or modify as
    * needed.
    *

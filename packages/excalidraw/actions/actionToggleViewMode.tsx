@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { IconButton } from "../components/IconButton";
-import { eyeIcon } from "../components/icons";
+import { eyeIcon, pencilIcon } from "../components/icons";
 
 import { t } from "../i18n";
 
@@ -48,11 +48,13 @@ export const actionToggleViewMode = register({
       return null;
     }
 
+    const label = appState.viewModeEnabled ? "Edit mode" : t("labels.viewMode");
+
     return (
       <IconButton
         type="button"
-        icon={eyeIcon}
-        aria-label={t("labels.viewMode")}
+        icon={appState.viewModeEnabled ? pencilIcon : eyeIcon}
+        aria-label={label}
         onClick={() => updateData(null)}
         size={data?.size || "medium"}
         data-testid="button-view-mode"

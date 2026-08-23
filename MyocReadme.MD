@@ -140,6 +140,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
   - snap-to-objects remains a top-level magnet button to the right of the more-tools menu
   - lock active tool belongs in the more-tools menu
   - smart zoom remains visible in the lower-left controls
+- Preserve Myoc view-mode controls: `viewModeOnly` must force view mode and hide/disable the view-mode toggle, mobile view mode must not add a separate top-right pencil edit button, and the existing lower-left view-mode toggle should show the pencil icon while currently in view mode. Pasting or dropping images while in view mode should be allowed for non-`viewModeOnly` editors by default by leaving view mode and inserting the image; hosts can opt into rejection via `viewModeImageInsertBehavior="reject"` and handle `onViewModeImageInsertRejected`.
 - Preserve Myoc shortcut policy:
   - number keys `1` through `0`, including shifted number combinations, are reserved for Myoc/Floref and must not select drawing tools or trigger zoom-to-fit actions
   - `P` selects pen/freedraw

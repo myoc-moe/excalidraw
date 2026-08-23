@@ -100,7 +100,10 @@ const checkpoint = (name: string) => {
   expect(h.elements.length).toMatchSnapshot(`[${name}] number of elements`);
 
   h.elements
-    .map(({ seed, versionNonce, ...strippedElement }) => strippedElement)
+    .map(
+      ({ customData, seed, versionNonce, ...strippedElement }) =>
+        strippedElement,
+    )
     .forEach((element, i) =>
       expect(element).toMatchSnapshot(`[${name}] element ${i}`),
     );

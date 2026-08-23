@@ -179,6 +179,7 @@ describe("lasso reselection", () => {
     API.setElements([rectA, rectB]);
     mouse.select([rectA, rectB]);
     act(() => {
+      h.app.setState({ boxSelectionMode: "overlap" });
       h.app.setActiveTool({ type: "lasso" });
     });
 

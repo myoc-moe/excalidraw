@@ -3607,6 +3607,21 @@ class App extends React.Component<AppProps, AppState> {
         this.onGestureEnd as any,
         false,
       ),
+      addEventListener(document, EVENT.PASTE, this.pasteFromClipboard, {
+        passive: false,
+      }),
+      addEventListener(
+        this.excalidrawContainerRef.current,
+        EVENT.DRAG_OVER,
+        this.disableEvent,
+        false,
+      ),
+      addEventListener(
+        this.excalidrawContainerRef.current,
+        EVENT.DROP,
+        this.disableEvent,
+        false,
+      ),
     );
 
     if (this.state.viewModeEnabled) {
@@ -3624,9 +3639,6 @@ class App extends React.Component<AppProps, AppState> {
         this.onFullscreenChange,
         { passive: false },
       ),
-      addEventListener(document, EVENT.PASTE, this.pasteFromClipboard, {
-        passive: false,
-      }),
       addEventListener(document, EVENT.CUT, this.onCut, { passive: false }),
       addEventListener(window, EVENT.RESIZE, this.onResize, false),
       addEventListener(window, EVENT.UNLOAD, this.onUnload, false),
@@ -3636,18 +3648,6 @@ class App extends React.Component<AppProps, AppState> {
         EVENT.WHEEL,
         this.handleWheel,
         { passive: false },
-      ),
-      addEventListener(
-        this.excalidrawContainerRef.current,
-        EVENT.DRAG_OVER,
-        this.disableEvent,
-        false,
-      ),
-      addEventListener(
-        this.excalidrawContainerRef.current,
-        EVENT.DROP,
-        this.disableEvent,
-        false,
       ),
     );
 
@@ -4129,6 +4129,64 @@ class App extends React.Component<AppProps, AppState> {
     this.addTextFromPaste(data.text, isPlainPaste);
   }
 
+  private containsImagePaste(
+    data: ClipboardData,
+    dataTransferFiles: ParsedDataTransferFile[],
+    isPlainPaste: boolean,
+  ) {
+    if (dataTransferFiles.some((data) => isSupportedImageFile(data.file))) {
+      return true;
+    }
+
+    if (
+      !isPlainPaste &&
+      data.mixedContent?.some((node) => node.type === "imageUrl")
+    ) {
+      return true;
+    }
+
+    if (isPlainPaste || !data.text) {
+      return false;
+    }
+
+    const trimmedText = data.text.trim();
+    return trimmedText.startsWith("<svg") && trimmedText.endsWith("</svg>");
+  }
+
+  private shouldInsertImageInViewMode({
+    source,
+    files,
+    data,
+    event,
+  }: {
+    source: "paste" | "drop";
+    files: readonly File[];
+    data?: ClipboardData;
+    event: ClipboardEvent | React.DragEvent<HTMLDivElement> | null;
+  }) {
+    if (!this.state.viewModeEnabled) {
+      return true;
+    }
+
+    if (
+      this.state.viewModeOnly ||
+      this.props.viewModeImageInsertBehavior === "reject"
+    ) {
+      this.props.onViewModeImageInsertRejected?.({
+        source,
+        files,
+        data,
+        event,
+      });
+      return false;
+    }
+
+    flushSync(() => {
+      this.setState({ viewModeEnabled: false });
+    });
+    return true;
+  }
+
   public pasteFromClipboard = withBatchedUpdates(
     async (event: ClipboardEvent) => {
       if (!this.isInteractionEnabled()) {
@@ -4165,6 +4223,24 @@ class App extends React.Component<AppProps, AppState> {
       const filesList = dataTransferList.getFiles();
 
       const data = await parseClipboard(dataTransferList, isPlainPaste);
+
+      if (this.state.viewModeEnabled) {
+        if (!this.containsImagePaste(data, filesList, isPlainPaste)) {
+          return;
+        }
+
+        if (
+          !this.shouldInsertImageInViewMode({
+            source: "paste",
+            files: filesList.map((file) => file.file),
+            data,
+            event,
+          })
+        ) {
+          event?.preventDefault();
+          return;
+        }
+      }
 
       if (this.props.onPaste) {
         try {
@@ -12542,11 +12618,10 @@ class App extends React.Component<AppProps, AppState> {
     if (!isSupportedImageFile(imageFile)) {
       throw new Error(t("errors.unsupportedFileType"));
     }
-    const mimeType = imageFile.type;
 
     this.cursor.set("wait");
 
-    if (mimeType === MIME_TYPES.svg) {
+    if (imageFile.type === MIME_TYPES.svg) {
       try {
         imageFile = SVGStringToFile(
           normalizeSVG(await imageFile.text()),
@@ -12556,10 +12631,21 @@ class App extends React.Component<AppProps, AppState> {
         console.warn(error);
         throw new Error(t("errors.svgImageInsertError"));
       }
+    } else {
+      const { maxWidthOrHeight } = this.props.imageOptions;
+
+      try {
+        imageFile = await (this.props.compressImageFile ?? resizeImageFile)(
+          imageFile,
+          { maxWidthOrHeight },
+        );
+      } catch (error: any) {
+        console.error("Error trying to resize image file on insertion", error);
+      }
     }
 
-    // generate image id (by default the file digest) before any
-    // resizing/compression takes place to keep it more portable
+    const mimeType = imageFile.type as BinaryFileData["mimeType"];
+
     const fileId = await ((this.props.generateIdForFile?.(
       imageFile,
     ) as Promise<FileId>) || generateIdFromFile(imageFile));
@@ -12573,16 +12659,7 @@ class App extends React.Component<AppProps, AppState> {
 
     const existingFileData = this.files[fileId];
     if (!existingFileData?.dataURL) {
-      const { maxWidthOrHeight, maxFileSizeBytes } = this.props.imageOptions;
-
-      try {
-        imageFile = await (this.props.compressImageFile ?? resizeImageFile)(
-          imageFile,
-          { maxWidthOrHeight },
-        );
-      } catch (error: any) {
-        console.error("Error trying to resize image file on insertion", error);
-      }
+      const { maxFileSizeBytes } = this.props.imageOptions;
 
       if (imageFile.size > maxFileSizeBytes) {
         throw new Error(
@@ -13000,6 +13077,37 @@ class App extends React.Component<AppProps, AppState> {
     // must be retrieved first, in the same frame
     const fileItems = dataTransferList.getFiles();
 
+    const imageFiles = fileItems
+      .map((data) => data.file)
+      .filter((file) => isSupportedImageFile(file));
+
+    if (this.state.viewModeEnabled) {
+      if (imageFiles.length === 0 || !this.isToolSupported("image")) {
+        return;
+      }
+
+      if (
+        !this.shouldInsertImageInViewMode({
+          source: "drop",
+          files: imageFiles,
+          event,
+        })
+      ) {
+        return;
+      }
+
+      return this.insertImages(
+        imageFiles,
+        sceneX,
+        sceneY,
+        parseDragImageMetadata(
+          dataTransferList,
+          imageFiles.length,
+          dragDataSnapshot,
+        ),
+      );
+    }
+
     if (fileItems.length === 1) {
       const { file, fileHandle } = fileItems[0];
 
@@ -13032,10 +13140,6 @@ class App extends React.Component<AppProps, AppState> {
         }
       }
     }
-
-    const imageFiles = fileItems
-      .map((data) => data.file)
-      .filter((file) => isSupportedImageFile(file));
 
     if (imageFiles.length > 0 && this.isToolSupported("image")) {
       return this.insertImages(
@@ -13191,8 +13295,7 @@ class App extends React.Component<AppProps, AppState> {
       selectedElements[0].link
         ? selectedElements[0]
         : undefined;
-    const contextMenuElement =
-      element ?? linkElement ?? selectedLinkedElement;
+    const contextMenuElement = element ?? linkElement ?? selectedLinkedElement;
 
     const type =
       contextMenuElement || isHittingCommonBoundBox ? "element" : "canvas";

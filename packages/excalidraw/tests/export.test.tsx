@@ -119,7 +119,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "�E" }),
+        expect.objectContaining({ type: "text", text: "😀" }),
       ]);
     });
   });
@@ -147,7 +147,7 @@ describe("export", () => {
     ]);
     await waitFor(() => {
       expect(h.elements).toEqual([
-        expect.objectContaining({ type: "text", text: "�E" }),
+        expect.objectContaining({ type: "text", text: "😀" }),
       ]);
     });
   });

@@ -61,7 +61,7 @@ describe("EditorPreferencesDialog", () => {
 
     await waitFor(() => {
       expect(h.app.props.editorPreferences?.smartZoom?.respectUIElements).toBe(
-        false,
+        true,
       );
     });
   });

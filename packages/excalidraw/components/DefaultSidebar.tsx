@@ -9,6 +9,8 @@ import { useUIAppState } from "../context/ui-appState";
 
 import "../components/dropdownMenu/DropdownMenu.scss";
 
+import { useExcalidrawSetAppState } from "./App";
+
 import { SearchMenu } from "./SearchMenu";
 import { Sidebar } from "./Sidebar/Sidebar";
 import { withInternalFallback } from "./hoc/withInternalFallback";
@@ -52,6 +54,7 @@ export const DefaultSidebar = Object.assign(
       children,
       className,
       docked,
+      onDock,
       ...rest
     }: Merge<
       MarkOptional<Omit<SidebarProps, "name">, "children">,
@@ -61,8 +64,13 @@ export const DefaultSidebar = Object.assign(
       }
     >) => {
       const appState = useUIAppState();
+      const setAppState = useExcalidrawSetAppState();
 
       const isSearchSidebar = appState.openSidebar?.tab === CANVAS_SEARCH_TAB;
+      const isDocked = isSearchSidebar
+        ? false
+        : docked ?? appState.defaultSidebarDockedPreference;
+      const canDock = !isSearchSidebar && docked == null && onDock !== false;
 
       return (
         <Sidebar
@@ -74,12 +82,17 @@ export const DefaultSidebar = Object.assign(
             { "default-sidebar--search-only": isSearchSidebar },
             className,
           )}
-          docked={
-            isSearchSidebar
-              ? false
-              : docked ?? appState.defaultSidebarDockedPreference
+          docked={isDocked}
+          onDock={
+            canDock
+              ? (nextDocked) => {
+                  setAppState({
+                    defaultSidebarDockedPreference: nextDocked,
+                  });
+                  onDock?.(nextDocked);
+                }
+              : undefined
           }
-          onDock={undefined}
         >
           <Sidebar.Tabs>
             {!isSearchSidebar && <Sidebar.Header />}

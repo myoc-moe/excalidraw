@@ -181,6 +181,138 @@ describe("image insertion", () => {
     await assert();
   });
 
+  it("MyOC regression: exits view mode and inserts pasted images by default", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+    API.setAppState({ viewModeEnabled: true });
+
+    document.dispatchEvent(
+      createPasteEvent({
+        files: [await API.loadFile("./fixtures/deer.png")],
+      }),
+    );
+
+    await waitFor(() => {
+      expect(h.state.viewModeEnabled).toBe(false);
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+        }),
+      ]);
+    });
+  });
+
+  it("MyOC regression: can reject image paste in view mode and notify the host", async () => {
+    const onViewModeImageInsertRejected = vi.fn();
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      viewModeEnabled: true,
+      viewModeImageInsertBehavior: "reject",
+      onViewModeImageInsertRejected,
+    });
+
+    const file = await API.loadFile("./fixtures/deer.png");
+    document.dispatchEvent(
+      createPasteEvent({
+        files: [file],
+      }),
+    );
+
+    await waitFor(() => {
+      expect(onViewModeImageInsertRejected).toHaveBeenCalledTimes(1);
+    });
+    expect(onViewModeImageInsertRejected).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: "paste",
+        files: [file],
+      }),
+    );
+    expect(h.state.viewModeEnabled).toBe(true);
+    expect(h.elements).toEqual([]);
+  });
+
+  it("MyOC regression: rejects image paste when viewModeOnly forces view mode", async () => {
+    const onViewModeImageInsertRejected = vi.fn();
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      viewModeOnly: true,
+      onViewModeImageInsertRejected,
+    });
+
+    document.dispatchEvent(
+      createPasteEvent({
+        files: [await API.loadFile("./fixtures/deer.png")],
+      }),
+    );
+
+    await waitFor(() => {
+      expect(onViewModeImageInsertRejected).toHaveBeenCalledTimes(1);
+    });
+    expect(h.state.viewModeEnabled).toBe(true);
+    expect(h.elements).toEqual([]);
+  });
+
+  it("MyOC regression: exits view mode and inserts dropped images by default", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+    API.setAppState({ viewModeEnabled: true });
+
+    expect(fireEvent.dragOver(GlobalTestState.interactiveCanvas)).toBe(false);
+
+    await API.drop([
+      { kind: "file", file: await API.loadFile("./fixtures/deer.png") },
+    ]);
+
+    await waitFor(() => {
+      expect(h.state.viewModeEnabled).toBe(false);
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+        }),
+      ]);
+    });
+  });
+
+  it("MyOC regression: can reject image drop in view mode and notify the host", async () => {
+    const onViewModeImageInsertRejected = vi.fn();
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      viewModeEnabled: true,
+      viewModeImageInsertBehavior: "reject",
+      onViewModeImageInsertRejected,
+    });
+
+    const file = await API.loadFile("./fixtures/deer.png");
+    await API.drop([{ kind: "file", file }]);
+
+    await waitFor(() => {
+      expect(onViewModeImageInsertRejected).toHaveBeenCalledTimes(1);
+    });
+    expect(onViewModeImageInsertRejected).toHaveBeenCalledWith(
+      expect.objectContaining({
+        source: "drop",
+        files: [file],
+      }),
+    );
+    expect(h.state.viewModeEnabled).toBe(true);
+    expect(h.elements).toEqual([]);
+  });
+
+  it("MyOC regression: rejects image drop when viewModeOnly forces view mode", async () => {
+    const onViewModeImageInsertRejected = vi.fn();
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      viewModeOnly: true,
+      onViewModeImageInsertRejected,
+    });
+
+    await API.drop([
+      { kind: "file", file: await API.loadFile("./fixtures/deer.png") },
+    ]);
+
+    await waitFor(() => {
+      expect(onViewModeImageInsertRejected).toHaveBeenCalledTimes(1);
+    });
+    expect(h.state.viewModeEnabled).toBe(true);
+    expect(h.elements).toEqual([]);
+  });
+
   it("should eventually initialize all images added through image tool", async () => {
     await setup();
 
@@ -524,6 +656,55 @@ describe("image insertion", () => {
       ]);
     });
     expect(blobModule.resizeImageFile).not.toHaveBeenCalled();
+  });
+
+  it("MyOC regression: generates image ids from compressed raster bytes", async () => {
+    const compressedFile = new File(["compressed"], "compressed.png", {
+      type: MIME_TYPES.png,
+    });
+    const calls: string[] = [];
+    let fileReceivedByIdGenerator: File | null = null;
+    const compressedFileId = "compressed-file-id" as FileId;
+    const compressImageFile = vi.fn(async () => {
+      calls.push("compress");
+      return compressedFile;
+    });
+    const generateIdForFile = vi.fn(async (file: File) => {
+      calls.push("generateId");
+      fileReceivedByIdGenerator = file;
+      return compressedFileId;
+    });
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      compressImageFile,
+      generateIdForFile,
+    });
+
+    const originalFile = new File(["original"], "original.png", {
+      type: MIME_TYPES.png,
+    });
+
+    await API.drop([{ kind: "file", file: originalFile }]);
+
+    await waitFor(() => {
+      expect(h.elements[0]).toEqual(
+        expect.objectContaining({
+          fileId: compressedFileId,
+        }),
+      );
+    });
+
+    expect(calls).toEqual(["compress", "generateId"]);
+    expect(compressImageFile).toHaveBeenCalledWith(
+      originalFile,
+      expect.objectContaining({ maxWidthOrHeight: expect.any(Number) }),
+    );
+    expect(generateIdForFile).toHaveBeenCalledWith(compressedFile);
+    expect(fileReceivedByIdGenerator).toBe(compressedFile);
+
+    const fileData = h.app.api.getFiles()[compressedFileId];
+    expect(fileData.id).toBe(compressedFileId);
+    const encodedBytes = fileData.dataURL.split(",")[1];
+    expect(atob(encodedBytes)).toBe("compressed");
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {

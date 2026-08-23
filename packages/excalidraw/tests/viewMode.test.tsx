@@ -25,6 +25,13 @@ const touch = new Pointer("touch");
 const pen = new Pointer("pen");
 const pointerTypes = [mouse, touch, pen];
 
+const getViewModeButtonIconPaths = () =>
+  Array.from(
+    document.querySelectorAll(
+      '[data-testid="button-view-mode"] svg path',
+    ) as NodeListOf<SVGPathElement>,
+  ).map((path) => path.getAttribute("d"));
+
 describe("view mode", () => {
   beforeAll(() => {
     mockBoundingClientRect();
@@ -246,6 +253,24 @@ describe("view mode", () => {
       window.h.app.setAppState({ viewModeEnabled: false });
     });
     expect(window.h.state.viewModeEnabled).toBe(true);
+  });
+
+  it("MyOC regression: uses the pencil icon for the view-mode toggle while viewing", async () => {
+    expect(
+      document.querySelector('[data-testid="button-view-mode"]'),
+    ).toHaveAttribute("aria-label", "View mode");
+    expect(getViewModeButtonIconPaths()).toContain(
+      "M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6",
+    );
+
+    API.setAppState({ viewModeEnabled: true });
+
+    expect(
+      document.querySelector('[data-testid="button-view-mode"]'),
+    ).toHaveAttribute("aria-label", "Edit mode");
+    expect(getViewModeButtonIconPaths()).toContain(
+      "M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4",
+    );
   });
 
   it("shows smart zoom in the view-mode canvas context menu", async () => {

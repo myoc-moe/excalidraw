@@ -454,9 +454,21 @@ export const checkpointHistory = (history: History, name: string) => {
       ...x,
       elements: {
         ...x.elements,
-        added: stripProps(x.elements.added, ["seed", "versionNonce"]),
-        removed: stripProps(x.elements.removed, ["seed", "versionNonce"]),
-        updated: stripProps(x.elements.updated, ["seed", "versionNonce"]),
+        added: stripProps(x.elements.added, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
+        removed: stripProps(x.elements.removed, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
+        updated: stripProps(x.elements.updated, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
       },
     })),
   ).toMatchSnapshot(`[${name}] undo stack`);
@@ -466,9 +478,21 @@ export const checkpointHistory = (history: History, name: string) => {
       ...x,
       elements: {
         ...x.elements,
-        added: stripProps(x.elements.added, ["seed", "versionNonce"]),
-        removed: stripProps(x.elements.removed, ["seed", "versionNonce"]),
-        updated: stripProps(x.elements.updated, ["seed", "versionNonce"]),
+        added: stripProps(x.elements.added, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
+        removed: stripProps(x.elements.removed, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
+        updated: stripProps(x.elements.updated, [
+          "customData",
+          "seed",
+          "versionNonce",
+        ]),
       },
     })),
   ).toMatchSnapshot(`[${name}] redo stack`);
