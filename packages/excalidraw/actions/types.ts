@@ -129,7 +129,6 @@ export type ActionName =
   | "autoResize"
   | "elementStats"
   | "searchMenu"
-  | "copyElementLink"
   | "linkToElement"
   | "cropEditor"
   | "wrapSelectionInFrame"

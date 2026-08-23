@@ -88,7 +88,7 @@ describe("view mode", () => {
     });
   });
 
-  it.skip("does not open links on right click and opens them from the context menu", async () => {
+  it("does not open links on right click", async () => {
     unmountComponent();
 
     const onLinkOpenSpy = vi.fn();
@@ -122,6 +122,11 @@ describe("view mode", () => {
     const elementCenterX = linkedRect.x + linkedRect.width / 2;
     const elementCenterY = linkedRect.y + linkedRect.height / 2;
 
+    mouse.moveTo(elementCenterX, elementCenterY);
+    expect(GlobalTestState.interactiveCanvas.style.cursor).toBe(
+      CURSOR_TYPE.POINTER,
+    );
+
     fireEvent.pointerDown(GlobalTestState.interactiveCanvas, {
       button: 2,
       clientX: elementCenterX,
@@ -139,17 +144,74 @@ describe("view mode", () => {
 
     expect(onLinkOpenSpy).not.toHaveBeenCalled();
 
+    fireEvent.pointerDown(GlobalTestState.interactiveCanvas, {
+      button: 0,
+      clientX: elementCenterX,
+      clientY: elementCenterY,
+      pointerType: "mouse",
+      pointerId: 1,
+    });
+    fireEvent.pointerUp(GlobalTestState.interactiveCanvas, {
+      button: 0,
+      clientX: elementCenterX,
+      clientY: elementCenterY,
+      pointerType: "mouse",
+      pointerId: 1,
+    });
+
+    expect(onLinkOpenSpy).toHaveBeenCalledTimes(1);
+    expect(onLinkOpenSpy.mock.calls[0][0].link).toBe("https://example.com");
+  });
+
+  it("shows link actions in the context menu", async () => {
+    const linkedRect = API.createElement({
+      type: "rectangle",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+    API.setElements([linkedRect]);
+    API.updateElement(linkedRect, {
+      link: "https://example.com",
+    });
+    API.setAppState({ viewModeEnabled: true });
+
+    const elementCenterX = linkedRect.x + linkedRect.width / 2;
+    const elementCenterY = linkedRect.y + linkedRect.height / 2;
+
+    mouse.rightClickAt(elementCenterX, elementCenterY);
+
+    let contextMenuItems = Array.from(
+      UI.queryContextMenu()?.querySelectorAll("li") ?? [],
+    ).map((item) => item.dataset.testid);
+
+    expect(contextMenuItems).toEqual(expect.arrayContaining(["goToLink"]));
+    expect(contextMenuItems).toEqual(expect.arrayContaining(["copyLink"]));
+
+    API.setAppState({ viewModeEnabled: false });
     API.setSelectedElements([linkedRect]);
     mouse.rightClickAt(elementCenterX, elementCenterY);
 
-    const openLinkItem = UI.queryContextMenu()?.querySelector(
-      'li[data-testid="openLink"]',
-    );
-    expect(openLinkItem).not.toBeNull();
+    contextMenuItems = Array.from(
+      UI.queryContextMenu()?.querySelectorAll("li") ?? [],
+    ).map((item) => item.dataset.testid);
 
-    fireEvent.click(openLinkItem!);
-    expect(onLinkOpenSpy).toHaveBeenCalledTimes(1);
-    expect(onLinkOpenSpy.mock.calls[0][0].link).toBe("https://example.com");
+    expect(contextMenuItems).toEqual(expect.arrayContaining(["goToLink"]));
+    expect(contextMenuItems).toEqual(expect.arrayContaining(["copyLink"]));
+
+    API.updateElement(linkedRect, {
+      link: `${window.location.origin}/?element=${linkedRect.id}`,
+    });
+    API.setAppState({ viewModeEnabled: true });
+    mouse.rightClickAt(elementCenterX, elementCenterY);
+
+    contextMenuItems = Array.from(
+      UI.queryContextMenu()?.querySelectorAll("li") ?? [],
+    ).map((item) => item.dataset.testid);
+
+    expect(contextMenuItems).toEqual(expect.arrayContaining(["goToLink"]));
+    expect(contextMenuItems).not.toEqual(expect.arrayContaining(["copyLink"]));
   });
 
   it("viewModeOnly hides toggles and prevents leaving view mode", async () => {

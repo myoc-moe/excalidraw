@@ -316,7 +316,6 @@ import {
 } from "../actions";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionPaste } from "../actions/actionClipboard";
-import { actionCopyElementLink } from "../actions/actionElementLink";
 import { actionUnlockAllElements } from "../actions/actionElementLock";
 import {
   actionRemoveAllElementsFromFrame,
@@ -339,6 +338,7 @@ import {
   parseClipboard,
   parseDataTransferEvent,
   parseDragImageMetadata,
+  copyTextToSystemClipboard,
   type DragImageMetadata,
   type ParsedDataTransferFile,
 } from "../clipboard";
@@ -431,7 +431,10 @@ import { searchItemInFocusAtom } from "./SearchMenu";
 import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
 import { StaticCanvas, InteractiveCanvas } from "./canvases";
 import NewElementCanvas from "./canvases/NewElementCanvas";
-import { isPointHittingLink } from "./hyperlink/helpers";
+import {
+  isPointHittingLink,
+  isPointHittingLinkIcon,
+} from "./hyperlink/helpers";
 import { CursorHint, CursorHints } from "./CursorHint";
 import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 
@@ -7134,9 +7137,51 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  private getElementLinkAtPositionForContextMenu = (
+    scenePointer: Readonly<{ x: number; y: number }>,
+    hitElementMightBeLocked: NonDeletedExcalidrawElement | null,
+  ): NonDeletedExcalidrawElement | undefined => {
+    const linkElement = this.getElementLinkAtPosition(
+      scenePointer,
+      hitElementMightBeLocked,
+    );
+    if (linkElement) {
+      return linkElement;
+    }
+
+    const elementsMap = this.scene.getNonDeletedElementsMap();
+    for (const element of this.scene
+      .getNonDeletedElements()
+      .slice()
+      .reverse()) {
+      if (
+        element.link &&
+        !element.locked &&
+        isPointHittingLinkIcon(
+          element,
+          elementsMap,
+          this.state,
+          pointFrom(scenePointer.x, scenePointer.y),
+        )
+      ) {
+        return element;
+      }
+    }
+  };
+
   private handleElementLinkClick = (
     event: React.PointerEvent<HTMLCanvasElement>,
   ) => {
+    const isActivationButton = (button: number) =>
+      button === POINTER_BUTTON.MAIN || button === POINTER_BUTTON.TOUCH;
+
+    if (
+      !isActivationButton(this.lastPointerDownEvent!.button) ||
+      !isActivationButton(this.lastPointerUpEvent!.button)
+    ) {
+      return;
+    }
+
     const draggedDistance = pointDistance(
       pointFrom(
         this.lastPointerDownEvent!.clientX,
@@ -7175,29 +7220,38 @@ class App extends React.Component<AppProps, AppState> {
     );
     if (lastPointerDownHittingLinkIcon && lastPointerUpHittingLinkIcon) {
       hideHyperlinkToolip();
-      let url = this.hitLinkElement.link;
-      if (url) {
-        url = normalizeLink(url);
-        let customEvent;
-        if (this.props.onLinkOpen) {
-          customEvent = wrapEvent(EVENT.EXCALIDRAW_LINK, event.nativeEvent);
-          this.props.onLinkOpen(
-            {
-              ...this.hitLinkElement,
-              link: url,
-            },
-            customEvent,
-          );
-        }
-        if (!customEvent?.defaultPrevented) {
-          const target = isLocalLink(url) ? "_self" : "_blank";
-          const newWindow = window.open(undefined, target);
-          // https://mathiasbynens.github.io/rel-noopener/
-          if (newWindow) {
-            newWindow.opener = null;
-            newWindow.location = url;
-          }
-        }
+      this.openElementLink(this.hitLinkElement, event);
+    }
+  };
+
+  private openElementLink = (
+    element: NonDeletedExcalidrawElement,
+    event?: React.PointerEvent<HTMLCanvasElement>,
+  ) => {
+    let url = element.link;
+    if (!url) {
+      return;
+    }
+
+    url = normalizeLink(url);
+    let customEvent;
+    if (this.props.onLinkOpen && event) {
+      customEvent = wrapEvent(EVENT.EXCALIDRAW_LINK, event.nativeEvent);
+      this.props.onLinkOpen(
+        {
+          ...element,
+          link: url,
+        },
+        customEvent,
+      );
+    }
+    if (!customEvent?.defaultPrevented) {
+      const target = isLocalLink(url) ? "_self" : "_blank";
+      const newWindow = window.open(undefined, target);
+      // https://mathiasbynens.github.io/rel-noopener/
+      if (newWindow) {
+        newWindow.opener = null;
+        newWindow.location = url;
       }
     }
   };
@@ -13122,15 +13176,26 @@ class App extends React.Component<AppProps, AppState> {
       preferSelected: true,
       includeLockedElements: true,
     });
-
+    const linkElement = this.isLinksEnabled()
+      ? this.getElementLinkAtPositionForContextMenu({ x, y }, element)
+      : undefined;
     const selectedElements = this.scene.getSelectedElements(this.state);
     const isHittingCommonBoundBox =
       this.isHittingCommonBoundingBoxOfSelectedElements(
         { x, y },
         selectedElements,
       );
+    const selectedLinkedElement =
+      isHittingCommonBoundBox &&
+      selectedElements.length === 1 &&
+      selectedElements[0].link
+        ? selectedElements[0]
+        : undefined;
+    const contextMenuElement =
+      element ?? linkElement ?? selectedLinkedElement;
 
-    const type = element || isHittingCommonBoundBox ? "element" : "canvas";
+    const type =
+      contextMenuElement || isHittingCommonBoundBox ? "element" : "canvas";
 
     const container = this.excalidrawContainerRef.current!;
     const { top: offsetTop, left: offsetLeft } =
@@ -13142,21 +13207,22 @@ class App extends React.Component<AppProps, AppState> {
 
     this.setState(
       {
-        ...(element && !this.state.selectedElementIds[element.id]
+        ...(contextMenuElement &&
+        !this.state.selectedElementIds[contextMenuElement.id]
           ? {
               ...this.state,
               ...selectGroupsForSelectedElements(
                 {
                   editingGroupId: this.state.editingGroupId,
-                  selectedElementIds: { [element.id]: true },
+                  selectedElementIds: { [contextMenuElement.id]: true },
                 },
                 this.scene.getNonDeletedElements(),
                 this.state,
                 this,
               ),
-              selectedLinearElement: isLinearElement(element)
+              selectedLinearElement: isLinearElement(contextMenuElement)
                 ? new LinearElementEditor(
-                    element,
+                    contextMenuElement,
                     this.scene.getNonDeletedElementsMap(),
                   )
                 : null,
@@ -13169,7 +13235,7 @@ class App extends React.Component<AppProps, AppState> {
           contextMenu: {
             top,
             left,
-            items: this.getContextMenuItems(type, element),
+            items: this.getContextMenuItems(type, contextMenuElement),
           },
         });
       },
@@ -13550,11 +13616,45 @@ class App extends React.Component<AppProps, AppState> {
     return [];
   };
 
+  private getElementLinkContextMenuItems = (
+    hitElement?: NonDeletedExcalidrawElement | null,
+  ): ContextMenuItems => {
+    if (!hitElement?.link) {
+      return [];
+    }
+
+    const link = normalizeLink(hitElement.link);
+    const isObjectLink = isElementLink(link);
+
+    return [
+      {
+        key: "goToLink",
+        label: isObjectLink ? t("labels.link.goToElement") : "Go to link",
+        onSelect: () => this.openElementLink(hitElement),
+      },
+      !isObjectLink && {
+        key: "copyLink",
+        label: t("buttons.copyLink"),
+        onSelect: async () => {
+          await copyTextToSystemClipboard(link);
+          this.setState({
+            toast: {
+              message: t("toast.elementLinkCopied"),
+              closable: true,
+            },
+          });
+        },
+      },
+    ];
+  };
+
   private getContextMenuItems = (
     type: "canvas" | "element",
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
     const imageContextMenuItems = this.getImageContextMenuItems(hitElement);
+    const elementLinkContextMenuItems =
+      this.getElementLinkContextMenuItems(hitElement);
 
     // canvas contextMenu
     // -------------------------------------------------------------------------
@@ -13589,6 +13689,8 @@ class App extends React.Component<AppProps, AppState> {
 
     if (this.state.viewModeEnabled) {
       return [
+        ...elementLinkContextMenuItems,
+        elementLinkContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
         actionSmartZoom,
         actionCopy,
         imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
@@ -13638,7 +13740,8 @@ class App extends React.Component<AppProps, AppState> {
       actionToggleLinearEditor,
       CONTEXT_MENU_SEPARATOR,
       actionLink,
-      actionCopyElementLink,
+      elementLinkContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
+      ...elementLinkContextMenuItems,
       CONTEXT_MENU_SEPARATOR,
       actionDuplicateSelection,
       actionToggleElementLock,

@@ -291,10 +291,7 @@ export const updateStaleImageStatuses = (params: {
               status: "error",
             });
           }
-          if (
-            loadedFileIds.has(element.fileId) &&
-            element.status === "error"
-          ) {
+          if (loadedFileIds.has(element.fileId) && element.status === "error") {
             return newElementWith(element, {
               status: "saved",
             });
