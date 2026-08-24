@@ -13,7 +13,7 @@ import { findShapeByKey } from "../components/Tools";
 
 import { API } from "./helpers/api";
 import { Pointer } from "./helpers/ui";
-import { act, fireEvent, GlobalTestState, render } from "./test-utils";
+import { act, fireEvent, GlobalTestState, render, waitFor } from "./test-utils";
 
 import type { AppClassProperties, ExcalidrawImperativeAPI } from "../types";
 
@@ -256,6 +256,65 @@ describe("MyOC regression: simplified toolbar", () => {
     expect(queryDocumentToolbarItem("bucketfill")).not.toBe(null);
     expect(queryDocumentToolbarItem("objects-snap-mode")).not.toBe(null);
     expect(queryDocumentToolbarItem("lock")).not.toBe(null);
+  });
+});
+
+describe("MyOC regression: compact selected image actions", () => {
+  afterEach(() => {
+    localStorage.removeItem("excalidraw.desktopUIMode");
+  });
+
+  it("keeps image layout actions and smart zoom in the floating actions island", async () => {
+    localStorage.setItem("excalidraw.desktopUIMode", "compact");
+
+    await render(<Excalidraw />);
+    fireEvent.resize(window);
+
+    const imageA = API.createElement({
+      type: "image",
+      id: "compact_image_A",
+      fileId: "compact_file_A",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    const imageB = API.createElement({
+      type: "image",
+      id: "compact_image_B",
+      fileId: "compact_file_B",
+      x: 110,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+
+    API.setElements([imageA, imageB]);
+    API.setSelectedElements([imageA, imageB]);
+
+    const actionsTrigger = await waitFor(() => {
+      const trigger = document.querySelector<HTMLButtonElement>(
+        '.compact-shape-actions-island button[title="Actions"]',
+      );
+      expect(trigger).not.toBe(null);
+      return trigger!;
+    });
+    fireEvent.click(actionsTrigger);
+
+    await waitFor(() => {
+      const popover = document.querySelector(".properties-content");
+      expect(
+        popover?.querySelector('button[title^="Arrange elements"]'),
+      ).not.toBe(null);
+      expect(
+        popover?.querySelector('button[title="Normalize images"]'),
+      ).not.toBe(null);
+      expect(
+        popover?.querySelector(
+          '[data-testid="button-smart-zoom"][title="Smart Zoom - F"]',
+        ),
+      ).not.toBe(null);
+    });
   });
 });
 

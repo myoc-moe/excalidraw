@@ -155,6 +155,10 @@ export const getShapeActionPredicates = (
     align:
       !isSingleElementBoundContainer && alignActionsPredicate(appState, app),
     distribute: targetElements.length > 2,
+    imageLayout:
+      targetElements.length > 1 &&
+      targetElements.every(isImageElement) &&
+      alignActionsPredicate(appState, app),
 
     // per-element actions
     // NOTE: the full panel treats a bound container as linkable; the compact /

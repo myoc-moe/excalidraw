@@ -297,6 +297,8 @@ import {
   actionFlipHorizontal,
   actionFlipVertical,
   actionGroup,
+  actionArrangeElements,
+  actionNormaliseElements,
   actionSelectAll,
   actionSendBackward,
   actionSendToBack,
@@ -13719,6 +13721,22 @@ class App extends React.Component<AppProps, AppState> {
     return [];
   };
 
+  private getImageActionContextMenuItems = (
+    hitElement?: NonDeletedExcalidrawElement | null,
+  ): ContextMenuItems => {
+    const selectedElements = this.scene.getSelectedElements(this.state);
+
+    if (
+      selectedElements.length > 0 &&
+      selectedElements.every((element) => isImageElement(element)) &&
+      (!hitElement || this.state.selectedElementIds[hitElement.id])
+    ) {
+      return [actionArrangeElements, actionNormaliseElements];
+    }
+
+    return [];
+  };
+
   private getElementLinkContextMenuItems = (
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
@@ -13756,6 +13774,8 @@ class App extends React.Component<AppProps, AppState> {
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
     const imageContextMenuItems = this.getImageContextMenuItems(hitElement);
+    const imageActionContextMenuItems =
+      this.getImageActionContextMenuItems(hitElement);
     const elementLinkContextMenuItems =
       this.getElementLinkContextMenuItems(hitElement);
 
@@ -13821,6 +13841,8 @@ class App extends React.Component<AppProps, AppState> {
       actionPaste,
       imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
       ...imageContextMenuItems,
+      imageActionContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
+      ...imageActionContextMenuItems,
       CONTEXT_MENU_SEPARATOR,
       actionSelectAllElementsInFrame,
       actionRemoveAllElementsFromFrame,

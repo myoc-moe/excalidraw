@@ -83,9 +83,11 @@ const LayersFieldset = ({
 const AlignFieldset = ({
   renderAction,
   showDistribute,
+  showImageLayout,
 }: {
   renderAction: ActionManager["renderAction"];
   showDistribute: boolean;
+  showImageLayout: boolean;
 }) => {
   const isRTL = document.documentElement.getAttribute("dir") === "rtl";
 
@@ -122,6 +124,13 @@ const AlignFieldset = ({
           {renderAction("alignBottom")}
           {showDistribute && renderAction("distributeVertically")}
         </div>
+        {showImageLayout && (
+          <>
+            <div style={{ flexBasis: "100%", height: 0 }} />
+            {renderAction("arrangeElements")}
+            {renderAction("normaliseElements")}
+          </>
+        )}
       </div>
     </fieldset>
   );
@@ -201,6 +210,7 @@ export const SelectedShapeActions = ({
         <AlignFieldset
           renderAction={renderAction}
           showDistribute={predicates.distribute}
+          showImageLayout={predicates.imageLayout}
         />
       )}
       {predicates.showExtraActions && (
@@ -214,6 +224,7 @@ export const SelectedShapeActions = ({
             {predicates.link && renderAction("hyperlink")}
             {predicates.cropEditor && renderAction("cropEditor")}
             {predicates.lineEditor && renderAction("toggleLinearEditor")}
+            {renderAction("smartZoom")}
           </div>
         </fieldset>
       )}
@@ -562,6 +573,7 @@ const CombinedExtraActions = ({
                 <AlignFieldset
                   renderAction={renderAction}
                   showDistribute={predicates.distribute}
+                  showImageLayout={predicates.imageLayout}
                 />
               )}
               <fieldset>
@@ -571,6 +583,7 @@ const CombinedExtraActions = ({
                   {renderAction("ungroup")}
                   {predicates.linkSingleOnly && renderAction("hyperlink")}
                   {predicates.cropEditor && renderAction("cropEditor")}
+                  {renderAction("smartZoom")}
                   {showDuplicate && renderAction("duplicateSelection")}
                   {showDelete && renderAction("deleteSelectedElements")}
                 </div>

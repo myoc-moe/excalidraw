@@ -396,6 +396,50 @@ describe("contextMenu element", () => {
     ]);
   });
 
+  it("MyOC regression: renders image layout actions in the image context menu", async () => {
+    const imageA = API.createElement({
+      type: "image",
+      id: "image_layout_A",
+      fileId: "file_layout_A",
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+    const imageB = API.createElement({
+      type: "image",
+      id: "image_layout_B",
+      fileId: "file_layout_B",
+      x: 110,
+      y: 0,
+      width: 100,
+      height: 100,
+    });
+
+    API.setElements([imageA, imageB]);
+    API.setSelectedElements([imageA, imageB]);
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 50,
+      clientY: 50,
+    });
+
+    const items = getContextMenuItems();
+    expect(items).toEqual(
+      expect.arrayContaining(["arrangeElements", "normaliseElements"]),
+    );
+    expect(items.indexOf("paste")).toBeLessThan(
+      items.indexOf("arrangeElements"),
+    );
+    expect(items.indexOf("arrangeElements")).toBeLessThan(
+      items.indexOf("normaliseElements"),
+    );
+    expect(items.indexOf("normaliseElements")).toBeLessThan(
+      items.indexOf("wrapSelectionInFrame"),
+    );
+  });
+
   it("passes the clicked grouped image id to the host callback", async () => {
     unmountComponent();
 

@@ -45,6 +45,7 @@ export const actionSmartZoom = register({
       type="button"
       icon={arrowsToEyeIcon}
       aria-label={t("labels.smartZoom")}
+      title={`${t("labels.smartZoom")} - ${KEYS.F.toLocaleUpperCase()}`}
       onClick={() => updateData(null)}
       size={data?.size || "medium"}
       data-testid="button-smart-zoom"
