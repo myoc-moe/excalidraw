@@ -165,6 +165,8 @@ export const MobileMenu = ({
           className="App-bottom-bar"
           style={{
             marginBottom: SCROLLBAR_WIDTH + SCROLLBAR_MARGIN,
+            left: 14,
+            transform: "none",
           }}
           data-viewport-ui="bottom"
         >
@@ -200,7 +202,10 @@ export const MobileMenu = ({
           </div>
 
           {!appState.viewModeEnabled && (
-            <Island className="App-toolbar">
+            <Island
+              className="App-toolbar"
+              style={{ justifyContent: "flex-start" }}
+            >
               {appState.openDialog?.name !== "elementLinkSelector" &&
                 renderToolbar()}
             </Island>

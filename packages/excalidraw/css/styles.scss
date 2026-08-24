@@ -308,8 +308,8 @@ body.excalidraw-cursor-resize * {
     width: calc(100% - 28px);
     max-width: 450px;
     bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 14px;
+    transform: none;
     --bar-padding: calc(4 * var(--space-factor));
     z-index: var(--zIndex-ui-bottom);
     display: flex;
@@ -382,7 +382,7 @@ body.excalidraw-cursor-resize * {
 
   .App-toolbar {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
 
     .eraser {
       &.ToolIcon:hover {

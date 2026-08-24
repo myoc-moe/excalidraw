@@ -266,8 +266,13 @@ describe("MyOC regression: compact selected image actions", () => {
 
   it("keeps image layout actions and smart zoom in the floating actions island", async () => {
     localStorage.setItem("excalidraw.desktopUIMode", "compact");
+    (global as any).ResizeObserver = class ResizeObserver {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
 
-    await render(<Excalidraw />);
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "desktop" }} />);
     fireEvent.resize(window);
 
     const imageA = API.createElement({
@@ -289,8 +294,15 @@ describe("MyOC regression: compact selected image actions", () => {
       height: 100,
     });
 
-    API.setElements([imageA, imageB]);
-    API.setSelectedElements([imageA, imageB]);
+    API.updateScene({
+      elements: [imageA, imageB],
+      appState: {
+        selectedElementIds: {
+          [imageA.id]: true,
+          [imageB.id]: true,
+        },
+      },
+    });
 
     const actionsTrigger = await waitFor(() => {
       const trigger = document.querySelector<HTMLButtonElement>(

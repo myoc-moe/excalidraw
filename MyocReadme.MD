@@ -133,6 +133,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
 - Keep zen mode unavailable. Do not restore `actionToggleZenMode`, a main-menu/preferences/context-menu toggle, the `Alt+Z` shortcut, or a public `zenModeEnabled` prop. Restored/imported `appState.zenModeEnabled` should stay forced to `false`.
 - Keep omitted right-click context-menu items omitted: `copyAsPng`, `copyAsSvg`, `copyText`, `copyStyles`, and `pasteStyles`.
 - Keep the host image context-menu hook working. `imageContextMenuItems` should receive all selected image ids for all-image selections, the clicked image id for grouped or mixed selections, and should render after `cut` / `copy` / `paste` with a divider above the host image items.
+- Keep Myoc image layout actions available for multi-image selections: `arrangeElements` and `normaliseElements` should appear in the image right-click context menu and in the selected-element actions island, alongside selection-level Smart Zoom.
 - Keep the app example's simple image right-click `Alert ID` item so this behavior is easy to verify manually.
 - Preserve the Myoc simplified toolbar shape after upstream toolbar merges:
   - main toolbar tools are selection/lasso selector, freedraw, text, stroke eyedropper, image, and eraser
@@ -140,6 +141,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
   - snap-to-objects remains a top-level magnet button to the right of the more-tools menu
   - lock active tool belongs in the more-tools menu
   - smart zoom remains visible in the lower-left controls
+  - mobile bottom toolbar controls should stay anchored to the left screen inset, not centered in the viewport
 - Preserve Myoc view-mode controls: `viewModeOnly` must force view mode and hide/disable the view-mode toggle, mobile view mode must not add a separate top-right pencil edit button, and the existing lower-left view-mode toggle should show the pencil icon while currently in view mode. Pasting or dropping images while in view mode should be allowed for non-`viewModeOnly` editors by default by leaving view mode and inserting the image; hosts can opt into rejection via `viewModeImageInsertBehavior="reject"` and handle `onViewModeImageInsertRejected`.
 - Preserve Myoc shortcut policy:
   - number keys `1` through `0`, including shifted number combinations, are reserved for Myoc/Floref and must not select drawing tools or trigger zoom-to-fit actions

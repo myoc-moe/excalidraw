@@ -835,6 +835,19 @@ describe("ui={{ enabled: ... }}", () => {
     ).not.toBe(null);
   });
 
+  it("MyOC regression: keeps the mobile bottom toolbar anchored to the left", async () => {
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "phone" }} />);
+    fireEvent.resize(window);
+    await waitFor(() => expect(h.app.editorInterface.formFactor).toBe("phone"));
+
+    const bottomBar = queryContainer(".App-bottom-bar")!;
+    const toolbar = queryContainer(".App-bottom-bar .App-toolbar")!;
+
+    expect(getComputedStyle(bottomBar).left).toBe("14px");
+    expect(getComputedStyle(bottomBar).transform).toBe("none");
+    expect(getComputedStyle(toolbar).justifyContent).toBe("flex-start");
+  });
+
   it("MyOC regression: does not render a separate mobile edit button in view mode", async () => {
     await render(<Excalidraw UIOptions={{ getFormFactor: () => "phone" }} />);
     fireEvent.resize(window);
