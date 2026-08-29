@@ -381,7 +381,7 @@ import {
 
 import { Fonts } from "../fonts";
 import { editorJotaiStore, type WritableAtom } from "../editor-jotai";
-import { ImageSceneDataError } from "../errors";
+import { ImageSceneDataError, UnsupportedImageFileTypeError } from "../errors";
 import {
   getSnapLinesAtPointer,
   snapDraggedElements,
@@ -4873,6 +4873,16 @@ class App extends React.Component<AppProps, AppState> {
 
   public addImageElementsToScene: ExcalidrawImperativeAPI["addImageElementsToScene"] =
     async (imageFiles, sceneX, sceneY) => {
+      const unsupportedImage = imageFiles.find(
+        ({ file }) => !isSupportedImageFile(file),
+      );
+      if (unsupportedImage) {
+        throw new UnsupportedImageFileTypeError(
+          unsupportedImage.file,
+          t("errors.unsupportedFileType"),
+        );
+      }
+
       await this.insertImages(
         imageFiles.map(({ file }) => file),
         sceneX,

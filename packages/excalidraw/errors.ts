@@ -33,6 +33,23 @@ export class ImageSceneDataError extends Error {
   }
 }
 
+export type UnsupportedImageFileTypeErrorCode = "UNSUPPORTED_IMAGE_FILE_TYPE";
+
+export class UnsupportedImageFileTypeError extends Error {
+  public readonly code: UnsupportedImageFileTypeErrorCode =
+    "UNSUPPORTED_IMAGE_FILE_TYPE";
+  public readonly fileName: string;
+  public readonly mimeType: string;
+
+  constructor(file: File, message: string) {
+    const mimeType = file.type || "unknown";
+    super(`${message} ${file.name} (${mimeType})`);
+    this.name = "UnsupportedImageFileTypeError";
+    this.fileName = file.name;
+    this.mimeType = mimeType;
+  }
+}
+
 type WorkerErrorCodes = "WORKER_URL_NOT_DEFINED" | "WORKER_IN_THE_MAIN_CHUNK";
 
 export class WorkerUrlNotDefinedError extends Error {

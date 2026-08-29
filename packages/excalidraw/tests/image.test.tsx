@@ -10,6 +10,7 @@ import type { FileId } from "@excalidraw/element/types";
 import * as blobModule from "../data/blob";
 import * as filesystemModule from "../data/filesystem";
 import { Excalidraw } from "../index";
+import type { UnsupportedImageFileTypeError } from "../errors";
 import { createPasteEvent } from "../clipboard";
 
 import { API } from "./helpers/api";
@@ -192,6 +193,36 @@ describe("image insertion", () => {
         }),
       ]);
     });
+  });
+
+  it("MyOC regression: rejects unsupported API image files with their reason", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+
+    const file = new File([new Uint8Array([1, 2, 3])], "capture.pdf", {
+      type: "application/pdf",
+    });
+
+    const expectedError: Partial<UnsupportedImageFileTypeError> = {
+      name: "UnsupportedImageFileTypeError",
+      code: "UNSUPPORTED_IMAGE_FILE_TYPE",
+      fileName: "capture.pdf",
+      mimeType: "application/pdf",
+      message: "Unsupported file type. capture.pdf (application/pdf)",
+    };
+
+    await expect(
+      h.app.api.addImageElementsToScene(
+        [
+          {
+            file,
+            customData: { sourceUrl: "https://example.com/document.pdf" },
+          },
+        ],
+        100,
+        100,
+      ),
+    ).rejects.toMatchObject(expectedError);
+    expect(h.elements).toEqual([]);
   });
 
   it("should eventually initialize all pasted images", async () => {

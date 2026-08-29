@@ -434,6 +434,10 @@ export { isInvisiblySmallElement } from "@excalidraw/element";
 
 export { defaultLang, useI18n, languages } from "./i18n";
 export {
+  UnsupportedImageFileTypeError,
+  type UnsupportedImageFileTypeErrorCode,
+} from "./errors";
+export {
   restoreAppState,
   restoreElement,
   restoreElements,
