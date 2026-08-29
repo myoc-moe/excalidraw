@@ -10,7 +10,7 @@ import type { FileId } from "@excalidraw/element/types";
 import * as blobModule from "../data/blob";
 import * as filesystemModule from "../data/filesystem";
 import { Excalidraw } from "../index";
-import type { UnsupportedImageFileTypeError } from "../errors";
+
 import { createPasteEvent } from "../clipboard";
 
 import { API } from "./helpers/api";
@@ -22,6 +22,8 @@ import {
   SMILEY_IMAGE_DIMENSIONS,
 } from "./fixtures/constants";
 import { INITIALIZED_IMAGE_PROPS } from "./helpers/constants";
+
+import type { UnsupportedImageFileTypeError } from "../errors";
 
 import type { ExcalidrawProps } from "../types";
 
