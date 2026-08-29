@@ -4877,6 +4877,7 @@ class App extends React.Component<AppProps, AppState> {
         imageFiles.map(({ file }) => file),
         sceneX,
         sceneY,
+        imageFiles.map(({ customData }) => customData ?? {}),
       );
     };
 

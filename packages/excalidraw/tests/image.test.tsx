@@ -166,6 +166,34 @@ describe("image insertion", () => {
     });
   });
 
+  it("MyOC regression: preserves API image custom data", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+
+    const customData = {
+      capturedAt: "2026-08-29T12:00:00.000Z",
+      sourceUrl: "https://example.com/image.png",
+      extensionUrlRuleId: "example-rule",
+    };
+
+    await act(async () => {
+      await h.app.api.addImageElementsToScene(
+        [{ file: await API.loadFile("./fixtures/deer.png"), customData }],
+        100,
+        100,
+      );
+    });
+
+    await waitFor(() => {
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+          customData,
+        }),
+      ]);
+    });
+  });
+
   it("should eventually initialize all pasted images", async () => {
     await setup();
 
