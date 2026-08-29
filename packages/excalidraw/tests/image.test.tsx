@@ -197,6 +197,32 @@ describe("image insertion", () => {
     });
   });
 
+  it("MyOC regression: normalizes octet-stream API image files before validation", async () => {
+    await setupImageTest([DEER_IMAGE_DIMENSIONS]);
+
+    const customData = {
+      sourceUrl: "https://example.com/19506381_g5Ue4vMkRTtFgDi.png",
+    };
+    const imageFile = await API.loadFile("./fixtures/deer.png");
+    const file = new File([imageFile], "19506381_g5Ue4vMkRTtFgDi.png", {
+      type: "application/octet-stream",
+    });
+
+    await act(async () => {
+      await h.app.api.addImageElementsToScene([{ file, customData }], 100, 100);
+    });
+
+    await waitFor(() => {
+      expect(h.elements).toEqual([
+        expect.objectContaining({
+          ...INITIALIZED_IMAGE_PROPS,
+          ...DEER_IMAGE_DIMENSIONS,
+          customData,
+        }),
+      ]);
+    });
+  });
+
   it("MyOC regression: rejects unsupported API image files with their reason", async () => {
     await setupImageTest([DEER_IMAGE_DIMENSIONS]);
 

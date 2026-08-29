@@ -462,7 +462,11 @@ export const normalizeFile = async (file: File) => {
 
   if (file?.name?.endsWith(".excalidraw")) {
     file = createFile(file, MIME_TYPES.excalidraw, file.name);
-  } else if (!file.type || file.type?.startsWith("image/")) {
+  } else if (
+    !file.type ||
+    file.type.startsWith("image/") ||
+    file.type === "application/octet-stream"
+  ) {
     // when the file is an image, make sure the extension corresponds to the
     // actual mimeType (this is an edge case, but happens - especially
     // with AI generated images)

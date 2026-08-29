@@ -4873,7 +4873,14 @@ class App extends React.Component<AppProps, AppState> {
 
   public addImageElementsToScene: ExcalidrawImperativeAPI["addImageElementsToScene"] =
     async (imageFiles, sceneX, sceneY) => {
-      const unsupportedImage = imageFiles.find(
+      const normalizedImageFiles = await Promise.all(
+        imageFiles.map(async ({ file, customData }) => ({
+          file: await normalizeFile(file),
+          customData: customData ?? {},
+        })),
+      );
+
+      const unsupportedImage = normalizedImageFiles.find(
         ({ file }) => !isSupportedImageFile(file),
       );
       if (unsupportedImage) {
@@ -4884,10 +4891,10 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       await this.insertImages(
-        imageFiles.map(({ file }) => file),
+        normalizedImageFiles.map(({ file }) => file),
         sceneX,
         sceneY,
-        imageFiles.map(({ customData }) => customData ?? {}),
+        normalizedImageFiles.map(({ customData }) => customData),
       );
     };
 
