@@ -7228,6 +7228,18 @@ mkdirp@^0.5.6:
   dependencies:
     minimist "^1.2.6"
 
+modern-gif@2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/modern-gif/-/modern-gif-2.1.0.tgz#91366fba3d1fd6452c694e83096b56f14409d113"
+  integrity sha512-9ZGD5b4jNUge0fvFP1bd9Hsqz5CSZI1al3EhCJ+WFkZgmn5NO1yvVwXJA/LTqro85l2Gt0+S0dDFgVYhYtLLWg==
+  dependencies:
+    modern-palette "^2.0.0"
+
+modern-palette@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/modern-palette/-/modern-palette-2.0.0.tgz#433a8d807ea7e10eae46eb829679adc3b996d547"
+  integrity sha512-wKZcom2QzK6sS6h5RLYHEkd3V3maQLzgkI+ekDCimlk7dfXa63aekZcy+7KS+8JEqIDeY/yV1CAvA7l+7u6QHA==
+
 moo-color@^1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/moo-color/-/moo-color-1.0.3.tgz#d56435f8359c8284d83ac58016df7427febece74"

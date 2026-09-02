@@ -539,6 +539,8 @@ export interface AppState {
     | "compactStrokeStyles"
     | "compactOtherProperties"
     | "compactArrowProperties"
+    | "gifFrameGallery"
+    | "gifSpeedPicker"
     | null;
   openSidebar: { name: SidebarName; tab?: SidebarTabName } | null;
   openDialog:
@@ -729,7 +731,7 @@ export type OnExportProgress = {
 
 export type CompressImageFileOpts = {
   /** undefined indicates auto */
-  outputType?: typeof MIME_TYPES["jpg"];
+  outputType?: (typeof MIME_TYPES)["jpg"];
   maxWidthOrHeight: number;
 };
 
@@ -1200,6 +1202,15 @@ export type AppClassProperties = {
       isPlaceholder?: boolean;
       placeholderImage?: HTMLImageElement;
       transitionStart?: number;
+      gifDecodeInProgress?: boolean;
+      gif?: {
+        frames: HTMLCanvasElement[];
+        delays: number[];
+        width: number;
+        height: number;
+        runtimeFrameIndex: number;
+        lastFrameTime: number;
+      };
     }
   >;
   imageLoadingProgress: App["imageLoadingProgress"];
@@ -1221,6 +1232,8 @@ export type AppClassProperties = {
   scrollToViewport: App["scrollToViewport"];
   scrollToContent: App["scrollToContent"];
   addFiles: App["addFiles"];
+  scheduleCapture: App["scheduleCapture"];
+  ensureGifPlaybackLoop: App["ensureGifPlaybackLoop"];
   addElementsFromPaste: App["addElementsFromPaste"];
   togglePenMode: App["togglePenMode"];
   toggleLock: App["toggleLock"];

@@ -29,6 +29,33 @@ import type { ExcalidrawProps } from "../types";
 
 const { h } = window;
 
+vi.mock("modern-gif", () => ({
+  decode: () => ({
+    width: 100,
+    height: 100,
+    frames: [],
+    version: "89a",
+  }),
+  decodeFrames: vi.fn(async () => [
+    {
+      width: 100,
+      height: 100,
+      delay: 100,
+      data: new Uint8ClampedArray(100 * 100 * 4),
+    },
+    {
+      width: 100,
+      height: 100,
+      delay: 100,
+      data: new Uint8ClampedArray(100 * 100 * 4),
+    },
+  ]),
+}));
+
+vi.mock("modern-gif/worker?url", () => ({
+  default: "modern-gif-worker-url",
+}));
+
 export const setupImageTest = async (
   sizes: { width: number; height: number }[],
   props: Partial<ExcalidrawProps> = {},
@@ -792,6 +819,48 @@ describe("image insertion", () => {
     expect(fileData.id).toBe(compressedFileId);
     const encodedBytes = fileData.dataURL.split(",")[1];
     expect(atob(encodedBytes)).toBe("compressed");
+  });
+
+  it("MyOC regression: preserves original GIF bytes and skips compression", async () => {
+    const originalGif = new File(["original-gif"], "animated.gif", {
+      type: MIME_TYPES.gif,
+    });
+    const gifFileId = "gif-file-id" as FileId;
+    const compressImageFile = vi.fn(async () => {
+      return new File(["compressed"], "animated.gif", {
+        type: MIME_TYPES.gif,
+      });
+    });
+    const generateIdForFile = vi.fn(async () => gifFileId);
+
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      compressImageFile,
+      generateIdForFile,
+    });
+
+    await API.drop([{ kind: "file", file: originalGif }]);
+
+    await waitFor(() => {
+      expect(h.elements[0]).toEqual(
+        expect.objectContaining({
+          fileId: gifFileId,
+          gifPlayback: {
+            frameIndex: 0,
+            speed: 1,
+            playing: false,
+          },
+        }),
+      );
+    });
+
+    expect(compressImageFile).not.toHaveBeenCalled();
+    expect(generateIdForFile).toHaveBeenCalledWith(originalGif);
+
+    const fileData = h.app.api.getFiles()[gifFileId];
+    expect(fileData.mimeType).toBe(MIME_TYPES.gif);
+    expect(atob(fileData.dataURL.split(",")[1])).toBe("original-gif");
+    expect(JSON.stringify(fileData)).not.toContain("frames");
+    expect(JSON.stringify(h.elements[0])).not.toContain("Uint8ClampedArray");
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {

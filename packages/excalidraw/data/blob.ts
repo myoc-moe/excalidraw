@@ -91,6 +91,8 @@ export const getMimeType = (blob: Blob | string): string => {
     return MIME_TYPES.jpg;
   } else if (/\.svg$/.test(name)) {
     return MIME_TYPES.svg;
+  } else if (/\.gif$/.test(name)) {
+    return MIME_TYPES.gif;
   }
   return "";
 };
@@ -100,20 +102,20 @@ export const getFileHandleType = (handle: FileSystemFileHandle | null) => {
     return null;
   }
 
-  return handle.name.match(/\.(json|excalidraw|png|svg)$/)?.[1] || null;
+  return handle.name.match(/\.(json|excalidraw|png|svg|gif)$/)?.[1] || null;
 };
 
 export const isImageFileHandleType = (
   type: string | null,
-): type is "png" | "svg" => {
-  return type === "png" || type === "svg";
+): type is "png" | "svg" | "gif" => {
+  return type === "png" || type === "svg" || type === "gif";
 };
 
 export const isImageFileHandle = (
   handle: FileSystemFileHandle | null,
 ): handle is FileSystemFileHandle => {
   const type = getFileHandleType(handle);
-  return type === "png" || type === "svg";
+  return type === "png" || type === "svg" || type === "gif";
 };
 
 export const isSupportedImageFileType = (type: string | null | undefined) => {
@@ -299,8 +301,9 @@ const getImageFileDimensions = async (file: File) => {
 };
 
 export const resizeImageFile: CompressImageFile = async (file, opts) => {
-  // SVG files shouldn't a can't be resized
-  if (file.type === MIME_TYPES.svg) {
+  // SVG/GIF files shouldn't be resized here. SVG is vector, and GIF resizing
+  // would flatten or re-encode animation frames.
+  if (file.type === MIME_TYPES.svg || file.type === MIME_TYPES.gif) {
     return file;
   }
 

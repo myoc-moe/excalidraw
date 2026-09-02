@@ -567,6 +567,7 @@ export const newImageElement = (
     thumbHash?: ExcalidrawImageElement["thumbHash"];
     scale?: ExcalidrawImageElement["scale"];
     crop?: ExcalidrawImageElement["crop"];
+    gifPlayback?: ExcalidrawImageElement["gifPlayback"];
   } & ElementConstructorOpts,
 ): NonDeleted<ExcalidrawImageElement> => {
   return {
@@ -580,5 +581,6 @@ export const newImageElement = (
     thumbHash: opts.thumbHash ?? null,
     scale: opts.scale ?? [1, 1],
     crop: opts.crop ?? null,
+    gifPlayback: opts.gifPlayback ?? null,
   };
 };

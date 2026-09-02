@@ -91,8 +91,20 @@ const StaticCanvas = (props: StaticCanvasProps) => {
           performance.now() - transitionStart < transitionDuration
         );
       });
+    const hasActiveGifDecode = currentProps.visibleElements.some((element) => {
+      if (element.type !== "image" || !element.fileId) {
+        return false;
+      }
+      const cacheEntry = currentProps.renderConfig.imageCache.get(
+        element.fileId,
+      );
+      return cacheEntry?.gifDecodeInProgress && !cacheEntry.gif?.frames.length;
+    });
 
-    if (hasActiveTransition && transitionFrameRef.current === null) {
+    if (
+      (hasActiveTransition || hasActiveGifDecode) &&
+      transitionFrameRef.current === null
+    ) {
       transitionFrameRef.current = requestAnimationFrame(() => {
         transitionFrameRef.current = null;
         renderCanvasRef.current();

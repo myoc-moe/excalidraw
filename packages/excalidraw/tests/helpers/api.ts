@@ -215,6 +215,9 @@ export class API {
     fileId?: T extends "image" ? string : never;
     fileName?: T extends "image" ? string : never;
     thumbHash?: T extends "image" ? string : never;
+    gifPlayback?: T extends "image"
+      ? ExcalidrawImageElement["gifPlayback"]
+      : never;
     scale?: T extends "image" ? ExcalidrawImageElement["scale"] : never;
     status?: T extends "image" ? ExcalidrawImageElement["status"] : never;
     startBinding?: T extends "arrow"
@@ -373,6 +376,7 @@ export class API {
           fileId: (rest.fileId as string as FileId) ?? null,
           fileName: rest.fileName ?? null,
           thumbHash: rest.thumbHash ?? null,
+          gifPlayback: rest.gifPlayback ?? null,
           status: rest.status || "saved",
           scale: rest.scale || [1, 1],
         });

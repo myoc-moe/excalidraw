@@ -572,6 +572,21 @@ export const restoreElement = (
           typeof element.thumbHash === "string" ? element.thumbHash : null,
         scale: element.scale || [1, 1],
         crop: element.crop ?? null,
+        gifPlayback:
+          element.gifPlayback &&
+          typeof element.gifPlayback.frameIndex === "number" &&
+          typeof element.gifPlayback.speed === "number" &&
+          typeof element.gifPlayback.playing === "boolean"
+            ? {
+                frameIndex: Math.max(
+                  0,
+                  Math.floor(element.gifPlayback.frameIndex),
+                ),
+                speed:
+                  element.gifPlayback.speed > 0 ? element.gifPlayback.speed : 1,
+                playing: element.gifPlayback.playing,
+              }
+            : null,
       });
     case "line":
     // @ts-ignore LEGACY type

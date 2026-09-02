@@ -64,6 +64,30 @@ describe("restoreElements", () => {
     expect(restoredLegacyImage).toMatchObject({ thumbHash: null });
   });
 
+  it("MyOC regression: restores lightweight GIF playback metadata only", () => {
+    const image = API.createElement({
+      type: "image",
+      fileId: "animated-gif",
+      gifPlayback: {
+        frameIndex: 9,
+        speed: 1.5,
+        playing: true,
+      },
+    });
+
+    const [restoredImage] = restore.restoreElements([image], null);
+
+    expect(restoredImage).toMatchObject({
+      gifPlayback: {
+        frameIndex: 9,
+        speed: 1.5,
+        playing: true,
+      },
+    });
+    expect(JSON.stringify(restoredImage)).not.toContain("frames");
+    expect(JSON.stringify(restoredImage)).not.toContain("ImageData");
+  });
+
   it("when imported data state is null it should return an empty array of elements", () => {
     const restoredElements = restore.restoreElements(null, null);
     expect(restoredElements.length).toBe(0);
