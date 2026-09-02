@@ -7,7 +7,6 @@ import {
 } from "@excalidraw/element";
 import { MIME_TYPES } from "@excalidraw/common";
 
-import type App from "./App";
 import type {
   ExcalidrawImageElement,
   FileId,
@@ -15,8 +14,14 @@ import type {
   NonDeleted,
 } from "@excalidraw/element/types";
 
+import type App from "./App";
+
 export class AppGifPlayback {
   private playbackRaf: number | null = null;
+  private runtimeState = new Map<
+    ExcalidrawImageElement["id"],
+    { frameIndex: number; lastFrameTime: number }
+  >();
 
   constructor(private app: App) {}
 
@@ -25,6 +30,20 @@ export class AppGifPlayback {
       cancelAnimationFrame(this.playbackRaf);
       this.playbackRaf = null;
     }
+    this.runtimeState.clear();
+  };
+
+  getFrameIndex = (element: ExcalidrawImageElement) =>
+    element.gifPlayback?.playing
+      ? this.runtimeState.get(element.id)?.frameIndex ??
+        element.gifPlayback.frameIndex
+      : element.gifPlayback?.frameIndex;
+
+  setFrameIndex = (element: ExcalidrawImageElement, frameIndex: number) => {
+    this.runtimeState.set(element.id, {
+      frameIndex,
+      lastFrameTime: performance.now(),
+    });
   };
 
   ensureLoop = () => {
@@ -56,7 +75,7 @@ export class AppGifPlayback {
     this.app.imageCache.set(placeholderGifFileId, {
       image: new Promise<HTMLImageElement>(() => {}),
       mimeType: MIME_TYPES.gif,
-      gifDecodeInProgress: true,
+      gifDecodeStatus: "pending",
     });
 
     const gifPlaceholder = newElementWith(placeholderImageElement, {
@@ -129,13 +148,17 @@ export class AppGifPlayback {
       shouldContinue = true;
 
       const speed = Math.max(element.gifPlayback.speed || 1, 0.1);
-      const currentFrameIndex =
-        gif.runtimeFrameIndex ?? element.gifPlayback.frameIndex ?? 0;
+      const runtimeState = this.runtimeState.get(element.id) ?? {
+        frameIndex: element.gifPlayback.frameIndex,
+        lastFrameTime: now,
+      };
+      this.runtimeState.set(element.id, runtimeState);
+      const currentFrameIndex = runtimeState.frameIndex;
       const delay = gif.delays[currentFrameIndex] ?? 100;
 
-      if (now - gif.lastFrameTime >= delay / speed) {
-        gif.runtimeFrameIndex = (currentFrameIndex + 1) % gif.frames.length;
-        gif.lastFrameTime = now;
+      if (now - runtimeState.lastFrameTime >= delay / speed) {
+        runtimeState.frameIndex = (currentFrameIndex + 1) % gif.frames.length;
+        runtimeState.lastFrameTime = now;
         ShapeCache.delete(element);
         didAdvanceFrame = true;
       }

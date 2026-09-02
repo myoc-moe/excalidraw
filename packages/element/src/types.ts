@@ -154,8 +154,6 @@ export type ExcalidrawGifCache = {
   delays: number[];
   width: number;
   height: number;
-  runtimeFrameIndex: number;
-  lastFrameTime: number;
 };
 
 export type ExcalidrawImageElement = _ExcalidrawElementBase &

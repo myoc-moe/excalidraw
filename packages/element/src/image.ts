@@ -143,39 +143,72 @@ export const updateImageCache = async ({
               const data = {
                 image: imagePromise,
                 mimeType: fileData.mimeType,
-                gifDecodeInProgress: fileData.mimeType === MIME_TYPES.gif,
+                gifDecodeStatus:
+                  fileData.mimeType === MIME_TYPES.gif ? "pending" : undefined,
               } as const;
               // store the promise immediately to indicate there's an in-progress
               // initialization
               imageCache.set(fileId, data);
-              if (data.gifDecodeInProgress) {
+              if (data.gifDecodeStatus === "pending") {
                 onImageCacheUpdate?.(fileId);
               }
 
-              const image = await imagePromise;
-              if (fileData.mimeType === MIME_TYPES.gif) {
-                imageCache.set(fileId, {
-                  ...data,
-                  image,
-                  gifDecodeInProgress: true,
-                });
-                onImageCacheUpdate?.(fileId);
+              let image: HTMLImageElement | Promise<HTMLImageElement> =
+                imagePromise;
+              let gif:
+                | Awaited<ReturnType<typeof decodeGifFramesQueued>>
+                | undefined;
+              let gifDecodeStatus: "success" | "error" | undefined;
+
+              try {
+                image = await imagePromise;
+                if (fileData.mimeType === MIME_TYPES.gif) {
+                  const decodingData = {
+                    ...data,
+                    image,
+                    gifDecodeStatus: "pending" as const,
+                  };
+                  imageCache.set(fileId, decodingData);
+                  onImageCacheUpdate?.(fileId);
+                }
+                gif =
+                  fileData.mimeType === MIME_TYPES.gif
+                    ? await decodeGifFramesQueued(fileData.dataURL)
+                    : undefined;
+
+                if (fileData.mimeType === MIME_TYPES.gif) {
+                  gifDecodeStatus = "success";
+                }
+              } catch (error: any) {
+                erroredFiles.set(fileId, true);
+                if (fileData.mimeType === MIME_TYPES.gif) {
+                  gifDecodeStatus = "error";
+                }
+              } finally {
+                if (fileData.mimeType === MIME_TYPES.gif) {
+                  imageCache.set(fileId, {
+                    ...data,
+                    image,
+                    gif,
+                    gifDecodeStatus: gifDecodeStatus ?? "error",
+                  });
+                  onImageCacheUpdate?.(fileId);
+                }
               }
-              const gif =
-                fileData.mimeType === MIME_TYPES.gif
-                  ? {
-                      ...(await decodeGifFramesQueued(fileData.dataURL)),
-                      runtimeFrameIndex: 0,
-                      lastFrameTime: performance.now(),
-                    }
-                  : undefined;
+
+              if (erroredFiles.has(fileId)) {
+                return;
+              }
 
               if (previousCacheEntry?.isPlaceholder) {
                 imageCache.set(fileId, {
                   ...data,
                   image,
                   gif,
-                  gifDecodeInProgress: false,
+                  gifDecodeStatus:
+                    fileData.mimeType === MIME_TYPES.gif
+                      ? gifDecodeStatus
+                      : undefined,
                   placeholderImage: await previousCacheEntry.image,
                   transitionStart: performance.now(),
                 });
@@ -184,7 +217,10 @@ export const updateImageCache = async ({
                   ...data,
                   image,
                   gif,
-                  gifDecodeInProgress: false,
+                  gifDecodeStatus:
+                    fileData.mimeType === MIME_TYPES.gif
+                      ? gifDecodeStatus
+                      : undefined,
                 });
               }
               onImageCacheUpdate?.(fileId);

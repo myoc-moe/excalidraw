@@ -13,14 +13,14 @@ import type {
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
 
+import "./GifPlaybackControls.scss";
+
 import type {
   AppClassProperties,
   AppState,
   BinaryFiles,
-  UIAppState,
 } from "../types";
-
-import "./GifPlaybackControls.scss";
+import { useExcalidrawAppState } from "./App";
 
 const gifPreviousFrameIcon = (
   <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -67,16 +67,15 @@ const GIF_FRAME_GALLERY_OVERSCAN = 8;
 type GifPlaybackControlsProps = {
   app: AppClassProperties;
   files: BinaryFiles;
-  liveAppState: UIAppState;
   setAppState: React.Component<any, AppState>["setState"];
 };
 
 export const GifPlaybackControls = ({
   app,
   files,
-  liveAppState,
   setAppState,
 }: GifPlaybackControlsProps) => {
+  const liveAppState = useExcalidrawAppState();
   const [, rerenderGifControls] = React.useReducer(
     (version: number) => version + 1,
     0,
@@ -125,9 +124,8 @@ export const GifPlaybackControls = ({
     playing: false,
   };
   const viewportAppState = app.state;
-  const runtimeFrameIndex = playback.playing
-    ? gif.runtimeFrameIndex
-    : playback.frameIndex;
+  const runtimeFrameIndex =
+    app.getGifPlaybackFrameIndex(selectedElement) ?? playback.frameIndex;
   const frameIndex = Math.min(Math.max(runtimeFrameIndex, 0), frameCount - 1);
   const [x1, , x2, y2] = getCommonBounds([selectedElement]);
   const leftTop = sceneCoordsToViewportCoords(
@@ -152,8 +150,7 @@ export const GifPlaybackControls = ({
 
   const commitFrame = (nextFrameIndex: number) => {
     const normalizedFrameIndex = (nextFrameIndex + frameCount) % frameCount;
-    gif.runtimeFrameIndex = normalizedFrameIndex;
-    gif.lastFrameTime = performance.now();
+    app.setGifPlaybackFrameIndex(selectedElement, normalizedFrameIndex);
     updateGifPlayback(selectedElement, {
       ...playback,
       frameIndex: normalizedFrameIndex,
@@ -167,8 +164,7 @@ export const GifPlaybackControls = ({
   };
 
   const setPlaying = (playing: boolean) => {
-    gif.runtimeFrameIndex = frameIndex;
-    gif.lastFrameTime = performance.now();
+    app.setGifPlaybackFrameIndex(selectedElement, frameIndex);
     updateGifPlayback(selectedElement, {
       ...playback,
       frameIndex,

@@ -1203,7 +1203,7 @@ export type AppClassProperties = {
       isPlaceholder?: boolean;
       placeholderImage?: HTMLImageElement;
       transitionStart?: number;
-      gifDecodeInProgress?: boolean;
+      gifDecodeStatus?: "pending" | "success" | "error";
       gif?: ExcalidrawGifCache;
     }
   >;
@@ -1228,6 +1228,8 @@ export type AppClassProperties = {
   addFiles: App["addFiles"];
   scheduleCapture: App["scheduleCapture"];
   ensureGifPlaybackLoop: App["ensureGifPlaybackLoop"];
+  getGifPlaybackFrameIndex: App["getGifPlaybackFrameIndex"];
+  setGifPlaybackFrameIndex: App["setGifPlaybackFrameIndex"];
   addElementsFromPaste: App["addElementsFromPaste"];
   togglePenMode: App["togglePenMode"];
   toggleLock: App["toggleLock"];

@@ -1,7 +1,8 @@
 import { decode, decodeFrames } from "modern-gif";
-import gifWorkerUrl from "modern-gif/worker?url";
 
 import type { DataURL } from "@excalidraw/excalidraw/types";
+
+import { isInitializedImageElement } from "./typeChecks";
 
 import type {
   ExcalidrawGifCache,
@@ -10,14 +11,23 @@ import type {
   FileId,
   NonDeletedExcalidrawElement,
 } from "./types";
-import { isInitializedImageElement } from "./typeChecks";
 
 const MAX_CONCURRENT_GIF_DECODES = 5;
+
+// Worker URLs are bundler-specific assets. The element package is also built
+// with esbuild, which cannot resolve Vite's `?url` import convention. Apps may
+// provide a URL resolved by their bundler; package consumers safely fall back
+// to modern-gif's synchronous decoder when they do not.
+let gifWorkerUrl: string | undefined;
+
+export const configureGifWorkerUrl = (workerUrl: string | undefined) => {
+  gifWorkerUrl = workerUrl;
+};
 
 type GifImageCache = Map<
   FileId,
   {
-    gifDecodeInProgress?: boolean;
+    gifDecodeStatus?: "pending" | "success" | "error";
     gif?: ExcalidrawGifCache;
   }
 >;
@@ -40,10 +50,9 @@ const dataURLToArrayBuffer = (dataURL: DataURL) => {
 export const decodeGifFrames = async (dataURL: DataURL) => {
   const buffer = dataURLToArrayBuffer(dataURL);
   const gif = decode(buffer);
-  const decodedFrames = await decodeFrames(buffer, {
-    gif,
-    workerUrl: gifWorkerUrl,
-  });
+  const decodedFrames = gifWorkerUrl
+    ? await decodeFrames(buffer, { gif, workerUrl: gifWorkerUrl })
+    : await decodeFrames(buffer, { gif });
 
   const frames = decodedFrames.map((frame) => {
     const canvas = document.createElement("canvas");
@@ -161,9 +170,10 @@ export const createGifPlaybackMetadata = (
 export const getGifRenderFrame = (
   element: ExcalidrawImageElement,
   cacheEntry: ImageCacheEntry | null | undefined,
+  runtimeFrameIndex?: number,
 ) => {
   const gifFrameIndex = element.gifPlayback?.playing
-    ? cacheEntry?.gif?.runtimeFrameIndex ?? element.gifPlayback.frameIndex
+    ? runtimeFrameIndex ?? element.gifPlayback.frameIndex
     : element.gifPlayback?.frameIndex ?? 0;
 
   return cacheEntry?.gif?.frames[gifFrameIndex];
@@ -178,7 +188,10 @@ export const hasActiveGifDecode = (
       return false;
     }
     const cacheEntry = imageCache.get(element.fileId);
-    return cacheEntry?.gifDecodeInProgress && !cacheEntry.gif?.frames.length;
+    return (
+      cacheEntry?.gifDecodeStatus === "pending" &&
+      !cacheEntry.gif?.frames.length
+    );
   });
 
 export const hasPlayableGif = (

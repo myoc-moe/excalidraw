@@ -393,7 +393,10 @@ const drawElementOnCanvas = (
         ? cacheEntry?.image
         : undefined;
 
-      if (cacheEntry?.gifDecodeInProgress && !cacheEntry.gif?.frames.length) {
+      if (
+        cacheEntry?.gifDecodeStatus === "pending" &&
+        !cacheEntry.gif?.frames.length
+      ) {
         drawGifDecodePlaceholder(
           element,
           context,
@@ -448,7 +451,11 @@ const drawElementOnCanvas = (
           }
         }
 
-        const gifFrame = getGifRenderFrame(element, cacheEntry);
+        const gifFrame = getGifRenderFrame(
+          element,
+          cacheEntry,
+          renderConfig.getGifFrameIndex?.(element),
+        );
         const imageForRender = gifFrame ?? img;
 
         const { x, y, width, height } = element.crop

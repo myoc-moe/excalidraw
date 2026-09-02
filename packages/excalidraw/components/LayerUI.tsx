@@ -35,7 +35,6 @@ import MainMenu from "./main-menu/MainMenu";
 import {
   useAppProps,
   useEditorInterface,
-  useExcalidrawAppState,
   useStylesPanelMode,
 } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
@@ -160,7 +159,6 @@ const LayerUI = ({
   generateLinkForSelection,
   currentUserControls,
 }: LayerUIProps) => {
-  const liveAppState = useExcalidrawAppState();
   const editorInterface = useEditorInterface();
   const appProps = useAppProps();
   const stylesPanelMode = useStylesPanelMode();
@@ -542,7 +540,6 @@ const LayerUI = ({
         <GifPlaybackControls
           app={app}
           files={files}
-          liveAppState={liveAppState}
           setAppState={setAppState}
         />
       )}

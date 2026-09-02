@@ -2378,6 +2378,7 @@ class App extends React.Component<AppProps, AppState> {
                             appState={this.state}
                             renderConfig={{
                               imageCache: this.imageCache,
+                              getGifFrameIndex: this.gifPlayback.getFrameIndex,
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
@@ -2405,6 +2406,8 @@ class App extends React.Component<AppProps, AppState> {
                               allElementsMap={allElementsMap}
                               renderConfig={{
                                 imageCache: this.imageCache,
+                                getGifFrameIndex:
+                                  this.gifPlayback.getFrameIndex,
                                 isExporting: false,
                                 imageTransitionDuration:
                                   this.props.imageOptions
@@ -4924,10 +4927,13 @@ class App extends React.Component<AppProps, AppState> {
         image: imagePromise,
         mimeType: normalizedFile.type as ValueOf<typeof IMAGE_MIME_TYPES>,
         isPlaceholder: true,
-        gifDecodeInProgress: normalizedFile.type === MIME_TYPES.gif,
+        gifDecodeStatus:
+          normalizedFile.type === MIME_TYPES.gif
+            ? ("pending" as const)
+            : undefined,
       };
       this.imageCache.set(fileId, placeholderEntry);
-      if (placeholderEntry.gifDecodeInProgress) {
+      if (placeholderEntry.gifDecodeStatus === "pending") {
         this.imagePlaceholderUpdateEmitter.trigger();
       }
       image.src = await getDataURL(normalizedFile);
@@ -12980,6 +12986,16 @@ class App extends React.Component<AppProps, AppState> {
 
   public ensureGifPlaybackLoop = () => {
     this.gifPlayback.ensureLoop();
+  };
+
+  public getGifPlaybackFrameIndex = (element: ExcalidrawImageElement) =>
+    this.gifPlayback.getFrameIndex(element);
+
+  public setGifPlaybackFrameIndex = (
+    element: ExcalidrawImageElement,
+    frameIndex: number,
+  ) => {
+    this.gifPlayback.setFrameIndex(element, frameIndex);
   };
 
   /** adds new images to imageCache and re-renders if needed */

@@ -4,6 +4,8 @@ import {
   reseed,
   sceneCoordsToViewportCoords,
 } from "@excalidraw/common";
+import { hasActiveGifDecode } from "@excalidraw/element";
+import { decodeFrames } from "modern-gif";
 
 import type { FileId } from "@excalidraw/element/types";
 
@@ -50,10 +52,6 @@ vi.mock("modern-gif", () => ({
       data: new Uint8ClampedArray(100 * 100 * 4),
     },
   ]),
-}));
-
-vi.mock("modern-gif/worker?url", () => ({
-  default: "modern-gif-worker-url",
 }));
 
 export const setupImageTest = async (
@@ -861,6 +859,37 @@ describe("image insertion", () => {
     expect(atob(fileData.dataURL.split(",")[1])).toBe("original-gif");
     expect(JSON.stringify(fileData)).not.toContain("frames");
     expect(JSON.stringify(h.elements[0])).not.toContain("Uint8ClampedArray");
+  });
+
+  it("stops treating a failed GIF decode as active", async () => {
+    const gifFileId = "failed-gif-file-id" as FileId;
+    vi.mocked(decodeFrames).mockRejectedValueOnce(
+      new Error("malformed GIF"),
+    );
+
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      generateIdForFile: async () => gifFileId,
+    });
+
+    await API.drop([
+      {
+        kind: "file",
+        file: new File(["malformed-gif"], "malformed.gif", {
+          type: MIME_TYPES.gif,
+        }),
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("error");
+    });
+
+    expect(
+      hasActiveGifDecode(
+        h.app.scene.getNonDeletedElements(),
+        h.app.imageCache,
+      ),
+    ).toBe(false);
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {
