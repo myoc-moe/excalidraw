@@ -7,7 +7,10 @@ import {
 import { hasActiveGifDecode } from "@excalidraw/element";
 import { decodeFrames } from "modern-gif";
 
-import type { FileId } from "@excalidraw/element/types";
+import type {
+  FileId,
+  NonDeletedExcalidrawElement,
+} from "@excalidraw/element/types";
 
 import * as blobModule from "../data/blob";
 import * as filesystemModule from "../data/filesystem";
@@ -18,7 +21,14 @@ import { createPasteEvent } from "../clipboard";
 import { API } from "./helpers/api";
 import { mockMultipleHTMLImageElements } from "./helpers/mocks";
 import { UI } from "./helpers/ui";
-import { act, fireEvent, GlobalTestState, render, waitFor } from "./test-utils";
+import {
+  act,
+  fireEvent,
+  GlobalTestState,
+  render,
+  screen,
+  waitFor,
+} from "./test-utils";
 import {
   DEER_IMAGE_DIMENSIONS,
   SMILEY_IMAGE_DIMENSIONS,
@@ -53,6 +63,24 @@ vi.mock("modern-gif", () => ({
     },
   ]),
 }));
+
+const mockSuccessfulGifDecode = () => {
+  vi.mocked(decodeFrames).mockReset();
+  vi.mocked(decodeFrames).mockResolvedValue([
+    {
+      width: 100,
+      height: 100,
+      delay: 100,
+      data: new Uint8ClampedArray(100 * 100 * 4),
+    },
+    {
+      width: 100,
+      height: 100,
+      delay: 100,
+      data: new Uint8ClampedArray(100 * 100 * 4),
+    },
+  ]);
+};
 
 export const setupImageTest = async (
   sizes: { width: number; height: number }[],
@@ -845,7 +873,7 @@ describe("image insertion", () => {
           gifPlayback: {
             frameIndex: 0,
             speed: 1,
-            playing: false,
+            playing: true,
           },
         }),
       );
@@ -863,9 +891,7 @@ describe("image insertion", () => {
 
   it("stops treating a failed GIF decode as active", async () => {
     const gifFileId = "failed-gif-file-id" as FileId;
-    vi.mocked(decodeFrames).mockRejectedValueOnce(
-      new Error("malformed GIF"),
-    );
+    vi.mocked(decodeFrames).mockRejectedValueOnce(new Error("malformed GIF"));
 
     await setupImageTest([DEER_IMAGE_DIMENSIONS], {
       generateIdForFile: async () => gifFileId,
@@ -885,11 +911,98 @@ describe("image insertion", () => {
     });
 
     expect(
-      hasActiveGifDecode(
-        h.app.scene.getNonDeletedElements(),
-        h.app.imageCache,
-      ),
+      hasActiveGifDecode(h.app.scene.getNonDeletedElements(), h.app.imageCache),
     ).toBe(false);
+  });
+
+  it("MyOC regression: defers automatic GIF decoding above the configured size", async () => {
+    const gifFileId = "large-gif-file-id" as FileId;
+    mockSuccessfulGifDecode();
+
+    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
+      generateIdForFile: async () => gifFileId,
+      imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
+    });
+
+    await API.drop([
+      {
+        kind: "file",
+        file: new File(["large-gif"], "large.gif", {
+          type: MIME_TYPES.gif,
+        }),
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("deferred");
+    });
+
+    expect(decodeFrames).not.toHaveBeenCalled();
+    expect(h.app.imageCache.get(gifFileId)?.gif).toBeUndefined();
+    expect(h.elements[0]).toEqual(
+      expect.objectContaining({
+        fileId: gifFileId,
+        gifPlayback: {
+          frameIndex: 0,
+          speed: 1,
+          playing: true,
+        },
+      }),
+    );
+
+    API.setSelectedElements([h.elements[0] as NonDeletedExcalidrawElement]);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Load Large GIF" }),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("img", { name: "GIF paused" })).toBeNull();
+
+    API.clearSelection();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("img", { name: "GIF paused" }),
+      ).toBeInTheDocument();
+    });
+
+    expect(screen.queryByRole("button", { name: "Load Large GIF" })).toBeNull();
+  });
+
+  it("MyOC regression: manually loads a deferred GIF", async () => {
+    const gifFileId = "manual-large-gif-file-id" as FileId;
+    mockSuccessfulGifDecode();
+
+    await setupImageTest([DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS], {
+      generateIdForFile: async () => gifFileId,
+      imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
+    });
+
+    await API.drop([
+      {
+        kind: "file",
+        file: new File(["large-gif"], "large.gif", {
+          type: MIME_TYPES.gif,
+        }),
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("deferred");
+    });
+
+    await act(async () => {
+      await h.app.loadDeferredGif(gifFileId);
+    });
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("success");
+    });
+
+    expect(decodeFrames).toHaveBeenCalledTimes(1);
+    expect(h.app.imageCache.get(gifFileId)?.gif?.frames).toHaveLength(2);
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {

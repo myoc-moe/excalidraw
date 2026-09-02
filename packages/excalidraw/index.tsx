@@ -158,6 +158,9 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
       imageOptions?.maxFileSizeBytes ?? DEFAULT_IMAGE_OPTIONS.maxFileSizeBytes,
     maxWidthOrHeight:
       imageOptions?.maxWidthOrHeight ?? DEFAULT_IMAGE_OPTIONS.maxWidthOrHeight,
+    gifAutoDecodeMaxFileSizeBytes:
+      imageOptions?.gifAutoDecodeMaxFileSizeBytes ??
+      DEFAULT_IMAGE_OPTIONS.gifAutoDecodeMaxFileSizeBytes,
     placeholderTransitionDuration:
       imageOptions?.placeholderTransitionDuration ??
       DEFAULT_IMAGE_OPTIONS.placeholderTransitionDuration,
@@ -411,6 +414,10 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
       DEFAULT_IMAGE_OPTIONS.maxFileSizeBytes) ===
       (nextImageOptions?.maxFileSizeBytes ??
         DEFAULT_IMAGE_OPTIONS.maxFileSizeBytes) &&
+    (prevImageOptions?.gifAutoDecodeMaxFileSizeBytes ??
+      DEFAULT_IMAGE_OPTIONS.gifAutoDecodeMaxFileSizeBytes) ===
+      (nextImageOptions?.gifAutoDecodeMaxFileSizeBytes ??
+        DEFAULT_IMAGE_OPTIONS.gifAutoDecodeMaxFileSizeBytes) &&
     (prevImageOptions?.placeholderTransitionDuration ??
       DEFAULT_IMAGE_OPTIONS.placeholderTransitionDuration) ===
       (nextImageOptions?.placeholderTransitionDuration ??

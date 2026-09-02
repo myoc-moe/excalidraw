@@ -2,7 +2,11 @@
 // ExcalidrawImageElement & related helpers
 // -----------------------------------------------------------------------------
 
-import { MIME_TYPES, SVG_NS } from "@excalidraw/common";
+import {
+  DEFAULT_GIF_AUTO_DECODE_MAX_FILE_SIZE_BYTES,
+  MIME_TYPES,
+  SVG_NS,
+} from "@excalidraw/common";
 import { rgbaToThumbHash, thumbHashToRGBA } from "thumbhash";
 
 import type {
@@ -12,7 +16,7 @@ import type {
 } from "@excalidraw/excalidraw/types";
 
 import { isInitializedImageElement } from "./typeChecks";
-import { decodeGifFramesQueued } from "./gif";
+import { decodeGifFramesQueued, getDataURLByteLength } from "./gif";
 
 import type {
   ExcalidrawElement,
@@ -117,11 +121,15 @@ export const updateImageCache = async ({
   files,
   imageCache,
   onImageCacheUpdate,
+  gifAutoDecodeMaxFileSizeBytes = DEFAULT_GIF_AUTO_DECODE_MAX_FILE_SIZE_BYTES,
+  forceGifDecode = false,
 }: {
   fileIds: FileId[];
   files: BinaryFiles;
   imageCache: AppClassProperties["imageCache"];
   onImageCacheUpdate?: (fileId: FileId) => void;
+  gifAutoDecodeMaxFileSizeBytes?: number;
+  forceGifDecode?: boolean;
 }) => {
   const updatedFiles = new Map<FileId, true>();
   const erroredFiles = new Map<FileId, true>();
@@ -158,7 +166,7 @@ export const updateImageCache = async ({
               let gif:
                 | Awaited<ReturnType<typeof decodeGifFramesQueued>>
                 | undefined;
-              let gifDecodeStatus: "success" | "error" | undefined;
+              let gifDecodeStatus: "success" | "error" | "deferred" | undefined;
 
               try {
                 image = await imagePromise;
@@ -171,13 +179,22 @@ export const updateImageCache = async ({
                   imageCache.set(fileId, decodingData);
                   onImageCacheUpdate?.(fileId);
                 }
-                gif =
-                  fileData.mimeType === MIME_TYPES.gif
-                    ? await decodeGifFramesQueued(fileData.dataURL)
-                    : undefined;
+                if (
+                  fileData.mimeType === MIME_TYPES.gif &&
+                  !forceGifDecode &&
+                  getDataURLByteLength(fileData.dataURL) >
+                    gifAutoDecodeMaxFileSizeBytes
+                ) {
+                  gifDecodeStatus = "deferred";
+                } else {
+                  gif =
+                    fileData.mimeType === MIME_TYPES.gif
+                      ? await decodeGifFramesQueued(fileData.dataURL)
+                      : undefined;
 
-                if (fileData.mimeType === MIME_TYPES.gif) {
-                  gifDecodeStatus = "success";
+                  if (fileData.mimeType === MIME_TYPES.gif) {
+                    gifDecodeStatus = "success";
+                  }
                 }
               } catch (error: any) {
                 erroredFiles.set(fileId, true);

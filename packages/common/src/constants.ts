@@ -325,11 +325,13 @@ export const DEFAULT_EXPORT_PADDING = 10; // px
 
 export const DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT = 1440;
 
-export const MAX_ALLOWED_FILE_BYTES = 300 * 1024 * 1024; // Myoc file up to 100MB
+export const MAX_ALLOWED_FILE_BYTES = 300 * 1024 * 1024; // Myoc file up to 300MB
+export const DEFAULT_GIF_AUTO_DECODE_MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024;
 
 export const DEFAULT_IMAGE_OPTIONS: AppProps["imageOptions"] = {
   maxWidthOrHeight: DEFAULT_MAX_IMAGE_WIDTH_OR_HEIGHT,
   maxFileSizeBytes: MAX_ALLOWED_FILE_BYTES,
+  gifAutoDecodeMaxFileSizeBytes: DEFAULT_GIF_AUTO_DECODE_MAX_FILE_SIZE_BYTES,
   placeholderTransitionDuration: 300,
 };
 

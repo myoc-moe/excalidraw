@@ -1126,6 +1126,8 @@ export type ExportOpts = {
 export type ImageOptions = Partial<{
   maxWidthOrHeight: number;
   maxFileSizeBytes: number;
+  /** GIF files larger than this are inserted as static images until manually loaded */
+  gifAutoDecodeMaxFileSizeBytes: number;
   /** duration of the placeholder-to-full-image crossfade in milliseconds */
   placeholderTransitionDuration: number;
 }>;
@@ -1203,7 +1205,7 @@ export type AppClassProperties = {
       isPlaceholder?: boolean;
       placeholderImage?: HTMLImageElement;
       transitionStart?: number;
-      gifDecodeStatus?: "pending" | "success" | "error";
+      gifDecodeStatus?: "pending" | "success" | "error" | "deferred";
       gif?: ExcalidrawGifCache;
     }
   >;
@@ -1228,6 +1230,7 @@ export type AppClassProperties = {
   addFiles: App["addFiles"];
   scheduleCapture: App["scheduleCapture"];
   ensureGifPlaybackLoop: App["ensureGifPlaybackLoop"];
+  loadDeferredGif: App["loadDeferredGif"];
   getGifPlaybackFrameIndex: App["getGifPlaybackFrameIndex"];
   setGifPlaybackFrameIndex: App["setGifPlaybackFrameIndex"];
   addElementsFromPaste: App["addElementsFromPaste"];

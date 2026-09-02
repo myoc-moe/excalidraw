@@ -4853,6 +4853,8 @@ class App extends React.Component<AppProps, AppState> {
         fileIds: Array.from(placeholderFileIds),
         files: this.files,
         onImageCacheUpdate: (fileId) => this.handleImageCacheUpdate(fileId),
+        gifAutoDecodeMaxFileSizeBytes:
+          this.props.imageOptions.gifAutoDecodeMaxFileSizeBytes,
       });
 
       refreshImageCache.then(async ({ updatedFiles }) => {
@@ -12792,7 +12794,7 @@ class App extends React.Component<AppProps, AppState> {
             gifPlayback: isGif
               ? this.gifPlayback.ensureElementPlaybackMetadata(
                   initializedImageElement,
-                  { playing: false },
+                  { playing: true },
                 ).gifPlayback
               : null,
             status: "saved",
@@ -12942,6 +12944,8 @@ class App extends React.Component<AppProps, AppState> {
       fileIds: elements.map((element) => element.fileId),
       files,
       onImageCacheUpdate: (fileId) => this.handleImageCacheUpdate(fileId),
+      gifAutoDecodeMaxFileSizeBytes:
+        this.props.imageOptions.gifAutoDecodeMaxFileSizeBytes,
     });
 
     for (const [fileId, placeholderImagePromise] of placeholderImages) {
@@ -12986,6 +12990,30 @@ class App extends React.Component<AppProps, AppState> {
 
   public ensureGifPlaybackLoop = () => {
     this.gifPlayback.ensureLoop();
+  };
+
+  public loadDeferredGif = async (fileId: FileId) => {
+    const cacheEntry = this.imageCache.get(fileId);
+    const fileData = this.files[fileId];
+
+    if (fileData?.mimeType !== MIME_TYPES.gif || !cacheEntry) {
+      return;
+    }
+
+    this.imageCache.set(fileId, {
+      ...cacheEntry,
+      gifDecodeStatus: "pending",
+    });
+    this.handleImageCacheUpdate(fileId);
+
+    await _updateImageCache({
+      imageCache: this.imageCache,
+      fileIds: [fileId],
+      files: this.files,
+      onImageCacheUpdate: (updatedFileId) =>
+        this.handleImageCacheUpdate(updatedFileId),
+      forceGifDecode: true,
+    });
   };
 
   public getGifPlaybackFrameIndex = (element: ExcalidrawImageElement) =>

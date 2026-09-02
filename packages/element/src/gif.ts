@@ -14,6 +14,8 @@ import type {
 
 const MAX_CONCURRENT_GIF_DECODES = 5;
 
+export type GifDecodeStatus = "pending" | "success" | "error" | "deferred";
+
 // Worker URLs are bundler-specific assets. The element package is also built
 // with esbuild, which cannot resolve Vite's `?url` import convention. Apps may
 // provide a URL resolved by their bundler; package consumers safely fall back
@@ -27,7 +29,7 @@ export const configureGifWorkerUrl = (workerUrl: string | undefined) => {
 type GifImageCache = Map<
   FileId,
   {
-    gifDecodeStatus?: "pending" | "success" | "error";
+    gifDecodeStatus?: GifDecodeStatus;
     gif?: ExcalidrawGifCache;
   }
 >;
@@ -92,7 +94,7 @@ let gifDecodeSequence = 0;
 let gifDecodeSchedulePending = false;
 const gifDecodeQueue: QueuedGifDecode[] = [];
 
-const getDataURLByteLength = (dataURL: DataURL) => {
+export const getDataURLByteLength = (dataURL: DataURL) => {
   const dataIndexStart = dataURL.indexOf(",");
   const encoded = dataURL.slice(dataIndexStart + 1);
   const padding =
