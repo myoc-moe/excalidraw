@@ -422,6 +422,7 @@ import { AppBucketFill } from "./App.bucketFill";
 import { AppCursor } from "./App.cursor";
 import { AppDrawShape } from "./App.drawshape";
 import { AppFlowchart } from "./App.flowchart";
+import { AppGifPlayback } from "./App.gif";
 import { AppViewport, RIGHT_SIDEBAR_WIDTH } from "./App.viewport";
 import BraveMeasureTextError from "./BraveMeasureTextError";
 import { ContextMenu, CONTEXT_MENU_SEPARATOR } from "./ContextMenu";
@@ -638,7 +639,6 @@ class App extends React.Component<AppProps, AppState> {
   public imageStatus = new Map<FileId, ImageStatus>();
   public imageStatusEmitter = new Emitter<[]>();
   public imagePlaceholderUpdateEmitter = new Emitter<[]>();
-  private gifPlaybackRaf: number | null = null;
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
    * Indicates whether the embeddable's url has been validated for rendering.
@@ -674,6 +674,7 @@ class App extends React.Component<AppProps, AppState> {
   public bucketFill: AppBucketFill = new AppBucketFill(this);
   public flowchart: AppFlowchart = new AppFlowchart(this);
   public cursor: AppCursor = new AppCursor(this);
+  private gifPlayback: AppGifPlayback = new AppGifPlayback(this);
   private zDragZoom: {
     origin: { clientX: number; clientY: number };
     initialZoom: number;
@@ -2348,21 +2349,20 @@ class App extends React.Component<AppProps, AppState> {
                                 }
                               />
                             )}
-                          {this.isDefaultUIEnabled() &&
-                            this.state.contextMenu && (
-                              <ContextMenu
-                                items={this.state.contextMenu.items}
-                                top={this.state.contextMenu.top}
-                                left={this.state.contextMenu.left}
-                                actionManager={this.actionManager}
-                                onClose={(callback) => {
-                                  this.setState({ contextMenu: null }, () => {
-                                    this.focusContainer();
-                                    callback?.();
-                                  });
-                                }}
-                              />
-                            )}
+                          {this.isDefaultUIEnabled() && this.state.contextMenu && (
+                            <ContextMenu
+                              items={this.state.contextMenu.items}
+                              top={this.state.contextMenu.top}
+                              left={this.state.contextMenu.left}
+                              actionManager={this.actionManager}
+                              onClose={(callback) => {
+                                this.setState({ contextMenu: null }, () => {
+                                  this.focusContainer();
+                                  callback?.();
+                                });
+                              }}
+                            />
+                          )}
                           <StaticCanvas
                             app={this}
                             canvas={this.canvas}
@@ -3352,10 +3352,7 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   public componentWillUnmount() {
-    if (this.gifPlaybackRaf !== null) {
-      cancelAnimationFrame(this.gifPlaybackRaf);
-      this.gifPlaybackRaf = null;
-    }
+    this.gifPlayback.stop();
 
     // we're recreating the api object reference so that the
     // <ExcalidrawAPIContext.Provider/> picks up on it
@@ -12654,51 +12651,10 @@ class App extends React.Component<AppProps, AppState> {
 
     this.cursor.set("wait");
 
-    let placeholderGifFileId: FileId | null = null;
-    if (imageFile.type === MIME_TYPES.gif) {
-      placeholderGifFileId = placeholderImageElement.id as FileId;
-      const browserURL = window.URL;
-      const objectURL = browserURL.createObjectURL(imageFile);
-      const image = new Image();
-      const imagePromise = new Promise<HTMLImageElement>((resolve, reject) => {
-        const cleanup = () => {
-          image.onload = null;
-          image.onerror = null;
-          browserURL.revokeObjectURL(objectURL);
-        };
-
-        image.onload = () => {
-          cleanup();
-          resolve(image);
-        };
-        image.onerror = (error) => {
-          cleanup();
-          reject(error);
-        };
-      });
-
-      this.imageCache.set(placeholderGifFileId, {
-        image: imagePromise,
-        mimeType: MIME_TYPES.gif,
-        gifDecodeInProgress: true,
-      });
-      image.src = objectURL;
-
-      const gifPlaceholder = newElementWith(placeholderImageElement, {
-        fileId: placeholderGifFileId,
-        gifPlayback: {
-          frameIndex: 0,
-          speed: 1,
-          playing: true,
-        },
-      });
-      this.scene.replaceAllElements(
-        this.scene.getElementsIncludingDeleted().map((element) =>
-          element.id === gifPlaceholder.id ? gifPlaceholder : element,
-        ),
-      );
-      this.imagePlaceholderUpdateEmitter.trigger();
-    }
+    const placeholderGifFileId = this.gifPlayback.createPlaceholderDecodeState(
+      placeholderImageElement,
+      imageFile,
+    );
 
     if (imageFile.type === MIME_TYPES.svg) {
       try {
@@ -12773,25 +12729,26 @@ class App extends React.Component<AppProps, AppState> {
           ]);
 
           if (isGif) {
-            initializedImageElement = newElementWith(initializedImageElement, {
-              gifPlayback: initializedImageElement.gifPlayback ?? {
-                frameIndex: 0,
-                speed: 1,
-                playing: true,
-              },
-            });
+            initializedImageElement =
+              this.gifPlayback.ensureElementPlaybackMetadata(
+                initializedImageElement,
+              );
             this.scene.replaceAllElements(
-              this.scene.getElementsIncludingDeleted().map((element) =>
-                element.id === initializedImageElement.id
-                  ? initializedImageElement
-                  : element,
-              ),
+              this.scene
+                .getElementsIncludingDeleted()
+                .map((element) =>
+                  element.id === initializedImageElement.id
+                    ? initializedImageElement
+                    : element,
+                ),
             );
             this.imagePlaceholderUpdateEmitter.trigger();
           }
 
           if (!this.imageCache.get(fileId)) {
-            this.addNewImagesToImageCache();
+            if (!isGif) {
+              this.addNewImagesToImageCache();
+            }
 
             const { erroredFiles } = await this.updateImageCache([
               initializedImageElement,
@@ -12827,11 +12784,10 @@ class App extends React.Component<AppProps, AppState> {
             fileName: imageFile.name,
             thumbHash,
             gifPlayback: isGif
-              ? initializedImageElement.gifPlayback ?? {
-                  frameIndex: 0,
-                  speed: 1,
-                  playing: true,
-                }
+              ? this.gifPlayback.ensureElementPlaybackMetadata(
+                  initializedImageElement,
+                  { playing: false },
+                ).gifPlayback
               : null,
             status: "saved",
           });
@@ -12846,14 +12802,12 @@ class App extends React.Component<AppProps, AppState> {
           };
 
           if (placeholderGifFileId && placeholderGifFileId !== fileId) {
-            this.imageCache.delete(placeholderGifFileId);
+            this.gifPlayback.removePlaceholderDecodeState(placeholderGifFileId);
           }
 
           resolve(initializedImageElement);
         } catch (error: any) {
-          if (placeholderGifFileId) {
-            this.imageCache.delete(placeholderGifFileId);
-          }
+          this.gifPlayback.removePlaceholderDecodeState(placeholderGifFileId);
           console.error(error);
           reject(new Error(t("errors.imageInsertError")));
         }
@@ -13025,72 +12979,7 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   public ensureGifPlaybackLoop = () => {
-    if (this.gifPlaybackRaf !== null || this.unmounted) {
-      return;
-    }
-
-    const hasPlayingGif = this.scene
-      .getNonDeletedElements()
-      .some(
-        (element) =>
-          isInitializedImageElement(element) &&
-          element.gifPlayback?.playing &&
-          this.imageCache.get(element.fileId)?.gif?.frames.length,
-      );
-
-    if (!hasPlayingGif) {
-      return;
-    }
-
-    this.gifPlaybackRaf = requestAnimationFrame(this.tickGifPlayback);
-  };
-
-  private tickGifPlayback = () => {
-    this.gifPlaybackRaf = null;
-
-    if (this.unmounted) {
-      return;
-    }
-
-    const now = performance.now();
-    let didAdvanceFrame = false;
-    let shouldContinue = false;
-
-    for (const element of this.scene.getNonDeletedElements()) {
-      if (
-        !isInitializedImageElement(element) ||
-        !element.gifPlayback?.playing
-      ) {
-        continue;
-      }
-
-      const gif = this.imageCache.get(element.fileId)?.gif;
-      if (!gif || gif.frames.length < 2) {
-        continue;
-      }
-
-      shouldContinue = true;
-
-      const speed = Math.max(element.gifPlayback.speed || 1, 0.1);
-      const currentFrameIndex =
-        gif.runtimeFrameIndex ?? element.gifPlayback.frameIndex ?? 0;
-      const delay = gif.delays[currentFrameIndex] ?? 100;
-
-      if (now - gif.lastFrameTime >= delay / speed) {
-        gif.runtimeFrameIndex = (currentFrameIndex + 1) % gif.frames.length;
-        gif.lastFrameTime = now;
-        ShapeCache.delete(element);
-        didAdvanceFrame = true;
-      }
-    }
-
-    if (didAdvanceFrame) {
-      this.scene.triggerUpdate();
-    }
-
-    if (shouldContinue) {
-      this.gifPlaybackRaf = requestAnimationFrame(this.tickGifPlayback);
-    }
+    this.gifPlayback.ensureLoop();
   };
 
   /** adds new images to imageCache and re-renders if needed */

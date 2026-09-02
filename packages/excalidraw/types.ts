@@ -38,6 +38,7 @@ import type {
   BindMode,
   ExcalidrawTextElement,
   StrokeVariability,
+  ExcalidrawGifCache,
 } from "@excalidraw/element/types";
 
 import type {
@@ -731,7 +732,7 @@ export type OnExportProgress = {
 
 export type CompressImageFileOpts = {
   /** undefined indicates auto */
-  outputType?: (typeof MIME_TYPES)["jpg"];
+  outputType?: typeof MIME_TYPES["jpg"];
   maxWidthOrHeight: number;
 };
 
@@ -1203,14 +1204,7 @@ export type AppClassProperties = {
       placeholderImage?: HTMLImageElement;
       transitionStart?: number;
       gifDecodeInProgress?: boolean;
-      gif?: {
-        frames: HTMLCanvasElement[];
-        delays: number[];
-        width: number;
-        height: number;
-        runtimeFrameIndex: number;
-        lastFrameTime: number;
-      };
+      gif?: ExcalidrawGifCache;
     }
   >;
   imageLoadingProgress: App["imageLoadingProgress"];

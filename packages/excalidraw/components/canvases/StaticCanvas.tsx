@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 import { isShallowEqual } from "@excalidraw/common";
+import { hasActiveGifDecode } from "@excalidraw/element";
 
 import type {
   NonDeletedExcalidrawElement,
@@ -91,18 +92,13 @@ const StaticCanvas = (props: StaticCanvasProps) => {
           performance.now() - transitionStart < transitionDuration
         );
       });
-    const hasActiveGifDecode = currentProps.visibleElements.some((element) => {
-      if (element.type !== "image" || !element.fileId) {
-        return false;
-      }
-      const cacheEntry = currentProps.renderConfig.imageCache.get(
-        element.fileId,
-      );
-      return cacheEntry?.gifDecodeInProgress && !cacheEntry.gif?.frames.length;
-    });
+    const hasActiveGifDecodeInRender = hasActiveGifDecode(
+      currentProps.visibleElements,
+      currentProps.renderConfig.imageCache,
+    );
 
     if (
-      (hasActiveTransition || hasActiveGifDecode) &&
+      (hasActiveTransition || hasActiveGifDecodeInRender) &&
       transitionFrameRef.current === null
     ) {
       transitionFrameRef.current = requestAnimationFrame(() => {
