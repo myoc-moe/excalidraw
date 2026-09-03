@@ -1439,10 +1439,10 @@
   dependencies:
     tinycolor2 "1.6.0"
 
-"@excalidraw/common@npm:@myoc/common@0.19.518":
-  version "0.19.518"
-  resolved "https://registry.yarnpkg.com/@myoc/common/-/common-0.19.518.tgz#78e77d5279bcd9111c6fe65173b446ad87a2c838"
-  integrity sha512-pAsSgGW7+XMeE8l5+1q0mybsLqZ0cky+ZPDN0K0wU6EX+6Ano1/QaOIXFo1W9Axv3wZp4cecROjvnnD5aE00pA==
+"@excalidraw/common@npm:@myoc/common@0.19.532":
+  version "0.19.532"
+  resolved "https://registry.yarnpkg.com/@myoc/common/-/common-0.19.532.tgz#c5851ea271f15d9028d254e51ffb0b0fef032ca5"
+  integrity sha512-VbBDd0Y7ki1Vq9jJuQ0KTztrNuAbClOkV6kZu/7/b44xgtbJlXJuk+WdzSekxkQYofQcvYPco8MGzWQ9x0oS+g==
   dependencies:
     tinycolor2 "1.6.0"
 
@@ -1455,14 +1455,15 @@
     "@excalidraw/fractional-indexing" "npm:@myoc/fractional-indexing@0.19.510"
     "@excalidraw/math" "npm:@myoc/math@0.19.510"
 
-"@excalidraw/element@npm:@myoc/element@0.19.518":
-  version "0.19.518"
-  resolved "https://registry.yarnpkg.com/@myoc/element/-/element-0.19.518.tgz#d9e9b6439eb5fe3930398f83fed6cc08238b3695"
-  integrity sha512-Ao50W/V/Ydq90Qt2GlBJJg3PuFmRgJbxbmxsNwJHYPV4wQDfkJW+eZF6AlzCISA2aKiDXpE1yOnqCGfUVsFwNg==
+"@excalidraw/element@npm:@myoc/element@0.19.532":
+  version "0.19.532"
+  resolved "https://registry.yarnpkg.com/@myoc/element/-/element-0.19.532.tgz#2f23da4af578ecc0dcb791bc616156d2ad3a2309"
+  integrity sha512-ofHMJDOypoHiFwMUGCFkvkwc1m/QjM6oj1HH8Hxm2JLcRl+x5oLrL4v8AD3QhBMEZMxnaaOyO53HhryOQG4wLA==
   dependencies:
-    "@excalidraw/common" "npm:@myoc/common@0.19.518"
-    "@excalidraw/fractional-indexing" "npm:@myoc/fractional-indexing@0.19.518"
-    "@excalidraw/math" "npm:@myoc/math@0.19.518"
+    "@excalidraw/common" "npm:@myoc/common@0.19.532"
+    "@excalidraw/fractional-indexing" "npm:@myoc/fractional-indexing@0.19.532"
+    "@excalidraw/math" "npm:@myoc/math@0.19.532"
+    thumbhash "0.1.1"
 
 "@excalidraw/eslint-config@1.0.3":
   version "1.0.3"
@@ -1474,10 +1475,10 @@
   resolved "https://registry.yarnpkg.com/@myoc/fractional-indexing/-/fractional-indexing-0.19.510.tgz#3cc86a3ce3e33228c7b192b75dbb7e20c3a71909"
   integrity sha512-5JhUlAfMQrmcbrEhy8Mm9YhnqM/nRK+a1vlDD3p952nLkeAXB+zH0zijo94oPGuDdI09lDWvN17q3PtGHICFXw==
 
-"@excalidraw/fractional-indexing@npm:@myoc/fractional-indexing@0.19.518":
-  version "0.19.518"
-  resolved "https://registry.yarnpkg.com/@myoc/fractional-indexing/-/fractional-indexing-0.19.518.tgz#7bc21ba1e99fab85d89239018b31c8d378ee85c8"
-  integrity sha512-Y6bKoU1EOAlcwBqkjbU0ZSI3zz4qEgXI2Wya3GcGIMxXXF1UWsR2zG9LngNqReJH/+4rRNkdxxIHj3JStbUnVQ==
+"@excalidraw/fractional-indexing@npm:@myoc/fractional-indexing@0.19.532":
+  version "0.19.532"
+  resolved "https://registry.yarnpkg.com/@myoc/fractional-indexing/-/fractional-indexing-0.19.532.tgz#00befe95c36f1982e65da5c8498133c98e4e844b"
+  integrity sha512-brGzCouHqYjzFlXCFJY8xfyOD1D5/2cwCiMertDKXsNNjIuqGJm5iQP0JT2fj8kZe56CyCJGWqQ2w+S+wfN6gA==
 
 "@excalidraw/math@npm:@myoc/math@0.19.510":
   version "0.19.510"
@@ -1486,12 +1487,12 @@
   dependencies:
     "@excalidraw/common" "npm:@myoc/common@0.19.510"
 
-"@excalidraw/math@npm:@myoc/math@0.19.518":
-  version "0.19.518"
-  resolved "https://registry.yarnpkg.com/@myoc/math/-/math-0.19.518.tgz#5d2e73bdfe683ccbb151fc9ecd4e443d7d002431"
-  integrity sha512-XWlg4Hl4QZUflwcM8jY/rfVRgZHTv4nPp2zpK+IQ4iPcfhv72sdDaGN2MYeZs1zTi3bSQdA4J/PjYE3KL7vZUw==
+"@excalidraw/math@npm:@myoc/math@0.19.532":
+  version "0.19.532"
+  resolved "https://registry.yarnpkg.com/@myoc/math/-/math-0.19.532.tgz#0d6705a30a63867f81084295691729cad80dddc2"
+  integrity sha512-i6MreyIuurIgC1zD/1H7SD70uyNNojqRY01FzDeImJaYFEHUNzvgTYkvP9JnbvuB+sdUBVwO+er+bzY3pks2qg==
   dependencies:
-    "@excalidraw/common" "npm:@myoc/common@0.19.518"
+    "@excalidraw/common" "npm:@myoc/common@0.19.532"
 
 "@excalidraw/prettier-config@1.0.2":
   version "1.0.2"

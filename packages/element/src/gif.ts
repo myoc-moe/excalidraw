@@ -16,14 +16,26 @@ const MAX_CONCURRENT_GIF_DECODES = 5;
 
 export type GifDecodeStatus = "pending" | "success" | "error" | "deferred";
 
-// Worker URLs are bundler-specific assets. The element package is also built
-// with esbuild, which cannot resolve Vite's `?url` import convention. Apps may
-// provide a URL resolved by their bundler; package consumers safely fall back
-// to modern-gif's synchronous decoder when they do not.
-let gifWorkerUrl: string | undefined;
+const logGifDecodeMode = (
+  mode: "main-thread" | "worker",
+  context?: Record<string, unknown>,
+) => {
+  console.debug("[excalidraw][gif-decode]", {
+    mode,
+    ...context,
+  });
+};
 
+// Kept as a compatibility hook for apps that already configure a GIF worker.
+// Decoding stays on the main thread because modern-gif's worker emits noisy
+// parser warnings that cannot be filtered from this package.
 export const configureGifWorkerUrl = (workerUrl: string | undefined) => {
-  gifWorkerUrl = workerUrl;
+  if (workerUrl) {
+    logGifDecodeMode("main-thread", {
+      reason: "configured worker URL ignored",
+      workerUrl,
+    });
+  }
 };
 
 type GifImageCache = Map<
@@ -49,12 +61,42 @@ const dataURLToArrayBuffer = (dataURL: DataURL) => {
   return buffer;
 };
 
+const isKnownModernGifWarning = (message: unknown) =>
+  typeof message === "string" && message.startsWith("Unknown block: 0x");
+
+const suppressKnownModernGifWarnings = async <T>(
+  task: () => T | Promise<T>,
+) => {
+  const originalWarn = console.warn;
+
+  console.warn = (...args: Parameters<typeof console.warn>) => {
+    if (isKnownModernGifWarning(args[0])) {
+      return;
+    }
+    originalWarn(...args);
+  };
+
+  try {
+    return await task();
+  } finally {
+    console.warn = originalWarn;
+  }
+};
+
 export const decodeGifFrames = async (dataURL: DataURL) => {
   const buffer = dataURLToArrayBuffer(dataURL);
-  const gif = decode(buffer);
-  const decodedFrames = gifWorkerUrl
-    ? await decodeFrames(buffer, { gif, workerUrl: gifWorkerUrl })
-    : await decodeFrames(buffer, { gif });
+  logGifDecodeMode("main-thread", {
+    byteLength: buffer.byteLength,
+  });
+  const { gif, decodedFrames } = await suppressKnownModernGifWarnings(
+    async () => {
+      const gif = decode(buffer);
+      return {
+        gif,
+        decodedFrames: await decodeFrames(buffer, { gif }),
+      };
+    },
+  );
 
   const frames = decodedFrames.map((frame) => {
     const canvas = document.createElement("canvas");

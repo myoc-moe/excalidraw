@@ -95,10 +95,18 @@ export const GifPlaybackControls = ({
     0,
   );
   const [gifGalleryScrollLeft, setGifGalleryScrollLeft] = React.useState(0);
+  const [isGifGalleryDragging, setIsGifGalleryDragging] = React.useState(false);
   const speedButtonRef = React.useRef<HTMLButtonElement>(null);
   const framesButtonRef = React.useRef<HTMLButtonElement>(null);
   const speedPickerRef = React.useRef<HTMLDivElement>(null);
   const frameGalleryRef = React.useRef<HTMLDivElement>(null);
+  const frameGalleryDragRef = React.useRef<{
+    pointerId: number;
+    startClientX: number;
+    startScrollLeft: number;
+    didDrag: boolean;
+  } | null>(null);
+  const suppressNextFrameClickRef = React.useRef(false);
   const [gifPopupPosition, setGifPopupPosition] =
     React.useState<GifPopupPosition | null>(null);
 
@@ -289,7 +297,6 @@ export const GifPlaybackControls = ({
       });
     };
     const wheelFrame = (event: React.WheelEvent) => {
-      event.preventDefault();
       event.stopPropagation();
       commitFrame(frameIndex + (event.deltaY < 0 ? 1 : -1));
     };
@@ -364,6 +371,70 @@ export const GifPlaybackControls = ({
       firstVisibleFrameIndex,
       lastVisibleFrameIndex,
     );
+    const beginGalleryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.pointerType !== "mouse" || event.button !== 0) {
+        return;
+      }
+
+      frameGalleryDragRef.current = {
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+        startScrollLeft: event.currentTarget.scrollLeft,
+        didDrag: false,
+      };
+      event.stopPropagation();
+    };
+    const updateGalleryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+      const dragState = frameGalleryDragRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const deltaX = event.clientX - dragState.startClientX;
+      if (!dragState.didDrag && Math.abs(deltaX) <= 3) {
+        return;
+      }
+      if (!dragState.didDrag) {
+        dragState.didDrag = true;
+        event.currentTarget.setPointerCapture?.(event.pointerId);
+        setIsGifGalleryDragging(true);
+      }
+      event.currentTarget.scrollLeft = dragState.startScrollLeft - deltaX;
+      setGifGalleryScrollLeft(event.currentTarget.scrollLeft);
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const endGalleryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+      const dragState = frameGalleryDragRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      suppressNextFrameClickRef.current = dragState.didDrag;
+      frameGalleryDragRef.current = null;
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+      setIsGifGalleryDragging(false);
+      event.stopPropagation();
+    };
+    const cancelGalleryDrag = (event: React.PointerEvent<HTMLDivElement>) => {
+      const dragState = frameGalleryDragRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      frameGalleryDragRef.current = null;
+      setIsGifGalleryDragging(false);
+      event.stopPropagation();
+    };
+    const stopGalleryTouchPropagation = (
+      event: React.PointerEvent<HTMLDivElement>,
+    ) => {
+      if (event.pointerType !== "mouse") {
+        event.stopPropagation();
+      }
+    };
 
     return (
       <div
@@ -410,7 +481,6 @@ export const GifPlaybackControls = ({
               })
             }
             onWheel={(event) => {
-              event.preventDefault();
               event.stopPropagation();
               stepSpeed(event.deltaY < 0 ? 1 : -1);
             }}
@@ -474,7 +544,9 @@ export const GifPlaybackControls = ({
         </div>
         {liveAppState.openPopup === "gifFrameGallery" && (
           <div
-            className="gif-frame-gallery"
+            className={clsx("gif-frame-gallery", {
+              "gif-frame-gallery--dragging": isGifGalleryDragging,
+            })}
             style={{
               ...(gifPopupPosition ?? { left, top: galleryTop }),
               width: galleryViewportWidth,
@@ -488,8 +560,25 @@ export const GifPlaybackControls = ({
             onScroll={(event) => {
               setGifGalleryScrollLeft(event.currentTarget.scrollLeft);
             }}
+            onPointerDownCapture={stopGalleryTouchPropagation}
+            onPointerMoveCapture={stopGalleryTouchPropagation}
+            onPointerUpCapture={stopGalleryTouchPropagation}
+            onPointerCancelCapture={stopGalleryTouchPropagation}
+            onPointerDown={beginGalleryDrag}
+            onPointerMove={updateGalleryDrag}
+            onPointerUp={endGalleryDrag}
+            onPointerCancel={cancelGalleryDrag}
+            onLostPointerCapture={cancelGalleryDrag}
+            onClickCapture={(event) => {
+              if (suppressNextFrameClickRef.current) {
+                suppressNextFrameClickRef.current = false;
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+              }
+              suppressNextFrameClickRef.current = false;
+            }}
             onWheelCapture={(event) => {
-              event.preventDefault();
               event.stopPropagation();
               event.currentTarget.scrollLeft += event.deltaY;
               setGifGalleryScrollLeft(event.currentTarget.scrollLeft);
