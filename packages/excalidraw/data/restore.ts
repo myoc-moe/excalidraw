@@ -94,8 +94,9 @@ import {
   getNormalizedZoom,
 } from "../scene";
 
-import type { AppState, BinaryFiles, NormalizedZoomValue } from "../types";
 import { restoreGifPlayback } from "./restoreGif";
+
+import type { AppState, BinaryFiles, NormalizedZoomValue } from "../types";
 import type { ImportedDataState, LegacyAppState } from "./types";
 
 type RestoredAppState = Omit<

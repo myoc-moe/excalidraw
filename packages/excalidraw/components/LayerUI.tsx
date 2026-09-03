@@ -32,11 +32,7 @@ import { UserList } from "./UserList";
 import { PenModeButton } from "./PenModeButton";
 import Footer from "./footer/Footer";
 import MainMenu from "./main-menu/MainMenu";
-import {
-  useAppProps,
-  useEditorInterface,
-  useStylesPanelMode,
-} from "./App";
+import { useAppProps, useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
 import { Stats } from "./Stats";
 import ElementLinkDialog from "./ElementLinkDialog";

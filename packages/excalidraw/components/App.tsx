@@ -2692,6 +2692,8 @@ class App extends React.Component<AppProps, AppState> {
   });
 
   public scheduleCapture = () => this.store.scheduleCapture();
+  public scheduleUpdate = () =>
+    this.store.scheduleAction(CaptureUpdateAction.NEVER);
 
   // Lifecycle
 

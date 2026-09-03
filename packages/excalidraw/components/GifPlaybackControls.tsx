@@ -168,7 +168,7 @@ export const GifPlaybackControls = ({
     app.scene.mutateElement(element as ExcalidrawImageElement, {
       gifPlayback,
     });
-    app.scheduleCapture();
+    app.scheduleUpdate();
     setAppState({});
     rerenderGifControls();
     if (gifPlayback.playing) {

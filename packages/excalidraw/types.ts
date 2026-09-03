@@ -1229,6 +1229,7 @@ export type AppClassProperties = {
   scrollToContent: App["scrollToContent"];
   addFiles: App["addFiles"];
   scheduleCapture: App["scheduleCapture"];
+  scheduleUpdate: App["scheduleUpdate"];
   ensureGifPlaybackLoop: App["ensureGifPlaybackLoop"];
   loadDeferredGif: App["loadDeferredGif"];
   getGifPlaybackFrameIndex: App["getGifPlaybackFrameIndex"];

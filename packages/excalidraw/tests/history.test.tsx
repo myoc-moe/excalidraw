@@ -64,6 +64,7 @@ import {
   SMILEY_IMAGE_DIMENSIONS,
 } from "./fixtures/constants";
 import { API } from "./helpers/api";
+import { mockMultipleHTMLImageElements } from "./helpers/mocks";
 import { Keyboard, Pointer, UI } from "./helpers/ui";
 import { INITIALIZED_IMAGE_PROPS } from "./helpers/constants";
 import {
@@ -76,13 +77,30 @@ import {
   checkpointHistory,
   unmountComponent,
 } from "./test-utils";
-import { setupImageTest as _setupImageTest } from "./image.test";
 
-import type { AppState } from "../types";
+import type { AppState, ExcalidrawProps } from "../types";
 
 const { h } = window;
 
 const mouse = new Pointer("mouse");
+
+const setupImageTest = async (
+  sizes: { width: number; height: number }[],
+  props: Partial<ExcalidrawProps> = {},
+) => {
+  await render(
+    <Excalidraw
+      compressImageFile={async (file: File) => file}
+      autoFocus={true}
+      handleKeyboardGlobally={true}
+      {...props}
+    />,
+  );
+
+  h.state.height = 1000;
+
+  mockMultipleHTMLImageElements(sizes.map((size) => [size.width, size.height]));
+};
 
 const checkpoint = (name: string) => {
   expect(renderStaticScene.mock.calls.length).toMatchSnapshot(
@@ -716,8 +734,8 @@ describe("history", () => {
       ]);
     });
 
-    const setupImageTest = () =>
-      _setupImageTest([DEER_IMAGE_DIMENSIONS, SMILEY_IMAGE_DIMENSIONS]);
+    const setupImageScenario = () =>
+      setupImageTest([DEER_IMAGE_DIMENSIONS, SMILEY_IMAGE_DIMENSIONS]);
 
     const assertImageTest = async () => {
       await waitFor(() => {
@@ -775,7 +793,7 @@ describe("history", () => {
     };
 
     it("should create new history entry on image drag&drop", async () => {
-      await setupImageTest();
+      await setupImageScenario();
 
       await API.drop(
         (
@@ -793,7 +811,7 @@ describe("history", () => {
     });
 
     it("should create new history entry on image paste", async () => {
-      await setupImageTest();
+      await setupImageScenario();
 
       document.dispatchEvent(
         createPasteEvent({

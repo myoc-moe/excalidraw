@@ -975,10 +975,13 @@ describe("image insertion", () => {
     const gifFileId = "manual-large-gif-file-id" as FileId;
     mockSuccessfulGifDecode();
 
-    await setupImageTest([DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS], {
-      generateIdForFile: async () => gifFileId,
-      imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
-    });
+    await setupImageTest(
+      [DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS],
+      {
+        generateIdForFile: async () => gifFileId,
+        imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
+      },
+    );
 
     await API.drop([
       {
@@ -1003,6 +1006,53 @@ describe("image insertion", () => {
 
     expect(decodeFrames).toHaveBeenCalledTimes(1);
     expect(h.app.imageCache.get(gifFileId)?.gif?.frames).toHaveLength(2);
+  });
+
+  it("MyOC regression: GIF playback controls do not create undo history entries", async () => {
+    const gifFileId = "gif-history-file-id" as FileId;
+    mockSuccessfulGifDecode();
+
+    await setupImageTest([DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS], {
+      generateIdForFile: async () => gifFileId,
+    });
+
+    await API.drop([
+      {
+        kind: "file",
+        file: new File(["animated-gif"], "animated.gif", {
+          type: MIME_TYPES.gif,
+        }),
+      },
+    ]);
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("success");
+    });
+
+    API.setSelectedElements([h.elements[0] as NonDeletedExcalidrawElement]);
+
+    const undoStackSize = API.getUndoStack().length;
+
+    fireEvent.click(screen.getByTitle("Pause"));
+
+    expect(API.getUndoStack()).toHaveLength(undoStackSize);
+    expect(h.elements[0]).toEqual(
+      expect.objectContaining({
+        gifPlayback: expect.objectContaining({ playing: false }),
+      }),
+    );
+
+    fireEvent.click(screen.getByTitle("Next frame"));
+
+    expect(API.getUndoStack()).toHaveLength(undoStackSize);
+    expect(h.elements[0]).toEqual(
+      expect.objectContaining({
+        gifPlayback: expect.objectContaining({
+          frameIndex: 1,
+          playing: false,
+        }),
+      }),
+    );
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {
