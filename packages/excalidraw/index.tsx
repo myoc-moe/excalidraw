@@ -430,6 +430,7 @@ export const Excalidraw = React.memo(ExcalidrawBase, areEqual);
 Excalidraw.displayName = "Excalidraw";
 
 export {
+  configureGifWorkerUrl,
   getSceneVersion,
   hashElementsVersion,
   hashString,

@@ -20,22 +20,21 @@ const logGifDecodeMode = (
   mode: "main-thread" | "worker",
   context?: Record<string, unknown>,
 ) => {
+  // eslint-disable-next-line no-console
   console.debug("[excalidraw][gif-decode]", {
     mode,
     ...context,
   });
 };
 
-// Kept as a compatibility hook for apps that already configure a GIF worker.
-// Decoding stays on the main thread because modern-gif's worker emits noisy
-// parser warnings that cannot be filtered from this package.
+// Worker URLs are bundler-specific assets. The element package is also built
+// with esbuild, which cannot resolve Vite's `?url` import convention. Apps may
+// provide a URL resolved by their bundler; package consumers safely fall back
+// to modern-gif's synchronous decoder when they do not.
+let gifWorkerUrl: string | undefined;
+
 export const configureGifWorkerUrl = (workerUrl: string | undefined) => {
-  if (workerUrl) {
-    logGifDecodeMode("main-thread", {
-      reason: "configured worker URL ignored",
-      workerUrl,
-    });
-  }
+  gifWorkerUrl = workerUrl;
 };
 
 type GifImageCache = Map<
@@ -85,15 +84,19 @@ const suppressKnownModernGifWarnings = async <T>(
 
 export const decodeGifFrames = async (dataURL: DataURL) => {
   const buffer = dataURLToArrayBuffer(dataURL);
-  logGifDecodeMode("main-thread", {
+  const decodeMode = gifWorkerUrl ? "worker" : "main-thread";
+  logGifDecodeMode(decodeMode, {
     byteLength: buffer.byteLength,
+    workerUrl: gifWorkerUrl,
   });
   const { gif, decodedFrames } = await suppressKnownModernGifWarnings(
     async () => {
       const gif = decode(buffer);
       return {
         gif,
-        decodedFrames: await decodeFrames(buffer, { gif }),
+        decodedFrames: gifWorkerUrl
+          ? await decodeFrames(buffer, { gif, workerUrl: gifWorkerUrl })
+          : await decodeFrames(buffer, { gif }),
       };
     },
   );
