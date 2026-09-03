@@ -1,6 +1,6 @@
 {
   "name": "@myoc/element",
-  "version": "0.19.532",
+  "version": "0.19.533",
   "type": "module",
   "types": "./dist/types/element/src/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -64,9 +64,9 @@
     "build:esm": "rimraf dist && node ../../scripts/buildBase.js && yarn gen:types"
   },
   "dependencies": {
-    "@excalidraw/common": "npm:@myoc/common@0.19.518",
-    "@excalidraw/fractional-indexing": "npm:@myoc/fractional-indexing@0.19.518",
-    "@excalidraw/math": "npm:@myoc/math@0.19.518",
+    "@excalidraw/common": "npm:@myoc/common@0.19.532",
+    "@excalidraw/fractional-indexing": "npm:@myoc/fractional-indexing@0.19.532",
+    "@excalidraw/math": "npm:@myoc/math@0.19.532",
     "modern-gif": "2.1.0",
     "thumbhash": "0.1.1"
   }
