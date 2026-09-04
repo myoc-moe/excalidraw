@@ -1008,7 +1008,7 @@ describe("image insertion", () => {
     expect(h.app.imageCache.get(gifFileId)?.gif?.frames).toHaveLength(2);
   });
 
-  it("MyOC regression: GIF playback controls do not create undo history entries", async () => {
+  it("MyOC regression: GIF playback controls emit document changes without creating undo history entries", async () => {
     const gifFileId = "gif-history-file-id" as FileId;
     mockSuccessfulGifDecode();
 
@@ -1032,6 +1032,8 @@ describe("image insertion", () => {
     API.setSelectedElements([h.elements[0] as NonDeletedExcalidrawElement]);
 
     const undoStackSize = API.getUndoStack().length;
+    const onChange = vi.fn();
+    const unsubscribeChange = h.app.api.onChange(onChange);
 
     fireEvent.click(screen.getByTitle("Pause"));
 
@@ -1041,6 +1043,18 @@ describe("image insertion", () => {
         gifPlayback: expect.objectContaining({ playing: false }),
       }),
     );
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            gifPlayback: expect.objectContaining({ playing: false }),
+          }),
+        ]),
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+    onChange.mockClear();
 
     fireEvent.click(screen.getByTitle("Next frame"));
 
@@ -1053,6 +1067,22 @@ describe("image insertion", () => {
         }),
       }),
     );
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({
+            gifPlayback: expect.objectContaining({
+              frameIndex: 1,
+              playing: false,
+            }),
+          }),
+        ]),
+        expect.anything(),
+        expect.anything(),
+      );
+    });
+
+    unsubscribeChange();
   });
 
   it("passes host-configured max image dimensions to the image compressor", async () => {

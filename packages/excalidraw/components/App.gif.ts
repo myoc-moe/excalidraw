@@ -165,7 +165,7 @@ export class AppGifPlayback {
     }
 
     if (didAdvanceFrame) {
-      this.app.scene.triggerUpdate();
+      this.app.imagePlaceholderUpdateEmitter.trigger();
     }
 
     if (shouldContinue) {
