@@ -8,6 +8,10 @@ import type { PointerType } from "@excalidraw/element/types";
 import { trackEvent } from "../analytics";
 import { t } from "../i18n";
 import { getShortcutKey } from "../shortcut";
+import {
+  formatKeyboardShortcut,
+  matchesKeyboardShortcuts,
+} from "../keyboardShortcuts";
 
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
@@ -220,6 +224,45 @@ export const findShapeByKey = (
   return null;
 };
 
+export const findShapeByKeyboardEvent = (
+  event: KeyboardEvent | React.KeyboardEvent,
+  app: AppClassProperties,
+) => {
+  for (const type of Object.keys(TOOLS) as ToolbarToolType[]) {
+    const override = app.props.keyboardShortcuts?.[`tool:${type}`];
+    if (override !== undefined) {
+      if (matchesKeyboardShortcuts(event, override)) {
+        return type === "selection"
+          ? app.state.preferredSelectionTool.type
+          : type;
+      }
+      continue;
+    }
+  }
+
+  if (event.ctrlKey || event.metaKey || event.altKey) {
+    return null;
+  }
+
+  const defaultShape = findShapeByKey(event.key, app, event.shiftKey);
+  if (!defaultShape) {
+    return null;
+  }
+
+  // The selection binding activates the preferred selection tool, so when
+  // lasso is preferred the default result is `lasso` even though `V` belongs
+  // to the `tool:selection` command.
+  const defaultCommand =
+    (defaultShape === "selection" || defaultShape === "lasso") &&
+    TOOLS.selection.letterKey === event.key.toLocaleLowerCase()
+      ? "tool:selection"
+      : (`tool:${defaultShape}` as const);
+
+  return app.props.keyboardShortcuts?.[defaultCommand] === undefined
+    ? defaultShape
+    : null;
+};
+
 /**
  * Whether a toolbar entry activating the given tool renders disabled — true
  * when the active tool is host-controlled (`props.activeTool`) and the entry
@@ -276,7 +319,15 @@ const createToolButton = (
     hideShortcut,
   }: ToolButtonComponentProps) => {
     const label = capitalizeString(t(`toolBar.${type}`));
-    const shortcut = hideShortcut ? null : getToolShortcut(shortcutType);
+    const shortcutOverride =
+      app.props.keyboardShortcuts?.[`tool:${shortcutType}`];
+    const shortcut = hideShortcut
+      ? null
+      : shortcutOverride !== undefined
+      ? shortcutOverride[0]
+        ? formatKeyboardShortcut(shortcutOverride[0])
+        : null
+      : getToolShortcut(shortcutType);
 
     return (
       <IconButton
@@ -289,6 +340,10 @@ const createToolButton = (
         keyBindingLabel={
           hideKeyBinding || hideShortcut
             ? undefined
+            : shortcutOverride !== undefined
+            ? shortcut?.length === 1
+              ? shortcut
+              : undefined
             : getToolKeyBindingLabel(shortcutType)
         }
         aria-label={label}

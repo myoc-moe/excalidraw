@@ -149,4 +149,14 @@ export const actionDeselect = register({
         isSomeElementSelected(app.scene.getNonDeletedElements(), appState))
     );
   },
+  keyCondition: (event, appState, _, app) =>
+    !isWritableElement(event.target) &&
+    !appState.newElement &&
+    appState.multiElement === null &&
+    !appState.selectedLinearElement?.isEditing &&
+    (appState.activeEmbeddable !== null ||
+      appState.activeTool.type !== app.state.preferredSelectionTool.type ||
+      !!appState.editingGroupId ||
+      !!appState.selectedLinearElement ||
+      isSomeElementSelected(app.scene.getNonDeletedElements(), appState)),
 });

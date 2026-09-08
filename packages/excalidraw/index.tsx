@@ -123,6 +123,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     currentUserControls,
     imageOptions,
     showDropEventDebugAlert,
+    keyboardShortcuts,
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
@@ -278,6 +279,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           currentUserControls={currentUserControls}
           imageOptions={normalizedImageOptions}
           showDropEventDebugAlert={showDropEventDebugAlert}
+          keyboardShortcuts={keyboardShortcuts}
         >
           {children}
         </App>
@@ -510,6 +512,11 @@ export { Stats } from "./components/Stats";
 export { DefaultSidebar } from "./components/DefaultSidebar";
 
 export type { ViewportStatusFrame } from "./types";
+export type {
+  KeyboardShortcut,
+  KeyboardShortcutCommand,
+  KeyboardShortcutOverrides,
+} from "./keyboardShortcuts";
 
 export { zoomToFitBounds, DEFAULT_OVERSCROLL } from "./viewport";
 

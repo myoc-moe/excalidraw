@@ -155,6 +155,11 @@ export const actionToggleElementLock = register({
       }).length > 0
     );
   },
+  keyCondition: (_event, appState, _elements, app) =>
+    app.scene.getSelectedElements({
+      selectedElementIds: appState.selectedElementIds,
+      includeBoundTextElement: false,
+    }).length > 0,
 });
 
 export const actionUnlockAllElements = register({
