@@ -1,6 +1,6 @@
 {
   "name": "@myoc/math",
-  "version": "0.19.535",
+  "version": "0.19.536",
   "type": "module",
   "types": "./dist/types/math/src/index.d.ts",
   "main": "./dist/prod/index.js",

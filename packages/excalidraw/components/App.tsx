@@ -408,7 +408,7 @@ import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import { matchesKeyboardShortcuts } from "../keyboardShortcuts";
-import type { KeyboardShortcutCommand } from "../keyboardShortcuts";
+
 import { tryParseSpreadsheet } from "../charts";
 
 import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
@@ -446,6 +446,8 @@ import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 import { findShapeByKeyboardEvent, TOGGLE_TOOLS } from "./Tools";
 
 import UnlockPopup from "./UnlockPopup";
+
+import type { KeyboardShortcutCommand } from "../keyboardShortcuts";
 
 import type {
   RenderInteractiveSceneCallback,

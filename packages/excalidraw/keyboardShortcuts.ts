@@ -1,5 +1,6 @@
-import type { ActionName } from "./actions/types";
 import { getShortcutKey } from "./shortcut";
+
+import type { ActionName } from "./actions/types";
 
 type KeyboardShortcutModifiers = {
   ctrlOrCmd?: boolean;
