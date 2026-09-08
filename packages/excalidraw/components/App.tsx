@@ -407,6 +407,8 @@ import { isOverScrollBars } from "../scene/scrollbars";
 import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
+import { matchesKeyboardShortcuts } from "../keyboardShortcuts";
+import type { KeyboardShortcutCommand } from "../keyboardShortcuts";
 import { tryParseSpreadsheet } from "../charts";
 
 import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
@@ -441,7 +443,7 @@ import {
 import { CursorHint, CursorHints } from "./CursorHint";
 import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 
-import { findShapeByKey, TOGGLE_TOOLS } from "./Tools";
+import { findShapeByKeyboardEvent, TOGGLE_TOOLS } from "./Tools";
 
 import UnlockPopup from "./UnlockPopup";
 
@@ -5264,6 +5266,17 @@ class App extends React.Component<AppProps, AppState> {
   );
 
   // Input handling
+  private matchesShortcut = (
+    command: KeyboardShortcutCommand,
+    event: React.KeyboardEvent | KeyboardEvent,
+    defaultMatch: boolean,
+  ) => {
+    const override = this.props.keyboardShortcuts?.[command];
+    return override === undefined
+      ? defaultMatch
+      : matchesKeyboardShortcuts(event, override);
+  };
+
   private onKeyDown = withBatchedUpdates(
     (event: React.KeyboardEvent | KeyboardEvent) => {
       if (!this.isInteractionEnabled()) {
@@ -5388,15 +5401,25 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (event.key === KEYS.QUESTION_MARK) {
+      if (
+        this.matchesShortcut(
+          "helpDialog",
+          event,
+          event.key === KEYS.QUESTION_MARK,
+        )
+      ) {
         this.setState({
           openDialog: { name: "help" },
         });
         return;
       } else if (
-        event.key.toLowerCase() === KEYS.E &&
-        event.shiftKey &&
-        event[KEYS.CTRL_OR_CMD]
+        this.matchesShortcut(
+          "imageExport",
+          event,
+          event.key.toLowerCase() === KEYS.E &&
+            event.shiftKey &&
+            event[KEYS.CTRL_OR_CMD],
+        )
       ) {
         event.preventDefault();
         this.setState({ openDialog: { name: "imageExport" } });
@@ -5445,14 +5468,11 @@ class App extends React.Component<AppProps, AppState> {
 
       if (
         !shouldPreventToolSwitching &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
         !this.state.newElement &&
         !this.state.selectionElement &&
         !this.state.selectedElementsAreBeingDragged
       ) {
-        const shape = findShapeByKey(event.key, this, event.shiftKey);
+        const shape = findShapeByKeyboardEvent(event, this);
 
         if (this.state.viewModeEnabled && !oneOf(shape, ["laser", "hand"])) {
           return;
@@ -5505,7 +5525,9 @@ class App extends React.Component<AppProps, AppState> {
           event.stopPropagation();
 
           return;
-        } else if (event.key === KEYS.Q) {
+        } else if (
+          this.matchesShortcut("toolLock", event, event.key === KEYS.Q)
+        ) {
           this.toggleLock("keyboard");
           event.stopPropagation();
           return;
@@ -5670,9 +5692,20 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       if (
-        (event.key === KEYS.G || event.key === KEYS.S) &&
-        !event.altKey &&
-        !event[KEYS.CTRL_OR_CMD]
+        this.matchesShortcut(
+          "elementBackground",
+          event,
+          (event.key === KEYS.G || event.key === KEYS.S) &&
+            !event.altKey &&
+            !event[KEYS.CTRL_OR_CMD],
+        ) ||
+        this.matchesShortcut(
+          "elementStroke",
+          event,
+          (event.key === KEYS.G || event.key === KEYS.S) &&
+            !event.altKey &&
+            !event[KEYS.CTRL_OR_CMD],
+        )
       ) {
         const selectedElements = this.scene.getSelectedElements(this.state);
         if (
@@ -5683,23 +5716,33 @@ class App extends React.Component<AppProps, AppState> {
         }
 
         if (
-          event.key === KEYS.G &&
+          this.matchesShortcut(
+            "elementBackground",
+            event,
+            event.key === KEYS.G,
+          ) &&
           (hasBackground(this.state.activeTool.type) ||
             selectedElements.some((element) => hasBackground(element.type)))
         ) {
           this.setState({ openPopup: "elementBackground" });
           event.stopPropagation();
         }
-        if (event.key === KEYS.S) {
+        if (
+          this.matchesShortcut("elementStroke", event, event.key === KEYS.S)
+        ) {
           this.setState({ openPopup: "elementStroke" });
           event.stopPropagation();
         }
       }
 
       if (
-        !event[KEYS.CTRL_OR_CMD] &&
-        event.shiftKey &&
-        event.key.toLowerCase() === KEYS.F
+        this.matchesShortcut(
+          "fontFamily",
+          event,
+          !event[KEYS.CTRL_OR_CMD] &&
+            event.shiftKey &&
+            event.key.toLowerCase() === KEYS.F,
+        )
       ) {
         const selectedElements = this.scene.getSelectedElements(this.state);
 
@@ -5737,9 +5780,20 @@ class App extends React.Component<AppProps, AppState> {
       const isPickingBackground =
         lowerCased === KEYS.I && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
 
-      if (isPickingStroke || isPickingBackground) {
+      const shouldPickStroke = this.matchesShortcut(
+        "strokeEyeDropper",
+        event,
+        isPickingStroke,
+      );
+      const shouldPickBackground = this.matchesShortcut(
+        "backgroundEyeDropper",
+        event,
+        isPickingBackground,
+      );
+
+      if (shouldPickStroke || shouldPickBackground) {
         this.openEyeDropper({
-          type: isPickingStroke ? "stroke" : "background",
+          type: shouldPickStroke ? "stroke" : "background",
           swapPreviewOnAlt: !isPlainStrokeEyeDropper,
         });
       }

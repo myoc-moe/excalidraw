@@ -850,6 +850,12 @@ export type UIConfig = {
 
 export interface ExcalidrawProps {
   className?: string;
+  /**
+   * Controlled keyboard shortcut overrides. Omitted commands retain their
+   * Excalidraw defaults; pass an empty array to disable a command. Excalidraw
+   * does not persist this value.
+   */
+  keyboardShortcuts?: import("./keyboardShortcuts").KeyboardShortcutOverrides;
   onChange?: (
     elements: readonly OrderedExcalidrawElement[],
     appState: AppState,

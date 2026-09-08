@@ -178,6 +178,13 @@ export interface Action<TData = any> {
     elements: readonly ExcalidrawElement[],
     app: AppClassProperties,
   ) => boolean;
+  /** Additional state guard retained when a host overrides `keyTest`'s keys. */
+  keyCondition?: (
+    event: React.KeyboardEvent | KeyboardEvent,
+    appState: AppState,
+    elements: readonly ExcalidrawElement[],
+    app: AppClassProperties,
+  ) => boolean;
   predicate?: (
     elements: readonly ExcalidrawElement[],
     appState: AppState,

@@ -8,6 +8,7 @@ import type {
 } from "@excalidraw/element/types";
 
 import { trackEvent } from "../analytics";
+import { matchesKeyboardShortcuts } from "../keyboardShortcuts";
 
 import type { AppClassProperties, AppState } from "../types";
 import type {
@@ -97,19 +98,35 @@ export class ActionManager {
     const canvasActions = this.app.props.UIOptions.canvasActions;
     const data = Object.values(this.actions)
       .sort((a, b) => (b.keyPriority || 0) - (a.keyPriority || 0))
-      .filter(
-        (action) =>
+      .filter((action) => {
+        const override = this.app.props.keyboardShortcuts?.[action.name];
+        return (
           (action.name in canvasActions
             ? canvasActions[action.name as keyof typeof canvasActions]
             : true) &&
-          action.keyTest &&
-          action.keyTest(
-            event,
-            this.getAppState(),
-            this.getElementsIncludingDeleted(),
-            this.app,
-          ),
-      );
+          (action.keyTest || override !== undefined) &&
+          (() => {
+            if (override !== undefined) {
+              return (
+                matchesKeyboardShortcuts(event, override) &&
+                (!action.keyCondition ||
+                  action.keyCondition(
+                    event,
+                    this.getAppState(),
+                    this.getElementsIncludingDeleted(),
+                    this.app,
+                  ))
+              );
+            }
+            return action.keyTest!(
+              event,
+              this.getAppState(),
+              this.getElementsIncludingDeleted(),
+              this.app,
+            );
+          })()
+        );
+      });
 
     if (data.length !== 1) {
       if (data.length > 1) {
