@@ -11,6 +11,9 @@ exports[`given element A and group of elements B and given both are selected whe
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -453,6 +456,9 @@ exports[`given element A and group of elements B and given both are selected whe
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -884,6 +890,9 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -1467,6 +1476,9 @@ exports[`regression tests > Drags selected element when hitting only bounding bo
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -1691,6 +1703,9 @@ exports[`regression tests > adjusts z order when grouping > [end of test] appSta
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -2092,6 +2107,9 @@ exports[`regression tests > alt-drag duplicates an element > [end of test] appSt
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -2354,6 +2372,9 @@ exports[`regression tests > arrow keys > [end of test] appState 1`] = `
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -2551,6 +2572,9 @@ exports[`regression tests > can drag element that covers another element, while 
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -2893,6 +2917,9 @@ exports[`regression tests > change the properties of a shape > [end of test] app
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -3166,6 +3193,9 @@ exports[`regression tests > click on an element and drag it > [dragged] appState
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -3425,6 +3455,9 @@ exports[`regression tests > click on an element and drag it > [end of test] appS
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -3678,6 +3711,9 @@ exports[`regression tests > click to select a shape > [end of test] appState 1`]
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -3953,6 +3989,9 @@ exports[`regression tests > click-drag to select a group > [end of test] appStat
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -4283,6 +4322,9 @@ exports[`regression tests > deleting last but one element in editing group shoul
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -4737,6 +4779,9 @@ exports[`regression tests > deselects group of selected elements on pointer down
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -5037,6 +5082,9 @@ exports[`regression tests > deselects group of selected elements on pointer up w
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -5330,6 +5378,9 @@ exports[`regression tests > deselects selected element on pointer down when poin
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -5556,6 +5607,9 @@ exports[`regression tests > deselects selected element, on pointer up, when clic
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -5773,6 +5827,9 @@ exports[`regression tests > double click to edit a group > [end of test] appStat
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -6183,6 +6240,9 @@ exports[`regression tests > drags selected elements from point inside common bou
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -6496,6 +6556,9 @@ exports[`regression tests > draw every type of shape > [end of test] appState 1`
     "lastActiveTool": null,
     "locked": false,
     "type": "freedraw",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -7300,6 +7363,9 @@ exports[`regression tests > given a group of selected elements with an element t
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -7650,6 +7716,9 @@ exports[`regression tests > given a selected element A and a not selected elemen
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -7946,6 +8015,9 @@ exports[`regression tests > given selected element A with lower z-index than uns
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -8197,6 +8269,9 @@ exports[`regression tests > given selected element A with lower z-index than uns
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -8455,6 +8530,9 @@ exports[`regression tests > key a selects arrow tool > [end of test] appState 1`
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -8706,6 +8784,9 @@ exports[`regression tests > key d selects diamond tool > [end of test] appState 
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -8903,6 +8984,9 @@ exports[`regression tests > key l selects line tool > [end of test] appState 1`]
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -9153,6 +9237,9 @@ exports[`regression tests > key o selects ellipse tool > [end of test] appState 
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -9350,6 +9437,9 @@ exports[`regression tests > key p selects freedraw tool > [end of test] appState
     "lastActiveTool": null,
     "locked": false,
     "type": "freedraw",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -9565,6 +9655,9 @@ exports[`regression tests > key r selects rectangle tool > [end of test] appStat
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -9762,6 +9855,9 @@ exports[`regression tests > make a group and duplicate it > [end of test] appSta
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -10307,6 +10403,9 @@ exports[`regression tests > noop interaction after undo shouldn't create history
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -10604,6 +10703,9 @@ exports[`regression tests > pinch-to-zoom works > [end of test] appState 1`] = `
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -10745,6 +10847,9 @@ exports[`regression tests > shift click on selected element should deselect it o
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -10963,6 +11068,9 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -11299,6 +11407,9 @@ exports[`regression tests > should group elements and ungroup them > [end of tes
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -11744,6 +11855,9 @@ exports[`regression tests > single-clicking on a subgroup of a selected group sh
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -12400,6 +12514,9 @@ exports[`regression tests > spacebar + drag scrolls the canvas > [end of test] a
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -12544,6 +12661,9 @@ exports[`regression tests > supports nested groups > [end of test] appState 1`] 
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -13192,6 +13312,9 @@ exports[`regression tests > switches from group of selected elements to another 
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -13547,6 +13670,9 @@ exports[`regression tests > switches selected element on pointer down > [end of 
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -13828,6 +13954,9 @@ exports[`regression tests > two-finger scroll works > [end of test] appState 1`]
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -13969,6 +14098,9 @@ exports[`regression tests > undo/redo drawing an element > [end of test] appStat
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -14350,6 +14482,9 @@ exports[`regression tests > updates fontSize & fontFamily appState > [end of tes
     "locked": false,
     "type": "text",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
@@ -14491,6 +14626,9 @@ exports[`regression tests > z + horizontal drag zooms the canvas > [end of test]
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
@@ -14636,6 +14774,9 @@ exports[`regression tests > zoom hotkeys > [end of test] appState 1`] = `
     "lastActiveTool": null,
     "locked": false,
     "type": "selection",
+  },
+  "alignConfiguration": {
+    "stacking": false,
   },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",

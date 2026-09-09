@@ -11,6 +11,9 @@ exports[`exportToSvg > with default arguments 1`] = `
     "locked": false,
     "type": "selection",
   },
+  "alignConfiguration": {
+    "stacking": false,
+  },
   "arrangeConfiguration": {
     "algorithm": "bin-packing",
     "gap": 10,
