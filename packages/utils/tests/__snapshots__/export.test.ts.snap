@@ -129,6 +129,10 @@ exports[`exportToSvg > with default arguments 1`] = `
   "viewBackgroundColor": "#ffffff",
   "viewModeEnabled": false,
   "viewModeOnly": false,
+  "viewpointFlip": {
+    "horizontal": false,
+    "vertical": false,
+  },
   "zenModeEnabled": false,
   "zoom": {
     "value": 1,

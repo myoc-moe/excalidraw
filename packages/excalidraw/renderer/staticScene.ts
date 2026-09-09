@@ -36,6 +36,7 @@ import {
 } from "../components/hyperlink/helpers";
 
 import { bootstrapCanvas, getNormalizedCanvasDimensions } from "./helpers";
+import { applyZoomAndViewpointFlip } from "./viewpoint";
 
 import type {
   StaticCanvasRenderConfig,
@@ -261,8 +262,13 @@ const _renderStaticScene = ({
     viewBackgroundColor: appState.viewBackgroundColor,
   });
 
-  // Apply zoom
-  context.scale(appState.zoom.value, appState.zoom.value);
+  // Keep exports in canonical document orientation. The viewpoint flip is a
+  // local viewing aid and must not leak into exported output.
+  if (isExporting) {
+    context.scale(appState.zoom.value, appState.zoom.value);
+  } else {
+    applyZoomAndViewpointFlip(context, appState);
+  }
 
   // Grid
   if (renderGrid) {

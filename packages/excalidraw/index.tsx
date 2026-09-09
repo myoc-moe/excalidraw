@@ -541,6 +541,7 @@ export type {
   ImageStatusStyle,
   NormalisePreferences,
   SmartZoomPreferences,
+  ViewpointFlip,
 } from "./types";
 
 export type {

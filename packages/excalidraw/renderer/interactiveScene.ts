@@ -99,6 +99,7 @@ import {
   getNormalizedCanvasDimensions,
   strokeRectWithRotation_simple,
 } from "./helpers";
+import { applyZoomAndViewpointFlip } from "./viewpoint";
 
 import type {
   AppState,
@@ -1979,9 +1980,9 @@ const _renderInteractiveScene = ({
     normalizedHeight,
   });
 
-  // Apply zoom
+  // Apply zoom and the non-persisted viewpoint transform.
   context.save();
-  context.scale(appState.zoom.value, appState.zoom.value);
+  applyZoomAndViewpointFlip(context, appState);
 
   let editingLinearElement: NonDeleted<ExcalidrawLinearElement> | undefined =
     undefined;

@@ -33,6 +33,8 @@ export type ShortcutName =
       | "viewMode"
       | "flipHorizontal"
       | "flipVertical"
+      | "flipViewpointHorizontal"
+      | "flipViewpointVertical"
       | "hyperlink"
       | "toggleElementLock"
       | "resetZoom"
@@ -89,6 +91,8 @@ const shortcutMap: Record<ShortcutName, string[]> = {
   stats: [getShortcutKey("Alt+/")],
   flipHorizontal: [getShortcutKey("Shift+H")],
   flipVertical: [getShortcutKey("Shift+V")],
+  flipViewpointHorizontal: [getShortcutKey("Shift+R")],
+  flipViewpointVertical: [getShortcutKey("Alt+Shift+R")],
   viewMode: [getShortcutKey("Alt+R")],
   hyperlink: [getShortcutKey("CtrlOrCmd+K")],
   toggleElementLock: [getShortcutKey("CtrlOrCmd+Shift+L")],
@@ -104,7 +108,7 @@ const shortcutMap: Record<ShortcutName, string[]> = {
   toggleShortcuts: [getShortcutKey("?")],
   searchMenu: [getShortcutKey("CtrlOrCmd+F")],
   wrapSelectionInFrame: [],
-  arrangeElements: [getShortcutKey("Shift+R")],
+  arrangeElements: [getShortcutKey("Shift+A")],
   toolLock: [getShortcutKey("Q")],
 };
 

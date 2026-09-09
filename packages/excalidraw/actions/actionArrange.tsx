@@ -74,13 +74,13 @@ export const actionArrangeElements = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) => event.shiftKey && matchKey(event, KEYS.R),
+  keyTest: (event) => event.shiftKey && matchKey(event, KEYS.A),
   PanelComponent: ({ updateData }) => (
     <button
       type="button"
       className="arrangeButton"
       onClick={() => updateData(null)}
-      title={`${t("labels.arrangeElements")} — ${getShortcutKey("Shift+R")}`}
+      title={`${t("labels.arrangeElements")} — ${getShortcutKey("Shift+A")}`}
     >
       {TableCellsIcon}
     </button>

@@ -1,7 +1,11 @@
 import React from "react";
 import { vi } from "vitest";
 
-import { KEYS, MAX_ZOOM } from "@excalidraw/common";
+import {
+  KEYS,
+  MAX_ZOOM,
+  viewportCoordsToSceneCoords,
+} from "@excalidraw/common";
 
 import { Excalidraw } from "../index";
 import {
@@ -411,6 +415,42 @@ describe("animateToConstraints (rubberband snap-back)", () => {
 });
 
 describe("getViewportForZoomWithScrollConstraints", () => {
+  it.each([
+    { horizontal: true, vertical: false },
+    { horizontal: false, vertical: true },
+    { horizontal: true, vertical: true },
+  ])(
+    "MyOC regression: preserves a flipped focal point while zooming",
+    (viewpointFlip) => {
+      const state = {
+        ...makeState({
+          scrollX: 20,
+          scrollY: -10,
+          scrollConstraints: null,
+        }),
+        width: 800,
+        height: 600,
+        offsetLeft: 30,
+        offsetTop: 40,
+        viewpointFlip,
+      } as AppState;
+      const pointer = { clientX: 170, clientY: 230 };
+      const scenePointBefore = viewportCoordsToSceneCoords(pointer, state);
+      const viewport = getViewportForZoomWithScrollConstraints(
+        {
+          viewportX: pointer.clientX,
+          viewportY: pointer.clientY,
+          nextZoom: getNormalizedZoom(2),
+        },
+        state,
+      );
+
+      expect(
+        viewportCoordsToSceneCoords(pointer, { ...state, ...viewport }),
+      ).toEqual(scenePointBefore);
+    },
+  );
+
   it("preserves the screen-space overscroll distance while zooming", () => {
     const state = {
       ...makeState({

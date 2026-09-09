@@ -42,7 +42,10 @@ export const actionToggleViewMode = register({
     );
   },
   keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.R,
+    !event[KEYS.CTRL_OR_CMD] &&
+    event.altKey &&
+    !event.shiftKey &&
+    event.code === CODES.R,
   PanelComponent: ({ data, updateData, appState, appProps }) => {
     if (appState.viewModeOnly || appProps.viewModeOnly) {
       return null;

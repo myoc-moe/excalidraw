@@ -110,6 +110,7 @@ import {
   isSelectionLikeTool,
   oneOf,
   getStrokeWidthByKey,
+  getViewpointFlipSign,
 } from "@excalidraw/common";
 
 import {
@@ -296,6 +297,8 @@ import {
   actionFinalize,
   actionFlipHorizontal,
   actionFlipVertical,
+  actionFlipViewpointHorizontal,
+  actionFlipViewpointVertical,
   actionGroup,
   actionArrangeElements,
   actionNormaliseElements,
@@ -589,6 +592,22 @@ const YOUTUBE_VIDEO_STATES = new Map<
 >();
 
 const MAX_EMBEDDABLE_VIEWPORT_SCALE = 4;
+
+const getViewpointAwareResizeCursor = (
+  cursor: string,
+  viewpointFlip: AppState["viewpointFlip"],
+) => {
+  if (viewpointFlip.horizontal === viewpointFlip.vertical) {
+    return cursor;
+  }
+  if (cursor === "nwse-resize") {
+    return "nesw-resize";
+  }
+  if (cursor === "nesw-resize") {
+    return "nwse-resize";
+  }
+  return cursor;
+};
 
 let IS_PLAIN_PASTE = false;
 let IS_PLAIN_PASTE_TIMER = 0;
@@ -1826,7 +1845,13 @@ class App extends React.Component<AppProps, AppState> {
                 transform: isVisible
                   ? `translate(${x - this.state.offsetLeft}px, ${
                       y - this.state.offsetTop
-                    }px) scale(${scale})`
+                    }px) scale(${
+                      scale *
+                      getViewpointFlipSign(this.state.viewpointFlip.horizontal)
+                    }, ${
+                      scale *
+                      getViewpointFlipSign(this.state.viewpointFlip.vertical)
+                    })`
                   : "none",
                 display: isVisible ? "block" : "none",
                 opacity: getRenderOpacity(
@@ -1937,6 +1962,7 @@ class App extends React.Component<AppProps, AppState> {
       if (
         !bounds ||
         bounds.zoom !== this.state.zoom.value ||
+        bounds.viewpointFlip !== this.state.viewpointFlip ||
         bounds.versionNonce !== frameElement.versionNonce
       ) {
         const frameNameDiv = document.getElementById(
@@ -1955,11 +1981,12 @@ class App extends React.Component<AppProps, AppState> {
           );
 
           bounds = {
-            x: boxSceneTopLeft.x,
-            y: boxSceneTopLeft.y,
-            width: boxSceneBottomRight.x - boxSceneTopLeft.x,
-            height: boxSceneBottomRight.y - boxSceneTopLeft.y,
+            x: Math.min(boxSceneTopLeft.x, boxSceneBottomRight.x),
+            y: Math.min(boxSceneTopLeft.y, boxSceneBottomRight.y),
+            width: Math.abs(boxSceneBottomRight.x - boxSceneTopLeft.x),
+            height: Math.abs(boxSceneBottomRight.y - boxSceneTopLeft.y),
             zoom: this.state.zoom.value,
+            viewpointFlip: this.state.viewpointFlip,
             versionNonce: frameElement.versionNonce,
           };
 
@@ -2030,7 +2057,10 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       const { x: x1, y: y1 } = sceneCoordsToViewportCoords(
-        { sceneX: f.x, sceneY: f.y },
+        {
+          sceneX: f.x + (this.state.viewpointFlip.horizontal ? f.width : 0),
+          sceneY: f.y + (this.state.viewpointFlip.vertical ? f.height : 0),
+        },
         this.state,
       );
 
@@ -5588,6 +5618,9 @@ class App extends React.Component<AppProps, AppState> {
           offsetY = step;
         }
 
+        offsetX *= getViewpointFlipSign(this.state.viewpointFlip.horizontal);
+        offsetY *= getViewpointFlipSign(this.state.viewpointFlip.vertical);
+
         selectedElements.forEach((element) => {
           this.scene.mutateElement(
             element,
@@ -8086,7 +8119,10 @@ class App extends React.Component<AppProps, AppState> {
           elementWithTransformHandleType.transformHandleType
         ) {
           this.cursor.set(
-            getCursorForResizingElement(elementWithTransformHandleType),
+            getViewpointAwareResizeCursor(
+              getCursorForResizingElement(elementWithTransformHandleType),
+              this.state.viewpointFlip,
+            ),
           );
           return;
         }
@@ -8106,9 +8142,12 @@ class App extends React.Component<AppProps, AppState> {
       );
       if (transformHandleType) {
         this.cursor.set(
-          getCursorForResizingElement({
-            transformHandleType,
-          }),
+          getViewpointAwareResizeCursor(
+            getCursorForResizingElement({
+              transformHandleType,
+            }),
+            this.state.viewpointFlip,
+          ),
         );
         return;
       }
@@ -9110,8 +9149,14 @@ class App extends React.Component<AppProps, AppState> {
       }
 
       this.viewport.translate({
-        scrollX: this.state.scrollX - deltaX / this.state.zoom.value,
-        scrollY: this.state.scrollY - deltaY / this.state.zoom.value,
+        scrollX:
+          this.state.scrollX -
+          (deltaX * getViewpointFlipSign(this.state.viewpointFlip.horizontal)) /
+            this.state.zoom.value,
+        scrollY:
+          this.state.scrollY -
+          (deltaY * getViewpointFlipSign(this.state.viewpointFlip.vertical)) /
+            this.state.zoom.value,
       });
     });
     const teardown = withBatchedUpdates(
@@ -9217,8 +9262,18 @@ class App extends React.Component<AppProps, AppState> {
             // 2x multiplier is just a magic number that makes this work correctly
             // on touchscreen devices (note: if we get report that panning is slower/faster
             // than actual movement, consider swapping with devicePixelRatio)
-            scrollX: zoomedViewport.scrollX + (2 * deltaX) / zoomValue,
-            scrollY: zoomedViewport.scrollY + (2 * deltaY) / zoomValue,
+            scrollX:
+              zoomedViewport.scrollX +
+              (2 *
+                deltaX *
+                getViewpointFlipSign(state.viewpointFlip.horizontal)) /
+                zoomValue,
+            scrollY:
+              zoomedViewport.scrollY +
+              (2 *
+                deltaY *
+                getViewpointFlipSign(state.viewpointFlip.vertical)) /
+                zoomValue,
             shouldCacheIgnoreZoom: true,
           },
           { zoomPreConstrained: true },
@@ -13913,6 +13968,9 @@ class App extends React.Component<AppProps, AppState> {
       if (this.state.viewModeEnabled) {
         return [
           actionSmartZoom,
+          actionFlipViewpointHorizontal,
+          actionFlipViewpointVertical,
+          CONTEXT_MENU_SEPARATOR,
           actionToggleGridMode,
           actionToggleViewMode,
           actionToggleStats,
@@ -13929,6 +13987,10 @@ class App extends React.Component<AppProps, AppState> {
         actionToggleObjectsSnapMode,
         actionToggleArrowBinding,
         actionToggleMidpointSnapping,
+        CONTEXT_MENU_SEPARATOR,
+        actionFlipViewpointHorizontal,
+        actionFlipViewpointVertical,
+        CONTEXT_MENU_SEPARATOR,
         actionToggleViewMode,
         actionToggleStats,
       ];
@@ -13942,6 +14004,9 @@ class App extends React.Component<AppProps, AppState> {
         ...elementLinkContextMenuItems,
         elementLinkContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
         actionSmartZoom,
+        actionFlipViewpointHorizontal,
+        actionFlipViewpointVertical,
+        CONTEXT_MENU_SEPARATOR,
         actionCopy,
         imageContextMenuItems.length > 0 && CONTEXT_MENU_SEPARATOR,
         ...imageContextMenuItems,
@@ -13962,6 +14027,8 @@ class App extends React.Component<AppProps, AppState> {
     return [
       CONTEXT_MENU_SEPARATOR,
       actionSmartZoom,
+      actionFlipViewpointHorizontal,
+      actionFlipViewpointVertical,
       CONTEXT_MENU_SEPARATOR,
       actionCut,
       actionCopy,
@@ -14085,16 +14152,25 @@ class App extends React.Component<AppProps, AppState> {
 
       // scroll horizontally when shift pressed
       if (event.shiftKey) {
-        this.viewport.translate(({ zoom, scrollX }) => ({
+        this.viewport.translate(({ zoom, scrollX, viewpointFlip }) => ({
           // on Mac, shift+wheel tends to result in deltaX
-          scrollX: scrollX - (deltaY || deltaX) / zoom.value,
+          scrollX:
+            scrollX -
+            ((deltaY || deltaX) *
+              getViewpointFlipSign(viewpointFlip.horizontal)) /
+              zoom.value,
         }));
         return;
       }
 
-      this.viewport.translate(({ zoom, scrollX, scrollY }) => ({
-        scrollX: scrollX - deltaX / zoom.value,
-        scrollY: scrollY - deltaY / zoom.value,
+      this.viewport.translate(({ zoom, scrollX, scrollY, viewpointFlip }) => ({
+        scrollX:
+          scrollX -
+          (deltaX * getViewpointFlipSign(viewpointFlip.horizontal)) /
+            zoom.value,
+        scrollY:
+          scrollY -
+          (deltaY * getViewpointFlipSign(viewpointFlip.vertical)) / zoom.value,
       }));
     },
   );

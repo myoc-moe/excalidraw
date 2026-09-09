@@ -300,6 +300,14 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
                 shortcuts={[getShortcutKey("Alt+R")]}
               />
               <Shortcut
+                label={t("labels.flipViewpointHorizontal")}
+                shortcuts={[getShortcutKey("Shift+R")]}
+              />
+              <Shortcut
+                label={t("labels.flipViewpointVertical")}
+                shortcuts={[getShortcutKey("Alt+Shift+R")]}
+              />
+              <Shortcut
                 label={t("stats.fullTitle")}
                 shortcuts={[getShortcutKey("Alt+/")]}
               />
@@ -410,7 +418,7 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               />
               <Shortcut
                 label={t("labels.arrangeElements")}
-                shortcuts={[getShortcutKey("Shift+R")]}
+                shortcuts={[getShortcutKey("Shift+A")]}
               />
               <Shortcut
                 label={t("labels.duplicateSelection")}

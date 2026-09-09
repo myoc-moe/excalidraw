@@ -106,6 +106,14 @@ export default function BasicHelpDialog() {
       >
         <Shortcut label={t("helpDialog.smartZoom")} shortcuts={[KEYS.F]} />
         <Shortcut
+          label={t("labels.flipViewpointHorizontal")}
+          shortcuts={[getShortcutKey("Shift+R")]}
+        />
+        <Shortcut
+          label={t("labels.flipViewpointVertical")}
+          shortcuts={[getShortcutKey("Alt+Shift+R")]}
+        />
+        <Shortcut
           label={t("helpDialog.dragToZoom")}
           shortcuts={[`${KEYS.Z}+${t("helpDialog.drag")}`]}
         />

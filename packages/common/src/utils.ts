@@ -285,6 +285,24 @@ export const allowFullScreen = () =>
 
 export const exitFullScreen = () => document.exitFullscreen();
 
+export type ViewpointFlip = Readonly<{
+  horizontal: boolean;
+  vertical: boolean;
+}>;
+
+export const getViewpointFlipSign = (flipped: boolean) => (flipped ? -1 : 1);
+
+type ViewportTransformState = {
+  zoom: Zoom;
+  offsetLeft: number;
+  offsetTop: number;
+  scrollX: number;
+  scrollY: number;
+  width?: number;
+  height?: number;
+  viewpointFlip?: ViewpointFlip;
+};
+
 export const viewportCoordsToSceneCoords = (
   { clientX, clientY }: { clientX: number; clientY: number },
   {
@@ -293,16 +311,25 @@ export const viewportCoordsToSceneCoords = (
     offsetTop,
     scrollX,
     scrollY,
-  }: {
-    zoom: Zoom;
-    offsetLeft: number;
-    offsetTop: number;
-    scrollX: number;
-    scrollY: number;
-  },
+    width,
+    height,
+    viewpointFlip,
+  }: ViewportTransformState,
 ) => {
-  const x = (clientX - offsetLeft) / zoom.value - scrollX;
-  const y = (clientY - offsetTop) / zoom.value - scrollY;
+  const viewportX = clientX - offsetLeft;
+  const viewportY = clientY - offsetTop;
+  const x =
+    (viewpointFlip?.horizontal && width !== undefined
+      ? width - viewportX
+      : viewportX) /
+      zoom.value -
+    scrollX;
+  const y =
+    (viewpointFlip?.vertical && height !== undefined
+      ? height - viewportY
+      : viewportY) /
+      zoom.value -
+    scrollY;
 
   return { x, y } as GlobalCoord;
 };
@@ -315,16 +342,21 @@ export const sceneCoordsToViewportCoords = (
     offsetTop,
     scrollX,
     scrollY,
-  }: {
-    zoom: Zoom;
-    offsetLeft: number;
-    offsetTop: number;
-    scrollX: number;
-    scrollY: number;
-  },
+    width,
+    height,
+    viewpointFlip,
+  }: ViewportTransformState,
 ) => {
-  const x = (sceneX + scrollX) * zoom.value + offsetLeft;
-  const y = (sceneY + scrollY) * zoom.value + offsetTop;
+  const sceneViewportX = (sceneX + scrollX) * zoom.value;
+  const sceneViewportY = (sceneY + scrollY) * zoom.value;
+  const x =
+    (viewpointFlip?.horizontal && width !== undefined
+      ? width - sceneViewportX
+      : sceneViewportX) + offsetLeft;
+  const y =
+    (viewpointFlip?.vertical && height !== undefined
+      ? height - sceneViewportY
+      : sceneViewportY) + offsetTop;
   return { x, y };
 };
 

@@ -211,8 +211,14 @@ const getViewportForZoom = (
   { viewportX, viewportY, nextZoom }: ZoomOptions,
   appState: AppState,
 ): Viewport => {
-  const appLayerX = viewportX - appState.offsetLeft;
-  const appLayerY = viewportY - appState.offsetTop;
+  const rawAppLayerX = viewportX - appState.offsetLeft;
+  const rawAppLayerY = viewportY - appState.offsetTop;
+  const appLayerX = appState.viewpointFlip?.horizontal
+    ? appState.width - rawAppLayerX
+    : rawAppLayerX;
+  const appLayerY = appState.viewpointFlip?.vertical
+    ? appState.height - rawAppLayerY
+    : rawAppLayerY;
 
   const currentZoom = appState.zoom.value;
 

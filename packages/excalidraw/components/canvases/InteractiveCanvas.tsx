@@ -271,6 +271,7 @@ const getRelevantAppStateProps = (
   scrollY: appState.scrollY,
   width: appState.width,
   height: appState.height,
+  viewpointFlip: appState.viewpointFlip,
   viewModeEnabled: appState.viewModeEnabled,
   activeTool: appState.activeTool,
   openDialog: appState.openDialog,

@@ -128,6 +128,8 @@
     "distributeVertically": "Distribute vertically",
     "flipHorizontal": "Flip horizontal",
     "flipVertical": "Flip vertical",
+    "flipViewpointHorizontal": "Flip viewpoint horizontally",
+    "flipViewpointVertical": "Flip viewpoint vertically",
     "viewMode": "View mode",
     "share": "Share",
     "showStroke": "Show stroke color picker",

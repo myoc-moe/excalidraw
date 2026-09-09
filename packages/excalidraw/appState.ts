@@ -29,6 +29,7 @@ export const getDefaultAppState = (): Omit<
     myocSimplifiedMode: true,
     dontResizeLimitMBs: 5,
     hideMainMenus: false,
+    viewpointFlip: { horizontal: false, vertical: false },
     alignConfiguration: {
       stacking: false,
     },
@@ -174,6 +175,7 @@ const APP_STATE_STORAGE_CONF = (<
   dontResizeLimitMBs: { browser: true, export: false, server: false },
   hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
+  viewpointFlip: { browser: false, export: false, server: false },
   alignConfiguration: { browser: true, export: false, server: false },
   arrangeConfiguration: { browser: true, export: false, server: false },
   normaliseConfiguration: { browser: true, export: false, server: false },

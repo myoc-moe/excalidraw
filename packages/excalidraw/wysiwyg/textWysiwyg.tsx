@@ -11,6 +11,7 @@ import {
   MIME_TYPES,
   applyDarkModeFilter,
   isRTL,
+  getViewpointFlipSign,
 } from "@excalidraw/common";
 import { pointFrom, pointRotateRads, type Radians } from "@excalidraw/math";
 
@@ -94,7 +95,11 @@ const getTransform = (
   if (height > maxHeight && zoom.value !== 1) {
     translateY = (maxHeight * (zoom.value - 1)) / 2;
   }
-  return `translate(${translateX}px, ${translateY}px) scale(${zoom.value}) rotate(${degree}deg)`;
+  return `translate(${translateX}px, ${translateY}px) scale(${
+    zoom.value * getViewpointFlipSign(appState.viewpointFlip.horizontal)
+  }, ${
+    zoom.value * getViewpointFlipSign(appState.viewpointFlip.vertical)
+  }) rotate(${degree}deg)`;
 };
 
 const getLineDirection = (text: string, offset: number) => {
@@ -360,7 +365,10 @@ export const textWysiwyg = ({
       const [viewportX, viewportY] = getViewportCoords(coordX, coordY);
 
       if (!container) {
-        maxWidth = (appState.width - 8 - viewportX) / appState.zoom.value;
+        maxWidth =
+          (appState.viewpointFlip.horizontal
+            ? viewportX - 8
+            : appState.width - 8 - viewportX) / appState.zoom.value;
         width = Math.min(width, maxWidth);
       } else {
         width += 0.5;
@@ -374,7 +382,9 @@ export const textWysiwyg = ({
 
       // Make sure text editor height doesn't go beyond viewport
       const editorMaxHeight =
-        (appState.height - viewportY) / appState.zoom.value;
+        (appState.viewpointFlip.vertical
+          ? viewportY
+          : appState.height - viewportY) / appState.zoom.value;
       Object.assign(editable.style, {
         font,
         // must be defined *after* font ¯\_(ツ)_/¯
@@ -858,6 +868,7 @@ export const textWysiwyg = ({
     unbindUpdate();
     unsubOnChange();
     unbindOnScroll();
+    unbindViewpointFlip();
 
     editable.remove();
   };
@@ -981,6 +992,10 @@ export const textWysiwyg = ({
   });
 
   const unbindOnScroll = app.onScrollChangeEmitter.on(() => {
+    updateWysiwygStyle();
+  });
+
+  const unbindViewpointFlip = app.onStateChange("viewpointFlip", () => {
     updateWysiwygStyle();
   });
 

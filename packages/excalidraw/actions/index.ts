@@ -69,6 +69,10 @@ export { actionArrangeElements } from "./actionArrange";
 export { actionNormaliseElements } from "./actionNormalise";
 
 export { actionFlipHorizontal, actionFlipVertical } from "./actionFlip";
+export {
+  actionFlipViewpointHorizontal,
+  actionFlipViewpointVertical,
+} from "./actionFlipViewpoint";
 
 export {
   actionCopy,

@@ -84,6 +84,22 @@ describe("textWysiwyg", () => {
       API.setElements([]);
     });
 
+    it("MyOC regression: mirrors an active text editor with the viewpoint", async () => {
+      API.setAppState({
+        viewpointFlip: { horizontal: true, vertical: false },
+      });
+      UI.clickTool("text");
+      mouse.clickAt(100, 100);
+
+      const editor = await getTextEditor();
+      expect(editor.style.transform).toContain("scale(-1, 1)");
+
+      API.setAppState({
+        viewpointFlip: { horizontal: true, vertical: true },
+      });
+      expect(editor.style.transform).toContain("scale(-1, -1)");
+    });
+
     it("should prefer editing selected text element (non-bindable container present)", async () => {
       const line = API.createElement({
         type: "line",

@@ -8,6 +8,7 @@ import {
 } from "@excalidraw/element";
 
 import { bootstrapCanvas, getNormalizedCanvasDimensions } from "./helpers";
+import { applyZoomAndViewpointFlip } from "./viewpoint";
 
 import { frameClip } from "./staticScene";
 
@@ -38,8 +39,8 @@ const _renderNewElementScene = ({
 
     context.save();
 
-    // Apply zoom
-    context.scale(appState.zoom.value, appState.zoom.value);
+    // Apply zoom and the non-persisted viewpoint transform.
+    applyZoomAndViewpointFlip(context, appState);
 
     if (newElement && newElement.type !== "selection") {
       // e.g. when creating arrows and we're still below the arrow drag distance

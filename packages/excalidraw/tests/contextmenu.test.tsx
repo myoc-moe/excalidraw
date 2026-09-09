@@ -78,6 +78,8 @@ describe("contextMenu element", () => {
         "objectsSnapMode",
         "arrowBinding",
         "midpointSnapping",
+        "flipViewpointHorizontal",
+        "flipViewpointVertical",
         "viewMode",
         "stats",
       ]),
@@ -85,6 +87,45 @@ describe("contextMenu element", () => {
     expect(getContextMenuItems()).not.toEqual(
       expect.arrayContaining(["copyAsPng", "copyAsSvg"]),
     );
+  });
+
+  it("MyOC regression: exposes viewpoint flips on canvas and elements in both modes", () => {
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 100,
+      height: 100,
+    });
+    API.setElements([rectangle]);
+
+    for (const viewModeEnabled of [false, true]) {
+      API.setAppState({ viewModeEnabled });
+
+      fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+        button: 2,
+        clientX: 1,
+        clientY: 1,
+      });
+      expect(getContextMenuItems()).toEqual(
+        expect.arrayContaining([
+          "flipViewpointHorizontal",
+          "flipViewpointVertical",
+        ]),
+      );
+
+      fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+        button: 2,
+        clientX: 150,
+        clientY: 150,
+      });
+      expect(getContextMenuItems()).toEqual(
+        expect.arrayContaining([
+          "flipViewpointHorizontal",
+          "flipViewpointVertical",
+        ]),
+      );
+    }
   });
 
   it("shows context menu for a selected element", () => {
@@ -106,6 +147,8 @@ describe("contextMenu element", () => {
 
     expect(getContextMenuItems()).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "cut",
       "copy",
       "paste",
@@ -149,6 +192,8 @@ describe("contextMenu element", () => {
 
     expect(getContextMenuItems()).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "cut",
       "copy",
       "paste",
@@ -196,6 +241,8 @@ describe("contextMenu element", () => {
 
     expect(getContextMenuItems()).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "cut",
       "copy",
       "paste",
@@ -329,9 +376,11 @@ describe("contextMenu element", () => {
             ? "separator"
             : (item as HTMLElement).dataset.testid,
         )
-        .slice(0, 9),
+        .slice(0, 11),
     ).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "separator",
       "cut",
       "copy",
@@ -574,8 +623,10 @@ describe("contextMenu element", () => {
       clientY: 50,
     });
 
-    expect(getContextMenuItems().slice(0, 5)).toEqual([
+    expect(getContextMenuItems().slice(0, 7)).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "cut",
       "copy",
       "paste",
@@ -622,6 +673,8 @@ describe("contextMenu element", () => {
 
     expect(getContextMenuItems()).toEqual([
       "smartZoom",
+      "flipViewpointHorizontal",
+      "flipViewpointVertical",
       "copy",
       "saveImageToDevice",
     ]);

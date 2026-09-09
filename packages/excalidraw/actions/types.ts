@@ -110,6 +110,8 @@ export type ActionName =
   | "normaliseElements"
   | "flipHorizontal"
   | "flipVertical"
+  | "flipViewpointHorizontal"
+  | "flipViewpointVertical"
   | "deselect"
   | "viewMode"
   | "exportWithDarkMode"

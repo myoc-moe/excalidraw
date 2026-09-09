@@ -6,11 +6,50 @@ import {
 import { vi } from "vitest";
 
 // Import directly to avoid the @excalidraw/common throttleRAF mock from setupTests.ts.
-import { throttleRAF } from "./utils";
+import {
+  sceneCoordsToViewportCoords,
+  throttleRAF,
+  viewportCoordsToSceneCoords,
+} from "./utils";
 
 type RafCallback = FrameRequestCallback;
 
 describe("@excalidraw/common/utils", () => {
+  describe("MyOC regression: viewpoint coordinate transforms", () => {
+    const baseState = {
+      zoom: { value: 2 as any },
+      offsetLeft: 30,
+      offsetTop: 40,
+      scrollX: 11,
+      scrollY: -7,
+      width: 800,
+      height: 600,
+    };
+
+    it.each([
+      { horizontal: false, vertical: false },
+      { horizontal: true, vertical: false },
+      { horizontal: false, vertical: true },
+      { horizontal: true, vertical: true },
+    ])(
+      "round-trips scene coordinates for $horizontal/$vertical",
+      (viewpointFlip) => {
+        const state = { ...baseState, viewpointFlip };
+        const viewport = sceneCoordsToViewportCoords(
+          { sceneX: 125, sceneY: 80 },
+          state,
+        );
+
+        expect(
+          viewportCoordsToSceneCoords(
+            { clientX: viewport.x, clientY: viewport.y },
+            state,
+          ),
+        ).toEqual({ x: 125, y: 80 });
+      },
+    );
+  });
+
   describe("isTransparent()", () => {
     it("should return true when color is rgb transparent", () => {
       expect(isTransparent("#ff00")).toEqual(true);

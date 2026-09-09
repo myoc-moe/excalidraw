@@ -4,7 +4,12 @@ import { EXPORT_DATA_TYPES, MIME_TYPES } from "@excalidraw/common";
 
 import type { ExcalidrawTextElement } from "@excalidraw/element/types";
 
-import { getDefaultAppState } from "../appState";
+import {
+  cleanAppStateForExport,
+  clearAppStateForDatabase,
+  clearAppStateForLocalStorage,
+  getDefaultAppState,
+} from "../appState";
 import { Excalidraw } from "../index";
 
 import { API } from "./helpers/api";
@@ -14,6 +19,23 @@ import { fireEvent, queryByTestId, render, waitFor } from "./test-utils";
 const { h } = window;
 
 describe("appState", () => {
+  it("MyOC regression: never persists viewpoint flips", () => {
+    const appState = {
+      ...getDefaultAppState(),
+      viewpointFlip: { horizontal: true, vertical: true },
+    };
+
+    expect(clearAppStateForLocalStorage(appState)).not.toHaveProperty(
+      "viewpointFlip",
+    );
+    expect(cleanAppStateForExport(appState)).not.toHaveProperty(
+      "viewpointFlip",
+    );
+    expect(clearAppStateForDatabase(appState)).not.toHaveProperty(
+      "viewpointFlip",
+    );
+  });
+
   it("drag&drop file doesn't reset non-persisted appState", async () => {
     const defaultAppState = getDefaultAppState();
     const exportBackground = !defaultAppState.exportBackground;

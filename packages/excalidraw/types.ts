@@ -6,6 +6,7 @@ import type {
   ColorTuple,
   EditorInterface,
   StrokeWidthKey,
+  ViewpointFlip,
 } from "@excalidraw/common";
 
 import type { LinearElementEditor } from "@excalidraw/element";
@@ -73,6 +74,7 @@ import type React from "react";
 import type { JSX } from "react";
 
 export type { App };
+export type { ViewpointFlip } from "@excalidraw/common";
 
 export type SocketId = string & { _brand: "SocketId" };
 
@@ -240,6 +242,7 @@ type _CommonCanvasAppState = {
   scrollY: AppState["scrollY"];
   width: AppState["width"];
   height: AppState["height"];
+  viewpointFlip: AppState["viewpointFlip"];
   viewModeEnabled: AppState["viewModeEnabled"];
   openDialog: AppState["openDialog"];
   editingGroupId: AppState["editingGroupId"]; // TODO: move to interactive canvas if possible
@@ -409,6 +412,7 @@ export interface AppState {
   dontResizeLimitMBs: number;
   hideMainMenus: boolean;
   wheelZoomsOnDefault?: boolean;
+  viewpointFlip: ViewpointFlip;
   alignConfiguration: {
     stacking: boolean;
   };
@@ -1474,6 +1478,7 @@ export type FrameNameBoundsCache = {
     string,
     FrameNameBounds & {
       zoom: AppState["zoom"]["value"];
+      viewpointFlip: AppState["viewpointFlip"];
       versionNonce: ExcalidrawFrameLikeElement["versionNonce"];
     }
   >;
