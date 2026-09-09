@@ -17,6 +17,7 @@ import type { ExcalidrawElement } from "@excalidraw/element/types";
 import type { Alignment } from "@excalidraw/element";
 
 import { IconButton } from "../components/IconButton";
+import { Switch } from "../components/Switch";
 import {
   AlignBottomIcon,
   AlignLeftIcon,
@@ -27,6 +28,7 @@ import {
 } from "../components/icons";
 
 import { t } from "../i18n";
+import { getEffectiveEditorPreferences } from "../editorPreferences";
 
 import { isSomeElementSelected } from "../scene";
 
@@ -59,12 +61,20 @@ const alignSelectedElements = (
   alignment: Alignment,
 ) => {
   const selectedElements = app.scene.getSelectedElements(appState);
+  const { align, arrange } = getEffectiveEditorPreferences(
+    appState,
+    app.props.editorPreferences,
+  );
 
   const updatedElements = alignElements(
     selectedElements,
     alignment,
     app.scene,
     appState,
+    {
+      stacking: align.stacking,
+      gap: arrange.gap,
+    },
   );
 
   const updatedElementsMap = arrayToMap(updatedElements);
@@ -75,6 +85,49 @@ const alignSelectedElements = (
     app,
   );
 };
+
+export const actionToggleAlignStacking = register({
+  name: "toggleAlignStacking",
+  label: "labels.stacking",
+  trackEvent: { category: "element" },
+  predicate: (_elements, appState, _appProps, app) =>
+    alignActionsPredicate(appState, app),
+  perform: (_elements, appState, value, app) => {
+    const currentStacking = getEffectiveEditorPreferences(
+      appState,
+      app.props.editorPreferences,
+    ).align.stacking;
+    const stacking = typeof value === "boolean" ? value : !currentStacking;
+
+    app.props.onEditorPreferencesChange?.({ align: { stacking } });
+
+    return {
+      appState: {
+        ...appState,
+        alignConfiguration: { stacking },
+      },
+      captureUpdate: CaptureUpdateAction.NEVER,
+    };
+  },
+  PanelComponent: ({ appState, updateData, appProps }) => {
+    const stacking = getEffectiveEditorPreferences(
+      appState,
+      appProps.editorPreferences,
+    ).align.stacking;
+
+    return (
+      <div className="align-stacking-toggle">
+        <label htmlFor="alignStacking">{t("labels.stacking")}</label>
+        <Switch
+          name="alignStacking"
+          checked={stacking}
+          title={t("labels.stacking")}
+          onChange={(value) => updateData(value)}
+        />
+      </div>
+    );
+  },
+});
 
 export const actionAlignTop = register({
   name: "alignTop",

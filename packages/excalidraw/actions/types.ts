@@ -103,6 +103,7 @@ export type ActionName =
   | "alignRight"
   | "alignVerticallyCentered"
   | "alignHorizontallyCentered"
+  | "toggleAlignStacking"
   | "distributeHorizontally"
   | "distributeVertically"
   | "arrangeElements"

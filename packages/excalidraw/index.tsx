@@ -529,6 +529,7 @@ export { Fonts } from "./fonts/Fonts";
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
 export type {
+  AlignPreferences,
   ArrangePreferences,
   CompressImageFile,
   CompressImageFileOpts,

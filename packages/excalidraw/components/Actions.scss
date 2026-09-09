@@ -203,6 +203,32 @@
   --button-bg: var(--color-surface-mid);
 }
 
+.align-fieldset-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.align-fieldset-label {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  color: var(--text-primary-color);
+}
+
+.align-stacking-toggle {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+
+  label {
+    font-size: 0.75rem;
+    color: var(--color-on-surface);
+  }
+}
+
 :root.theme--dark .shape-actions-theme-scope {
   --button-hover-bg: #363541;
   --button-bg: var(--color-surface-high);

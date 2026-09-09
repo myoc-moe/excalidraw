@@ -360,6 +360,10 @@ const mergeEditorPreferences = (
     ...current.smartZoom,
     ...next.smartZoom,
   },
+  align: {
+    ...current.align,
+    ...next.align,
+  },
   arrange: {
     ...current.arrange,
     ...next.arrange,

@@ -160,6 +160,25 @@ export const EditorPreferencesDialog = ({
         </section>
 
         <section className="EditorPreferencesDialog__section">
+          <h3>Align</h3>
+          <label className="EditorPreferencesDialog__checkbox">
+            <input
+              data-testid="editor-preferences-align-stacking"
+              type="checkbox"
+              checked={editorPreferences.align.stacking}
+              onChange={(event) =>
+                onChange({
+                  align: {
+                    stacking: event.target.checked,
+                  },
+                })
+              }
+            />
+            <span>Stacking</span>
+          </label>
+        </section>
+
+        <section className="EditorPreferencesDialog__section">
           <h3>Arrange</h3>
           <label className="EditorPreferencesDialog__field">
             <span>Algorithm</span>

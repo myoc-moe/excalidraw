@@ -155,6 +155,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
   - `Alt+S` toggles snap-to-objects
   - `Q` toggles lock active tool
   - `wheelZoomsOnDefault` should make plain mousewheel zoom by default, including while the eyedropper is active
+- Preserve Myoc alignment behavior: the shared Stacking editor preference defaults off, so left/right/top/bottom alignment compacts selected groups without bounding-box overlap using the Arrange gap; enabling Stacking restores exact-edge overlap, while center alignment remains unchanged.
 - Label tests that protect fork-specific toolbar or shortcut behavior with `MyOC regression:` so future upstream merges do not mistake them for generic upstream expectations.
 
 Merge validation rules:

@@ -92,8 +92,11 @@ const AlignFieldset = ({
   const isRTL = document.documentElement.getAttribute("dir") === "rtl";
 
   return (
-    <fieldset>
-      <legend>{t("labels.align")}</legend>
+    <fieldset className="align-fieldset" aria-label={t("labels.align")}>
+      <div className="align-fieldset-header">
+        <span className="align-fieldset-label">{t("labels.align")}</span>
+        {renderAction("toggleAlignStacking")}
+      </div>
       <div className="buttonList">
         {isRTL ? (
           <>

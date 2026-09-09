@@ -57,6 +57,7 @@ export {
   actionAlignRight,
   actionAlignVerticallyCentered,
   actionAlignHorizontallyCentered,
+  actionToggleAlignStacking,
 } from "./actionAlign";
 
 export {

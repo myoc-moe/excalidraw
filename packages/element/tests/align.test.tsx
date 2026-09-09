@@ -70,6 +70,7 @@ describe("aligning", () => {
       <Excalidraw
         compressImageFile={async (file) => file}
         handleKeyboardGlobally={true}
+        editorPreferences={{ align: { stacking: true } }}
       />,
     );
   });

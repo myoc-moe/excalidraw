@@ -29,6 +29,9 @@ export const getDefaultAppState = (): Omit<
     myocSimplifiedMode: true,
     dontResizeLimitMBs: 5,
     hideMainMenus: false,
+    alignConfiguration: {
+      stacking: false,
+    },
     arrangeConfiguration: {
       gap: 10,
       algorithm: "bin-packing",
@@ -171,6 +174,7 @@ const APP_STATE_STORAGE_CONF = (<
   dontResizeLimitMBs: { browser: true, export: false, server: false },
   hideMainMenus: { browser: true, export: false, server: false },
   wheelZoomsOnDefault: { browser: true, export: false, server: false },
+  alignConfiguration: { browser: true, export: false, server: false },
   arrangeConfiguration: { browser: true, export: false, server: false },
   normaliseConfiguration: { browser: true, export: false, server: false },
   theme: { browser: true, export: false, server: false },

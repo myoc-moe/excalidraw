@@ -4,6 +4,8 @@ import {
   screen,
   waitFor,
 } from "@excalidraw/excalidraw/tests/test-utils";
+import { CaptureUpdateAction } from "@excalidraw/element";
+import { API } from "@excalidraw/excalidraw/tests/helpers/api";
 
 import ExcalidrawApp from "../App";
 
@@ -26,6 +28,17 @@ describe("EditorPreferencesDialog", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Editor Preferences")).not.toBeNull();
+    });
+
+    const stackingInput = screen.getByTestId(
+      "editor-preferences-align-stacking",
+    ) as HTMLInputElement;
+    expect(stackingInput.checked).toBe(false);
+
+    fireEvent.click(stackingInput);
+
+    await waitFor(() => {
+      expect(h.app.props.editorPreferences?.align?.stacking).toBe(true);
     });
 
     const gapInput = screen.getByTestId(
@@ -63,6 +76,32 @@ describe("EditorPreferencesDialog", () => {
       expect(h.app.props.editorPreferences?.smartZoom?.respectUIElements).toBe(
         true,
       );
+    });
+
+    fireEvent.click(screen.getByTestId("editor-preferences-close"));
+
+    const rectangleA = API.createElement({ type: "rectangle", x: 0, y: 0 });
+    const rectangleB = API.createElement({
+      type: "rectangle",
+      x: 200,
+      y: 0,
+    });
+    API.updateScene({
+      elements: [rectangleA, rectangleB],
+      captureUpdate: CaptureUpdateAction.NEVER,
+    });
+    API.setSelectedElements([rectangleA, rectangleB]);
+
+    const toolbarSwitch = document.querySelector(
+      'input[name="alignStacking"]',
+    ) as HTMLInputElement;
+    await waitFor(() => expect(toolbarSwitch.checked).toBe(true));
+
+    fireEvent.click(toolbarSwitch);
+
+    await waitFor(() => {
+      expect(h.app.props.editorPreferences?.align?.stacking).toBe(false);
+      expect(toolbarSwitch.checked).toBe(false);
     });
   });
 });

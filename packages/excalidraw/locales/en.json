@@ -117,6 +117,7 @@
     "loadingScene": "Loading scene…",
     "loadScene": "Load scene from file",
     "align": "Align",
+    "stacking": "Stacking",
     "alignTop": "Align top",
     "alignBottom": "Align bottom",
     "alignLeft": "Align left",

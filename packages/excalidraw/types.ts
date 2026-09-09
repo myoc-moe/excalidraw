@@ -343,6 +343,10 @@ export type ArrangePreferences = {
   gap?: number;
 };
 
+export type AlignPreferences = {
+  stacking?: boolean;
+};
+
 export type NormalisePreferences = {
   mode?: NormaliseMode;
   metric?: NormaliseMetric;
@@ -350,6 +354,7 @@ export type NormalisePreferences = {
 
 export type EditorPreferences = {
   smartZoom?: SmartZoomPreferences;
+  align?: AlignPreferences;
   arrange?: ArrangePreferences;
   normalise?: NormalisePreferences;
 };
@@ -404,6 +409,9 @@ export interface AppState {
   dontResizeLimitMBs: number;
   hideMainMenus: boolean;
   wheelZoomsOnDefault?: boolean;
+  alignConfiguration: {
+    stacking: boolean;
+  };
   arrangeConfiguration: {
     algorithm: ArrangeAlgorithms;
     gap: number;

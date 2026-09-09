@@ -16,7 +16,7 @@ import {
 import { Excalidraw } from "../index";
 
 import { API } from "./helpers/api";
-import { act, render, waitFor } from "./test-utils";
+import { act, fireEvent, render, waitFor } from "./test-utils";
 
 import type { EditorPreferences } from "../types";
 
@@ -25,6 +25,12 @@ const { h } = window;
 describe("editorPreferences", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("MyOC regression: defaults alignment stacking off", () => {
+    expect(getEffectiveEditorPreferences(getDefaultAppState()).align).toEqual({
+      stacking: false,
+    });
   });
 
   it("preserves smart zoom defaults when no editorPreferences prop is provided", async () => {
@@ -61,6 +67,9 @@ describe("editorPreferences", () => {
         mode: "first" as const,
         metric: "width" as const,
       },
+      alignConfiguration: {
+        stacking: true,
+      },
     };
 
     expect(
@@ -77,6 +86,9 @@ describe("editorPreferences", () => {
         ...DEFAULT_SMART_ZOOM_PREFERENCES,
         animate: false,
       },
+      align: {
+        stacking: true,
+      },
       arrange: {
         algorithm: "bin-packing-binary-tree",
         gap: 48,
@@ -86,6 +98,46 @@ describe("editorPreferences", () => {
         metric: "width",
       },
     });
+  });
+
+  it("MyOC regression: toggles the shared stacking preference from the align panel", async () => {
+    const onEditorPreferencesChange = vi.fn();
+    await render(
+      <Excalidraw
+        compressImageFile={async (file) => file}
+        onEditorPreferencesChange={onEditorPreferencesChange}
+      />,
+    );
+    const rectangleA = API.createElement({
+      type: "rectangle",
+      id: "align-a",
+      x: 0,
+      y: 0,
+    });
+    const rectangleB = API.createElement({
+      type: "rectangle",
+      id: "align-b",
+      x: 200,
+      y: 0,
+    });
+    API.updateScene({
+      elements: [rectangleA, rectangleB],
+      captureUpdate: CaptureUpdateAction.NEVER,
+    });
+    API.setSelectedElements([rectangleA, rectangleB]);
+
+    const stackingSwitch = document.querySelector(
+      'input[name="alignStacking"]',
+    ) as HTMLInputElement;
+    expect(stackingSwitch.checked).toBe(false);
+
+    fireEvent.click(stackingSwitch);
+
+    expect(onEditorPreferencesChange).toHaveBeenLastCalledWith({
+      align: { stacking: true },
+    });
+    expect(h.state.alignConfiguration.stacking).toBe(true);
+    expect(stackingSwitch.checked).toBe(true);
   });
 
   it("uses the latest smart zoom preferences after rerender", async () => {
