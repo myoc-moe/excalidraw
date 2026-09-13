@@ -238,15 +238,13 @@ const askToCommit = (tag, nextVersion) => {
   });
 };
 
-const prepareBuild = () => {
+const buildPackages = () => {
   console.info("Running yarn install...");
   execSync(`yarn --frozen-lockfile`, { stdio: "inherit" });
 
   console.info("Removing existing build artifacts...");
   execSync(`yarn rm:build`, { stdio: "inherit" });
-};
 
-const buildPackages = () => {
   for (const packageName of PACKAGES) {
     console.info(`Building "@myoc/${packageName}"...`);
     execSync(`yarn run build:esm`, {
@@ -299,19 +297,13 @@ const publishPackages = (tag, version) => {
 
   const dependenciesSnapshot = snapshotDependencies();
 
-  prepareBuild();
-
-  // Package builds embed the version from package.json as PKG_VERSION. Update
-  // manifests before compiling so runtime asset URLs point at the version that
-  // will actually be published.
-  updatePackageJsons(version);
-
   buildPackages();
 
   if (tag === "latest") {
     await updateChangelog(version);
   }
 
+  updatePackageJsons(version);
   applyPublishAliases(version);
 
   if (nonInteractive) {
