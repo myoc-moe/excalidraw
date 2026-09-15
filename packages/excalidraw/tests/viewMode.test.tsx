@@ -317,4 +317,226 @@ describe("view mode", () => {
     );
     expect(window.h.state.viewModeEnabled).toBe(true);
   });
+
+  it("MyOC regression: view-mode double-click smart zooms to the hit item", () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const image = API.createElement({
+      type: "image",
+      fileId: "double-click-image",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+
+    API.setElements([image]);
+    API.setAppState({
+      viewModeEnabled: true,
+      selectedElementIds: {},
+    });
+
+    fireEvent.click(GlobalTestState.interactiveCanvas, {
+      clientX: image.x + image.width / 2,
+      clientY: image.y + image.height / 2,
+    });
+    setViewportSpy.mockClear();
+    mouse.doubleClickAt(image.x + image.width / 2, image.y + image.height / 2);
+
+    expect(setViewportSpy).toHaveBeenCalledTimes(1);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        target: [image],
+      }),
+    );
+    expect(window.h.state.viewModeEnabled).toBe(true);
+  });
+
+  it("MyOC regression: view-mode double-click ignores empty space inside an element's bounds", () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const ellipse = API.createElement({
+      type: "ellipse",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+
+    API.setElements([ellipse]);
+    API.setAppState({
+      viewModeEnabled: true,
+      selectedElementIds: {},
+    });
+
+    mouse.doubleClickAt(ellipse.x + 2, ellipse.y + 2);
+
+    expect(setViewportSpy).not.toHaveBeenCalled();
+  });
+
+  it("MyOC regression: arrow keys smart zoom through images in spatial reading order", () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const imageA = API.createElement({
+      type: "image",
+      fileId: "keyboard-smart-zoom-image-a",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+      groupIds: ["keyboard-smart-zoom-group"],
+    });
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 200,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+    const imageB = API.createElement({
+      type: "image",
+      fileId: "keyboard-smart-zoom-image-b",
+      x: 380,
+      y: 20,
+      width: 120,
+      height: 90,
+      groupIds: ["keyboard-smart-zoom-group"],
+    });
+    const imageC = API.createElement({
+      type: "image",
+      fileId: "keyboard-smart-zoom-image-c",
+      x: 20,
+      y: 200,
+      width: 120,
+      height: 90,
+    });
+
+    // Deliberately differs from canvas reading order. Grouping must not affect
+    // the sequence, and non-images must be skipped.
+    API.setElements([imageB, imageC, rectangle, imageA]);
+    API.setAppState({ selectedElementIds: {}, selectedGroupIds: {} });
+    const editor = GlobalTestState.interactiveCanvas.closest(
+      ".excalidraw",
+    ) as HTMLElement;
+
+    Keyboard.keyPress(KEYS.ARROW_RIGHT, editor);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ target: [imageA] }),
+    );
+
+    Keyboard.keyPress(KEYS.ARROW_RIGHT, editor);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ target: [imageB] }),
+    );
+
+    Keyboard.keyPress(KEYS.ARROW_RIGHT, editor);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ target: [imageC] }),
+    );
+
+    Keyboard.keyPress(KEYS.ARROW_LEFT, editor);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ target: [imageB] }),
+    );
+
+    API.setSelectedElements([imageA]);
+    setViewportSpy.mockClear();
+    Keyboard.keyPress(KEYS.ARROW_RIGHT, editor);
+
+    expect(setViewportSpy).not.toHaveBeenCalled();
+  });
+
+  it("MyOC regression: view-mode double-click smart zooms the hit item in a group", () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const imageA = API.createElement({
+      type: "image",
+      fileId: "double-click-group-image-a",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+      groupIds: ["double-click-group"],
+    });
+    const imageB = API.createElement({
+      type: "image",
+      fileId: "double-click-group-image-b",
+      x: 180,
+      y: 20,
+      width: 120,
+      height: 90,
+      groupIds: ["double-click-group"],
+    });
+
+    API.setElements([imageA, imageB]);
+    API.setAppState({
+      viewModeEnabled: true,
+      selectedElementIds: {
+        [imageA.id]: true,
+        [imageB.id]: true,
+      },
+    });
+
+    mouse.doubleClickAt(
+      imageA.x + imageA.width / 2,
+      imageA.y + imageA.height / 2,
+    );
+
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        target: [imageA],
+      }),
+    );
+  });
+
+  it("MyOC regression: double-click smart zooms the touched item instead of the selection", () => {
+    const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+    const selectedImage = API.createElement({
+      type: "image",
+      fileId: "selected-double-click-image",
+      x: 20,
+      y: 20,
+      width: 120,
+      height: 90,
+      groupIds: ["unrelated-selected-group"],
+    });
+    const selectedGroupPeer = API.createElement({
+      type: "image",
+      fileId: "selected-double-click-group-peer",
+      x: 20,
+      y: 130,
+      width: 120,
+      height: 90,
+      groupIds: ["unrelated-selected-group"],
+    });
+    const touchedImage = API.createElement({
+      type: "image",
+      fileId: "touched-double-click-image",
+      x: 200,
+      y: 20,
+      width: 120,
+      height: 90,
+    });
+
+    API.setElements([selectedImage, selectedGroupPeer, touchedImage]);
+
+    API.setAppState({
+      viewModeEnabled: true,
+      selectedElementIds: {
+        [selectedImage.id]: true,
+        [selectedGroupPeer.id]: true,
+      },
+      selectedGroupIds: { "unrelated-selected-group": true },
+    });
+
+    setViewportSpy.mockClear();
+    mouse.doubleClickAt(
+      touchedImage.x + touchedImage.width / 2,
+      touchedImage.y + touchedImage.height / 2,
+    );
+
+    expect(setViewportSpy).toHaveBeenCalledTimes(1);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        target: [touchedImage],
+      }),
+    );
+    expect(window.h.state.viewModeEnabled).toBe(true);
+  });
 });

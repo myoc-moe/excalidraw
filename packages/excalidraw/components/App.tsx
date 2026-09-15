@@ -319,6 +319,7 @@ import {
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
 } from "../actions";
+import { getNextSmartZoomImage } from "../actions/actionSmartZoom";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionPaste } from "../actions/actionClipboard";
 import { actionUnlockAllElements } from "../actions/actionElementLock";
@@ -726,6 +727,8 @@ class App extends React.Component<AppProps, AppState> {
   /** current frame pointer cords */
   lastPointerMoveCoords: { x: number; y: number } | null = null;
   private lastCompletedCanvasClicks: { x: number; y: number }[] = [];
+
+  private lastKeyboardSmartZoomImageId: ExcalidrawElement["id"] | null = null;
   /** previous frame pointer coords */
   previousPointerMoveCoords: { x: number; y: number } | null = null;
 
@@ -5348,6 +5351,32 @@ class App extends React.Component<AppProps, AppState> {
           return;
         }
 
+        if (
+          selectedElements.length === 0 &&
+          (event.key === KEYS.ARROW_LEFT || event.key === KEYS.ARROW_RIGHT) &&
+          !event[KEYS.CTRL_OR_CMD] &&
+          !event.shiftKey &&
+          !event.altKey
+        ) {
+          const elementsMap = this.scene.getNonDeletedElementsMap();
+          const targetImage = getNextSmartZoomImage(
+            this.scene.getNonDeletedElements(),
+            elementsMap,
+            this.lastKeyboardSmartZoomImageId,
+            event.key === KEYS.ARROW_RIGHT ? "next" : "previous",
+          );
+
+          if (targetImage) {
+            this.lastKeyboardSmartZoomImageId = targetImage.id;
+            this.actionManager.executeAction(actionSmartZoom, "keyboard", [
+              targetImage,
+            ]);
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+          }
+        }
+
         // Shape switching
         if (event.key === KEYS.ESCAPE) {
           this.updateEditorAtom(convertElementTypePopupAtom, null);
@@ -6950,7 +6979,8 @@ class App extends React.Component<AppProps, AppState> {
     if (
       !this.isInteractionEnabled() ||
       this.state.editingTextElement ||
-      !this.shouldHandleBrowserCanvasDoubleClick(event.type)
+      (!this.state.viewModeEnabled &&
+        !this.shouldHandleBrowserCanvasDoubleClick(event.type))
     ) {
       return;
     }
@@ -6959,10 +6989,23 @@ class App extends React.Component<AppProps, AppState> {
     if (this.state.multiElement) {
       return;
     }
-    // double click only creates/edits text in selection mode, or with the
-    // autoshape tool (double-click-to-type without leaving the tool; all the
-    // selection-dependent branches below are inert there since autoshape
-    // never selects anything)
+
+    if (this.state.viewModeEnabled) {
+      const { x: sceneX, y: sceneY } = viewportCoordsToSceneCoords(
+        event,
+        this.state,
+      );
+      const hitElement = this.getElementAtPosition(sceneX, sceneY, {
+        includeLockedElements: true,
+      });
+
+      if (hitElement) {
+        this.cursor.reset();
+        this.actionManager.executeAction(actionSmartZoom, "ui", [hitElement]);
+      }
+      return;
+    }
+
     if (
       this.state.activeTool.type !== this.state.preferredSelectionTool.type &&
       this.state.activeTool.type !== "autoshape"
@@ -7111,6 +7154,13 @@ class App extends React.Component<AppProps, AppState> {
       // shouldn't edit/create text when inside line editor (often false positive)
 
       if (!this.state.selectedLinearElement?.isEditing) {
+        const lockedElement = this.getElementAtPosition(sceneX, sceneY, {
+          includeLockedElements: true,
+        });
+        if (lockedElement?.locked) {
+          return;
+        }
+
         const container =
           // skip binding to container on dblclick when holding ctrl
           !event[KEYS.CTRL_OR_CMD] &&

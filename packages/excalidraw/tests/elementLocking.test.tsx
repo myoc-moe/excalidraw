@@ -270,7 +270,7 @@ describe("element locking", () => {
     expect(h.state.editingTextElement?.id).toBe(h.elements[1].id);
   });
 
-  it("should ignore text under cursor when double-clicked with selection tool", async () => {
+  it("MyOC regression: should not create text when double-clicking locked text with selection tool", async () => {
     const text = API.createElement({
       type: "text",
       text: "ola",
@@ -283,11 +283,9 @@ describe("element locking", () => {
     API.setElements([text]);
     UI.clickTool("selection");
     mouse.doubleClickAt(text.x + 50, text.y + 50);
-    const editor = await getTextEditor();
-    expect(editor).not.toBe(null);
-    expect(h.state.editingTextElement?.id).not.toBe(text.id);
-    expect(h.elements.length).toBe(2);
-    expect(h.state.editingTextElement?.id).toBe(h.elements[1].id);
+    expect(await getTextEditor({ waitForEditor: false })).toBe(null);
+    expect(h.state.editingTextElement).toBe(null);
+    expect(h.elements).toHaveLength(1);
   });
 
   it("locking should include bound text", () => {
@@ -329,7 +327,7 @@ describe("element locking", () => {
     ]);
   });
 
-  it("bound text shouldn't be editable via double-click", async () => {
+  it("MyOC regression: double-clicking locked bound text shouldn't create text", async () => {
     const container = API.createElement({
       type: "rectangle",
       width: 100,
@@ -354,11 +352,9 @@ describe("element locking", () => {
     UI.clickTool("selection");
     mouse.doubleClickAt(container.width / 2, container.height / 2);
 
-    const editor = await getTextEditor();
-    expect(editor).not.toBe(null);
-    expect(h.state.editingTextElement?.id).not.toBe(text.id);
-    expect(h.elements.length).toBe(3);
-    expect(h.state.editingTextElement?.id).toBe(h.elements[2].id);
+    expect(await getTextEditor({ waitForEditor: false })).toBe(null);
+    expect(h.state.editingTextElement).toBe(null);
+    expect(h.elements).toHaveLength(2);
   });
 
   it("bound text shouldn't be editable via text tool", async () => {

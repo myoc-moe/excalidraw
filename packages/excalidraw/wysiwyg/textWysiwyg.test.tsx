@@ -296,7 +296,7 @@ describe("textWysiwyg", () => {
       expect(text.y).toBe(72);
     });
 
-    it("should edit text under cursor when double-clicked with selection tool", async () => {
+    it("should edit text under cursor when clicked with text tool", async () => {
       const text = API.createElement({
         type: "text",
         text: "ola",
@@ -307,9 +307,9 @@ describe("textWysiwyg", () => {
       });
 
       API.setElements([text]);
-      UI.clickTool("selection");
+      UI.clickTool("text");
 
-      mouse.doubleClickAt(text.x + 50, text.y + 50);
+      mouse.clickAt(text.x + 50, text.y + 50);
 
       const editor = await getTextEditor();
 
@@ -470,8 +470,8 @@ describe("textWysiwyg", () => {
       const wrappedText = text.text;
 
       // edit text
-      UI.clickTool("selection");
-      mouse.doubleClickAt(text.x + text.width / 2, text.y + text.height / 2);
+      UI.clickTool("text");
+      mouse.clickAt(text.x + text.width / 2, text.y + text.height / 2);
       const editor = await getTextEditor();
       expect(editor).not.toBe(null);
       expect(h.state.editingTextElement?.id).toBe(text.id);
@@ -503,8 +503,8 @@ describe("textWysiwyg", () => {
       // wrap
       UI.resize(text, "e", [-40, 0]);
       // enter text editing mode
-      UI.clickTool("selection");
-      mouse.doubleClickAt(text.x + text.width / 2, text.y + text.height / 2);
+      UI.clickTool("text");
+      mouse.clickAt(text.x + text.width / 2, text.y + text.height / 2);
       const editor = await getTextEditor();
       Keyboard.exitTextEditor(editor);
       // restore after unwrapping
@@ -514,13 +514,13 @@ describe("textWysiwyg", () => {
       // wrap again and add a new line
       UI.resize(text, "e", [-30, 0]);
       const wrappedText = text.text;
-      UI.clickTool("selection");
-      mouse.doubleClickAt(text.x + text.width / 2, text.y + text.height / 2);
+      UI.clickTool("text");
+      mouse.clickAt(text.x + text.width / 2, text.y + text.height / 2);
       updateTextEditor(editor, `${wrappedText}\nA new line!`);
       Keyboard.exitTextEditor(editor);
       // remove the newly added line
-      UI.clickTool("selection");
-      mouse.doubleClickAt(text.x + text.width / 2, text.y + text.height / 2);
+      UI.clickTool("text");
+      mouse.clickAt(text.x + text.width / 2, text.y + text.height / 2);
       updateTextEditor(editor, wrappedText);
       Keyboard.exitTextEditor(editor);
       // unwrap
@@ -775,7 +775,7 @@ describe("textWysiwyg", () => {
       });
     });
 
-    it("should bind text to container when double clicked inside filled container", async () => {
+    it("should bind text to container when using the text tool inside filled container", async () => {
       const rectangle = API.createElement({
         type: "rectangle",
         x: 10,
@@ -789,7 +789,11 @@ describe("textWysiwyg", () => {
       expect(h.elements.length).toBe(1);
       expect(h.elements[0].id).toBe(rectangle.id);
 
-      mouse.doubleClickAt(rectangle.x + 10, rectangle.y + 10);
+      UI.clickTool("text");
+      mouse.clickAt(
+        rectangle.x + rectangle.width / 2,
+        rectangle.y + rectangle.height / 2,
+      );
       expect(h.elements.length).toBe(2);
 
       const text = h.elements[1] as ExcalidrawTextElementWithContainer;
@@ -827,7 +831,11 @@ describe("textWysiwyg", () => {
       });
       API.setElements([frame, rectangle]);
 
-      mouse.doubleClickAt(rectangle.x + 10, rectangle.y + 10);
+      UI.clickTool("text");
+      mouse.clickAt(
+        rectangle.x + rectangle.width / 2,
+        rectangle.y + rectangle.height / 2,
+      );
 
       const text = h.elements[2] as ExcalidrawTextElementWithContainer;
       expect(text.type).toBe("text");
@@ -874,7 +882,11 @@ describe("textWysiwyg", () => {
         angle: 45,
       });
       API.setElements([rectangle]);
-      mouse.doubleClickAt(rectangle.x + 10, rectangle.y + 10);
+      UI.clickTool("text");
+      mouse.clickAt(
+        rectangle.x + rectangle.width / 2,
+        rectangle.y + rectangle.height / 2,
+      );
       const text = h.elements[1] as ExcalidrawTextElementWithContainer;
       expect(text.type).toBe("text");
       expect(text.containerId).toBe(rectangle.id);
@@ -926,7 +938,7 @@ describe("textWysiwyg", () => {
       expect(diamond.height).toBe(70);
     });
 
-    it("should bind text to container when double clicked inside of the transparent container", async () => {
+    it("should bind text to container when using the text tool inside of the transparent container", async () => {
       const rectangle = API.createElement({
         type: "rectangle",
         x: 10,
@@ -937,7 +949,8 @@ describe("textWysiwyg", () => {
       });
       API.setElements([rectangle]);
 
-      mouse.doubleClickAt(rectangle.x + 10, rectangle.y + 10);
+      UI.clickTool("text");
+      mouse.clickAt(rectangle.x + 10, rectangle.y + 10);
       expect(h.elements.length).toBe(2);
       let text = h.elements[1] as ExcalidrawTextElementWithContainer;
       expect(text.type).toBe("text");
@@ -946,7 +959,8 @@ describe("textWysiwyg", () => {
       let editor = await getTextEditor();
       Keyboard.exitTextEditor(editor);
 
-      mouse.doubleClickAt(
+      UI.clickTool("text");
+      mouse.clickAt(
         rectangle.x + rectangle.width / 2,
         rectangle.y + rectangle.height / 2,
       );
@@ -987,7 +1001,7 @@ describe("textWysiwyg", () => {
       ]);
     });
 
-    it("should bind text to container when double clicked on container stroke", async () => {
+    it("should bind text to container when the text tool clicks its center", async () => {
       const rectangle = API.createElement({
         type: "rectangle",
         x: 10,
@@ -1001,7 +1015,11 @@ describe("textWysiwyg", () => {
       expect(h.elements.length).toBe(1);
       expect(h.elements[0].id).toBe(rectangle.id);
 
-      mouse.doubleClickAt(rectangle.x + 2, rectangle.y + 2);
+      UI.clickTool("text");
+      mouse.clickAt(
+        rectangle.x + rectangle.width / 2,
+        rectangle.y + rectangle.height / 2,
+      );
       expect(h.elements.length).toBe(2);
 
       const text = h.elements[1] as ExcalidrawTextElementWithContainer;
@@ -1057,12 +1075,13 @@ describe("textWysiwyg", () => {
       });
     });
 
-    it("should'nt bind text to container when not double clicked on center", async () => {
+    it("shouldn't bind text to container when the text tool is not clicked on center", async () => {
       expect(h.elements.length).toBe(1);
       expect(h.elements[0].id).toBe(rectangle.id);
 
       // clicking somewhere on top left
-      mouse.doubleClickAt(rectangle.x + 20, rectangle.y + 20);
+      UI.clickTool("text");
+      mouse.clickAt(rectangle.x + 20, rectangle.y + 20);
       expect(h.elements.length).toBe(2);
 
       const text = h.elements[1] as ExcalidrawTextElementWithContainer;
@@ -1123,7 +1142,8 @@ describe("textWysiwyg", () => {
     it("should update font family correctly on undo/redo by selecting bounded text when font family was updated", async () => {
       expect(h.elements.length).toBe(1);
 
-      mouse.doubleClickAt(
+      UI.clickTool("text");
+      mouse.clickAt(
         rectangle.x + rectangle.width / 2,
         rectangle.y + rectangle.height / 2,
       );
@@ -1909,10 +1929,8 @@ describe("textWysiwyg", () => {
       API.setElements([arrow]);
       API.setSelectedElements([arrow]);
 
-      mouse.doubleClickAt(
-        arrow.x + arrow.width / 2,
-        arrow.y + arrow.height / 2,
-      );
+      UI.clickTool("text");
+      mouse.clickAt(arrow.x + arrow.width / 2, arrow.y + arrow.height / 2);
 
       const editor = await getTextEditor();
 
@@ -1934,7 +1952,8 @@ describe("textWysiwyg", () => {
       API.setElements([rectangle]);
       API.setSelectedElements([rectangle]);
 
-      mouse.doubleClickAt(
+      UI.clickTool("text");
+      mouse.clickAt(
         rectangle.x + rectangle.width / 2,
         rectangle.y + rectangle.height / 2,
       );
@@ -1983,7 +2002,8 @@ describe("textWysiwyg", () => {
 
       API.setElements([textElement]);
 
-      mouse.doubleClickOn(textElement as ExcalidrawTextElement);
+      UI.clickTool("text");
+      mouse.clickOn(textElement as ExcalidrawTextElement);
 
       const editor = await getTextEditor({ waitForEditor: true });
 
