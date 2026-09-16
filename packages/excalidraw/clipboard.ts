@@ -29,6 +29,7 @@ import type {
 import { ExcalidrawError } from "./errors";
 import {
   createFile,
+  dataURLToFile,
   getFileHandle,
   isSupportedImageFileType,
   normalizeFile,
@@ -55,6 +56,8 @@ export interface ClipboardData {
 
 type AllowedPasteMimeTypes = typeof ALLOWED_PASTE_MIME_TYPES[number];
 
+const WEB_EXCALIDRAW_CLIPBOARD_MIME_TYPE = `web ${MIME_TYPES.excalidrawClipboard}`;
+
 type ParsedClipboardEventTextData =
   | { type: "text"; value: string }
   | { type: "mixedContent"; value: PastedMixedContent };
@@ -66,6 +69,12 @@ export const probablySupportsClipboardWriteText =
   "clipboard" in navigator && "writeText" in navigator.clipboard;
 
 export const probablySupportsClipboardBlob =
+  "clipboard" in navigator &&
+  "write" in navigator.clipboard &&
+  "ClipboardItem" in window &&
+  "toBlob" in HTMLCanvasElement.prototype;
+
+const supportsClipboardBlob = () =>
   "clipboard" in navigator &&
   "write" in navigator.clipboard &&
   "ClipboardItem" in window &&
@@ -200,6 +209,57 @@ export const copyToClipboard = async (
 ) => {
   const json = serializeAsClipboardJSON({ elements, files });
 
+  const imageFile =
+    elements.length === 1 && isInitializedImageElement(elements[0])
+      ? files?.[elements[0].fileId]
+      : null;
+  const clipboardFile =
+    imageFile &&
+    isSupportedImageFileType(imageFile.mimeType) &&
+    imageFile.dataURL
+      ? dataURLToFile(imageFile.dataURL, imageFile.fileName)
+      : null;
+
+  if (clipboardFile) {
+    // MyOC: A single selected image must paste as an image into native apps
+    // while retaining Excalidraw JSON for lossless paste back into Excalidraw.
+    // Keep the async ClipboardItem path first: Chromium accepts a File on the
+    // copy event's DataTransfer but does not commit it to the system clipboard.
+    // DataTransfer.items.add(File) updates the in-memory ClipboardEvent but
+    // Chromium does not commit that file as an image to the system clipboard.
+    // ClipboardItem writes both representations to the actual clipboard.
+    if (supportsClipboardBlob()) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            [WEB_EXCALIDRAW_CLIPBOARD_MIME_TYPE]: new Blob([json], {
+              type: MIME_TYPES.excalidrawClipboard,
+            }),
+            [clipboardFile.type]: clipboardFile,
+          }),
+        ]);
+        return;
+      } catch (error: any) {
+        console.error("Error copying image with ClipboardItem", error);
+      }
+    }
+
+    // Retain the event-based representation as a fallback for browsers which
+    // do not support (or reject) async clipboard writes.
+    if (clipboardEvent?.clipboardData?.items) {
+      try {
+        clipboardEvent.clipboardData.items.add(clipboardFile);
+        await copyTextToSystemClipboard(
+          { [MIME_TYPES.excalidrawClipboard]: json },
+          clipboardEvent,
+        );
+        return;
+      } catch (error: any) {
+        console.error("Error copying image to clipboard event", error);
+      }
+    }
+  }
+
   await copyTextToSystemClipboard(
     {
       [MIME_TYPES.excalidrawClipboard]: json,
@@ -294,11 +354,28 @@ export const readSystemClipboard = async () => {
 
   for (const item of clipboardItems) {
     for (const type of item.types) {
+      if (type === WEB_EXCALIDRAW_CLIPBOARD_MIME_TYPE) {
+        try {
+          types[MIME_TYPES.excalidrawClipboard] = await (
+            await item.getType(type)
+          ).text();
+        } catch (error: any) {
+          console.warn(
+            `Cannot retrieve ${type} from clipboardItem: ${error.message}`,
+          );
+        }
+        continue;
+      }
+
       if (!isMemberOf(ALLOWED_PASTE_MIME_TYPES, type)) {
         continue;
       }
       try {
-        if (type === MIME_TYPES.text || type === MIME_TYPES.html) {
+        if (
+          type === MIME_TYPES.text ||
+          type === MIME_TYPES.html ||
+          type === MIME_TYPES.excalidrawClipboard
+        ) {
           types[type] = await (await item.getType(type)).text();
         } else if (isSupportedImageFileType(type)) {
           const imageBlob = await item.getType(type);
@@ -723,10 +800,12 @@ export const parseClipboard = async (
   dataList: ParsedDataTranferList,
   isPlainPaste = false,
 ): Promise<ClipboardData> => {
-  const parsedEventData = await parseClipboardEventTextData(
-    dataList,
-    isPlainPaste,
+  const excalidrawClipboardData = dataList.getData(
+    MIME_TYPES.excalidrawClipboard,
   );
+  const parsedEventData = excalidrawClipboardData
+    ? { type: "text" as const, value: excalidrawClipboardData }
+    : await parseClipboardEventTextData(dataList, isPlainPaste);
 
   if (parsedEventData.type === "mixedContent") {
     return {

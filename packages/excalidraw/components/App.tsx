@@ -344,10 +344,12 @@ import {
 } from "../appState";
 import {
   captureDragEventData,
+  createPasteEvent,
   parseClipboard,
   parseDataTransferEvent,
   parseDragImageMetadata,
   copyTextToSystemClipboard,
+  readSystemClipboard,
   type DragImageMetadata,
   type ParsedDataTransferFile,
 } from "../clipboard";
@@ -4088,6 +4090,30 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
+    // ------------------- Elements -------------------
+    // MyOC: single-image copy intentionally writes both a native image and
+    // Excalidraw JSON. Prefer the editable Excalidraw representation so image
+    // properties such as rotation and crop survive paste back into Excalidraw.
+    if (data.elements) {
+      const elements = (
+        data.programmaticAPI
+          ? convertToExcalidrawElements(
+              data.elements as ExcalidrawElementSkeleton[],
+            )
+          : data.elements
+      ) as readonly ExcalidrawElement[];
+      // TODO: remove formatting from elements if isPlainPaste
+      this.addElementsFromPasteOrLibrary({
+        elements,
+        files: data.files || null,
+        position:
+          this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
+        retainSeed: isPlainPaste,
+        preserveFrameChildrenOrder: true,
+      });
+      return;
+    }
+
     // ------------------- Images or SVG code -------------------
     const imageFiles = dataTransferFiles.map((data) => data.file);
 
@@ -4106,27 +4132,6 @@ class App extends React.Component<AppProps, AppState> {
       } else {
         this.setState({ errorMessage: t("errors.imageToolNotSupported") });
       }
-      return;
-    }
-
-    // ------------------- Elements -------------------
-    if (data.elements) {
-      const elements = (
-        data.programmaticAPI
-          ? convertToExcalidrawElements(
-              data.elements as ExcalidrawElementSkeleton[],
-            )
-          : data.elements
-      ) as readonly ExcalidrawElement[];
-      // TODO: remove formatting from elements if isPlainPaste
-      this.addElementsFromPasteOrLibrary({
-        elements,
-        files: data.files || null,
-        position:
-          this.editorInterface.formFactor === "desktop" ? "cursor" : "center",
-        retainSeed: isPlainPaste,
-        preserveFrameChildrenOrder: true,
-      });
       return;
     }
 
@@ -4273,11 +4278,40 @@ class App extends React.Component<AppProps, AppState> {
       // must be called in the same frame (thus before any awaits) as the paste
       // event else some browsers (FF...) will clear the clipboardData
       // (something something security)
-      const dataTransferList = await parseDataTransferEvent(event);
+      let dataTransferList = await parseDataTransferEvent(event);
 
-      const filesList = dataTransferList.getFiles();
+      let filesList = dataTransferList.getFiles();
 
-      const data = await parseClipboard(dataTransferList, isPlainPaste);
+      let data = await parseClipboard(dataTransferList, isPlainPaste);
+
+      // MyOC: Chromium exposes only the native image in a Ctrl+V paste event
+      // for our dual-format clipboard item. Right-click Paste goes through the
+      // async clipboard API and sees the Excalidraw JSON. Supplement image-only
+      // keyboard paste from that same API so both paste routes stay lossless.
+      if (!data.elements && filesList.length > 0 && !isPlainPaste) {
+        try {
+          const systemClipboard = await readSystemClipboard();
+          const excalidrawJSON =
+            systemClipboard[MIME_TYPES.excalidrawClipboard];
+          if (typeof excalidrawJSON === "string") {
+            dataTransferList = await parseDataTransferEvent(
+              createPasteEvent({
+                types: {
+                  [MIME_TYPES.excalidrawClipboard]: excalidrawJSON,
+                },
+              }),
+            );
+            filesList = dataTransferList.getFiles();
+            data = await parseClipboard(dataTransferList, isPlainPaste);
+          }
+        } catch (error: any) {
+          // Preserve normal native-image paste when async clipboard access is
+          // unavailable or denied.
+          console.warn(
+            `Could not read editable image clipboard data: ${error.message}`,
+          );
+        }
+      }
 
       if (this.state.viewModeEnabled) {
         if (!this.containsImagePaste(data, filesList, isPlainPaste)) {
