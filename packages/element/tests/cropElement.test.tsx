@@ -121,7 +121,6 @@ describe("Enter and leave the crop editor", () => {
   });
 
   it("leave the editor by pressing escape", () => {
-    const image = h.elements[0];
     Keyboard.keyDown(KEYS.ENTER);
     expect(h.state.croppingElementId).not.toBe(null);
 

@@ -318,6 +318,42 @@ describe("view mode", () => {
     expect(window.h.state.viewModeEnabled).toBe(true);
   });
 
+  it("MyOC regression: shows the held-F Smart Zoom hint and button state in view mode", () => {
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(0);
+
+    try {
+      API.setAppState({ viewModeEnabled: true });
+
+      const editor = GlobalTestState.interactiveCanvas.closest(
+        ".excalidraw",
+      ) as HTMLElement;
+      const smartZoomButton = document.querySelector<HTMLButtonElement>(
+        ".smart-zoom-button button",
+      );
+
+      expect(smartZoomButton).not.toBeNull();
+      expect(document.querySelector(".view-mode-hint .HintViewer")).toBeNull();
+
+      fireEvent.keyDown(editor, { key: KEYS.F, code: "KeyF" });
+
+      expect(smartZoomButton).toHaveClass("smart-zoom-button--key-held");
+      expect(document.querySelector(".view-mode-hint .HintViewer")).not.toBe(
+        null,
+      );
+      expect(document.querySelector(".view-mode-hint")?.textContent).toContain(
+        "smart zoom",
+      );
+
+      dateNowSpy.mockReturnValue(301);
+      fireEvent.keyUp(document, { key: KEYS.F, code: "KeyF" });
+
+      expect(smartZoomButton).not.toHaveClass("smart-zoom-button--key-held");
+      expect(document.querySelector(".view-mode-hint .HintViewer")).toBeNull();
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
   it("MyOC regression: F-click zooms the hit element and short F release zooms all elements", () => {
     const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(0);
 

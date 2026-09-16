@@ -162,6 +162,7 @@ const getHints = ({
   }
 
   if (selectedElements.length === 1 && isImageElement(selectedElements[0])) {
+    // MyOC: Keep Smart Zoom and image cropping as separate, explicit hints.
     return t("hints.enterCropEditor", {
       shortcut_1: getTaggedShortcutKey("double click"),
       shortcut_2: getTaggedShortcutKey("Enter"),
@@ -186,6 +187,8 @@ const getHints = ({
       });
     }
 
+    // MyOC: The canvas-panning translation may contain a deliberate newline;
+    // HintViewer.scss preserves it inside the hint badge.
     if (!selectedElements.length && !isMobile) {
       return t("hints.canvasPanning", {
         shortcut_1: getTaggedShortcutKey(t("keys.mmb")),
@@ -264,6 +267,8 @@ export const HintViewer = ({
   app,
 }: HintViewerProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+  // MyOC: Held-F guidance must remain available in view mode as well as edit
+  // mode, where the regular contextual hints are intentionally hidden.
   const hints = smartZoomKeyHeld
     ? SMART_ZOOM_KEY_HINT
     : appState.viewModeEnabled

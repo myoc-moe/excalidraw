@@ -5,6 +5,8 @@ $wide-viewport-width: 1000px;
 
 .excalidraw {
   .HintViewer {
+    // MyOC: Keep hints legible over scene content without changing the
+    // full-width placement used by the surrounding UI.
     pointer-events: none;
     box-sizing: border-box;
     position: absolute;
@@ -17,8 +19,9 @@ $wide-viewport-width: 1000px;
     width: 100%;
     margin-top: 0.5rem;
     text-align: center;
-    color: var(--color-gray-40);
+    color: #fff;
     font-size: 0.75rem;
+    opacity: 0.6;
 
     @include isMobile {
       position: static;
@@ -26,14 +29,20 @@ $wide-viewport-width: 1000px;
     }
 
     > span {
-      padding: 0.25rem;
+      align-self: center;
+      max-width: 100%;
+      padding: 0.25rem 0.5rem;
+      background-color: rgb(0 0 0 / 55%);
+      border-radius: 4px;
+      // MyOC: Translation strings can contain intentional line breaks.
+      white-space: pre-line;
     }
 
     kbd {
       display: inline-block;
       margin: 0 1px;
       font-family: monospace;
-      border: 1px solid var(--color-gray-40);
+      border: 1px solid currentColor;
       border-radius: 4px;
       padding: 1px 3px;
       font-size: 10px;
@@ -57,10 +66,7 @@ $wide-viewport-width: 1000px;
 
   &.theme--dark {
     .HintViewer {
-      color: var(--color-gray-60);
-      kbd {
-        border-color: var(--color-gray-60);
-      }
+      color: #fff;
     }
   }
 }

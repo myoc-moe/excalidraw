@@ -728,12 +728,13 @@ body.excalidraw-cursor-resize * {
     }
   }
 
+  // MyOC: Keep the Smart Zoom button visibly active while F is held, with a
+  // reduced-motion fallback for accessibility.
   @keyframes smart-zoom-key-pulse {
     0%,
     100% {
       background-color: var(--color-surface-low);
-      box-shadow: 0 0 0 1px var(--color-surface-lowest),
-        0 0 0 2px transparent;
+      box-shadow: 0 0 0 1px var(--color-surface-lowest), 0 0 0 2px transparent;
     }
 
     50% {

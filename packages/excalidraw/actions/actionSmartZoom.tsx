@@ -22,13 +22,17 @@ import { atom, useAtomValue } from "../editor-jotai";
 import { t } from "../i18n";
 
 import { register } from "./register";
+
 import type { PanelComponentProps } from "./types";
 
 type SmartZoomTarget = readonly ExcalidrawElement[];
 
+// MyOC: Keep the press-and-hold Smart Zoom guidance shared by edit and view
+// mode hint viewers.
 export const SMART_ZOOM_KEY_HINT =
   "Press <kbd>F</kbd> quickly to smart zoom the canvas, or hold and click on an item to smart zoom to it";
 
+// MyOC: The toolbar button and HintViewer both reflect this held-key state.
 export const smartZoomKeyHeldAtom = atom(false);
 
 export const getNextSmartZoomImage = (
@@ -59,6 +63,7 @@ export const getNextSmartZoomImage = (
   return images[nextIndex];
 };
 
+// MyOC: Reflect the held-F interaction on the persistent Smart Zoom control.
 const SmartZoomButton = ({ data, updateData }: PanelComponentProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
 

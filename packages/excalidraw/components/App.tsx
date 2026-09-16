@@ -596,6 +596,7 @@ const YOUTUBE_VIDEO_STATES = new Map<
 >();
 
 const MAX_EMBEDDABLE_VIEWPORT_SCALE = 4;
+// MyOC: A quick F release zooms the whole scene; holding F enables item zoom.
 const SMART_ZOOM_KEY_RELEASE_TIMEOUT = 300;
 
 const getViewpointAwareResizeCursor = (
@@ -733,6 +734,7 @@ class App extends React.Component<AppProps, AppState> {
   private lastCompletedCanvasClicks: { x: number; y: number }[] = [];
 
   private lastKeyboardSmartZoomImageId: ExcalidrawElement["id"] | null = null;
+  // MyOC: State for the press-and-hold Smart Zoom interaction.
   private smartZoomKeyDownAt: number | null = null;
   private smartZoomKeyHitElement = false;
   /** previous frame pointer coords */
@@ -5304,7 +5306,8 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
-  // Input handling
+  // MyOC Smart Zoom input handling: F is a hold gesture that can target the
+  // item under the pointer, or zoom the complete scene on a quick release.
   private isPlainSmartZoomKey = (
     event: Pick<
       KeyboardEvent,
@@ -5605,6 +5608,7 @@ class App extends React.Component<AppProps, AppState> {
         }
       }
 
+      // MyOC: Give Smart Zoom first access to the plain F shortcut.
       if (this.handleSmartZoomKeyDown(event)) {
         return;
       }
@@ -5936,6 +5940,7 @@ class App extends React.Component<AppProps, AppState> {
     if (!this.isInteractionEnabled()) {
       return;
     }
+    // MyOC: Resolve the held-F gesture before ordinary key-up handling.
     if (this.handleSmartZoomKeyUp(event)) {
       return;
     }
@@ -7232,6 +7237,8 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
+    // MyOC: Double-clicking an image smart-zooms the touched image; Enter
+    // remains the explicit path into image cropping.
     const hitElement = this.getElementAtPosition(sceneX, sceneY, {
       includeLockedElements: true,
     });
@@ -7341,6 +7348,7 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    // MyOC: Suppress the follow-up click after a held-F target zoom.
     if (this.smartZoomKeyHitElement) {
       event.preventDefault();
       event.stopPropagation();
@@ -8701,6 +8709,7 @@ class App extends React.Component<AppProps, AppState> {
       y: scenePointerY,
     };
 
+    // MyOC: Intercept pointer-down for the held-F target-zoom gesture.
     if (this.handleSmartZoomPointerDown(event, scenePointer)) {
       return;
     }

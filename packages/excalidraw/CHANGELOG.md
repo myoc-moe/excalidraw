@@ -6222,4 +6222,3 @@ First release of `@excalidraw/excalidraw`## Excalidraw Library
 - Incorrect import for color (was moved to common)
 
 ---
-

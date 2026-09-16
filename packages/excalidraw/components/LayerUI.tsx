@@ -335,6 +335,7 @@ const LayerUI = ({
               )}
           </Stack.Col>
           {defaultUIEnabled && appState.viewModeEnabled && (
+            // MyOC: Keep the held-F Smart Zoom hint visible in view mode.
             <div className="view-mode-hint">
               <HintViewer
                 appState={appState}
