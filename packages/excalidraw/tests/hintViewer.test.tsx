@@ -35,9 +35,7 @@ describe("hint viewer", () => {
     // CSSOM, so assert the merge-sensitive declarations from their source.
     expect(hintViewerStyles).toContain("color: #fff;");
     expect(hintViewerStyles).toContain("opacity: 0.6;");
-    expect(hintViewerStyles).toContain(
-      "background-color: rgb(0 0 0 / 55%);",
-    );
+    expect(hintViewerStyles).toContain("background-color: rgb(0 0 0 / 55%);");
     expect(hintViewerStyles).toContain("border-radius: 4px;");
     expect(hintViewerStyles).toContain("white-space: pre-line;");
     expect(styles).toContain(
