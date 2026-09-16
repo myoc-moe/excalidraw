@@ -7232,8 +7232,12 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    if (selectedElements.length === 1 && isImageElement(selectedElements[0])) {
-      this.startImageCropping(selectedElements[0]);
+    const hitElement = this.getElementAtPosition(sceneX, sceneY, {
+      includeLockedElements: true,
+    });
+
+    if (hitElement && isImageElement(hitElement)) {
+      this.actionManager.executeAction(actionSmartZoom, "ui", [hitElement]);
       return;
     }
 

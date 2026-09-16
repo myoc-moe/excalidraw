@@ -90,12 +90,17 @@ const compareCrops = (cropA: ImageCrop, cropB: ImageCrop) => {
 };
 
 describe("Enter and leave the crop editor", () => {
-  it("enter the editor by double clicking", () => {
+  it("MyOC regression: double clicking an image smart zooms instead of entering crop", () => {
     const image = h.elements[0];
+    const setViewportSpy = vi.spyOn(h.app.viewport, "setViewport");
+
     expect(h.state.croppingElementId).toBe(null);
     mouse.doubleClickOn(image);
-    expect(h.state.croppingElementId).not.toBe(null);
-    expect(h.state.croppingElementId).toBe(image.id);
+
+    expect(h.state.croppingElementId).toBe(null);
+    expect(setViewportSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ target: [image] }),
+    );
   });
 
   it("enter the editor by pressing enter", () => {
@@ -117,7 +122,7 @@ describe("Enter and leave the crop editor", () => {
 
   it("leave the editor by pressing escape", () => {
     const image = h.elements[0];
-    mouse.doubleClickOn(image);
+    Keyboard.keyDown(KEYS.ENTER);
     expect(h.state.croppingElementId).not.toBe(null);
 
     Keyboard.keyDown(KEYS.ESCAPE);
@@ -303,7 +308,7 @@ describe("Cropping and other features", async () => {
     const { naturalWidth, naturalHeight } =
       generateRandomNaturalWidthAndHeight(image);
 
-    mouse.doubleClickOn(image);
+    Keyboard.keyDown(KEYS.ENTER);
     expect(h.state.croppingElementId).not.toBe(null);
     UI.crop(image, "nw", naturalWidth, naturalHeight, [
       initialWidth / 2,
@@ -330,7 +335,7 @@ describe("Cropping and other features", async () => {
     const { naturalWidth, naturalHeight } =
       generateRandomNaturalWidthAndHeight(image);
 
-    mouse.doubleClickOn(image);
+    Keyboard.keyDown(KEYS.ENTER);
     expect(h.state.croppingElementId).not.toBe(null);
     UI.crop(image, "nw", naturalWidth, naturalHeight, [
       initialWidth / 2,

@@ -163,7 +163,8 @@ const getHints = ({
 
   if (selectedElements.length === 1 && isImageElement(selectedElements[0])) {
     return t("hints.enterCropEditor", {
-      shortcut: getTaggedShortcutKey("Enter"),
+      shortcut_1: getTaggedShortcutKey("double click"),
+      shortcut_2: getTaggedShortcutKey("Enter"),
     });
   }
 
