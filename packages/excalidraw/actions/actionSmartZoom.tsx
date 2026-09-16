@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import { KEYS } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element/store";
@@ -15,12 +17,19 @@ import { arrowsToEyeIcon } from "../components/icons";
 import { getSelectedElements } from "../scene";
 import { IconButton } from "../components/IconButton";
 import { getEffectiveEditorPreferences } from "../editorPreferences";
+import { atom, useAtomValue } from "../editor-jotai";
 
 import { t } from "../i18n";
 
 import { register } from "./register";
+import type { PanelComponentProps } from "./types";
 
 type SmartZoomTarget = readonly ExcalidrawElement[];
+
+export const SMART_ZOOM_KEY_HINT =
+  "Press <kbd>F</kbd> quickly to smart zoom the canvas, or hold and click on an item to smart zoom to it";
+
+export const smartZoomKeyHeldAtom = atom(false);
 
 export const getNextSmartZoomImage = (
   elements: readonly NonDeletedExcalidrawElement[],
@@ -50,6 +59,26 @@ export const getNextSmartZoomImage = (
   return images[nextIndex];
 };
 
+const SmartZoomButton = ({ data, updateData }: PanelComponentProps) => {
+  const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+
+  return (
+    <IconButton
+      type="button"
+      icon={arrowsToEyeIcon}
+      aria-label={t("labels.smartZoom")}
+      title={`${t("labels.smartZoom")} - ${KEYS.F.toLocaleUpperCase()}`}
+      onClick={() => updateData(null)}
+      size={data?.size || "medium"}
+      data-testid="button-smart-zoom"
+      keyBindingLabel={KEYS.F.toLocaleUpperCase()}
+      className={clsx({
+        "smart-zoom-button--key-held": smartZoomKeyHeld,
+      })}
+    />
+  );
+};
+
 export const actionSmartZoom = register<SmartZoomTarget | null>({
   name: "smartZoom",
   label: "toolBar.smartZoom",
@@ -77,21 +106,5 @@ export const actionSmartZoom = register<SmartZoomTarget | null>({
       captureUpdate: CaptureUpdateAction.NEVER,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    !event.altKey &&
-    event.key.toLocaleLowerCase() === KEYS.F,
-  PanelComponent: ({ data, updateData }) => (
-    <IconButton
-      type="button"
-      icon={arrowsToEyeIcon}
-      aria-label={t("labels.smartZoom")}
-      title={`${t("labels.smartZoom")} - ${KEYS.F.toLocaleUpperCase()}`}
-      onClick={() => updateData(null)}
-      size={data?.size || "medium"}
-      data-testid="button-smart-zoom"
-      keyBindingLabel={KEYS.F.toLocaleUpperCase()}
-    />
-  ),
+  PanelComponent: SmartZoomButton,
 });

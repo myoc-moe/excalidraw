@@ -728,6 +728,33 @@ body.excalidraw-cursor-resize * {
     }
   }
 
+  @keyframes smart-zoom-key-pulse {
+    0%,
+    100% {
+      background-color: var(--color-surface-low);
+      box-shadow: 0 0 0 1px var(--color-surface-lowest),
+        0 0 0 2px transparent;
+    }
+
+    50% {
+      background-color: var(--color-primary-light);
+      box-shadow: 0 0 0 1px var(--color-surface-lowest),
+        0 0 0 2px var(--color-primary-light);
+    }
+  }
+
+  .smart-zoom-button button.smart-zoom-button--key-held {
+    animation: smart-zoom-key-pulse 1.4s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .smart-zoom-button button.smart-zoom-button--key-held {
+      animation: none;
+      background-color: var(--color-primary-light);
+      box-shadow: 0 0 0 1px var(--color-primary-light);
+    }
+  }
+
   .reset-zoom-button {
     font-family: var(--ui-font);
   }

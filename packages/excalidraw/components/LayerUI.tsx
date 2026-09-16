@@ -41,6 +41,7 @@ import { EyeDropper, activeEyeDropperAtom } from "./EyeDropper";
 import { FixedSideContainer } from "./FixedSideContainer";
 import { GifPlaybackControls } from "./GifPlaybackControls";
 import { HelpDialog } from "./HelpDialog";
+import { HintViewer } from "./HintViewer";
 import { ImageExportDialog } from "./ImageExportDialog";
 import { Island } from "./Island";
 import { DefaultSidebar } from "./DefaultSidebar";
@@ -333,6 +334,16 @@ const LayerUI = ({
                 />
               )}
           </Stack.Col>
+          {defaultUIEnabled && appState.viewModeEnabled && (
+            <div className="view-mode-hint">
+              <HintViewer
+                appState={appState}
+                isMobile={editorInterface.formFactor === "phone"}
+                editorInterface={editorInterface}
+                app={app}
+              />
+            </div>
+          )}
           {defaultUIEnabled &&
             !appState.viewModeEnabled &&
             appState.openDialog?.name !== "elementLinkSelector" && (

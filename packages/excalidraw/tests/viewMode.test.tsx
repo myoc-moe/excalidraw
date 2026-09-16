@@ -318,6 +318,72 @@ describe("view mode", () => {
     expect(window.h.state.viewModeEnabled).toBe(true);
   });
 
+  it("MyOC regression: F-click zooms the hit element and short F release zooms all elements", () => {
+    const dateNowSpy = vi.spyOn(Date, "now").mockReturnValue(0);
+
+    try {
+      const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
+      const firstImage = API.createElement({
+        type: "image",
+        fileId: "f-click-image",
+        x: 20,
+        y: 20,
+        width: 120,
+        height: 90,
+      });
+      const secondRectangle = API.createElement({
+        type: "rectangle",
+        x: 200,
+        y: 20,
+        width: 120,
+        height: 90,
+      });
+
+      API.setElements([firstImage, secondRectangle]);
+      API.setSelectedElements([secondRectangle]);
+
+      const editor = GlobalTestState.interactiveCanvas.closest(
+        ".excalidraw",
+      ) as HTMLElement;
+
+      fireEvent.keyDown(editor, { key: KEYS.F, code: "KeyF" });
+      expect(setViewportSpy).not.toHaveBeenCalled();
+
+      mouse.clickAt(
+        firstImage.x + firstImage.width / 2,
+        firstImage.y + firstImage.height / 2,
+      );
+
+      expect(setViewportSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({ target: [firstImage] }),
+      );
+
+      fireEvent.keyUp(document, { key: KEYS.F, code: "KeyF" });
+      expect(setViewportSpy).toHaveBeenCalledTimes(1);
+
+      setViewportSpy.mockClear();
+      fireEvent.keyDown(editor, { key: KEYS.F, code: "KeyF" });
+      dateNowSpy.mockReturnValue(299);
+      fireEvent.keyUp(document, { key: KEYS.F, code: "KeyF" });
+
+      expect(setViewportSpy).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          target: [firstImage, secondRectangle],
+        }),
+      );
+
+      setViewportSpy.mockClear();
+      dateNowSpy.mockReturnValue(0);
+      fireEvent.keyDown(editor, { key: KEYS.F, code: "KeyF" });
+      dateNowSpy.mockReturnValue(301);
+      fireEvent.keyUp(document, { key: KEYS.F, code: "KeyF" });
+
+      expect(setViewportSpy).not.toHaveBeenCalled();
+    } finally {
+      dateNowSpy.mockRestore();
+    }
+  });
+
   it("MyOC regression: view-mode double-click smart zooms to the hit item", () => {
     const setViewportSpy = vi.spyOn(window.h.app.viewport, "setViewport");
     const image = API.createElement({

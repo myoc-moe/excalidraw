@@ -14,6 +14,11 @@ import { isNodeInFlowchart } from "@excalidraw/element";
 
 import type { EditorInterface } from "@excalidraw/common";
 
+import {
+  SMART_ZOOM_KEY_HINT,
+  smartZoomKeyHeldAtom,
+} from "../actions/actionSmartZoom";
+import { useAtomValue } from "../editor-jotai";
 import { t } from "../i18n";
 import { getShortcutKey } from "../shortcut";
 import { isEraserActive } from "../appState";
@@ -257,12 +262,17 @@ export const HintViewer = ({
   editorInterface,
   app,
 }: HintViewerProps) => {
-  const hints = getHints({
-    appState,
-    isMobile,
-    editorInterface,
-    app,
-  });
+  const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+  const hints = smartZoomKeyHeld
+    ? SMART_ZOOM_KEY_HINT
+    : appState.viewModeEnabled
+    ? null
+    : getHints({
+        appState,
+        isMobile,
+        editorInterface,
+        app,
+      });
 
   if (!hints) {
     return null;

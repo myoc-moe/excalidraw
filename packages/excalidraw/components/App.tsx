@@ -319,7 +319,10 @@ import {
   actionToggleMidpointSnapping,
   actionToggleCropEditor,
 } from "../actions";
-import { getNextSmartZoomImage } from "../actions/actionSmartZoom";
+import {
+  getNextSmartZoomImage,
+  smartZoomKeyHeldAtom,
+} from "../actions/actionSmartZoom";
 import { actionWrapTextInContainer } from "../actions/actionBoundText";
 import { actionPaste } from "../actions/actionClipboard";
 import { actionUnlockAllElements } from "../actions/actionElementLock";
@@ -593,6 +596,7 @@ const YOUTUBE_VIDEO_STATES = new Map<
 >();
 
 const MAX_EMBEDDABLE_VIEWPORT_SCALE = 4;
+const SMART_ZOOM_KEY_RELEASE_TIMEOUT = 300;
 
 const getViewpointAwareResizeCursor = (
   cursor: string,
@@ -729,6 +733,8 @@ class App extends React.Component<AppProps, AppState> {
   private lastCompletedCanvasClicks: { x: number; y: number }[] = [];
 
   private lastKeyboardSmartZoomImageId: ExcalidrawElement["id"] | null = null;
+  private smartZoomKeyDownAt: number | null = null;
+  private smartZoomKeyHitElement = false;
   /** previous frame pointer coords */
   previousPointerMoveCoords: { x: number; y: number } | null = null;
 
@@ -2732,6 +2738,7 @@ class App extends React.Component<AppProps, AppState> {
 
   private onBlur = withBatchedUpdates(() => {
     isHoldingSpace = false;
+    this.resetSmartZoomKey();
     this.setState({
       isBindingEnabled: this.state.bindingPreference === "enabled",
     });
@@ -2819,6 +2826,7 @@ class App extends React.Component<AppProps, AppState> {
 
     isHoldingSpace = false;
     isHoldingZ = false;
+    this.resetSmartZoomKey();
     isPanning = false;
     isDraggingScrollBar = false;
     lastPointerUp = null;
@@ -5297,6 +5305,117 @@ class App extends React.Component<AppProps, AppState> {
   );
 
   // Input handling
+  private isPlainSmartZoomKey = (
+    event: Pick<
+      KeyboardEvent,
+      "key" | "shiftKey" | "altKey" | "ctrlKey" | "metaKey"
+    >,
+  ) =>
+    !event[KEYS.CTRL_OR_CMD] &&
+    !event.shiftKey &&
+    !event.altKey &&
+    event.key.toLocaleLowerCase() === KEYS.F;
+
+  private updateSmartZoomCursor = (
+    scenePointer: { x: number; y: number } | null,
+  ) => {
+    if (this.smartZoomKeyDownAt === null) {
+      return;
+    }
+
+    const hitElement = scenePointer
+      ? this.getElementAtPosition(scenePointer.x, scenePointer.y, {
+          includeLockedElements: true,
+        })
+      : null;
+
+    this.cursor.set(hitElement ? CURSOR_TYPE.POINTER : "zoom-in");
+  };
+
+  private resetSmartZoomKey = () => {
+    const wasHeld = this.smartZoomKeyDownAt !== null;
+    this.smartZoomKeyDownAt = null;
+    this.smartZoomKeyHitElement = false;
+    if (wasHeld) {
+      this.cursor.reset();
+      this.updateEditorAtom(smartZoomKeyHeldAtom, false);
+    }
+  };
+
+  private handleSmartZoomKeyDown = (
+    event: React.KeyboardEvent | KeyboardEvent,
+  ): boolean => {
+    if (!this.isPlainSmartZoomKey(event)) {
+      return false;
+    }
+
+    if (!event.repeat && this.smartZoomKeyDownAt === null) {
+      this.smartZoomKeyDownAt = Date.now();
+      this.smartZoomKeyHitElement = false;
+      this.updateEditorAtom(smartZoomKeyHeldAtom, true);
+      this.updateSmartZoomCursor(this.lastPointerMoveCoords);
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  };
+
+  private handleSmartZoomKeyUp = (event: KeyboardEvent): boolean => {
+    if (
+      event.key.toLocaleLowerCase() !== KEYS.F ||
+      this.smartZoomKeyDownAt === null
+    ) {
+      return false;
+    }
+
+    const elapsed = Date.now() - this.smartZoomKeyDownAt;
+    const shouldZoomAllElements =
+      !this.smartZoomKeyHitElement && elapsed <= SMART_ZOOM_KEY_RELEASE_TIMEOUT;
+
+    this.resetSmartZoomKey();
+
+    event.stopPropagation();
+
+    if (shouldZoomAllElements) {
+      this.actionManager.executeAction(
+        actionSmartZoom,
+        "keyboard",
+        this.scene.getNonDeletedElements(),
+      );
+    }
+
+    return true;
+  };
+
+  private handleSmartZoomPointerDown = (
+    event: React.PointerEvent<HTMLElement>,
+    scenePointer: { x: number; y: number },
+  ): boolean => {
+    if (
+      event.button !== POINTER_BUTTON.MAIN ||
+      this.smartZoomKeyDownAt === null
+    ) {
+      return false;
+    }
+
+    const hitElement = this.getElementAtPosition(
+      scenePointer.x,
+      scenePointer.y,
+      { includeLockedElements: true },
+    );
+
+    if (!hitElement) {
+      return false;
+    }
+
+    this.smartZoomKeyHitElement = true;
+    event.preventDefault();
+    event.stopPropagation();
+    this.actionManager.executeAction(actionSmartZoom, "keyboard", [hitElement]);
+    return true;
+  };
+
   private onKeyDown = withBatchedUpdates(
     (event: React.KeyboardEvent | KeyboardEvent) => {
       if (!this.isInteractionEnabled()) {
@@ -5484,6 +5603,10 @@ class App extends React.Component<AppProps, AppState> {
         } else {
           maybeHandleArrowPointlikeDrag({ app: this, event });
         }
+      }
+
+      if (this.handleSmartZoomKeyDown(event)) {
+        return;
       }
 
       if (this.actionManager.handleKeyDown(event)) {
@@ -5811,6 +5934,9 @@ class App extends React.Component<AppProps, AppState> {
 
   private onKeyUp = withBatchedUpdates((event: KeyboardEvent) => {
     if (!this.isInteractionEnabled()) {
+      return;
+    }
+    if (this.handleSmartZoomKeyUp(event)) {
       return;
     }
     if (event.key === KEYS.SPACE) {
@@ -7211,7 +7337,31 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    if (this.smartZoomKeyHitElement) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
     const scenePointer = viewportCoordsToSceneCoords(event, this.state);
+    if (this.smartZoomKeyDownAt !== null && !this.smartZoomKeyHitElement) {
+      const hitElement = this.getElementAtPosition(
+        scenePointer.x,
+        scenePointer.y,
+        { includeLockedElements: true },
+      );
+
+      if (hitElement) {
+        this.smartZoomKeyHitElement = true;
+        event.preventDefault();
+        event.stopPropagation();
+        this.actionManager.executeAction(actionSmartZoom, "keyboard", [
+          hitElement,
+        ]);
+        return;
+      }
+    }
+
     const imageStatusAction = this.getImageStatusActionAtPosition(scenePointer);
     if (imageStatusAction) {
       event.preventDefault();
@@ -8339,6 +8489,11 @@ class App extends React.Component<AppProps, AppState> {
         hoveredElementIds: updateStable(prevState.hoveredElementIds, {}),
       }));
     }
+
+    this.updateSmartZoomCursor({
+      x: scenePointerX,
+      y: scenePointerY,
+    });
   };
 
   private handleEraser = (
@@ -8541,6 +8696,10 @@ class App extends React.Component<AppProps, AppState> {
       x: scenePointerX,
       y: scenePointerY,
     };
+
+    if (this.handleSmartZoomPointerDown(event, scenePointer)) {
+      return;
+    }
 
     const target = event.target as HTMLElement;
     // capture subsequent pointer events to the canvas

@@ -40,6 +40,21 @@ $wide-viewport-width: 1000px;
     }
   }
 
+  .view-mode-hint {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+
+    .HintViewer {
+      position: static;
+      align-items: center;
+      width: auto;
+    }
+  }
+
   &.theme--dark {
     .HintViewer {
       color: var(--color-gray-60);
