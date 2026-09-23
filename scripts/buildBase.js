@@ -1,13 +1,18 @@
 const path = require("path");
+const fs = require("fs");
 
 const { build } = require("esbuild");
+
+const includeGifWorker = process.argv.includes("--gif-worker");
 
 // contains all dependencies bundled inside
 const getConfig = (outdir) => ({
   outdir,
   bundle: true,
   format: "esm",
-  entryPoints: ["src/index.ts"],
+  entryPoints: includeGifWorker
+    ? ["src/index.ts", "src/gif.worker.ts"]
+    : ["src/index.ts"],
   entryNames: "[name]",
   assetNames: "[dir]/[name]",
   alias: {
@@ -44,9 +49,21 @@ function buildProd(config) {
 const createESMRawBuild = async () => {
   // development unminified build with source maps
   await buildDev(getConfig("dist/dev"));
+  if (includeGifWorker) {
+    fs.copyFileSync(
+      require.resolve("@discourse/gif/codec/pkg/squoosh_gif_bg.wasm"),
+      path.resolve("dist/dev/squoosh_gif_bg.wasm"),
+    );
+  }
 
   // production minified build without sourcemaps
   await buildProd(getConfig("dist/prod"));
+  if (includeGifWorker) {
+    fs.copyFileSync(
+      require.resolve("@discourse/gif/codec/pkg/squoosh_gif_bg.wasm"),
+      path.resolve("dist/prod/squoosh_gif_bg.wasm"),
+    );
+  }
 };
 
 (async () => {

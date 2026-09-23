@@ -5,7 +5,7 @@ import {
   sceneCoordsToViewportCoords,
 } from "@excalidraw/common";
 import { hasActiveGifDecode } from "@excalidraw/element";
-import { decodeFrames } from "modern-gif";
+import { decodeAnimated } from "@discourse/gif";
 
 import type {
   FileId,
@@ -41,45 +41,51 @@ import type { ExcalidrawProps } from "../types";
 
 const { h } = window;
 
-vi.mock("modern-gif", () => ({
-  decode: () => ({
-    width: 100,
-    height: 100,
-    frames: [],
-    version: "89a",
-  }),
-  decodeFrames: vi.fn(async () => [
+vi.mock("@discourse/gif", () => ({
+  decodeAnimated: vi.fn(async () => [
     {
-      width: 100,
-      height: 100,
-      delay: 100,
-      data: new Uint8ClampedArray(100 * 100 * 4),
+      duration: 100,
+      imageData: {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4),
+      },
+      free: vi.fn(),
     },
     {
-      width: 100,
-      height: 100,
-      delay: 100,
-      data: new Uint8ClampedArray(100 * 100 * 4),
+      duration: 100,
+      imageData: {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4),
+      },
+      free: vi.fn(),
     },
   ]),
 }));
 
 const mockSuccessfulGifDecode = () => {
-  vi.mocked(decodeFrames).mockReset();
-  vi.mocked(decodeFrames).mockResolvedValue([
+  vi.mocked(decodeAnimated).mockReset();
+  vi.mocked(decodeAnimated).mockResolvedValue([
     {
-      width: 100,
-      height: 100,
-      delay: 100,
-      data: new Uint8ClampedArray(100 * 100 * 4),
+      duration: 100,
+      imageData: {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4),
+      },
+      free: vi.fn(),
     },
     {
-      width: 100,
-      height: 100,
-      delay: 100,
-      data: new Uint8ClampedArray(100 * 100 * 4),
+      duration: 100,
+      imageData: {
+        width: 100,
+        height: 100,
+        data: new Uint8ClampedArray(100 * 100 * 4),
+      },
+      free: vi.fn(),
     },
-  ]);
+  ] as unknown as Awaited<ReturnType<typeof decodeAnimated>>);
 };
 
 export const setupImageTest = async (
@@ -891,7 +897,9 @@ describe("image insertion", () => {
 
   it("stops treating a failed GIF decode as active", async () => {
     const gifFileId = "failed-gif-file-id" as FileId;
-    vi.mocked(decodeFrames).mockRejectedValueOnce(new Error("malformed GIF"));
+    vi.mocked(decodeAnimated).mockRejectedValueOnce(
+      new Error("malformed GIF"),
+    );
 
     await setupImageTest([DEER_IMAGE_DIMENSIONS], {
       generateIdForFile: async () => gifFileId,
@@ -937,7 +945,7 @@ describe("image insertion", () => {
       expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("deferred");
     });
 
-    expect(decodeFrames).not.toHaveBeenCalled();
+    expect(decodeAnimated).not.toHaveBeenCalled();
     expect(h.app.imageCache.get(gifFileId)?.gif).toBeUndefined();
     expect(h.elements[0]).toEqual(
       expect.objectContaining({
@@ -1004,7 +1012,7 @@ describe("image insertion", () => {
       expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("success");
     });
 
-    expect(decodeFrames).toHaveBeenCalledTimes(1);
+    expect(decodeAnimated).toHaveBeenCalledTimes(1);
     expect(h.app.imageCache.get(gifFileId)?.gif?.frames).toHaveLength(2);
   });
 

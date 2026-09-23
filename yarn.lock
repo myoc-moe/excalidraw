@@ -1050,6 +1050,11 @@
   resolved "https://registry.yarnpkg.com/@braintree/sanitize-url/-/sanitize-url-6.0.2.tgz#6110f918d273fe2af8ea1c4398a88774bb9fc12f"
   integrity sha512-Tbsj02wXCbqGmzdnXNk0SOF19ChhRU70BsroIi4Pm6Ehp56in6vch94mfbdQ17DozxkL3BAVjbZ4Qc1a0HFRAg==
 
+"@discourse/gif@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@discourse/gif/-/gif-1.0.0.tgz#00fb04307a59fcba3a12caeb49e242b016fb6cd3"
+  integrity sha512-hh4EI0yoNWDuPp0CC/8N1NiUcwsCznTXrIefODxHP/c3hE97N9z2RkyKfhINEaTfiWoZx3XyOujDn6L0Pm8nRQ==
+
 "@esbuild/aix-ppc64@0.19.10":
   version "0.19.10"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.19.10.tgz#fb3922a0183d27446de00cf60d4f7baaadf98d84"

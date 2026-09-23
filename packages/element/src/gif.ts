@@ -1,4 +1,4 @@
-import { decode, decodeFrames } from "modern-gif";
+import { decodeAnimated } from "@discourse/gif";
 
 import type { DataURL } from "@excalidraw/excalidraw/types";
 
@@ -13,6 +13,7 @@ import type {
 } from "./types";
 
 const MAX_CONCURRENT_GIF_DECODES = 5;
+const GIF_WORKER_FILENAME = "gif.worker.js";
 
 export type GifDecodeStatus = "pending" | "success" | "error" | "deferred";
 
@@ -27,11 +28,29 @@ const logGifDecodeMode = (
   });
 };
 
-// Worker URLs are bundler-specific assets. The element package is also built
-// with esbuild, which cannot resolve Vite's `?url` import convention. Apps may
-// provide a URL resolved by their bundler; package consumers safely fall back
-// to modern-gif's synchronous decoder when they do not.
-let gifWorkerUrl: string | undefined;
+type DecodedGifFrame = {
+  width: number;
+  height: number;
+  delay: number;
+  data: ArrayBuffer;
+};
+
+type DecodedGif = {
+  frames: DecodedGifFrame[];
+  width: number;
+  height: number;
+};
+
+type GifWorkerResponse =
+  | ({ type: "success" } & DecodedGif)
+  | { type: "error"; message: string };
+
+// The element package build emits gif.worker.js alongside index.js. Apps can
+// still provide a bundler-resolved worker URL when their setup needs one.
+let gifWorkerUrl: string | undefined = new URL(
+  GIF_WORKER_FILENAME,
+  import.meta.url,
+).toString();
 
 export const configureGifWorkerUrl = (workerUrl: string | undefined) => {
   gifWorkerUrl = workerUrl;
@@ -60,48 +79,97 @@ const dataURLToArrayBuffer = (dataURL: DataURL) => {
   return buffer;
 };
 
-const isKnownModernGifWarning = (message: unknown) =>
-  typeof message === "string" && message.startsWith("Unknown block: 0x");
-
-const suppressKnownModernGifWarnings = async <T>(
-  task: () => T | Promise<T>,
-) => {
-  const originalWarn = console.warn;
-
-  console.warn = (...args: Parameters<typeof console.warn>) => {
-    if (isKnownModernGifWarning(args[0])) {
-      return;
-    }
-    originalWarn(...args);
+const getGifDimensions = (buffer: ArrayBuffer) => {
+  if (buffer.byteLength < 10) {
+    return null;
+  }
+  const data = new DataView(buffer);
+  return {
+    width: data.getUint16(6, true),
+    height: data.getUint16(8, true),
   };
+};
+
+const decodeGifOnMainThread = async (
+  buffer: ArrayBuffer,
+): Promise<DecodedGif> => {
+  const dimensions = getGifDimensions(buffer);
+  const gifFrames = await decodeAnimated(buffer);
 
   try {
-    return await task();
+    return {
+      width: dimensions?.width ?? gifFrames[0]?.imageData.width ?? 0,
+      height: dimensions?.height ?? gifFrames[0]?.imageData.height ?? 0,
+      frames: gifFrames.map((frame) => {
+        const imageData = frame.imageData;
+        return {
+          width: imageData.width,
+          height: imageData.height,
+          delay: frame.duration,
+          data: imageData.data.buffer as ArrayBuffer,
+        };
+      }),
+    };
   } finally {
-    console.warn = originalWarn;
+    gifFrames.forEach((frame) => frame.free());
   }
 };
 
+const decodeGifInWorker = (buffer: ArrayBuffer) =>
+  new Promise<DecodedGif>((resolve, reject) => {
+    const worker = new Worker(gifWorkerUrl!, { type: "module" });
+    let settled = false;
+
+    const finish = () => {
+      if (!settled) {
+        settled = true;
+        worker.terminate();
+      }
+    };
+
+    worker.onmessage = (event: MessageEvent<GifWorkerResponse>) => {
+      finish();
+      if (event.data.type === "error") {
+        reject(new Error(event.data.message));
+      } else {
+        resolve({
+          frames: event.data.frames,
+          width: event.data.width,
+          height: event.data.height,
+        });
+      }
+    };
+
+    worker.onerror = (event) => {
+      finish();
+      reject(new Error(event.message || "GIF worker failed"));
+    };
+    worker.onmessageerror = () => {
+      finish();
+      reject(new Error("GIF worker returned an unreadable response"));
+    };
+
+    try {
+      worker.postMessage(buffer, [buffer]);
+    } catch (error) {
+      finish();
+      reject(error);
+    }
+  });
+
 export const decodeGifFrames = async (dataURL: DataURL) => {
   const buffer = dataURLToArrayBuffer(dataURL);
-  const decodeMode = gifWorkerUrl ? "worker" : "main-thread";
-  logGifDecodeMode(decodeMode, {
+  const useWorker = Boolean(gifWorkerUrl && typeof Worker !== "undefined");
+  logGifDecodeMode(useWorker ? "worker" : "main-thread", {
     byteLength: buffer.byteLength,
     workerUrl: gifWorkerUrl,
   });
-  const { gif, decodedFrames } = await suppressKnownModernGifWarnings(
-    async () => {
-      const gif = decode(buffer);
-      return {
-        gif,
-        decodedFrames: gifWorkerUrl
-          ? await decodeFrames(buffer, { gif, workerUrl: gifWorkerUrl })
-          : await decodeFrames(buffer, { gif }),
-      };
-    },
-  );
 
-  const frames = decodedFrames.map((frame) => {
+  const decodedGif = useWorker
+    ? await decodeGifInWorker(buffer)
+    : await decodeGifOnMainThread(buffer);
+
+  const frames = decodedGif.frames.map((frame) => {
     const canvas = document.createElement("canvas");
     canvas.width = frame.width;
     canvas.height = frame.height;
@@ -109,7 +177,7 @@ export const decodeGifFrames = async (dataURL: DataURL) => {
 
     if (context) {
       const imageData = context.createImageData(frame.width, frame.height);
-      imageData.data.set(frame.data);
+      imageData.data.set(new Uint8ClampedArray(frame.data));
       context.putImageData(imageData, 0, 0);
     }
 
@@ -118,9 +186,9 @@ export const decodeGifFrames = async (dataURL: DataURL) => {
 
   return {
     frames,
-    delays: decodedFrames.map((frame) => Math.max(frame.delay, 16)),
-    width: gif.width,
-    height: gif.height,
+    delays: decodedGif.frames.map((frame) => Math.max(frame.delay, 16)),
+    width: decodedGif.width,
+    height: decodedGif.height,
   };
 };
 

@@ -18,6 +18,10 @@ export default defineConfig(({ mode }) => {
       // open the browser
       open: true,
     },
+    optimizeDeps: {
+      // Keep the WASM-bindgen loader next to its companion WASM asset in dev.
+      exclude: ["@discourse/gif"],
+    },
     // We need to specify the envDir since now there are no
     //more located in parallel with the vite.config.ts file but in parent dir
     envDir: "../",

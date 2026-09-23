@@ -61,13 +61,13 @@
   "repository": "https://github.com/myoc-moe/excalidraw",
   "scripts": {
     "gen:types": "rimraf types && tsc",
-    "build:esm": "rimraf dist && node ../../scripts/buildBase.js && yarn gen:types"
+    "build:esm": "rimraf dist && node ../../scripts/buildBase.js --gif-worker && yarn gen:types"
   },
   "dependencies": {
+    "@discourse/gif": "1.0.0",
     "@excalidraw/common": "npm:@myoc/common@0.19.539",
     "@excalidraw/fractional-indexing": "npm:@myoc/fractional-indexing@0.19.539",
     "@excalidraw/math": "npm:@myoc/math@0.19.539",
-    "modern-gif": "2.1.0",
     "thumbhash": "0.1.1"
   }
 }
