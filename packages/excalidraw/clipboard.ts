@@ -201,6 +201,33 @@ export const serializeAsClipboardJSON = ({
   return JSON.stringify(contents);
 };
 
+const convertImageFileToPNG = async (file: File): Promise<Blob> => {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+
+    const context = canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Could not create a canvas context for clipboard image");
+    }
+    context.drawImage(bitmap, 0, 0);
+
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error("Could not encode clipboard image as PNG"));
+        }
+      }, MIME_TYPES.png);
+    });
+  } finally {
+    bitmap.close();
+  }
+};
+
 export const copyToClipboard = async (
   elements: readonly NonDeletedExcalidrawElement[],
   files: BinaryFiles | null,
@@ -221,8 +248,14 @@ export const copyToClipboard = async (
       : null;
 
   if (clipboardFile) {
-    // MyOC: A single selected image must paste as an image into native apps
-    // while retaining Excalidraw JSON for lossless paste back into Excalidraw.
+    // MyOC: Native image clipboard data uses PNG because browsers may reject
+    // other image MIME types. Keep the original file in the Excalidraw JSON so
+    // paste back into Excalidraw remains lossless.
+    const clipboardImagePNG =
+      clipboardFile.type === MIME_TYPES.png
+        ? clipboardFile
+        : convertImageFileToPNG(clipboardFile);
+
     // Keep the async ClipboardItem path first: Chromium accepts a File on the
     // copy event's DataTransfer but does not commit it to the system clipboard.
     // DataTransfer.items.add(File) updates the in-memory ClipboardEvent but
@@ -235,7 +268,7 @@ export const copyToClipboard = async (
             [WEB_EXCALIDRAW_CLIPBOARD_MIME_TYPE]: new Blob([json], {
               type: MIME_TYPES.excalidrawClipboard,
             }),
-            [clipboardFile.type]: clipboardFile,
+            [MIME_TYPES.png]: clipboardImagePNG,
           }),
         ]);
         return;
@@ -248,7 +281,15 @@ export const copyToClipboard = async (
     // do not support (or reject) async clipboard writes.
     if (clipboardEvent?.clipboardData?.items) {
       try {
-        clipboardEvent.clipboardData.items.add(clipboardFile);
+        const clipboardImageFile =
+          clipboardFile.type === MIME_TYPES.png
+            ? clipboardFile
+            : new File(
+                [await clipboardImagePNG],
+                `${clipboardFile.name.replace(/\.[^/.]+$/, "") || "image"}.png`,
+                { type: MIME_TYPES.png },
+              );
+        clipboardEvent.clipboardData.items.add(clipboardImageFile);
         await copyTextToSystemClipboard(
           { [MIME_TYPES.excalidrawClipboard]: json },
           clipboardEvent,
