@@ -14,7 +14,7 @@ import type {
 } from "@excalidraw/element/types";
 
 import { useExcalidrawAppState } from "./App";
-import { CirclePauseIcon, frames, nextFrame, prevFrame } from "./icons";
+import { frames, nextFrame, prevFrame } from "./icons";
 
 import "./GifPlaybackControls.scss";
 
@@ -184,28 +184,37 @@ export const GifPlaybackControls = ({
     }
   };
 
-  const deferredGifBadges = app.scene
+  const deferredGifControls = app.scene
     .getNonDeletedElements()
-    .filter(
-      (element) =>
-        isInitializedImageElement(element) &&
-        !liveAppState.selectedElementIds[element.id] &&
-        files[element.fileId]?.mimeType === MIME_TYPES.gif &&
-        app.imageCache.get(element.fileId)?.gifDecodeStatus === "deferred",
-    )
-    .map((element) => {
+    .flatMap((element) => {
+      if (
+        !isInitializedImageElement(element) ||
+        files[element.fileId]?.mimeType !== MIME_TYPES.gif ||
+        app.imageCache.get(element.fileId)?.gifDecodeStatus !== "deferred"
+      ) {
+        return [];
+      }
+
       const position = getGifControlPosition(element, liveAppState);
-      return (
-        <span
+      return [
+        <div
           key={element.id}
-          className="gif-playback-controls gif-playback-controls__deferred-badge"
-          role="img"
-          aria-label="GIF paused"
+          className="gif-playback-controls gif-playback-controls--deferred"
           style={position}
+          onPointerDown={(event) => event.stopPropagation()}
         >
-          {CirclePauseIcon}
-        </span>
-      );
+          <button
+            type="button"
+            className="gif-playback-controls__load-large"
+            title="Load Large GIF"
+            onClick={() => {
+              app.loadDeferredGif(element.fileId);
+            }}
+          >
+            Load Large GIF
+          </button>
+        </div>
+      ];
     });
 
   const selectedElements = app.scene.getSelectedElements(liveAppState);
@@ -242,29 +251,6 @@ export const GifPlaybackControls = ({
         leftTop.y - liveAppState.offsetTop + 16,
       ),
     );
-
-    if (cacheEntry?.gifDecodeStatus === "deferred") {
-      const position = getGifControlPosition(selectedElement, liveAppState);
-
-      return (
-        <div
-          className="gif-playback-controls gif-playback-controls--deferred"
-          style={position}
-          onPointerDown={(event) => event.stopPropagation()}
-        >
-          <button
-            type="button"
-            className="gif-playback-controls__load-large"
-            title="Load Large GIF"
-            onClick={() => {
-              app.loadDeferredGif(selectedElement.fileId);
-            }}
-          >
-            Load Large GIF
-          </button>
-        </div>
-      );
-    }
 
     if (cacheEntry?.gifDecodeStatus === "pending") {
       return null;
@@ -624,7 +610,7 @@ export const GifPlaybackControls = ({
 
   return (
     <>
-      {deferredGifBadges}
+      {deferredGifControls}
       {selectedElementControls()}
     </>
   );

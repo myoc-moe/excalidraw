@@ -897,9 +897,7 @@ describe("image insertion", () => {
 
   it("stops treating a failed GIF decode as active", async () => {
     const gifFileId = "failed-gif-file-id" as FileId;
-    vi.mocked(decodeAnimated).mockRejectedValueOnce(
-      new Error("malformed GIF"),
-    );
+    vi.mocked(decodeAnimated).mockRejectedValueOnce(new Error("malformed GIF"));
 
     await setupImageTest([DEER_IMAGE_DIMENSIONS], {
       generateIdForFile: async () => gifFileId,
@@ -923,7 +921,7 @@ describe("image insertion", () => {
     ).toBe(false);
   });
 
-  it("MyOC regression: defers automatic GIF decoding above the configured size", async () => {
+  it("MyOC regression: loads deferred GIFs from view mode without selection", async () => {
     const gifFileId = "large-gif-file-id" as FileId;
     mockSuccessfulGifDecode();
 
@@ -958,7 +956,8 @@ describe("image insertion", () => {
       }),
     );
 
-    API.setSelectedElements([h.elements[0] as NonDeletedExcalidrawElement]);
+    API.clearSelection();
+    API.setAppState({ viewModeEnabled: true });
 
     await waitFor(() => {
       expect(
@@ -966,17 +965,14 @@ describe("image insertion", () => {
       ).toBeInTheDocument();
     });
 
-    expect(screen.queryByRole("img", { name: "GIF paused" })).toBeNull();
-
-    API.clearSelection();
+    expect(decodeAnimated).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Load Large GIF" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("img", { name: "GIF paused" }),
-      ).toBeInTheDocument();
+      expect(h.app.imageCache.get(gifFileId)?.gifDecodeStatus).toBe("success");
     });
 
-    expect(screen.queryByRole("button", { name: "Load Large GIF" })).toBeNull();
+    expect(decodeAnimated).toHaveBeenCalledTimes(1);
   });
 
   it("MyOC regression: manually loads a deferred GIF", async () => {
