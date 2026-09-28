@@ -1434,6 +1434,7 @@ export interface ExcalidrawImperativeAPI {
   setCursor: InstanceType<typeof App>["cursor"]["set"];
   resetCursor: InstanceType<typeof App>["cursor"]["reset"];
   toggleSidebar: InstanceType<typeof App>["toggleSidebar"];
+  setDesktopUIMode: InstanceType<typeof App>["setDesktopUIMode"];
   getEditorInterface: () => EditorInterface;
   /**
    * Disables rendering of frames (including element clipping), but currently

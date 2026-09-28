@@ -975,6 +975,7 @@ class App extends React.Component<AppProps, AppState> {
       setCursor: this.cursor.set,
       resetCursor: this.cursor.reset,
       getEditorInterface: () => this.editorInterface,
+      setDesktopUIMode: this.setDesktopUIMode,
       updateFrameRendering: this.updateFrameRendering,
       toggleSidebar: this.toggleSidebar,
       onChange: (cb) => this.onChangeEmitter.on(cb),
