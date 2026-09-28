@@ -119,3 +119,11 @@ export const getShortcutFromShortcutName = (name: ShortcutName, idx = 0) => {
     ? shortcuts[idx] || shortcuts[0]
     : "";
 };
+
+export const getActionShortcut = (name: string): string | undefined => {
+  if (!Object.prototype.hasOwnProperty.call(shortcutMap, name)) {
+    return undefined;
+  }
+
+  return getShortcutFromShortcutName(name as ShortcutName) || undefined;
+};

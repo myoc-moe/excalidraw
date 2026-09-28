@@ -26,6 +26,7 @@ import {
   useExcalidrawElements,
   useAppProps,
   useApp,
+  useEditorInterface,
 } from "../App";
 import { openConfirmModal } from "../OverwriteConfirm/OverwriteConfirmState";
 import Trans from "../Trans";
@@ -514,6 +515,46 @@ const PreferencesToggleViewModeItem = () => {
   );
 };
 
+const PreferencesMyOCDesktopUIModeItem = () => {
+  const { t } = useI18n();
+  const app = useApp();
+  const editorInterface = useEditorInterface();
+
+  if (editorInterface.formFactor !== "desktop") {
+    return null;
+  }
+
+  const description = t("labels.preferences_myocDesktopUIDescription");
+
+  return (
+    <DropdownMenuItemContentRadio<"full" | "compact">
+      name="myocDesktopUIMode"
+      value={editorInterface.desktopUIMode}
+      onChange={(mode) => app.setDesktopUIMode(mode)}
+      choices={[
+        {
+          value: "full",
+          label: t("labels.preferences_myocDesktopUIFull"),
+          ariaLabel: `${t(
+            "labels.preferences_myocDesktopUIFull",
+          )}. ${description}`,
+        },
+        {
+          value: "compact",
+          label: t("labels.preferences_myocDesktopUICompact"),
+          ariaLabel: `${t(
+            "labels.preferences_myocDesktopUICompact",
+          )}. ${description}`,
+        },
+      ]}
+    >
+      <span title={description}>
+        {t("labels.preferences_myocDesktopUISize")}
+      </span>
+    </DropdownMenuItemContentRadio>
+  );
+};
+
 const PreferencesToggleElementPropertiesItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
@@ -548,6 +589,7 @@ export const Preferences = ({
       <DropdownMenuSub.Content className="excalidraw-main-menu-preferences-submenu">
         {children || (
           <>
+            <PreferencesMyOCDesktopUIModeItem />
             <PreferencesBoxSelectionModeItem />
             <PreferencesToggleToolLockItem />
             <PreferencesToggleSnapModeItem />

@@ -533,6 +533,7 @@ export type {
   ArrangePreferences,
   CompressImageFile,
   CompressImageFileOpts,
+  ExcalidrawCommandCatalogEntry,
   EditorPreferences,
   ImageContextMenuItem,
   ImageDownloadErrorStatus,

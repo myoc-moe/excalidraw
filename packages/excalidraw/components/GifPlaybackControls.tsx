@@ -213,7 +213,7 @@ export const GifPlaybackControls = ({
           >
             Load Large GIF
           </button>
-        </div>
+        </div>,
       ];
     });
 

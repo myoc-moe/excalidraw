@@ -13,7 +13,8 @@ import {
   DEFAULT_SMART_ZOOM_PREFERENCES,
   getEffectiveEditorPreferences,
 } from "../editorPreferences";
-import { Excalidraw } from "../index";
+import { t } from "../i18n";
+import { Excalidraw, MainMenu } from "../index";
 
 import { API } from "./helpers/api";
 import { act, fireEvent, render, waitFor } from "./test-utils";
@@ -21,6 +22,49 @@ import { act, fireEvent, render, waitFor } from "./test-utils";
 import type { EditorPreferences } from "../types";
 
 const { h } = window;
+
+const DESKTOP_UI_MODE_STORAGE_KEY = "excalidraw.desktopUIMode";
+
+const renderWithPreferencesMenu = async (
+  formFactor: "phone" | "tablet" | "desktop",
+) => {
+  const result = await render(
+    <Excalidraw UIOptions={{ getFormFactor: () => formFactor }}>
+      <MainMenu>
+        <MainMenu.DefaultItems.Preferences />
+      </MainMenu>
+    </Excalidraw>,
+  );
+
+  act(() => {
+    h.app.refreshEditorInterface();
+    h.app.refresh();
+  });
+
+  return result;
+};
+
+const openPreferencesSubmenu = async (container: HTMLElement) => {
+  fireEvent.click(
+    container.querySelector('[data-testid="main-menu-trigger"]')!,
+  );
+
+  const preferencesTrigger = await waitFor(() => {
+    const trigger = Array.from(
+      document.querySelectorAll<HTMLElement>(".dropdown-menu__submenu-trigger"),
+    ).find((element) => element.textContent?.includes(t("labels.preferences")));
+    expect(trigger).not.toBeUndefined();
+    return trigger!;
+  });
+
+  fireEvent.pointerMove(preferencesTrigger, { pointerType: "mouse" });
+
+  await waitFor(() => {
+    expect(
+      document.querySelector(".excalidraw-main-menu-preferences-submenu"),
+    ).not.toBeNull();
+  });
+};
 
 describe("editorPreferences", () => {
   afterEach(() => {
@@ -339,4 +383,76 @@ describe("editorPreferences", () => {
       "width",
     );
   });
+});
+
+describe("MyOC desktop UI size preference", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    localStorage.removeItem(DESKTOP_UI_MODE_STORAGE_KEY);
+  });
+
+  it("MyOC regression: reads, changes, and persists the desktop UI size", async () => {
+    const { container } = await renderWithPreferencesMenu("desktop");
+    await openPreferencesSubmenu(container);
+
+    const description = t("labels.preferences_myocDesktopUIDescription");
+    const sizeLabel = document.querySelector(
+      ".dropdown-menu-item-bare .dropdown-menu-item__text [title]",
+    );
+    expect(sizeLabel?.textContent).toBe(
+      t("labels.preferences_myocDesktopUISize"),
+    );
+    expect(sizeLabel?.getAttribute("title")).toBe(description);
+
+    const fullRadio = document.querySelector<HTMLInputElement>(
+      'input[name="myocDesktopUIMode"][aria-label^="Full"]',
+    );
+    const compactRadio = document.querySelector<HTMLInputElement>(
+      'input[name="myocDesktopUIMode"][aria-label^="Compact"]',
+    );
+    expect(fullRadio?.checked).toBe(true);
+    expect(compactRadio?.getAttribute("aria-label")).toContain(description);
+
+    const invalidateUIOffset = vi.spyOn(h.app.viewport, "invalidateUIOffset");
+    fireEvent.click(compactRadio!);
+
+    await waitFor(() => {
+      expect(h.app.editorInterface.desktopUIMode).toBe("compact");
+      expect(compactRadio?.checked).toBe(true);
+    });
+    expect(localStorage.getItem(DESKTOP_UI_MODE_STORAGE_KEY)).toBe("compact");
+    expect(invalidateUIOffset).toHaveBeenCalledWith("stylesPanel");
+
+    fireEvent.click(fullRadio!);
+
+    await waitFor(() => {
+      expect(h.app.editorInterface.desktopUIMode).toBe("full");
+      expect(fullRadio?.checked).toBe(true);
+    });
+    expect(localStorage.getItem(DESKTOP_UI_MODE_STORAGE_KEY)).toBe("full");
+  });
+
+  it("MyOC regression: restores a saved compact desktop UI size", async () => {
+    localStorage.setItem(DESKTOP_UI_MODE_STORAGE_KEY, "compact");
+    const { container } = await renderWithPreferencesMenu("desktop");
+    await openPreferencesSubmenu(container);
+
+    const compactRadio = document.querySelector<HTMLInputElement>(
+      'input[name="myocDesktopUIMode"][aria-label^="Compact"]',
+    );
+    expect(compactRadio?.checked).toBe(true);
+  });
+
+  it.each(["tablet", "phone"] as const)(
+    "MyOC regression: keeps the desktop UI size selector out of %s layout",
+    async (formFactor) => {
+      const { container } = await renderWithPreferencesMenu(formFactor);
+      await openPreferencesSubmenu(container);
+
+      expect(
+        document.querySelector('input[name="myocDesktopUIMode"]'),
+      ).toBeNull();
+      expect(h.app.editorInterface.desktopUIMode).toBe("full");
+    },
+  );
 });

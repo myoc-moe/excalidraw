@@ -50,8 +50,7 @@ export const actionCopy = register<ClipboardEvent | null>({
   },
   // MyOC: Handle keyboard copy at keydown so async ClipboardItem writes use
   // the keyboard gesture instead of relying on the native copy-event fallback.
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.key === KEYS.C,
+  keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.C,
 });
 
 export const actionPaste = register({

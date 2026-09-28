@@ -85,6 +85,7 @@ import {
   normalizeEOL,
   getDateTime,
   isShallowEqual,
+  capitalizeString,
   arrayToMap,
   applyDarkModeFilter,
   AppEventBus,
@@ -417,6 +418,7 @@ import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import { tryParseSpreadsheet } from "../charts";
+import { getActionShortcut } from "../actions/shortcuts";
 
 import { getImageStatusOverlayPosition } from "../renderer/interactiveScene";
 
@@ -450,7 +452,14 @@ import {
 import { CursorHint, CursorHints } from "./CursorHint";
 import { AppStateObserver, type OnStateChange } from "./AppStateObserver";
 
-import { findShapeByKey, TOGGLE_TOOLS } from "./Tools";
+import {
+  findShapeByKey,
+  getToolShortcut,
+  MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES,
+  MYOC_SIMPLIFIED_MAIN_TOOL_TYPES,
+  TOGGLE_TOOLS,
+  TOOLS,
+} from "./Tools";
 
 import UnlockPopup from "./UnlockPopup";
 
@@ -488,7 +497,9 @@ import type {
   NullableGridSize,
   UIConfig,
   ImageStatus,
+  ExcalidrawCommandCatalogEntry,
 } from "../types";
+import type { ToolbarToolType } from "./Tools";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 
@@ -783,6 +794,148 @@ class App extends React.Component<AppProps, AppState> {
 
   api: ExcalidrawImperativeAPI;
 
+  private getCommandToolTypes = (): readonly ToolbarToolType[] =>
+    this.state.myocSimplifiedMode
+      ? [
+          ...MYOC_SIMPLIFIED_MAIN_TOOL_TYPES,
+          ...MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES,
+        ]
+      : (Object.keys(TOOLS) as ToolbarToolType[]);
+
+  private resolveCommandToolType = (type: string): ToolbarToolType | null => {
+    if (!Object.prototype.hasOwnProperty.call(TOOLS, type)) {
+      return null;
+    }
+
+    const catalogType = type as ToolbarToolType;
+    if (!this.getCommandToolTypes().includes(catalogType)) {
+      return null;
+    }
+
+    const toolType =
+      catalogType === "selection"
+        ? this.state.preferredSelectionTool.type
+        : catalogType;
+
+    if (
+      !this.isToolSupported(toolType) ||
+      (this.props.activeTool != null && this.props.activeTool.type !== toolType)
+    ) {
+      return null;
+    }
+
+    return toolType;
+  };
+
+  private getCommandActionEntry = (
+    action: Action,
+    elements: ReturnType<ActionManager["getElementsIncludingDeleted"]>,
+  ): ExcalidrawCommandCatalogEntry | null => {
+    // The host command bar can only execute editor commands without form data.
+    // `keyTest` is the action registry's marker for keyboard command entries;
+    // it is not used to derive the display shortcut.
+    if (!action.keyTest || !this.actionManager.isActionAvailableForUI(action)) {
+      return null;
+    }
+
+    const resolvedLabel =
+      typeof action.label === "function"
+        ? action.label(elements, this.state, this)
+        : action.label;
+    if (!resolvedLabel.trim()) {
+      return null;
+    }
+
+    const resolvedIcon =
+      typeof action.icon === "function"
+        ? action.icon(this.state, elements)
+        : action.icon;
+    const shortcut = getActionShortcut(action.name);
+
+    return {
+      id: `action:${action.name}`,
+      kind: "action",
+      label: t(resolvedLabel as Parameters<typeof t>[0], null, resolvedLabel),
+      ...(resolvedIcon ? { icon: resolvedIcon } : {}),
+      ...(action.keywords ? { keywords: action.keywords } : {}),
+      ...(shortcut ? { shortcut } : {}),
+    };
+  };
+
+  getCommandCatalog = (): ExcalidrawCommandCatalogEntry[] => {
+    const elements = this.actionManager.getElementsIncludingDeleted();
+    const actions = Object.values(this.actionManager.actions).flatMap(
+      (action) => {
+        const entry = this.getCommandActionEntry(action, elements);
+        return entry ? [entry] : [];
+      },
+    );
+
+    const tools = this.getCommandToolTypes().flatMap((type) => {
+      const resolvedType = this.resolveCommandToolType(type);
+      if (!resolvedType) {
+        return [];
+      }
+
+      const shortcut = getToolShortcut(type);
+      return [
+        {
+          id: `tool:${type}` as const,
+          kind: "tool" as const,
+          label: capitalizeString(t(`toolBar.${resolvedType}`)),
+          icon: TOOLS[resolvedType].icon,
+          ...(shortcut ? { shortcut } : {}),
+        },
+      ];
+    });
+
+    return [...actions, ...tools];
+  };
+
+  executeCommand = (id: string): boolean => {
+    if (id.startsWith("action:")) {
+      const actionName = id.slice("action:".length);
+      if (
+        !Object.prototype.hasOwnProperty.call(
+          this.actionManager.actions,
+          actionName,
+        )
+      ) {
+        return false;
+      }
+      const action =
+        this.actionManager.actions[
+          actionName as keyof typeof this.actionManager.actions
+        ];
+      if (
+        !action ||
+        `action:${action.name}` !== id ||
+        !this.getCommandActionEntry(
+          action,
+          this.actionManager.getElementsIncludingDeleted(),
+        )
+      ) {
+        return false;
+      }
+
+      this.actionManager.executeAction(action, "ui");
+      return true;
+    }
+
+    if (!id.startsWith("tool:")) {
+      return false;
+    }
+
+    const type = id.slice("tool:".length);
+    const resolvedType = this.resolveCommandToolType(type);
+    if (!resolvedType) {
+      return false;
+    }
+
+    this.setActiveTool({ type: resolvedType });
+    return true;
+  };
+
   private createExcalidrawAPI(): ExcalidrawImperativeAPI {
     const api: ExcalidrawImperativeAPI = {
       isDestroyed: false,
@@ -813,6 +966,8 @@ class App extends React.Component<AppProps, AppState> {
       registerAction: (action: Action) => {
         this.actionManager.registerAction(action);
       },
+      getCommandCatalog: this.getCommandCatalog,
+      executeCommand: this.executeCommand,
       refresh: this.refresh,
       setToast: this.setToast,
       id: this.id,
@@ -3289,13 +3444,16 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
-  /** TO BE USED LATER */
-  private setDesktopUIMode = (mode: EditorInterface["desktopUIMode"]) => {
+  public setDesktopUIMode = (mode: EditorInterface["desktopUIMode"]) => {
     const nextMode = setDesktopUIMode(mode);
+    if (!nextMode || nextMode === this.editorInterface.desktopUIMode) {
+      return;
+    }
     this.editorInterface = updateObject(this.editorInterface, {
       desktopUIMode: nextMode,
     });
     this.reconcileStylesPanelMode(this.editorInterface);
+    this.forceUpdate();
   };
 
   private clearImageShapeCache(filesMap?: BinaryFiles) {

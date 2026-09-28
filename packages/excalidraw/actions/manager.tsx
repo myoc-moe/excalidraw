@@ -50,7 +50,7 @@ const trackAction = (
 };
 
 export class ActionManager {
-  actions = {} as Record<ActionName, Action>;
+  actions = {} as Record<string, Action>;
 
   updater: (actionResult: ActionResult | Promise<ActionResult>) => void;
 
@@ -88,6 +88,24 @@ export class ActionManager {
 
   private isActionBlockedByViewportTransition = (action: Action) =>
     action.navigation === true && this.app.viewport.isLockedTransitionPending;
+
+  private isActionEnabledByCanvasOptions = (action: Action) => {
+    const canvasActions = this.app.props.UIOptions.canvasActions;
+
+    // Save-to-disk is configured under the export options rather than by its
+    // action name in CanvasActions.
+    if (action.name === "saveFileToDisk") {
+      return Boolean(
+        canvasActions.export &&
+          typeof canvasActions.export === "object" &&
+          canvasActions.export.saveFileToDisk,
+      );
+    }
+
+    return action.name in canvasActions
+      ? Boolean(canvasActions[action.name as keyof typeof canvasActions])
+      : true;
+  };
 
   handleKeyDown(event: React.KeyboardEvent | KeyboardEvent) {
     if (!this.app.isInteractionEnabled() && !this.app.isNavigationEnabled()) {
@@ -241,6 +259,19 @@ export class ActionManager {
     return (
       !action.predicate ||
       action.predicate(elements, appState, this.app.props, this.app)
+    );
+  };
+
+  isActionAvailableForUI = (action: Action) => {
+    const appState = this.getAppState();
+
+    return (
+      this.isActionEnabledByCanvasOptions(action) &&
+      this.isActionEnabled(action) &&
+      (!appState.viewModeEnabled || action.viewMode === true) &&
+      (this.app.isInteractionEnabled() ||
+        (this.app.isNavigationEnabled() && action.navigation === true)) &&
+      !this.isActionBlockedByViewportTransition(action)
     );
   };
 }

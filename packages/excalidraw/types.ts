@@ -1278,6 +1278,7 @@ export type AppClassProperties = {
   requestUnfollow: App["requestUnfollow"];
 
   setAppState: App["setAppState"];
+  setDesktopUIMode: App["setDesktopUIMode"];
 
   isInteractionEnabled: App["isInteractionEnabled"];
   isNavigationEnabled: App["isNavigationEnabled"];
@@ -1373,6 +1374,15 @@ export type ExcalidrawImperativeAPIEventMap = {
   "editor:unmount": [];
 };
 
+export type ExcalidrawCommandCatalogEntry = {
+  id: `action:${string}` | `tool:${string}`;
+  kind: "action" | "tool";
+  label: string;
+  icon?: React.ReactNode;
+  keywords?: readonly string[];
+  shortcut?: string;
+};
+
 export interface ExcalidrawImperativeAPI {
   /** Whether the editor has been unmounted and the API is no longer usable. */
   isDestroyed: boolean;
@@ -1398,6 +1408,8 @@ export interface ExcalidrawImperativeAPI {
   setViewport: InstanceType<typeof App>["viewport"]["setViewport"];
   getViewportOffsets: InstanceType<typeof App>["viewport"]["getOffsets"];
   registerAction: (action: Action) => void;
+  getCommandCatalog: () => ExcalidrawCommandCatalogEntry[];
+  executeCommand: (id: string) => boolean;
   refresh: InstanceType<typeof App>["refresh"];
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;

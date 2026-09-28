@@ -264,6 +264,31 @@ describe("MyOC regression: compact selected image actions", () => {
     localStorage.removeItem("excalidraw.desktopUIMode");
   });
 
+  it("MyOC regression: keeps keyboard hints visible on compact top actions", async () => {
+    localStorage.setItem("excalidraw.desktopUIMode", "compact");
+
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "desktop" }} />);
+    act(() => {
+      window.h.app.refreshEditorInterface();
+      window.h.app.refresh();
+    });
+
+    const toolbar = document.querySelector<HTMLElement>(
+      ".App-toolbar--compact",
+    );
+    const freedrawButton = toolbar?.querySelector<HTMLButtonElement>(
+      '[data-testid="toolbar-freedraw"]',
+    );
+    const keybinding = freedrawButton?.querySelector<HTMLElement>(
+      ".ToolIcon__keybinding",
+    );
+
+    expect(toolbar).not.toBeNull();
+    expect(keybinding?.textContent).toBe("P");
+    expect(getComputedStyle(keybinding!).display).not.toBe("none");
+    expect(freedrawButton?.getAttribute("aria-keyshortcuts")).toBe("P");
+  });
+
   it("keeps image layout actions and smart zoom in the floating actions island", async () => {
     localStorage.setItem("excalidraw.desktopUIMode", "compact");
     (global as any).ResizeObserver = class ResizeObserver {

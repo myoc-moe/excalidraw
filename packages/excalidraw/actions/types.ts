@@ -157,7 +157,7 @@ export type PanelComponentProps = {
 };
 
 export interface Action<TData = any> {
-  name: ActionName;
+  name: ActionName | (string & {});
   label:
     | string
     | ((
