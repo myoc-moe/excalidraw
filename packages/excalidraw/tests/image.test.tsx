@@ -925,10 +925,13 @@ describe("image insertion", () => {
     const gifFileId = "large-gif-file-id" as FileId;
     mockSuccessfulGifDecode();
 
-    await setupImageTest([DEER_IMAGE_DIMENSIONS], {
-      generateIdForFile: async () => gifFileId,
-      imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
-    });
+    await setupImageTest(
+      [DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS, DEER_IMAGE_DIMENSIONS],
+      {
+        generateIdForFile: async () => gifFileId,
+        imageOptions: { gifAutoDecodeMaxFileSizeBytes: 1 },
+      },
+    );
 
     await API.drop([
       {
