@@ -134,7 +134,7 @@ exports[`given element A and group of elements B and given both are selected whe
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -585,7 +585,7 @@ exports[`given element A and group of elements B and given both are selected whe
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -1015,7 +1015,7 @@ exports[`regression tests > Cmd/Ctrl-click exclusively select element under poin
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -1604,7 +1604,7 @@ exports[`regression tests > Drags selected element when hitting only bounding bo
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -1841,7 +1841,7 @@ exports[`regression tests > adjusts z order when grouping > [end of test] appSta
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -2245,7 +2245,7 @@ exports[`regression tests > alt-drag duplicates an element > [end of test] appSt
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -2512,7 +2512,7 @@ exports[`regression tests > arrow keys > [end of test] appState 1`] = `
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -2719,7 +2719,7 @@ exports[`regression tests > can drag element that covers another element, while 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -3065,7 +3065,7 @@ exports[`regression tests > change the properties of a shape > [end of test] app
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -3347,7 +3347,7 @@ exports[`regression tests > click on an element and drag it > [dragged] appState
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -3613,7 +3613,7 @@ exports[`regression tests > click on an element and drag it > [end of test] appS
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -3874,7 +3874,7 @@ exports[`regression tests > click to select a shape > [end of test] appState 1`]
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -4157,7 +4157,7 @@ exports[`regression tests > click-drag to select a group > [end of test] appStat
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -4493,7 +4493,7 @@ exports[`regression tests > deleting last but one element in editing group shoul
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -4980,7 +4980,7 @@ exports[`regression tests > deselects group of selected elements on pointer down
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -5259,7 +5259,7 @@ exports[`regression tests > deselects group of selected elements on pointer up w
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -5586,7 +5586,7 @@ exports[`regression tests > deselects selected element on pointer down when poin
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -5791,7 +5791,7 @@ exports[`regression tests > deselects selected element, on pointer up, when clic
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -6016,7 +6016,7 @@ exports[`regression tests > double click to edit a group > [end of test] appStat
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -6436,7 +6436,7 @@ exports[`regression tests > drags selected elements from point inside common bou
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -6751,7 +6751,7 @@ exports[`regression tests > draw every type of shape > [end of test] appState 1`
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -7566,7 +7566,7 @@ exports[`regression tests > given a group of selected elements with an element t
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -7923,7 +7923,7 @@ exports[`regression tests > given a selected element A and a not selected elemen
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -8225,7 +8225,7 @@ exports[`regression tests > given selected element A with lower z-index than uns
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -8484,7 +8484,7 @@ exports[`regression tests > given selected element A with lower z-index than uns
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -8777,7 +8777,7 @@ exports[`regression tests > key a selects arrow tool > [end of test] appState 1`
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -9004,7 +9004,7 @@ exports[`regression tests > key d selects diamond tool > [end of test] appState 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -9240,7 +9240,7 @@ exports[`regression tests > key l selects line tool > [end of test] appState 1`]
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -9465,7 +9465,7 @@ exports[`regression tests > key o selects ellipse tool > [end of test] appState 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -9668,7 +9668,7 @@ exports[`regression tests > key p selects freedraw tool > [end of test] appState
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -9891,7 +9891,7 @@ exports[`regression tests > key r selects rectangle tool > [end of test] appStat
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -10104,7 +10104,7 @@ exports[`regression tests > make a group and duplicate it > [end of test] appSta
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -10649,7 +10649,7 @@ exports[`regression tests > noop interaction after undo shouldn't create history
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -10949,7 +10949,7 @@ exports[`regression tests > pinch-to-zoom works > [end of test] appState 1`] = `
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -11100,7 +11100,7 @@ exports[`regression tests > shift click on selected element should deselect it o
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -11329,7 +11329,7 @@ exports[`regression tests > shift-click to multiselect, then drag > [end of test
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -11674,7 +11674,7 @@ exports[`regression tests > should group elements and ungroup them > [end of tes
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -12130,7 +12130,7 @@ exports[`regression tests > single-clicking on a subgroup of a selected group sh
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -12783,7 +12783,7 @@ exports[`regression tests > spacebar + drag scrolls the canvas > [end of test] a
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -12936,7 +12936,7 @@ exports[`regression tests > supports nested groups > [end of test] appState 1`] 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -13619,7 +13619,7 @@ exports[`regression tests > switches from group of selected elements to another 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -13980,7 +13980,7 @@ exports[`regression tests > switches selected element on pointer down > [end of 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14236,7 +14236,7 @@ exports[`regression tests > two-finger scroll works > [end of test] appState 1`]
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14387,7 +14387,7 @@ exports[`regression tests > undo/redo drawing an element > [end of test] appStat
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14772,7 +14772,7 @@ exports[`regression tests > updates fontSize & fontFamily appState > [end of tes
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14924,7 +14924,7 @@ exports[`regression tests > z + horizontal drag zooms the canvas > [end of test]
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -15076,7 +15076,7 @@ exports[`regression tests > zoom hotkeys > [end of test] appState 1`] = `
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {

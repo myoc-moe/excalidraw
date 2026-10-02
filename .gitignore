@@ -30,3 +30,4 @@ meta*.json
 .claude
 packages/excalidraw/dist/
 .tmp/
+.playwright-cli/

@@ -860,7 +860,73 @@ export type UIConfig = {
   };
 };
 
+export type ExcalidrawUIRegion =
+  | "topLeft"
+  | "topCenter"
+  | "topRight"
+  | "middleLeft"
+  | "middleRight"
+  | "bottomLeft"
+  | "bottomCenter"
+  | "bottomRight";
+
+export type ExcalidrawUIOrientation = "auto" | "horizontal" | "vertical";
+
+/** Built-in controls that can be independently placed by `uiLayout`. */
+export type ExcalidrawUIItem =
+  | "mainMenu"
+  | "sidebarTrigger"
+  | "hostTopLeftUI"
+  | "hostTopRightUI"
+  | "toolbar"
+  | "stylesPanel"
+  | "collaborators"
+  | "stats"
+  | "undo"
+  | "redo"
+  | "smartZoom"
+  | "viewMode"
+  | "zoom"
+  | "penMode"
+  | "help";
+
+export type ExcalidrawUIItemLayout = {
+  region?: ExcalidrawUIRegion;
+  visible?: boolean;
+  order?: number;
+  orientation?: ExcalidrawUIOrientation;
+};
+
+export type ExcalidrawUICustomItem = ExcalidrawUIItemLayout & {
+  id: string;
+  region: ExcalidrawUIRegion;
+  render: (context: {
+    api: ExcalidrawImperativeAPI;
+    appState: UIAppState;
+    editorInterface: EditorInterface;
+    region: ExcalidrawUIRegion;
+    orientation: Exclude<ExcalidrawUIOrientation, "auto">;
+  }) => React.ReactNode;
+};
+
+export type ExcalidrawUIFormFactorLayout = {
+  items?: Partial<Record<ExcalidrawUIItem, ExcalidrawUIItemLayout>>;
+  customItems?: readonly ExcalidrawUICustomItem[];
+};
+
+/** Independent host-owned layouts for each responsive editor form factor. */
+export type ExcalidrawUILayout = {
+  desktop?: ExcalidrawUIFormFactorLayout;
+  tablet?: ExcalidrawUIFormFactorLayout;
+  mobile?: ExcalidrawUIFormFactorLayout;
+};
+
 export interface ExcalidrawProps {
+  /**
+   * Host-controlled placement and visibility for editor UI. Each form factor
+   * has its own overrides; omitted values retain that form factor's defaults.
+   */
+  uiLayout?: ExcalidrawUILayout;
   className?: string;
   onChange?: (
     elements: readonly OrderedExcalidrawElement[],

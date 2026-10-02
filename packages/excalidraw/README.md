@@ -41,6 +41,100 @@ export default function App() {
 
 Excalidraw fills `100%` of the width and height of its parent. If the parent has no height, the canvas will not be visible.
 
+## Responsive UI layout
+
+Use `uiLayout` to independently place or hide built-in controls for desktop, tablet, and mobile form factors. Each form factor starts from its current default layout; omitted overrides keep their defaults. The host owns any persistence.
+
+The eight physical regions are:
+
+```text
+topLeft       topCenter       topRight
+middleLeft    [canvas]        middleRight
+bottomLeft    bottomCenter    bottomRight
+```
+
+```tsx
+import {
+  arrowsToEyeIcon,
+  Excalidraw,
+  RedoIcon,
+  UndoIcon,
+} from "@myoc/excalidraw";
+import type { ExcalidrawUICustomItem } from "@myoc/excalidraw";
+
+const historyAndZoom: ExcalidrawUICustomItem = {
+  id: "host-history-and-zoom",
+  region: "bottomLeft" as const,
+  render: ({ api }) => (
+    <div style={{ display: "flex", gap: 8 }}>
+      <button
+        aria-label="Undo"
+        onClick={() => api.executeCommand("action:undo")}
+      >
+        <span className="host-tool-icon">{UndoIcon}</span>
+      </button>
+      <button
+        aria-label="Redo"
+        onClick={() => api.executeCommand("action:redo")}
+      >
+        <span className="host-tool-icon">{RedoIcon}</span>
+      </button>
+      <button
+        aria-label="Smart Zoom"
+        onClick={() => api.executeCommand("action:smartZoom")}
+      >
+        <span className="host-tool-icon">{arrowsToEyeIcon}</span>
+      </button>
+    </div>
+  ),
+};
+
+export function Editor() {
+  return (
+    <Excalidraw
+      uiLayout={{
+        desktop: {
+          items: {
+            toolbar: { region: "middleLeft" },
+            undo: { visible: false },
+            redo: { visible: false },
+            zoom: { visible: false },
+          },
+          customItems: [historyAndZoom],
+        },
+        tablet: {
+          items: { toolbar: { region: "topLeft" } },
+        },
+        mobile: {
+          items: {
+            toolbar: { region: "bottomLeft" },
+            undo: { visible: false },
+            redo: { visible: false },
+            zoom: { visible: false },
+          },
+          customItems: [historyAndZoom],
+        },
+      }}
+    />
+  );
+}
+```
+
+Import `ExcalidrawUICustomItem` or `ExcalidrawImperativeAPI` from the package for the callback type. A custom item receives the API, current UI state and editor form factor, its resolved region, and its resolved orientation. The region names use physical left and right edges. Top and bottom regions arrange controls horizontally by default; middle side regions arrange them vertically. Set `orientation` to override the suggestion. Hiding a built-in control only hides its button; the matching keyboard shortcut and imperative command remain available.
+
+The existing icons are also available as named exports from the package root. Most are React SVG elements, so render them as children (for example, `{UndoIcon}`) and size them with a host-owned class:
+
+```css
+.host-tool-icon,
+.host-tool-icon svg {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+}
+```
+
+The host owns the surrounding button styles, accessible label, and command behavior. Theme-aware icons such as `GroupIcon` are React components and accept their documented props.
+
 ## Next.js / SSR frameworks
 
 Excalidraw should be rendered on the client. In SSR frameworks such as Next.js, use a client component and load it dynamically with SSR disabled.

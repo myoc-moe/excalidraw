@@ -3,7 +3,6 @@
   background-color: var(--island-bg-color);
   border-radius: var(--border-radius-lg);
   box-shadow: 0 0 0 1px var(--color-surface-lowest);
-  margin-inline-start: 0.6em; // to make space for smartZoom
 }
 
 .zoom-button,
@@ -188,7 +187,8 @@
   z-index: 999;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 6px;
   width: 100%;
   background: transparent;
   border-radius: var(--border-radius-lg);
@@ -196,6 +196,17 @@
   overflow: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+.mobile-shape-actions__primary {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  gap: 6px;
+}
+
+.mobile-shape-actions__primary:empty {
+  display: none;
 }
 
 .shape-actions-theme-scope {

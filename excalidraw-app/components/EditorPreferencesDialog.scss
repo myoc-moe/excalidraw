@@ -34,6 +34,15 @@
   align-items: center;
 }
 
+.EditorPreferencesDialog__description {
+  margin: 0;
+}
+
+.EditorPreferencesDialog__radio-group {
+  display: grid;
+  gap: 0.75rem;
+}
+
 .EditorPreferencesDialog__field input,
 .EditorPreferencesDialog__field select {
   width: 100%;

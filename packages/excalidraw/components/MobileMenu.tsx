@@ -5,20 +5,30 @@ import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 import { useTunnels } from "../context/tunnels";
 import { t } from "../i18n";
 import { getScrollToContentState } from "../scene";
-import { SCROLLBAR_WIDTH, SCROLLBAR_MARGIN } from "../scene/scrollbars";
 
 import { MobileShapeActions } from "./Actions";
 import { MobileToolbar } from "./MobileToolbar";
-import { FixedSideContainer } from "./FixedSideContainer";
 
 import { Island } from "./Island";
 
 import { PenModeButton } from "./PenModeButton";
 import { ViewportStatusBadge } from "./ViewportStatusFrame/ViewportStatusFrame";
+import {
+  UIRegionLayout,
+  getUIFormFactorLayout,
+  type UIRegionLayoutItem,
+} from "./UIRegionLayout";
 
 import type { ActionManager } from "../actions/manager";
-import type { AppClassProperties, AppState, UIAppState } from "../types";
+import type {
+  AppClassProperties,
+  AppState,
+  ExcalidrawProps,
+  UIAppState,
+} from "../types";
 import type { JSX } from "react";
+
+const MOBILE_TOOLBAR_MAX_WIDTH = 450;
 
 type MobileMenuProps = {
   appState: UIAppState;
@@ -42,6 +52,7 @@ type MobileMenuProps = {
   defaultUIEnabled: boolean;
   scrollBackToContentUIEnabled: boolean;
   app: AppClassProperties;
+  uiLayout?: ExcalidrawProps["uiLayout"];
 };
 
 export const MobileMenu = ({
@@ -57,69 +68,13 @@ export const MobileMenu = ({
   scrollBackToContentUIEnabled,
   app,
   onPenModeToggle,
+  uiLayout,
 }: MobileMenuProps) => {
   const {
     WelcomeScreenCenterTunnel,
     MainMenuTunnel,
     DefaultSidebarTriggerTunnel,
   } = useTunnels();
-  const renderAppTopBar = () => {
-    if (appState.openDialog?.name === "elementLinkSelector") {
-      return null;
-    }
-
-    const topRightUI = (
-      <div className="excalidraw-ui-top-right">
-        {renderTopRightUI?.(true, appState) ??
-          (!appState.viewModeEnabled && (
-            <>
-              {defaultUIEnabled && (
-                <PenModeButton
-                  checked={appState.penMode}
-                  onChange={() => onPenModeToggle(null)}
-                  title={t("toolBar.penMode")}
-                  isMobile
-                  penDetected={appState.penDetected}
-                />
-              )}
-              <DefaultSidebarTriggerTunnel.Out />
-            </>
-          ))}
-      </div>
-    );
-
-    const topLeftUI = (
-      <div className="excalidraw-ui-top-left">
-        {renderTopLeftUI?.(true, appState)}
-        <MainMenuTunnel.Out />
-      </div>
-    );
-
-    return (
-      <div
-        className="App-toolbar-content"
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          justifyContent: "space-between",
-        }}
-      >
-        {topLeftUI}
-        {topRightUI}
-      </div>
-    );
-  };
-
-  const renderToolbar = () => {
-    return (
-      <MobileToolbar
-        app={app}
-        actionManager={actionManager}
-        setAppState={setAppState}
-      />
-    );
-  };
-
   const shouldRenderScrollBackToContent =
     scrollBackToContentUIEnabled && appState.scrolledOutside;
   const shouldRenderMobileCanvasActions = defaultUIEnabled;
@@ -151,6 +106,164 @@ export const MobileMenu = ({
     />
   ) : null;
 
+  const editorInterface = app.editorInterface;
+  const formFactorLayout = getUIFormFactorLayout(uiLayout, editorInterface);
+  const topRightHostUI = renderTopRightUI?.(true, appState);
+  const hasTopRightHostUI =
+    topRightHostUI !== null && topRightHostUI !== undefined;
+  const hasUndoOverride = formFactorLayout?.items?.undo !== undefined;
+  const hasRedoOverride = formFactorLayout?.items?.redo !== undefined;
+  const isElementLinkDialog =
+    appState.openDialog?.name === "elementLinkSelector";
+
+  const layoutItems: UIRegionLayoutItem[] = [
+    {
+      id: "hostTopLeftUI" as const,
+      defaultRegion: "topLeft" as const,
+      defaultOrder: -10,
+      content: !isElementLinkDialog && renderTopLeftUI?.(true, appState),
+    },
+    {
+      id: "mainMenu" as const,
+      defaultRegion: "topLeft" as const,
+      content: !isElementLinkDialog ? <MainMenuTunnel.Out /> : null,
+    },
+    {
+      id: "hostTopRightUI" as const,
+      defaultRegion: "topRight" as const,
+      defaultOrder: -10,
+      content: !isElementLinkDialog ? topRightHostUI : null,
+    },
+    {
+      id: "penMode" as const,
+      defaultRegion: "topRight" as const,
+      content:
+        !isElementLinkDialog &&
+        !hasTopRightHostUI &&
+        !appState.viewModeEnabled &&
+        defaultUIEnabled ? (
+          <PenModeButton
+            checked={appState.penMode}
+            onChange={() => onPenModeToggle(null)}
+            title={t("toolBar.penMode")}
+            isMobile
+            penDetected={appState.penDetected}
+          />
+        ) : null,
+    },
+    {
+      id: "sidebarTrigger" as const,
+      defaultRegion: "topRight" as const,
+      content:
+        !isElementLinkDialog &&
+        !hasTopRightHostUI &&
+        !appState.viewModeEnabled ? (
+          <DefaultSidebarTriggerTunnel.Out />
+        ) : null,
+    },
+    {
+      id: "viewMode" as const,
+      defaultRegion: "bottomLeft" as const,
+      defaultOrder: 0,
+      islandGroup: {
+        id: "mobileCanvasActions",
+        className: "mobile-canvas-actions",
+        padding: 0,
+        gap: 6,
+      },
+      content:
+        shouldRenderMobileCanvasActions && !appState.viewModeOnly ? (
+          <div className="view-mode-button">
+            {actionManager.renderAction("viewMode")}
+          </div>
+        ) : null,
+    },
+    {
+      id: "smartZoom" as const,
+      defaultRegion: "bottomLeft" as const,
+      defaultOrder: 1,
+      islandGroup: {
+        id: "mobileCanvasActions",
+        className: "mobile-canvas-actions",
+        padding: 0,
+        gap: 6,
+      },
+      content: shouldRenderMobileCanvasActions ? (
+        <div className="smart-zoom-button">
+          {actionManager.renderAction("smartZoom")}
+        </div>
+      ) : null,
+    },
+    {
+      id: "stylesPanel" as const,
+      defaultRegion: "bottomLeft" as const,
+      defaultOrder: 2,
+      content:
+        defaultUIEnabled && !appState.viewModeEnabled ? (
+          <MobileShapeActions
+            appState={appState}
+            elementsMap={app.scene.getNonDeletedElementsMap()}
+            renderAction={actionManager.renderAction}
+            app={app}
+            setAppState={setAppState}
+            showUndo={!hasUndoOverride}
+            showRedo={!hasRedoOverride}
+          />
+        ) : null,
+    },
+    {
+      id: "undo" as const,
+      defaultRegion: "bottomLeft" as const,
+      content:
+        hasUndoOverride &&
+        formFactorLayout?.items?.undo?.visible !== false &&
+        defaultUIEnabled &&
+        !appState.viewModeEnabled ? (
+          <div className="undo-button-container">
+            {actionManager.renderAction("undo")}
+          </div>
+        ) : null,
+    },
+    {
+      id: "redo" as const,
+      defaultRegion: "bottomLeft" as const,
+      content:
+        hasRedoOverride &&
+        formFactorLayout?.items?.redo?.visible !== false &&
+        defaultUIEnabled &&
+        !appState.viewModeEnabled ? (
+          <div className="redo-button-container">
+            {actionManager.renderAction("redo")}
+          </div>
+        ) : null,
+    },
+    {
+      id: "toolbar" as const,
+      defaultRegion: "bottomLeft" as const,
+      defaultOrder: 10,
+      content:
+        defaultUIEnabled &&
+        !appState.viewModeEnabled &&
+        !isElementLinkDialog ? (
+          <Island
+            className="App-toolbar"
+            padding={1}
+            style={{
+              justifyContent: "flex-start",
+              maxWidth: MOBILE_TOOLBAR_MAX_WIDTH,
+              width: "fit-content",
+            }}
+          >
+            <MobileToolbar
+              app={app}
+              actionManager={actionManager}
+              setAppState={setAppState}
+            />
+          </Island>
+        ) : null,
+    },
+  ];
+
   return (
     <>
       {renderSidebars()}
@@ -160,57 +273,25 @@ export const MobileMenu = ({
         {renderWelcomeScreen && <WelcomeScreenCenterTunnel.Out />}
       </div>
 
-      {shouldRenderDefaultBottomBar && (
-        <div
-          className="App-bottom-bar"
-          style={{
-            marginBottom: SCROLLBAR_WIDTH + SCROLLBAR_MARGIN,
-            left: 14,
-            transform: "none",
-          }}
-          data-viewport-ui="bottom"
-        >
-          {scrollBackToContentButton && (
-            <div className="floating-status-stack">
-              {scrollBackToContentButton}
-            </div>
-          )}
-
-          <div className="App-bottom-bar__actions-row">
-            {shouldRenderMobileCanvasActions && (
-              <Island className="mobile-canvas-actions">
-                {!appState.viewModeOnly && (
-                  <div className="view-mode-button">
-                    {actionManager.renderAction("viewMode")}
-                  </div>
-                )}
-                <div className="smart-zoom-button">
-                  {actionManager.renderAction("smartZoom")}
-                </div>
-              </Island>
-            )}
-
-            {!appState.viewModeEnabled && (
-              <MobileShapeActions
-                appState={appState}
-                elementsMap={app.scene.getNonDeletedElementsMap()}
-                renderAction={actionManager.renderAction}
-                app={app}
-                setAppState={setAppState}
-              />
-            )}
-          </div>
-
-          {!appState.viewModeEnabled && (
-            <Island
-              className="App-toolbar"
-              style={{ justifyContent: "flex-start" }}
-            >
-              {appState.openDialog?.name !== "elementLinkSelector" &&
-                renderToolbar()}
-            </Island>
-          )}
-        </div>
+      {(shouldRenderDefaultBottomBar ||
+        formFactorLayout !== undefined ||
+        renderTopLeftUI ||
+        renderTopRightUI) && (
+        <UIRegionLayout
+          items={layoutItems}
+          layout={formFactorLayout}
+          app={app}
+          appState={appState}
+          editorInterface={editorInterface}
+          className="ui-layout--mobile"
+          legacyBottomLeft={
+            shouldRenderDefaultBottomBar && scrollBackToContentButton ? (
+              <div className="floating-status-stack">
+                {scrollBackToContentButton}
+              </div>
+            ) : null
+          }
+        />
       )}
 
       {!shouldRenderDefaultBottomBar && scrollBackToContentButton && (
@@ -222,10 +303,6 @@ export const MobileMenu = ({
           {viewportStatusBadge}
         </div>
       )}
-
-      <FixedSideContainer side="top" className="App-top-bar">
-        {renderAppTopBar()}
-      </FixedSideContainer>
     </>
   );
 };

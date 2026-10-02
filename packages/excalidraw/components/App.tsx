@@ -2515,6 +2515,7 @@ class App extends React.Component<AppProps, AppState> {
                               this.props.generateLinkForSelection
                             }
                             currentUserControls={this.props.currentUserControls}
+                            uiLayout={this.props.uiLayout}
                           >
                             {this.props.children}
                           </LayerUI>

@@ -3,33 +3,33 @@
 .excalidraw {
   .mobile-toolbar {
     display: flex;
-    flex: 1;
+    flex: 0 1 auto;
+    width: fit-content;
+    max-width: 100%;
     align-items: center;
     padding: 0px;
-    gap: 4px;
+    gap: 6px;
     border-radius: var(--space-factor);
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    justify-content: space-between;
-  }
-
-  .mobile-toolbar::-webkit-scrollbar {
-    display: none;
+    flex-wrap: wrap;
+    overflow: visible;
+    justify-content: flex-start;
   }
 
   .mobile-toolbar .ToolIcon {
+    width: 2rem;
+    height: 2rem;
     min-width: 2rem;
     min-height: 2rem;
-    border-radius: 4px;
+    border-radius: var(--border-radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 
     .ToolIcon__icon {
-      width: 2.25rem;
-      height: 2.25rem;
+      width: 2rem;
+      height: 2rem;
+      border-radius: var(--border-radius-lg);
 
       // hover has no meaning on touch devices (and sticks to the last-tapped
       // element), so suppress the hover background…
@@ -63,7 +63,6 @@
     width: 1px;
     height: 24px;
     background: var(--default-border-color);
-    margin: 0 2px;
     flex-shrink: 0;
   }
 

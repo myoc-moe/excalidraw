@@ -750,7 +750,7 @@ describe("textWysiwyg", () => {
       Keyboard.exitTextEditor(textarea);
 
       expect(textarea.style.width).toBe("792px");
-      expect(h.elements[0].width).toBe(1000);
+      expect(h.elements.find(({ isDeleted }) => !isDeleted)?.width).toBe(1000);
     });
   });
 

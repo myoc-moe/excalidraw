@@ -746,12 +746,16 @@ export const MobileShapeActions = ({
   renderAction,
   app,
   setAppState,
+  showUndo = true,
+  showRedo = true,
 }: {
   appState: UIAppState;
   elementsMap: NonDeletedElementsMap | NonDeletedSceneElementsMap;
   renderAction: ActionManager["renderAction"];
   app: AppClassProperties;
   setAppState: React.Component<any, AppState>["setState"];
+  showUndo?: boolean;
+  showRedo?: boolean;
 }) => {
   const targetElements = getTargetElements(elementsMap, appState);
   const predicates = getShapeActionPredicates(
@@ -766,8 +770,8 @@ export const MobileShapeActions = ({
   const ACTIONS_WIDTH =
     mobileActionsRef.current?.getBoundingClientRect()?.width ?? 0;
 
-  // 7 actions + 2 for undo/redo
-  const MIN_ACTIONS = 9;
+  // 7 actions plus the optional history controls
+  const MIN_ACTIONS = 7 + Number(showUndo) + Number(showRedo);
 
   const GAP = 6;
   const WIDTH = 32;
@@ -790,21 +794,13 @@ export const MobileShapeActions = ({
         zIndex: 2,
         backgroundColor: "transparent",
         height: WIDTH * 1.35,
-        marginBottom: 4,
         alignItems: "center",
         gap: GAP,
         pointerEvents: "none",
       }}
       ref={mobileActionsRef}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "row",
-          gap: GAP,
-          flex: 1,
-        }}
-      >
+      <div className="mobile-shape-actions__primary">
         {predicates.strokeColor && (
           <div className={clsx("compact-action-item")}>
             {renderAction("changeStrokeColor")}
@@ -876,8 +872,12 @@ export const MobileShapeActions = ({
           gap: GAP,
         }}
       >
-        <div className="compact-action-item">{renderAction("undo")}</div>
-        <div className="compact-action-item">{renderAction("redo")}</div>
+        {showUndo && (
+          <div className="compact-action-item">{renderAction("undo")}</div>
+        )}
+        {showRedo && (
+          <div className="compact-action-item">{renderAction("redo")}</div>
+        )}
         {showDuplicateOutside && (
           <div className="compact-action-item">
             {renderAction("duplicateSelection")}

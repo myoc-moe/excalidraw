@@ -1185,7 +1185,11 @@ const ExcalidrawWrapper = () => {
         {isEditorPreferencesDialogOpen && (
           <EditorPreferencesDialog
             editorPreferences={editorPreferences}
+            editorInterface={editorInterface}
             onChange={updateEditorPreferences}
+            onDesktopUIModeChange={(mode) =>
+              excalidrawAPI?.setDesktopUIMode(mode)
+            }
             onClose={onEditorPreferencesDialogClose}
           />
         )}

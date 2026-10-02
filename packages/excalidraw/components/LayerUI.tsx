@@ -14,7 +14,7 @@ import { showSelectedShapeActions } from "@excalidraw/element";
 
 import type { NonDeletedExcalidrawElement } from "@excalidraw/element/types";
 
-import { actionToggleStats } from "../actions";
+import { actionShortcuts, actionToggleStats } from "../actions";
 import { TunnelsContext, useInitializeTunnels } from "../context/tunnels";
 import { UIAppStateContext } from "../context/ui-appState";
 import { useAtom } from "../editor-jotai";
@@ -22,7 +22,12 @@ import { useAtom } from "../editor-jotai";
 import { t } from "../i18n";
 import { getScrollToContentState } from "../scene";
 
-import { SelectedShapeActions, CompactShapeActions } from "./Actions";
+import {
+  ExitZenModeButton,
+  SelectedShapeActions,
+  CompactShapeActions,
+  ZoomActions,
+} from "./Actions";
 import { LoadingMessage } from "./LoadingMessage";
 import { MobileMenu } from "./MobileMenu";
 import { PasteChartDialog } from "./PasteChartDialog";
@@ -30,7 +35,6 @@ import { Section } from "./Section";
 import Stack from "./Stack";
 import { UserList } from "./UserList";
 import { PenModeButton } from "./PenModeButton";
-import Footer from "./footer/Footer";
 import MainMenu from "./main-menu/MainMenu";
 import { useAppProps, useEditorInterface, useStylesPanelMode } from "./App";
 import { OverwriteConfirmDialog } from "./OverwriteConfirm/OverwriteConfirm";
@@ -38,7 +42,6 @@ import { Stats } from "./Stats";
 import ElementLinkDialog from "./ElementLinkDialog";
 import { ErrorDialog } from "./ErrorDialog";
 import { EyeDropper, activeEyeDropperAtom } from "./EyeDropper";
-import { FixedSideContainer } from "./FixedSideContainer";
 import { GifPlaybackControls } from "./GifPlaybackControls";
 import { HelpDialog } from "./HelpDialog";
 import { HintViewer } from "./HintViewer";
@@ -49,6 +52,13 @@ import { JSONExportDialog } from "./JSONExportDialog";
 import { LaserPointerButton } from "./LaserPointerButton";
 import { Toast } from "./Toast";
 import { Toolbar } from "./Toolbar";
+import { HelpButton } from "./HelpButton";
+import { Tooltip } from "./Tooltip";
+import {
+  UIRegionLayout,
+  getUIFormFactorLayout,
+  type UIRegionLayoutItem,
+} from "./UIRegionLayout";
 import {
   ViewportStatusBadge,
   ViewportStatusBorder,
@@ -68,6 +78,13 @@ import type {
   UIAppState,
   AppClassProperties,
 } from "../types";
+
+const DESKTOP_CANVAS_CONTROLS_ISLAND = {
+  id: "desktopCanvasControls",
+  className: "desktop-canvas-controls",
+  padding: 0.75,
+  gap: 6,
+};
 
 interface LayerUIProps {
   actionManager: ActionManager;
@@ -94,6 +111,7 @@ interface LayerUIProps {
   isCollaborating: boolean;
   generateLinkForSelection?: AppProps["generateLinkForSelection"];
   currentUserControls?: ExcalidrawProps["currentUserControls"];
+  uiLayout?: ExcalidrawProps["uiLayout"];
 }
 
 const DefaultMainMenu: React.FC<{
@@ -155,8 +173,10 @@ const LayerUI = ({
   isCollaborating,
   generateLinkForSelection,
   currentUserControls,
+  uiLayout,
 }: LayerUIProps) => {
   const editorInterface = useEditorInterface();
+  const formFactorLayout = getUIFormFactorLayout(uiLayout, editorInterface);
   const appProps = useAppProps();
   const stylesPanelMode = useStylesPanelMode();
   const isCompactStylesPanel = stylesPanelMode === "compact";
@@ -169,7 +189,6 @@ const LayerUI = ({
         toolbarRowGap: 1,
         toolbarInnerRowGap: 0.5,
         islandPadding: 1,
-        collabMarginLeft: 8,
       }
     : {
         menuTopGap: 6,
@@ -177,7 +196,6 @@ const LayerUI = ({
         toolbarRowGap: 1,
         toolbarInnerRowGap: 1,
         islandPadding: 1,
-        collabMarginLeft: 8,
       };
 
   const TunnelsJotaiProvider = tunnels.tunnelsJotai.Provider;
@@ -223,13 +241,10 @@ const LayerUI = ({
     );
   };
 
-  const renderCanvasActions = () => (
-    <div style={{ position: "relative" }}>
-      <div className="excalidraw-ui-top-left">
-        {renderTopLeftUI?.(false, appState)}
-        <tunnels.MainMenuTunnel.Out />
-        <tunnels.DefaultSidebarTriggerTunnel.Out />
-      </div>
+  const renderCanvasActions = (includeSidebarTrigger = true) => (
+    <div className="excalidraw-ui-top-left" style={{ position: "relative" }}>
+      <tunnels.MainMenuTunnel.Out />
+      {includeSidebarTrigger && <tunnels.DefaultSidebarTriggerTunnel.Out />}
       {renderWelcomeScreen && <tunnels.WelcomeScreenMenuHintTunnel.Out />}
     </div>
   );
@@ -246,8 +261,6 @@ const LayerUI = ({
           <Island
             className={clsx("compact-shape-actions-island")}
             padding={0}
-            data-viewport-ui="side"
-            data-viewport-ui-name="stylesPanel"
             style={{
               // we want to make sure this doesn't overflow so subtracting the
               // approximate height of hamburgerMenu + footer
@@ -271,8 +284,6 @@ const LayerUI = ({
               // approximate height of hamburgerMenu + footer
               maxHeight: `${appState.height - 166}px`,
             }}
-            data-viewport-ui="side"
-            data-viewport-ui-name="stylesPanel"
           >
             <SelectedShapeActions
               appState={appState}
@@ -286,149 +297,293 @@ const LayerUI = ({
     );
   };
 
-  const renderFixedSideContainer = () => {
-    const shouldRenderSelectedShapeActions =
-      defaultUIEnabled && showSelectedShapeActions(appState, elements);
+  const shouldRenderSelectedShapeActions =
+    defaultUIEnabled && showSelectedShapeActions(appState, elements);
+  const shouldShowStats =
+    defaultUIEnabled &&
+    appState.stats.open &&
+    !appState.zenModeEnabled &&
+    !appState.viewModeEnabled &&
+    appState.openDialog?.name !== "elementLinkSelector";
 
-    const shouldShowStats =
-      defaultUIEnabled &&
-      appState.stats.open &&
-      !appState.zenModeEnabled &&
-      !appState.viewModeEnabled &&
-      appState.openDialog?.name !== "elementLinkSelector";
+  const renderStylePanel = () =>
+    defaultUIEnabled && shouldRenderSelectedShapeActions ? (
+      <Stack.Col gap={spacing.menuTopGap}>
+        <div
+          className={clsx("selected-shape-actions-container", {
+            "selected-shape-actions-container--compact": isCompactStylesPanel,
+          })}
+        >
+          {renderSelectedShapeActions()}
+        </div>
+      </Stack.Col>
+    ) : null;
+
+  const renderToolbar = (showPenMode = true) => {
+    if (
+      !defaultUIEnabled ||
+      (!appState.viewModeEnabled &&
+        appState.openDialog?.name === "elementLinkSelector")
+    ) {
+      return null;
+    }
+    return (
+      <>
+        {defaultUIEnabled && appState.viewModeEnabled && (
+          <div className="view-mode-hint">
+            <HintViewer
+              appState={appState}
+              isMobile={false}
+              editorInterface={editorInterface}
+              app={app}
+            />
+          </div>
+        )}
+        {defaultUIEnabled &&
+          !appState.viewModeEnabled &&
+          appState.openDialog?.name !== "elementLinkSelector" && (
+            <Section heading="shapes" className="shapes-section">
+              {(heading: React.ReactNode) => (
+                <div style={{ position: "relative" }}>
+                  {renderWelcomeScreen && (
+                    <tunnels.WelcomeScreenToolbarHintTunnel.Out />
+                  )}
+                  <Stack.Col gap={spacing.toolbarColGap} align="start">
+                    <Stack.Row
+                      gap={spacing.toolbarRowGap}
+                      className={clsx("App-toolbar-container", {
+                        "zen-mode": appState.zenModeEnabled,
+                      })}
+                    >
+                      <Toolbar
+                        app={app}
+                        appState={appState}
+                        setAppState={setAppState}
+                        UIOptions={UIOptions}
+                        actionManager={actionManager}
+                        onPenModeToggle={onPenModeToggle}
+                        onLockToggle={onLockToggle}
+                        heading={heading}
+                        showPenMode={showPenMode}
+                      />
+                      {isCollaborating && (
+                        <Island
+                          style={{
+                            alignSelf: "center",
+                            height: "fit-content",
+                          }}
+                        >
+                          <LaserPointerButton
+                            title={t("toolBar.laser")}
+                            checked={
+                              appState.activeTool.type === TOOL_TYPE.laser
+                            }
+                            onChange={() =>
+                              app.setActiveTool({ type: TOOL_TYPE.laser })
+                            }
+                            isMobile
+                          />
+                        </Island>
+                      )}
+                    </Stack.Row>
+                  </Stack.Col>
+                </div>
+              )}
+            </Section>
+          )}
+      </>
+    );
+  };
+
+  const renderCollaborators = () => (
+    <div className="layer-ui__wrapper__top-right">
+      {defaultUIEnabled && appState.collaborators.size > 0 && (
+        <UserList
+          collaborators={appState.collaborators}
+          userToFollow={appProps.userToFollow?.socketId || null}
+          currentUserControls={currentUserControls}
+        />
+      )}
+    </div>
+  );
+
+  const renderStats = () =>
+    shouldShowStats ? (
+      <Stats
+        app={app}
+        onClose={() => actionManager.executeAction(actionToggleStats)}
+        renderCustomStats={renderCustomStats}
+      />
+    ) : null;
+
+  const renderFooterCenter = () => <tunnels.FooterCenterTunnel.Out />;
+
+  const renderHelp = () => (
+    <div className="layer-ui__wrapper__footer-right">
+      <div style={{ position: "relative" }}>
+        {renderWelcomeScreen && <tunnels.WelcomeScreenHelpHintTunnel.Out />}
+        {defaultUIEnabled && (
+          <HelpButton
+            onClick={() => actionManager.executeAction(actionShortcuts)}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  const renderConfiguredLayout = () => {
+    const penModeIsConfigurable =
+      formFactorLayout?.items?.penMode !== undefined;
+    const sidebarTriggerIsSeparate =
+      formFactorLayout?.items?.sidebarTrigger !== undefined ||
+      formFactorLayout?.items?.mainMenu?.visible === false;
+    const items: UIRegionLayoutItem[] = [
+      {
+        id: "hostTopLeftUI" as const,
+        defaultRegion: "topLeft" as const,
+        defaultOrder: -10,
+        content: renderTopLeftUI?.(false, appState),
+      },
+      {
+        id: "mainMenu" as const,
+        defaultRegion: "topLeft" as const,
+        content: renderCanvasActions(!sidebarTriggerIsSeparate),
+      },
+      {
+        id: "sidebarTrigger" as const,
+        defaultRegion: "topLeft" as const,
+        defaultOrder: 2,
+        content: sidebarTriggerIsSeparate ? (
+          <div
+            className="excalidraw-ui-top-left"
+            style={{ position: "relative" }}
+          >
+            <tunnels.DefaultSidebarTriggerTunnel.Out />
+          </div>
+        ) : null,
+      },
+      {
+        id: "stylesPanel" as const,
+        defaultRegion: "middleLeft" as const,
+        content: renderStylePanel(),
+      },
+      {
+        id: "toolbar" as const,
+        defaultRegion: "topCenter" as const,
+        content: renderToolbar(!penModeIsConfigurable),
+      },
+      {
+        id: "hostTopRightUI" as const,
+        defaultRegion: "topRight" as const,
+        defaultOrder: -10,
+        content: renderTopRightUI?.(false, appState),
+      },
+      {
+        id: "collaborators" as const,
+        defaultRegion: "topRight" as const,
+        content: renderCollaborators(),
+      },
+      {
+        id: "stats" as const,
+        defaultRegion: "topRight" as const,
+        content: renderStats(),
+      },
+      {
+        id: "viewMode" as const,
+        defaultRegion: "bottomLeft" as const,
+        islandGroup: DESKTOP_CANVAS_CONTROLS_ISLAND,
+        content:
+          defaultUIEnabled && !appState.viewModeOnly ? (
+            <Tooltip
+              label={
+                appState.viewModeEnabled ? "Edit mode" : t("labels.viewMode")
+              }
+            >
+              <div className="view-mode-button">
+                {actionManager.renderAction("viewMode")}
+              </div>
+            </Tooltip>
+          ) : null,
+      },
+      {
+        id: "smartZoom" as const,
+        defaultRegion: "bottomLeft" as const,
+        islandGroup: DESKTOP_CANVAS_CONTROLS_ISLAND,
+        content: defaultUIEnabled ? (
+          <Tooltip label={t("buttons.smartZoom")}>
+            <div className="smart-zoom-button">
+              {actionManager.renderAction("smartZoom")}
+            </div>
+          </Tooltip>
+        ) : null,
+      },
+      {
+        id: "zoom" as const,
+        defaultRegion: "bottomLeft" as const,
+        islandGroup: DESKTOP_CANVAS_CONTROLS_ISLAND,
+        content:
+          zoomUIEnabled && app.isNavigationEnabled() ? (
+            <ZoomActions renderAction={actionManager.renderAction} />
+          ) : null,
+      },
+      {
+        id: "undo" as const,
+        defaultRegion: "bottomLeft" as const,
+        islandGroup: DESKTOP_CANVAS_CONTROLS_ISLAND,
+        content:
+          defaultUIEnabled && !appState.viewModeEnabled ? (
+            <div className="undo-button-container">
+              {actionManager.renderAction("undo")}
+            </div>
+          ) : null,
+      },
+      {
+        id: "redo" as const,
+        defaultRegion: "bottomLeft" as const,
+        islandGroup: DESKTOP_CANVAS_CONTROLS_ISLAND,
+        content:
+          defaultUIEnabled && !appState.viewModeEnabled ? (
+            <div className="redo-button-container">
+              {actionManager.renderAction("redo")}
+            </div>
+          ) : null,
+      },
+      {
+        id: "help" as const,
+        defaultRegion: "bottomRight" as const,
+        content: renderHelp(),
+      },
+      {
+        id: "penMode" as const,
+        defaultRegion: isCompactStylesPanel
+          ? ("topLeft" as const)
+          : ("topRight" as const),
+        content:
+          defaultUIEnabled &&
+          !appState.viewModeEnabled &&
+          (penModeIsConfigurable ||
+            (isCompactStylesPanel && shouldRenderSelectedShapeActions)) ? (
+            <PenModeButton
+              checked={appState.penMode}
+              onChange={() => onPenModeToggle(null)}
+              title={t("toolBar.penMode")}
+              isMobile
+              penDetected={appState.penDetected}
+            />
+          ) : null,
+      },
+    ];
 
     return (
-      <FixedSideContainer side="top">
-        <div className="App-menu App-menu_top">
-          <Stack.Col
-            gap={spacing.menuTopGap}
-            className={clsx("App-menu_top__left")}
-          >
-            {renderCanvasActions()}
-            {defaultUIEnabled && (
-              <div
-                className={clsx("selected-shape-actions-container", {
-                  "selected-shape-actions-container--compact":
-                    isCompactStylesPanel,
-                })}
-              >
-                {shouldRenderSelectedShapeActions &&
-                  renderSelectedShapeActions()}
-              </div>
-            )}
-            {/* in compact UI the pen mode button lives outside the toolbar, as
-                a separate floating button below the compact actions menu
-                (same as we render it on mobile); shown alongside the compact
-                actions island, i.e. when a drawing tool or elements are
-                selected */}
-            {defaultUIEnabled &&
-              isCompactStylesPanel &&
-              !appState.viewModeEnabled &&
-              shouldRenderSelectedShapeActions && (
-                <PenModeButton
-                  checked={appState.penMode}
-                  onChange={() => onPenModeToggle(null)}
-                  title={t("toolBar.penMode")}
-                  isMobile
-                  penDetected={appState.penDetected}
-                />
-              )}
-          </Stack.Col>
-          {defaultUIEnabled && appState.viewModeEnabled && (
-            // MyOC: Keep the held-F Smart Zoom hint visible in view mode.
-            <div className="view-mode-hint">
-              <HintViewer
-                appState={appState}
-                isMobile={editorInterface.formFactor === "phone"}
-                editorInterface={editorInterface}
-                app={app}
-              />
-            </div>
-          )}
-          {defaultUIEnabled &&
-            !appState.viewModeEnabled &&
-            appState.openDialog?.name !== "elementLinkSelector" && (
-              <Section heading="shapes" className="shapes-section">
-                {(heading: React.ReactNode) => (
-                  <div style={{ position: "relative" }}>
-                    {renderWelcomeScreen && (
-                      <tunnels.WelcomeScreenToolbarHintTunnel.Out />
-                    )}
-                    <Stack.Col gap={spacing.toolbarColGap} align="start">
-                      <Stack.Row
-                        gap={spacing.toolbarRowGap}
-                        className={clsx("App-toolbar-container", {
-                          "zen-mode": appState.zenModeEnabled,
-                        })}
-                      >
-                        <Toolbar
-                          app={app}
-                          appState={appState}
-                          setAppState={setAppState}
-                          UIOptions={UIOptions}
-                          actionManager={actionManager}
-                          onPenModeToggle={onPenModeToggle}
-                          onLockToggle={onLockToggle}
-                          heading={heading}
-                        />
-                        {isCollaborating && (
-                          <Island
-                            style={{
-                              marginLeft: spacing.collabMarginLeft,
-                              alignSelf: "center",
-                              height: "fit-content",
-                            }}
-                          >
-                            <LaserPointerButton
-                              title={t("toolBar.laser")}
-                              checked={
-                                appState.activeTool.type === TOOL_TYPE.laser
-                              }
-                              onChange={() =>
-                                app.setActiveTool({ type: TOOL_TYPE.laser })
-                              }
-                              isMobile
-                            />
-                          </Island>
-                        )}
-                      </Stack.Row>
-                    </Stack.Col>
-                  </div>
-                )}
-              </Section>
-            )}
-          <div
-            className={clsx(
-              "layer-ui__wrapper__top-right zen-mode-transition",
-              {
-                "transition-right": appState.zenModeEnabled,
-                "layer-ui__wrapper__top-right--compact": isCompactStylesPanel,
-              },
-            )}
-          >
-            {defaultUIEnabled && appState.collaborators.size > 0 && (
-              <UserList
-                collaborators={appState.collaborators}
-                userToFollow={appProps.userToFollow?.socketId || null}
-                currentUserControls={currentUserControls}
-              />
-            )}
-            {renderTopRightUI?.(
-              editorInterface.formFactor === "phone",
-              appState,
-            )}
-            {shouldShowStats && (
-              <Stats
-                app={app}
-                onClose={() => {
-                  actionManager.executeAction(actionToggleStats);
-                }}
-                renderCustomStats={renderCustomStats}
-              />
-            )}
-          </div>
-        </div>
-      </FixedSideContainer>
+      <UIRegionLayout
+        items={items}
+        layout={formFactorLayout}
+        app={app}
+        appState={appState}
+        editorInterface={editorInterface}
+        className="ui-layout--desktop"
+        legacyBottomCenter={renderFooterCenter()}
+      />
     );
   };
 
@@ -567,6 +722,7 @@ const LayerUI = ({
           renderWelcomeScreen={renderWelcomeScreen}
           defaultUIEnabled={defaultUIEnabled}
           scrollBackToContentUIEnabled={scrollBackToContentUIEnabled}
+          uiLayout={uiLayout}
         />
       )}
       {editorInterface.formFactor !== "phone" && (
@@ -595,15 +751,10 @@ const LayerUI = ({
             }
           >
             {renderWelcomeScreen && <tunnels.WelcomeScreenCenterTunnel.Out />}
-            {renderFixedSideContainer()}
-            <Footer
-              appState={appState}
-              actionManager={actionManager}
-              showExitZenModeBtn={showExitZenModeBtn}
-              renderWelcomeScreen={renderWelcomeScreen}
-              defaultUIEnabled={defaultUIEnabled}
-              zoomUIEnabled={zoomUIEnabled}
-            />
+            {renderConfiguredLayout()}
+            {defaultUIEnabled && (
+              <ExitZenModeButton showExitZenModeBtn={showExitZenModeBtn} />
+            )}
             {(appState.toast ||
               (scrollBackToContentUIEnabled && appState.scrolledOutside) ||
               appProps.viewportStatusFrame?.label) && (

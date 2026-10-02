@@ -840,12 +840,18 @@ describe("ui={{ enabled: ... }}", () => {
     fireEvent.resize(window);
     await waitFor(() => expect(h.app.editorInterface.formFactor).toBe("phone"));
 
-    const bottomBar = queryContainer(".App-bottom-bar")!;
-    const toolbar = queryContainer(".App-bottom-bar .App-toolbar")!;
+    const bottomBar = queryContainer(".ui-layout--mobile") as HTMLElement;
+    const toolbar = queryContainer(
+      '.ui-layout--mobile [data-ui-layout-region="bottomLeft"] [data-ui-layout-item="toolbar"] > .App-toolbar',
+    ) as HTMLElement;
 
-    expect(getComputedStyle(bottomBar).left).toBe("14px");
-    expect(getComputedStyle(bottomBar).transform).toBe("none");
-    expect(getComputedStyle(toolbar).justifyContent).toBe("flex-start");
+    expect(bottomBar).toHaveClass("ui-layout--mobile");
+    expect(
+      bottomBar.querySelector(
+        ".ui-layout__row--bottom > .ui-layout__region--bottomLeft",
+      ),
+    ).not.toBeNull();
+    expect(toolbar.style.justifyContent).toBe("flex-start");
   });
 
   it("MyOC regression: does not render a separate mobile edit button in view mode", async () => {

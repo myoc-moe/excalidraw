@@ -307,9 +307,7 @@ const ExtraToolsDropdown = ({
               appState={app.state}
             />
             {app.props.activeTool == null && (
-              <>
-                <LockActiveToolDropdownItem app={app} />
-              </>
+              <LockActiveToolDropdownItem app={app} />
             )}
           </>
         ) : (
@@ -401,6 +399,7 @@ export const Toolbar = ({
   onPenModeToggle,
   onLockToggle,
   heading,
+  showPenMode = true,
 }: {
   app: AppClassProperties;
   appState: UIAppState;
@@ -410,6 +409,7 @@ export const Toolbar = ({
   onPenModeToggle: AppClassProperties["togglePenMode"];
   onLockToggle: () => void;
   heading: React.ReactNode;
+  showPenMode?: boolean;
 }) => {
   const editorInterface = useEditorInterface();
   const isCompactStylesPanel = useStylesPanelMode() === "compact";
@@ -433,7 +433,6 @@ export const Toolbar = ({
         "zen-mode": appState.zenModeEnabled,
         "App-toolbar--compact": isCompactStylesPanel,
       })}
-      data-viewport-ui="top"
     >
       <HintViewer
         appState={appState}
@@ -445,7 +444,7 @@ export const Toolbar = ({
       <Stack.Row gap={isCompactStylesPanel ? 0.5 : 1}>
         {/* in compact UI the pen mode button is rendered as a separate
             floating button below the compact actions menu */}
-        {!isCompactStylesPanel && (
+        {!isCompactStylesPanel && showPenMode && (
           <PenModeButton
             checked={appState.penMode}
             onChange={() => onPenModeToggle(null)}
@@ -466,7 +465,6 @@ export const Toolbar = ({
             <div className="App-toolbar__divider" />
           </>
         )}
-
         <HandToolButton {...toolProps} />
         {selectionTool}
         {isMyocSimplifiedMode ? (

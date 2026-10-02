@@ -12638,7 +12638,7 @@ exports[`history > singleplayer undo/redo > remounting undo/redo buttons should 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -12898,7 +12898,7 @@ exports[`history > singleplayer undo/redo > should clear the redo stack on eleme
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -13156,7 +13156,7 @@ exports[`history > singleplayer undo/redo > should create entry when selecting f
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -13585,7 +13585,7 @@ exports[`history > singleplayer undo/redo > should create new history entry on e
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -13816,7 +13816,7 @@ exports[`history > singleplayer undo/redo > should create new history entry on e
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14051,7 +14051,7 @@ exports[`history > singleplayer undo/redo > should create new history entry on i
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14383,7 +14383,7 @@ exports[`history > singleplayer undo/redo > should create new history entry on i
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -14984,7 +14984,7 @@ exports[`history > singleplayer undo/redo > should disable undo/redo buttons whe
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -15244,7 +15244,7 @@ exports[`history > singleplayer undo/redo > should end up with no history entry 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -15504,7 +15504,7 @@ exports[`history > singleplayer undo/redo > should iterate through the history w
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -15775,7 +15775,7 @@ exports[`history > singleplayer undo/redo > should not clear the redo stack on s
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -16129,7 +16129,7 @@ exports[`history > singleplayer undo/redo > should not collapse when applying co
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -16326,7 +16326,7 @@ exports[`history > singleplayer undo/redo > should not end up with history entry
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -16630,7 +16630,7 @@ exports[`history > singleplayer undo/redo > should not end up with history entry
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -16915,7 +16915,7 @@ exports[`history > singleplayer undo/redo > should not modify anything on unrela
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": true,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -17094,7 +17094,7 @@ exports[`history > singleplayer undo/redo > should not override appstate changes
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -17588,7 +17588,7 @@ exports[`history > singleplayer undo/redo > should support bidirectional binding
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -18354,7 +18354,7 @@ exports[`history > singleplayer undo/redo > should support bidirectional binding
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -19018,7 +19018,7 @@ exports[`history > singleplayer undo/redo > should support bidirectional binding
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -19680,7 +19680,7 @@ exports[`history > singleplayer undo/redo > should support bidirectional binding
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -20450,7 +20450,7 @@ exports[`history > singleplayer undo/redo > should support bidirectional binding
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -21236,7 +21236,7 @@ exports[`history > singleplayer undo/redo > should support changes in elements' 
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -21738,7 +21738,7 @@ exports[`history > singleplayer undo/redo > should support duplication of groups
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -22260,7 +22260,7 @@ exports[`history > singleplayer undo/redo > should support element creation, del
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {
@@ -22741,7 +22741,7 @@ exports[`history > singleplayer undo/redo > should support linear element creati
   "suggestedBinding": null,
   "theme": "light",
   "toast": null,
-  "viewBackgroundColor": "#ffffff",
+  "viewBackgroundColor": "transparent",
   "viewModeEnabled": false,
   "viewModeOnly": false,
   "viewpointFlip": {

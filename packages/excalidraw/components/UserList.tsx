@@ -6,7 +6,7 @@ import { supportsResizeObserver, isShallowEqual } from "@excalidraw/common";
 
 import { t } from "../i18n";
 
-import { useExcalidrawActionManager } from "./App";
+import { useExcalidrawActionManager, useExcalidrawContainer } from "./App";
 import { chevronDownIcon } from "./icons";
 import { Island } from "./Island";
 import { QuickSearch } from "./QuickSearch";
@@ -127,6 +127,7 @@ export const UserList = React.memo(
     currentUserControls,
   }: UserListProps) => {
     const actionManager = useExcalidrawActionManager();
+    const { container } = useExcalidrawContainer();
 
     const resolvedCurrentUserControls =
       typeof currentUserControls === "function"
@@ -227,65 +228,67 @@ export const UserList = React.memo(
               <div className="UserList__pill-chevron">{chevronDownIcon}</div>
             </div>
           </Popover.Trigger>
-          <Popover.Content
-            className="focus-visible-none"
-            style={{
-              zIndex: 2,
-              width: "15rem",
-              textAlign: "left",
-            }}
-            align="end"
-            sideOffset={10}
-          >
-            <Island padding={2}>
-              {collaboratorsArray.length >= SHOW_COLLABORATORS_FILTER_AT && (
-                <QuickSearch
-                  placeholder={t("quickSearch.placeholder")}
-                  onChange={setSearchTerm}
+          <Popover.Portal container={container}>
+            <Popover.Content
+              className="focus-visible-none"
+              style={{
+                zIndex: 2,
+                width: "15rem",
+                textAlign: "left",
+              }}
+              align="end"
+              sideOffset={10}
+            >
+              <Island padding={2}>
+                {collaboratorsArray.length >= SHOW_COLLABORATORS_FILTER_AT && (
+                  <QuickSearch
+                    placeholder={t("quickSearch.placeholder")}
+                    onChange={setSearchTerm}
+                  />
+                )}
+                <ScrollableList
+                  className={"dropdown-menu UserList__collaborators"}
+                  placeholder={t("userList.empty")}
+                >
+                  {/* The list checks for `Children.count()`, hence defensively returning empty list */}
+                  {filteredCollaborators.length > 0
+                    ? [
+                        <div key="hint" className="hint">
+                          {t("userList.hint.text")}
+                        </div>,
+                        filteredCollaborators.map((c) =>
+                          renderCollaborator({
+                            actionManager,
+                            collaborator: c,
+                            socketId: c.socketId,
+                            withName: true,
+                            isBeingFollowed: c.socketId === userToFollow,
+                          }),
+                        ),
+                      ]
+                    : []}
+                </ScrollableList>
+                {resolvedCurrentUserControls && (
+                  <>
+                    <div className="UserList__menu-divider" />
+                    <Popover.Close asChild>
+                      <div className="dropdown-menu">
+                        {resolvedCurrentUserControls}
+                      </div>
+                    </Popover.Close>
+                  </>
+                )}
+                <Popover.Arrow
+                  width={20}
+                  height={10}
+                  style={{
+                    fill: "var(--popup-bg-color)",
+                    filter: "drop-shadow(rgba(0, 0, 0, 0.05) 0px 3px 2px)",
+                  }}
                 />
-              )}
-              <ScrollableList
-                className={"dropdown-menu UserList__collaborators"}
-                placeholder={t("userList.empty")}
-              >
-                {/* The list checks for `Children.count()`, hence defensively returning empty list */}
-                {filteredCollaborators.length > 0
-                  ? [
-                      <div key="hint" className="hint">
-                        {t("userList.hint.text")}
-                      </div>,
-                      filteredCollaborators.map((c) =>
-                        renderCollaborator({
-                          actionManager,
-                          collaborator: c,
-                          socketId: c.socketId,
-                          withName: true,
-                          isBeingFollowed: c.socketId === userToFollow,
-                        }),
-                      ),
-                    ]
-                  : []}
-              </ScrollableList>
-              {resolvedCurrentUserControls && (
-                <>
-                  <div className="UserList__menu-divider" />
-                  <Popover.Close asChild>
-                    <div className="dropdown-menu">
-                      {resolvedCurrentUserControls}
-                    </div>
-                  </Popover.Close>
-                </>
-              )}
-              <Popover.Arrow
-                width={20}
-                height={10}
-                style={{
-                  fill: "var(--popup-bg-color)",
-                  filter: "drop-shadow(rgba(0, 0, 0, 0.05) 0px 3px 2px)",
-                }}
-              />
-            </Island>
-          </Popover.Content>
+              </Island>
+            </Popover.Content>
+          </Popover.Portal>
         </Popover.Root>
       );
     });

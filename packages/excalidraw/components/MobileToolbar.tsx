@@ -152,8 +152,8 @@ export const MobileToolbar = ({
 
   const [toolbarWidth, setToolbarWidth] = useState(0);
 
-  const WIDTH = 36;
-  const GAP = 4;
+  const WIDTH = 32;
+  const GAP = 6;
 
   // hand, selection, freedraw, eraser, rectangle, arrow, others
   const MIN_TOOLS = 7;
@@ -161,8 +161,11 @@ export const MobileToolbar = ({
   const ADDITIONAL_WIDTH = WIDTH + GAP;
 
   const showTextToolOutside = toolbarWidth >= MIN_WIDTH + 1 * ADDITIONAL_WIDTH;
+  // In simplified mode, moving Image outside also promotes the eyedropper.
   const showImageToolOutside =
-    imageToolEnabled && toolbarWidth >= MIN_WIDTH + 2 * ADDITIONAL_WIDTH;
+    imageToolEnabled &&
+    toolbarWidth >=
+      MIN_WIDTH + (isMyocSimplifiedMode ? 3 : 2) * ADDITIONAL_WIDTH;
   const showFrameToolOutside = toolbarWidth >= MIN_WIDTH + 3 * ADDITIONAL_WIDTH;
 
   const extraTools: readonly typeof activeTool.type[] = (
@@ -220,7 +223,30 @@ export const MobileToolbar = ({
       className="mobile-toolbar"
       ref={(div) => {
         if (div) {
-          setToolbarWidth(div.getBoundingClientRect().width);
+          const toolbarItem = div.closest<HTMLElement>(
+            '[data-ui-layout-item="toolbar"]',
+          );
+          const toolbarIsland = div.closest<HTMLElement>(".App-toolbar");
+          const availableWidth =
+            toolbarItem?.getBoundingClientRect().width ??
+            div.getBoundingClientRect().width;
+          const maxWidth = toolbarIsland
+            ? Number.parseFloat(getComputedStyle(toolbarIsland).maxWidth)
+            : Number.POSITIVE_INFINITY;
+          const horizontalPadding = toolbarIsland
+            ? Number.parseFloat(getComputedStyle(toolbarIsland).paddingLeft) +
+              Number.parseFloat(getComputedStyle(toolbarIsland).paddingRight)
+            : 0;
+
+          setToolbarWidth(
+            Math.max(
+              0,
+              Math.min(
+                availableWidth,
+                Number.isFinite(maxWidth) ? maxWidth : availableWidth,
+              ) - horizontalPadding,
+            ),
+          );
         }
       }}
     >

@@ -1,0 +1,335 @@
+@use "../css/variables.module" as *;
+
+.excalidraw {
+  .ui-layout {
+    --ui-layout-region-gutter-x: 8px;
+    --ui-layout-region-gutter-y: 8px;
+    position: absolute;
+    box-sizing: border-box;
+    inset: max(var(--editor-container-padding, 0px), env(safe-area-inset-top))
+      max(var(--editor-container-padding, 0px), env(safe-area-inset-right))
+      max(var(--editor-container-padding, 0px), env(safe-area-inset-bottom))
+      max(var(--editor-container-padding, 0px), env(safe-area-inset-left));
+    display: grid;
+    grid-template-rows: max-content minmax(min-content, 1fr) max-content;
+    gap: 0.5rem;
+    pointer-events: none;
+    z-index: var(--zIndex-layerUI);
+  }
+
+  .ui-layout__row {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    pointer-events: none;
+  }
+
+  .ui-layout__row--top,
+  .ui-layout__row--bottom {
+    column-gap: 0.5rem;
+  }
+
+  .ui-layout__row--top:has(.ui-layout__region--topCenter
+      > .ui-layout__item:not(:empty)),
+  .ui-layout__row--bottom:has(.ui-layout__region--bottomCenter
+      > .ui-layout__item:not(:empty)) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+
+  .ui-layout__row--top:not(:has(.ui-layout__region--topCenter
+        > .ui-layout__item:not(:empty))),
+  .ui-layout__row--bottom:not(:has(.ui-layout__region--bottomCenter
+        > .ui-layout__item:not(:empty))) {
+    justify-content: space-between;
+  }
+
+  .ui-layout__row--middle {
+    justify-content: space-between;
+  }
+
+  .ui-layout__region {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    flex: 0 1 auto;
+    gap: 0.5rem;
+    margin: calc(-1 * var(--ui-layout-region-gutter-y))
+      calc(-1 * var(--ui-layout-region-gutter-x));
+    padding: var(--ui-layout-region-gutter-y) var(--ui-layout-region-gutter-x);
+    min-width: 0;
+    min-height: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .ui-layout__region--topLeft,
+  .ui-layout__region--topCenter,
+  .ui-layout__region--topRight {
+    align-items: flex-start;
+  }
+
+  .ui-layout__region--bottomLeft,
+  .ui-layout__region--bottomCenter,
+  .ui-layout__region--bottomRight {
+    align-items: flex-end;
+  }
+
+  .ui-layout__region--topLeft,
+  .ui-layout__region--bottomLeft {
+    justify-content: flex-start;
+  }
+
+  .ui-layout__region--topRight,
+  .ui-layout__region--bottomRight {
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+
+  .ui-layout__row--top:has(.ui-layout__region--topCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--topLeft,
+  .ui-layout__row--bottom:has(.ui-layout__region--bottomCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--bottomLeft {
+    grid-column: 1;
+    margin-left: calc(-1 * var(--ui-layout-region-gutter-x));
+  }
+
+  .ui-layout__row--top:has(.ui-layout__region--topCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--topCenter,
+  .ui-layout__row--bottom:has(.ui-layout__region--bottomCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--bottomCenter {
+    grid-column: 2;
+    justify-content: center;
+    justify-self: center;
+    max-width: 100%;
+  }
+
+  .ui-layout__region--topCenter:has(> .ui-layout__item[data-ui-layout-item="toolbar"][data-ui-orientation="horizontal"]) {
+    overflow: visible;
+  }
+
+  .ui-layout__region--topCenter
+    > .ui-layout__item[data-ui-layout-item="toolbar"][data-ui-orientation="horizontal"] {
+    max-height: none;
+    overflow: visible;
+  }
+
+  .ui-layout__row--top:has(.ui-layout__region--topCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--topRight,
+  .ui-layout__row--bottom:has(.ui-layout__region--bottomCenter
+      > .ui-layout__item:not(:empty))
+    .ui-layout__region--bottomRight {
+    grid-column: 3;
+    margin-left: calc(-1 * var(--ui-layout-region-gutter-x));
+    justify-self: end;
+  }
+
+  .ui-layout__region--middleLeft {
+    align-items: flex-start;
+    justify-content: flex-start;
+    margin-right: auto;
+  }
+
+  .ui-layout__item[data-ui-layout-item="stylesPanel"] .App-menu__left {
+    // The legacy panel was absolutely positioned inside the old top-left
+    // layout. Keep it in flow here so the region and viewport can measure it.
+    position: relative;
+  }
+
+  .ui-layout__region--middleRight {
+    align-items: flex-end;
+    justify-content: center;
+    margin-left: auto;
+  }
+
+  .ui-layout__region--middleLeft,
+  .ui-layout__region--middleRight {
+    flex-direction: column;
+    max-height: none;
+  }
+
+  .ui-layout__item {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: flex-start;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 0;
+    overflow: visible;
+    pointer-events: var(--ui-pointerEvents);
+  }
+
+  .ui-layout__island-group.desktop-canvas-controls {
+    .reset-zoom-button {
+      width: 3rem !important;
+      padding-inline: 0.25rem !important;
+    }
+
+    .view-mode-button button,
+    .smart-zoom-button button,
+    .zoom-button,
+    .undo-redo-buttons button,
+    .undo-button-container button,
+    .redo-button-container button {
+      background-color: transparent !important;
+    }
+
+    .zoom-actions,
+    .undo-redo-buttons {
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  .ui-layout__item[data-ui-orientation="vertical"] {
+    flex-direction: column;
+  }
+
+  .ui-layout__item[data-ui-orientation="vertical"]
+    > .layer-ui__wrapper__top-right {
+    flex-direction: column;
+  }
+
+  .ui-layout__item[data-ui-orientation="vertical"] .App-toolbar {
+    flex-direction: column;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .ui-layout__item[data-ui-orientation="vertical"]
+    .App-toolbar
+    .Stack_horizontal {
+    flex-direction: column;
+  }
+
+  .ui-layout__item[data-ui-orientation="vertical"] .App-toolbar__divider {
+    width: 1.5rem;
+    height: 1px;
+  }
+
+  .ui-layout--mobile {
+    --ui-layout-region-gutter-x: 3px;
+    --ui-layout-region-gutter-y: 4px;
+    z-index: var(--zIndex-ui-bottom);
+    gap: 0;
+    inset: 0 max(14px, env(safe-area-inset-right))
+      calc(env(safe-area-inset-bottom) + 0.5rem)
+      max(14px, env(safe-area-inset-left));
+    align-items: stretch;
+  }
+
+  .ui-layout--mobile .ui-layout__row--top,
+  .ui-layout--mobile .ui-layout__row--bottom {
+    column-gap: 6px;
+  }
+
+  .ui-layout--mobile .ui-layout__row--middle {
+    column-gap: 6px;
+  }
+
+  .ui-layout--mobile .ui-layout__region--bottomLeft {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    max-width: 100%;
+  }
+
+  .ui-layout--mobile [data-ui-layout-item="stylesPanel"] {
+    max-width: 100%;
+  }
+
+  .ui-layout--mobile [data-ui-layout-item="toolbar"] {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .ui-layout--mobile [data-ui-layout-item="toolbar"] > .App-toolbar {
+    max-width: 100%;
+  }
+
+  .ui-layout--mobile .mobile-canvas-actions {
+    margin: 0;
+  }
+
+  .ui-layout--mobile .mobile-canvas-actions,
+  .ui-layout--mobile .mobile-canvas-actions .ToolIcon,
+  .ui-layout--mobile .mobile-canvas-actions .ToolIcon__icon {
+    border-radius: 5px;
+  }
+
+  .ui-layout--mobile .ui-layout__region--topLeft,
+  .ui-layout--mobile .ui-layout__region--topRight {
+    align-self: start;
+    margin-top: 0;
+    padding-top: calc(
+      env(safe-area-inset-top) + var(--editor-container-padding)
+    );
+  }
+
+  .ui-layout--mobile .ui-layout__region--topRight {
+    align-items: flex-end;
+  }
+
+  .ui-layout--mobile .ui-layout__region--bottomLeft {
+    justify-self: start;
+  }
+
+  .ui-layout--mobile .ui-layout__region:not(.ui-layout__region--bottomLeft) {
+    pointer-events: none;
+  }
+
+  .ui-layout--mobile
+    .ui-layout__item[data-ui-layout-item="toolbar"]
+    .App-toolbar {
+    width: 100%;
+    overflow: visible;
+  }
+
+  .ui-layout--mobile
+    .ui-layout__item[data-ui-layout-item="toolbar"]
+    .mobile-toolbar {
+    overflow: visible;
+  }
+
+  .ui-layout--mobile
+    .ui-layout__item[data-ui-layout-item="toolbar"][data-ui-orientation="vertical"]
+    .mobile-toolbar {
+    flex-direction: column;
+    flex: 0 0 auto;
+    align-items: stretch;
+    overflow: visible;
+  }
+
+  .ui-layout--mobile .ui-layout__legacy-bottom-left .floating-status-stack {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+  }
+
+  .ui-layout--mobile .ui-layout__legacy-bottom-left {
+    flex: 0 0 100%;
+    pointer-events: var(--ui-pointerEvents);
+  }
+
+  .ui-layout--mobile .ui-layout__region--topLeft,
+  .ui-layout--mobile .ui-layout__region--topRight {
+    z-index: var(--zIndex-ui-top);
+  }
+
+  .ui-layout--mobile .ui-layout__region--bottomLeft,
+  .ui-layout--mobile .ui-layout__region--bottomRight {
+    z-index: var(--zIndex-ui-bottom);
+  }
+}

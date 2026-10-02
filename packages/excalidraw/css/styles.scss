@@ -340,8 +340,7 @@ body.excalidraw-cursor-resize * {
     flex-direction: row;
     gap: 6px;
     flex: 0 0 auto;
-    padding: 4px;
-    margin-bottom: 4px;
+    padding: 0;
     pointer-events: var(--ui-pointerEvents);
 
     .view-mode-button button,
@@ -671,6 +670,9 @@ body.excalidraw-cursor-resize * {
 
     width: var(--lg-button-size);
     height: var(--lg-button-size);
+    border-radius: var(--border-radius-lg);
+    background-color: var(--island-bg-color);
+    box-shadow: var(--shadow-island);
 
     svg {
       width: var(--lg-icon-size);
@@ -714,8 +716,6 @@ body.excalidraw-cursor-resize * {
     font-size: 0.875rem;
     height: var(--lg-button-size);
     width: var(--lg-button-size);
-
-    margin-inline-start: 0.6em; // to make space for view-mode-button
 
     svg {
       width: var(--lg-icon-size);
@@ -773,9 +773,7 @@ body.excalidraw-cursor-resize * {
   .eraser-buttons {
     display: grid;
     grid-auto-flow: column;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-inline-start: 0.6em;
+    margin-block: auto;
   }
 
   @include isMobile {

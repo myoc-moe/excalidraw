@@ -123,6 +123,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     currentUserControls,
     imageOptions,
     showDropEventDebugAlert,
+    uiLayout,
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
@@ -278,6 +279,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           currentUserControls={currentUserControls}
           imageOptions={normalizedImageOptions}
           showDropEventDebugAlert={showDropEventDebugAlert}
+          uiLayout={uiLayout}
         >
           {children}
         </App>
@@ -493,6 +495,7 @@ export { CaptureUpdateAction } from "@excalidraw/element";
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
 export { Button } from "./components/Button";
+export * from "./components/icons";
 export { Footer };
 export { MainMenu };
 export { Ellipsify } from "./components/Ellipsify";
@@ -528,6 +531,8 @@ export { Fonts } from "./fonts/Fonts";
 
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
+export type { EditorInterface } from "@excalidraw/common";
+
 export type {
   AlignPreferences,
   ArrangePreferences,
@@ -543,6 +548,15 @@ export type {
   NormalisePreferences,
   SmartZoomPreferences,
   ViewpointFlip,
+  ExcalidrawImperativeAPI,
+  UIAppState,
+  ExcalidrawUICustomItem,
+  ExcalidrawUIFormFactorLayout,
+  ExcalidrawUIItem,
+  ExcalidrawUIItemLayout,
+  ExcalidrawUIOrientation,
+  ExcalidrawUIRegion,
+  ExcalidrawUILayout,
 } from "./types";
 
 export type {

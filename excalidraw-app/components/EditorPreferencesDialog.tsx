@@ -1,5 +1,7 @@
 import { Dialog } from "@excalidraw/excalidraw/components/Dialog";
+import { useI18n } from "@excalidraw/excalidraw/i18n";
 
+import type { EditorInterface } from "@excalidraw/common";
 import type { ArrangeAlgorithms } from "@excalidraw/element/types";
 import type {
   EditorPreferences,
@@ -51,13 +53,19 @@ const updateNumericPreference = (
 
 export const EditorPreferencesDialog = ({
   editorPreferences,
+  editorInterface,
   onChange,
+  onDesktopUIModeChange,
   onClose,
 }: {
   editorPreferences: ResolvedEditorPreferences;
+  editorInterface: Pick<EditorInterface, "formFactor" | "desktopUIMode">;
   onChange: (next: EditorPreferences) => void;
+  onDesktopUIModeChange: (mode: EditorInterface["desktopUIMode"]) => void;
   onClose: () => void;
 }) => {
+  const { t } = useI18n();
+
   return (
     <Dialog
       className="EditorPreferencesDialog"
@@ -66,6 +74,48 @@ export const EditorPreferencesDialog = ({
       title="Editor Preferences"
     >
       <div className="EditorPreferencesDialog__sections">
+        {editorInterface.formFactor === "desktop" && (
+          <section className="EditorPreferencesDialog__section">
+            <h3 id="editor-preferences-desktop-ui-heading">
+              {t("labels.preferences_myocDesktopUISize")}
+            </h3>
+            <p
+              id="editor-preferences-desktop-ui-description"
+              className="EditorPreferencesDialog__description"
+            >
+              {t("labels.preferences_myocDesktopUIDescription")}
+            </p>
+            <div
+              className="EditorPreferencesDialog__radio-group"
+              role="radiogroup"
+              aria-labelledby="editor-preferences-desktop-ui-heading"
+              aria-describedby="editor-preferences-desktop-ui-description"
+            >
+              <label className="EditorPreferencesDialog__checkbox">
+                <input
+                  data-testid="editor-preferences-desktop-ui-full"
+                  type="radio"
+                  name="editor-preferences-desktop-ui-mode"
+                  value="full"
+                  checked={editorInterface.desktopUIMode === "full"}
+                  onChange={() => onDesktopUIModeChange("full")}
+                />
+                <span>{t("labels.preferences_myocDesktopUIFull")}</span>
+              </label>
+              <label className="EditorPreferencesDialog__checkbox">
+                <input
+                  data-testid="editor-preferences-desktop-ui-compact"
+                  type="radio"
+                  name="editor-preferences-desktop-ui-mode"
+                  value="compact"
+                  checked={editorInterface.desktopUIMode === "compact"}
+                  onChange={() => onDesktopUIModeChange("compact")}
+                />
+                <span>{t("labels.preferences_myocDesktopUICompact")}</span>
+              </label>
+            </div>
+          </section>
+        )}
         <section className="EditorPreferencesDialog__section">
           <h3>Smart zoom</h3>
           <label className="EditorPreferencesDialog__checkbox">

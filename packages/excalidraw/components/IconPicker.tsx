@@ -297,6 +297,7 @@ export function IconPicker<T>({
   onChange: (value: T) => void;
 }) {
   const [isActive, setActive] = React.useState(false);
+  const { container } = useExcalidrawContainer();
   const selectedOption = useMemo(
     () =>
       findOption(visibleSections, (option) => option.value === value) ??
@@ -316,16 +317,18 @@ export function IconPicker<T>({
           {selectedOption?.icon}
         </Popover.Trigger>
         {isActive && (
-          <Picker
-            visibleSections={visibleSections}
-            hiddenSections={hiddenSections}
-            value={value}
-            label={label}
-            onChange={onChange}
-            onClose={() => {
-              setActive(false);
-            }}
-          />
+          <Popover.Portal container={container}>
+            <Picker
+              visibleSections={visibleSections}
+              hiddenSections={hiddenSections}
+              value={value}
+              label={label}
+              onChange={onChange}
+              onClose={() => {
+                setActive(false);
+              }}
+            />
+          </Popover.Portal>
         )}
       </Popover.Root>
     </div>

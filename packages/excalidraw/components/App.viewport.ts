@@ -454,7 +454,7 @@ export class AppViewport {
 
   private uiLastMeasured = new Map<
     ViewportUIName,
-    { side: "left" | "right"; offset: number }
+    { side: "left" | "right" | "top" | "bottom"; offset: number }
   >();
 
   constructor(
@@ -524,23 +524,63 @@ export class AppViewport {
         "[data-viewport-ui]",
       )) {
         const domRect = node.getBoundingClientRect();
+        const regionRect = node
+          .closest<HTMLElement>("[data-ui-layout-region]")
+          ?.getBoundingClientRect();
+        const visibleLeft = Math.max(
+          domRect.left,
+          excalidrawContainerRect.left,
+          regionRect?.left ?? -Infinity,
+        );
+        const visibleTop = Math.max(
+          domRect.top,
+          excalidrawContainerRect.top,
+          regionRect?.top ?? -Infinity,
+        );
+        const visibleRight = Math.min(
+          domRect.right,
+          excalidrawContainerRect.right,
+          regionRect?.right ?? Infinity,
+        );
+        const visibleBottom = Math.min(
+          domRect.bottom,
+          excalidrawContainerRect.bottom,
+          regionRect?.bottom ?? Infinity,
+        );
+        if (visibleRight <= visibleLeft || visibleBottom <= visibleTop) {
+          continue;
+        }
         const rect = {
-          top: domRect.top - excalidrawContainerRect.top,
-          right: domRect.right - excalidrawContainerRect.left,
-          bottom: domRect.bottom - excalidrawContainerRect.top,
-          left: domRect.left - excalidrawContainerRect.left,
-          width: domRect.width,
+          top: visibleTop - excalidrawContainerRect.top,
+          right: visibleRight - excalidrawContainerRect.left,
+          bottom: visibleBottom - excalidrawContainerRect.top,
+          left: visibleLeft - excalidrawContainerRect.left,
+          width: visibleRight - visibleLeft,
         };
+
+        const name = node.dataset.viewportUiName as ViewportUIName | undefined;
+        if (name) {
+          renderedSurfaces.add(name);
+        }
 
         switch (node.dataset.viewportUi as ViewportUIDock) {
           case "top":
             measuredOffsets.top = Math.max(measuredOffsets.top, rect.bottom);
+            if (name && rect.bottom > 0) {
+              this.uiLastMeasured.set(name, {
+                side: "top",
+                offset: rect.bottom,
+              });
+            }
             break;
           case "bottom":
-            measuredOffsets.bottom = Math.max(
-              measuredOffsets.bottom,
-              this.app.state.height - rect.top,
-            );
+            {
+              const offset = this.app.state.height - rect.top;
+              measuredOffsets.bottom = Math.max(measuredOffsets.bottom, offset);
+              if (name && offset > 0) {
+                this.uiLastMeasured.set(name, { side: "bottom", offset });
+              }
+            }
             break;
           case "side": {
             const [side, offset] =
@@ -550,14 +590,8 @@ export class AppViewport {
 
             measuredOffsets[side] = Math.max(measuredOffsets[side], offset);
 
-            const name = node.dataset.viewportUiName as
-              | ViewportUIName
-              | undefined;
-            if (name) {
-              renderedSurfaces.add(name);
-              if (offset > 0) {
-                this.uiLastMeasured.set(name, { side, offset });
-              }
+            if (name && offset > 0) {
+              this.uiLastMeasured.set(name, { side, offset });
             }
             break;
           }

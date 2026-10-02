@@ -157,6 +157,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
   - `Q` toggles lock active tool
   - with no selection, plain left/right arrows cycle through individual images with Smart Zoom in spatial reading order (top-to-bottom, then left-to-right), regardless of grouping
   - `wheelZoomsOnDefault` should make plain mousewheel zoom by default, including while the eyedropper is active
+- Keep Excalidraw's app-level end-to-end encryption shield and tooltip out of the Myoc UI.
 - Preserve Myoc alignment behavior: the shared Stacking editor preference defaults off, so left/right/top/bottom alignment compacts selected groups without bounding-box overlap using the Arrange gap; enabling Stacking restores exact-edge overlap, while center alignment remains unchanged.
 - Label tests that protect fork-specific toolbar or shortcut behavior with `MyOC regression:` so future upstream merges do not mistake them for generic upstream expectations.
 
