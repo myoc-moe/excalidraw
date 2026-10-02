@@ -5810,6 +5810,21 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      // MyOC: Allow drag-to-zoom while viewing, before view-mode shortcuts
+      // return early below.
+      if (
+        this.state.viewModeEnabled &&
+        event.key.toLowerCase() === KEYS.Z &&
+        !event[KEYS.CTRL_OR_CMD] &&
+        !event.altKey &&
+        !event.shiftKey
+      ) {
+        isHoldingZ = true;
+        this.cursor.set("zoom-in");
+        event.preventDefault();
+        return;
+      }
+
       // view mode hardcoded from upstream -> disable tool switching for now
       const shouldPreventToolSwitching = this.props.viewModeEnabled === true;
 

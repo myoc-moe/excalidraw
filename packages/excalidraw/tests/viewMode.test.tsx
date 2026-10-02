@@ -67,6 +67,30 @@ describe("view mode", () => {
     });
   });
 
+  it("MyOC regression: z + horizontal drag zooms the canvas in view mode", () => {
+    API.setAppState({ viewModeEnabled: true });
+    mouse.reset();
+
+    const editor = GlobalTestState.interactiveCanvas.closest(
+      ".excalidraw",
+    ) as HTMLElement;
+    const startZoom = window.h.state.zoom.value;
+
+    fireEvent.keyDown(editor, { key: KEYS.Z, code: "KeyZ" });
+    expect(GlobalTestState.interactiveCanvas.style.cursor).toBe("zoom-in");
+
+    mouse.down(100, 100);
+    mouse.up(100, 0);
+
+    expect(window.h.state.zoom.value).toBeGreaterThan(startZoom);
+
+    fireEvent.keyUp(document, { key: KEYS.Z, code: "KeyZ" });
+    expect(GlobalTestState.interactiveCanvas.style.cursor).toBe(
+      CURSOR_TYPE.GRAB,
+    );
+    mouse.reset();
+  });
+
   it("cursor should stay as grabbing type when hovering over canvas elements", async () => {
     // create a rectangle, then hover over it  Ecursor should be
     // move type for mouse and grab for touch & pen
