@@ -262,7 +262,7 @@ type ToolButtonBehavior = {
  * uniform: track + `setActiveTool` (recording the previous tool for toggle
  * tools), with pen detection on the first pen interaction.
  */
-const createToolButton = (
+export const createToolButton = (
   type: ToolbarToolType,
   behavior?: ToolButtonBehavior,
 ) => {
@@ -367,10 +367,12 @@ export const SelectionToolPopover = ({
   app,
   activeTool,
   setAppState,
+  hideShortcut,
 }: {
   app: AppClassProperties;
   activeTool: UIAppState["activeTool"];
   setAppState: React.Component<any, AppState>["setState"];
+  hideShortcut?: boolean;
 }) => {
   const SELECTION_TOOLS = [
     {
@@ -399,6 +401,7 @@ export const SelectionToolPopover = ({
       activeTool={activeTool}
       defaultOption={app.state.preferredSelectionTool.type}
       data-testid="toolbar-selection"
+      shortcut={hideShortcut ? undefined : getToolShortcut("selection")}
       onToolChange={(type: string) => {
         if (type === "selection" || type === "lasso") {
           app.setActiveTool({ type });

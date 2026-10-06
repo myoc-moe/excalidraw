@@ -130,7 +130,7 @@ const ObjectsSnapModeDropdownItem = ({
   );
 };
 
-const ObjectsSnapModeButton = ({
+export const ObjectsSnapModeButton = ({
   actionManager,
   app,
 }: {
@@ -186,7 +186,7 @@ const SearchMenuDropdownItem = ({
   );
 };
 
-const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
+export const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
   <IconButton
     type="button"
     icon={eyeDropperIcon}
@@ -201,7 +201,7 @@ const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
   />
 );
 
-const ExtraToolsDropdown = ({
+export const ExtraToolsDropdown = ({
   app,
   activeTool,
   setAppState,

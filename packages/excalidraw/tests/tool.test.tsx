@@ -259,6 +259,37 @@ describe("MyOC regression: simplified toolbar", () => {
   });
 });
 
+describe("MyOC regression: compact toolbar shortcuts", () => {
+  afterEach(() => {
+    localStorage.removeItem("excalidraw.desktopUIMode");
+  });
+
+  it("MyOC regression: shows the selection shortcut on the compact desktop toolbar", async () => {
+    localStorage.setItem("excalidraw.desktopUIMode", "compact");
+
+    await render(<Excalidraw UIOptions={{ getFormFactor: () => "desktop" }} />);
+    act(() => {
+      window.h.app.refreshEditorInterface();
+      window.h.app.refresh();
+    });
+
+    const toolbar = document.querySelector<HTMLElement>(
+      ".App-toolbar--compact",
+    );
+    const selectionButton = toolbar?.querySelector<HTMLButtonElement>(
+      '[data-testid="toolbar-selection"]',
+    );
+    const keybinding = selectionButton?.querySelector<HTMLElement>(
+      ".ToolIcon__keybinding",
+    );
+
+    expect(toolbar).not.toBeNull();
+    expect(keybinding?.textContent).toBe("V");
+    expect(getComputedStyle(keybinding!).display).not.toBe("none");
+    expect(selectionButton?.getAttribute("aria-keyshortcuts")).toBe("V");
+  });
+});
+
 describe("MyOC regression: compact selected image actions", () => {
   afterEach(() => {
     localStorage.removeItem("excalidraw.desktopUIMode");

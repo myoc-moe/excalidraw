@@ -903,6 +903,8 @@ export type ExcalidrawUICustomItem = ExcalidrawUIItemLayout & {
   render: (context: {
     api: ExcalidrawImperativeAPI;
     appState: UIAppState;
+    /** Current canvas zoom, updated reactively when the viewport zoom changes. */
+    zoom: AppState["zoom"];
     editorInterface: EditorInterface;
     region: ExcalidrawUIRegion;
     orientation: Exclude<ExcalidrawUIOrientation, "auto">;
