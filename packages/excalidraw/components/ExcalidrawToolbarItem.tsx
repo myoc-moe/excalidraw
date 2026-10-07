@@ -16,6 +16,7 @@ import {
   ObjectsSnapModeButton,
   StrokeEyeDropperButton,
 } from "./Toolbar";
+import type { ExcalidrawToolbarOverflowItemName } from "./Toolbar";
 import {
   TOOLS,
   createToolButton,
@@ -60,9 +61,11 @@ const toolButtons = {
 export const ExcalidrawToolbarItem = ({
   item,
   hideShortcut,
+  overflowItems,
 }: {
   item: ExcalidrawToolbarItemName;
   hideShortcut?: boolean;
+  overflowItems?: readonly ExcalidrawToolbarOverflowItemName[];
 }) => {
   const app = useApp();
   const appProps = useAppProps();
@@ -114,6 +117,7 @@ export const ExcalidrawToolbarItem = ({
           UIOptions={appProps.UIOptions}
           isMyocSimplifiedMode={appState.myocSimplifiedMode}
           actionManager={actionManager}
+          overflowItems={overflowItems}
         />
       );
     case "objectsSnapMode":
