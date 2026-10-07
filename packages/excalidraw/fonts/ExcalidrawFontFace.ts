@@ -7,6 +7,7 @@ type DataURL = string;
 export class ExcalidrawFontFace {
   public readonly urls: URL[] | DataURL[];
   public readonly fontFace: FontFace;
+  private readonly mustEmbed: boolean;
 
   private static readonly ASSETS_FALLBACK_URL = `https://esm.sh/${
     import.meta.env.PKG_NAME
@@ -14,7 +15,13 @@ export class ExcalidrawFontFace {
       : "@excalidraw/excalidraw" // fallback to the latest package version (i.e. for app)
   }/dist/prod/`;
 
-  constructor(family: string, uri: string, descriptors?: FontFaceDescriptors) {
+  constructor(
+    family: string,
+    uri: string,
+    descriptors?: FontFaceDescriptors,
+    mustEmbed = false,
+  ) {
+    this.mustEmbed = mustEmbed;
     this.urls = ExcalidrawFontFace.createUrls(uri);
 
     const sources = this.urls
@@ -44,10 +51,15 @@ export class ExcalidrawFontFace {
       (char) => char.codePointAt(0)!,
     );
 
-    return this.getContent(codepoints).then(
-      (content) =>
-        `@font-face { font-family: ${this.fontFace.family}; src: url(${content}); }`,
-    );
+    return this.getContent(codepoints).then((content) => {
+      if (!content) {
+        return "";
+      }
+
+      // FontFace.family is already serialized as a valid CSS family value,
+      // including quotes for names containing spaces or punctuation.
+      return `@font-face { font-family: ${this.fontFace.family}; src: url(${content}); }`;
+    });
   }
 
   /**
@@ -81,6 +93,10 @@ export class ExcalidrawFontFace {
       `Failed to fetch font family "${this.fontFace.family}"`,
       JSON.stringify(errorMessages, undefined, 2),
     );
+
+    if (this.mustEmbed) {
+      return "";
+    }
 
     // in case of issues, at least return the last url as a content
     // defaults to unpkg for bundled fonts (so that we don't have to host them forever) and http url for others

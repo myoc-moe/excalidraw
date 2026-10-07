@@ -31,6 +31,7 @@ type ToolPopoverProps = {
   "data-testid": string;
   onToolChange: (type: string) => void;
   displayedOption: ToolOption;
+  shortcut?: string;
 };
 
 export const ToolPopover = ({
@@ -41,6 +42,7 @@ export const ToolPopover = ({
   "data-testid": dataTestId,
   onToolChange,
   displayedOption,
+  shortcut,
 }: ToolPopoverProps) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const currentType = activeTool.type;
@@ -73,8 +75,12 @@ export const ToolPopover = ({
           disabled={options.every((option) =>
             isToolButtonDisabled(app, option.type),
           )}
-          title={capitalizeString(displayedOption.title)}
+          title={`${capitalizeString(displayedOption.title)}${
+            shortcut ? ` — ${shortcut}` : ""
+          }`}
           aria-label={capitalizeString(displayedOption.title)}
+          aria-keyshortcuts={shortcut}
+          keyBindingLabel={shortcut?.length === 1 ? shortcut : undefined}
           data-testid={dataTestId}
           onSelect={() => {
             setIsPopupOpen((v) => !v);

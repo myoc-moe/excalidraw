@@ -14,6 +14,9 @@ import {
   debounce,
   FONT_FAMILY,
   getFontFamilyString,
+  getGoogleFontFamilyName,
+  isGoogleFontFamily,
+  toGoogleFontFamily,
 } from "@excalidraw/common";
 
 import type { ValueOf } from "@excalidraw/common/utility-types";
@@ -49,7 +52,7 @@ import type { JSX } from "react";
 import type { ExcalidrawFontFace } from "../../fonts/ExcalidrawFontFace";
 
 export interface FontDescriptor {
-  value: number;
+  value: FontFamilyValues;
   icon: JSX.Element;
   text: string;
   deprecated?: true;
@@ -60,10 +63,12 @@ export interface FontDescriptor {
 }
 
 interface FontPickerListProps {
+  googleFontFamilies?: readonly string[];
+  upgradeAction?: React.ReactNode;
   selectedFontFamily: FontFamilyValues | null;
   hoveredFontFamily: FontFamilyValues | null;
-  onSelect: (value: number) => void;
-  onHover: (value: number) => void;
+  onSelect: (value: FontFamilyValues) => void;
+  onHover: (value: FontFamilyValues) => void;
   onLeave: () => void;
   onOpen: () => void;
   onClose: () => void;
@@ -90,14 +95,23 @@ const getFontFamilyIcon = (fontFamily: FontFamilyValues): JSX.Element => {
 const getFontFamilyLabel = (
   fontFamily: FontFamilyValues,
   fontFaces: ExcalidrawFontFace[],
-) =>
+) => {
+  if (isGoogleFontFamily(fontFamily)) {
+    return getGoogleFontFamilyName(fontFamily);
+  }
+
   // prefer our config as the browser resolved names may be wrapped in quotes and such
-  Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
-  fontFaces[0]?.fontFace?.family ??
-  "Unknown";
+  return (
+    Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
+    fontFaces[0]?.fontFace?.family ??
+    "Unknown"
+  );
+};
 
 export const FontPickerList = React.memo(
   ({
+    googleFontFamilies = [],
+    upgradeAction,
     selectedFontFamily,
     hoveredFontFamily,
     onSelect,
@@ -114,11 +128,21 @@ export const FontPickerList = React.memo(
 
     const [searchTerm, setSearchTerm] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
+    const sceneFamilies = useMemo(
+      () => new Set(fonts.getSceneFamilies()),
+      // cache per selected font family, so hover re-render won't mess it up
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [selectedFontFamily],
+    );
+
     const allFonts = useMemo(
       () =>
         Array.from(Fonts.registered.entries())
           .filter(
-            ([_, { metadata }]) => !metadata.private && !metadata.fallback,
+            ([familyId, { metadata }]) =>
+              !metadata.private &&
+              !metadata.fallback &&
+              !isGoogleFontFamily(familyId),
           )
           .map(([familyId, { metadata, fontFaces }]) => {
             const fontDescriptor = {
@@ -145,15 +169,25 @@ export const FontPickerList = React.memo(
       [],
     );
 
-    const sceneFamilies = useMemo(
-      () => new Set(fonts.getSceneFamilies()),
-      // cache per selected font family, so hover re-render won't mess it up
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [selectedFontFamily],
-    );
-
     const sceneFonts = useMemo(
-      () => allFonts.filter((font) => sceneFamilies.has(font.value)), // always show all the fonts in the scene, even those that were deprecated
+      () => {
+        const registeredSceneFonts = allFonts.filter((font) =>
+          sceneFamilies.has(font.value),
+        );
+        const registeredFamilies = new Set(
+          registeredSceneFonts.map((font) => font.value),
+        );
+        const unregisteredSceneFonts = Array.from(sceneFamilies)
+          .filter(isGoogleFontFamily)
+          .filter((fontFamily) => !registeredFamilies.has(fontFamily))
+          .map((fontFamily) => ({
+            value: fontFamily,
+            icon: getFontFamilyIcon(fontFamily),
+            text: getGoogleFontFamilyName(fontFamily),
+          }));
+
+        return [...registeredSceneFonts, ...unregisteredSceneFonts];
+      }, // always show all the fonts in the scene, even those that were deprecated
       [allFonts, sceneFamilies],
     );
 
@@ -167,14 +201,58 @@ export const FontPickerList = React.memo(
       [allFonts, sceneFamilies, showDeprecatedFonts],
     );
 
-    const filteredFonts = useMemo(
-      () =>
-        arrayToList(
-          [...sceneFonts, ...availableFonts].filter((font) =>
-            font.text?.toLowerCase().includes(searchTerm),
-          ),
-        ),
-      [sceneFonts, availableFonts, searchTerm],
+    const catalogFonts = useMemo(() => {
+      const registeredFamilies = new Set(allFonts.map((font) => font.value));
+      return googleFontFamilies
+        .map((family) => {
+          const value = toGoogleFontFamily(family);
+          return {
+            value,
+            icon: getFontFamilyIcon(value),
+            text: family,
+          };
+        })
+        .filter(
+          (font) =>
+            !sceneFamilies.has(font.value) &&
+            !registeredFamilies.has(font.value),
+        );
+    }, [googleFontFamilies, allFonts, sceneFamilies]);
+
+    const filteredFonts = useMemo(() => {
+      const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+      const matchesSearch = (font: FontDescriptor) =>
+        font.text.toLowerCase().includes(normalizedSearchTerm);
+      const visibleCatalogFonts = normalizedSearchTerm
+        ? catalogFonts.filter(matchesSearch)
+        : catalogFonts.slice(0, 20);
+
+      return arrayToList([
+        ...sceneFonts.filter(matchesSearch),
+        ...availableFonts.filter(matchesSearch),
+        ...visibleCatalogFonts,
+      ]);
+    }, [sceneFonts, availableFonts, catalogFonts, searchTerm]);
+
+    const handleHover = useCallback(
+      (fontFamily: FontFamilyValues) => {
+        onHover(fontFamily);
+        if (isGoogleFontFamily(fontFamily)) {
+          const font = filteredFonts.find((item) => item.value === fontFamily);
+          void fonts
+            .loadFontFamily(
+              fontFamily,
+              font?.text || getGoogleFontFamilyName(fontFamily),
+            )
+            .catch((error) => {
+              console.error(
+                `Failed to preview Google Font "${fontFamily}"`,
+                error,
+              );
+            });
+        }
+      },
+      [filteredFonts, fonts, onHover],
     );
 
     const hoveredFont = useMemo(() => {
@@ -189,7 +267,7 @@ export const FontPickerList = React.memo(
       if (!font && searchTerm) {
         if (filteredFonts[0]?.value) {
           // hover first element on search
-          onHover(filteredFonts[0].value);
+          handleHover(filteredFonts[0].value);
         } else {
           // re-render cache on no results
           onLeave();
@@ -202,7 +280,7 @@ export const FontPickerList = React.memo(
       selectedFontFamily,
       searchTerm,
       filteredFonts,
-      onHover,
+      handleHover,
       onLeave,
     ]);
 
@@ -250,7 +328,7 @@ export const FontPickerList = React.memo(
           hoveredFont,
           filteredFonts,
           onSelect: wrappedOnSelect,
-          onHover,
+          onHover: handleHover,
           onClose,
         });
 
@@ -259,7 +337,7 @@ export const FontPickerList = React.memo(
           event.stopPropagation();
         }
       },
-      [hoveredFont, filteredFonts, wrappedOnSelect, onHover, onClose],
+      [hoveredFont, filteredFonts, wrappedOnSelect, handleHover, onClose],
     );
 
     useEffect(() => {
@@ -313,12 +391,12 @@ export const FontPickerList = React.memo(
           title={font.text}
           // allow to tab between search and selected font
           tabIndex={isSelected ? 0 : -1}
-          onClick={(e) => {
-            wrappedOnSelect(Number(e.currentTarget.value));
+          onClick={() => {
+            wrappedOnSelect(font.value);
           }}
           onMouseMove={() => {
             if (hoveredFont?.value !== font.value) {
-              onHover(font.value);
+              handleHover(font.value);
             }
           }}
         >
@@ -391,7 +469,7 @@ export const FontPickerList = React.memo(
         onKeyDown={onKeyDown}
         preventAutoFocusOnTouch={!!app.state.editingTextElement}
       >
-        {stylesPanelMode === "full" && (
+        {(stylesPanelMode === "full" || googleFontFamilies.length > 0) && (
           <QuickSearch
             ref={inputRef}
             placeholder={t("quickSearch.placeholder")}
@@ -404,10 +482,15 @@ export const FontPickerList = React.memo(
         >
           {groups.length ? groups : null}
         </ScrollableList>
+        {upgradeAction && (
+          <div className="FontPicker__upgrade-action">{upgradeAction}</div>
+        )}
       </PropertiesPopover>
     );
   },
   (prev, next) =>
+    prev.googleFontFamilies === next.googleFontFamilies &&
+    prev.upgradeAction === next.upgradeAction &&
     prev.selectedFontFamily === next.selectedFontFamily &&
     prev.hoveredFontFamily === next.hoveredFontFamily,
 );

@@ -2,12 +2,15 @@ import React from "react";
 
 import type { EditorInterface } from "@excalidraw/common";
 
+import { useAppStateValue } from "../hooks/useAppStateValue";
+
 import { Island } from "./Island";
 
 import "./UIRegionLayout.scss";
 
 import type {
   ExcalidrawImperativeAPI,
+  ExcalidrawUICustomItem,
   ExcalidrawUIFormFactorLayout,
   ExcalidrawUIItem,
   ExcalidrawUIItemLayout,
@@ -37,6 +40,33 @@ type ResolvedUIRegionLayoutItem = {
   order: number;
   content: React.ReactNode;
   islandGroup?: UIRegionLayoutItem["islandGroup"];
+};
+
+const CustomUIRegionItem = ({
+  item,
+  api,
+  appState,
+  editorInterface,
+  region,
+  orientation,
+}: {
+  item: ExcalidrawUICustomItem;
+  api: ExcalidrawImperativeAPI;
+  appState: UIAppState;
+  editorInterface: EditorInterface;
+  region: ExcalidrawUIRegion;
+  orientation: Exclude<ExcalidrawUIOrientation, "auto">;
+}) => {
+  const zoom = useAppStateValue("zoom");
+
+  return item.render({
+    api,
+    appState,
+    editorInterface,
+    region,
+    orientation,
+    zoom,
+  });
 };
 
 const REGIONS: readonly ExcalidrawUIRegion[] = [
@@ -130,13 +160,16 @@ export const UIRegionLayout = ({
         region,
         orientation,
         order: item.order ?? 1000 + index,
-        content: item.render({
-          api: app.api,
-          appState,
-          editorInterface,
-          region,
-          orientation,
-        }),
+        content: (
+          <CustomUIRegionItem
+            item={item}
+            api={app.api}
+            appState={appState}
+            editorInterface={editorInterface}
+            region={region}
+            orientation={orientation}
+          />
+        ),
       },
     ];
   });

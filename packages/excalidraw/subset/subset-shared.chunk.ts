@@ -9,6 +9,7 @@
 
 import loadHbSubset from "./harfbuzz/harfbuzz-loader";
 import loadWoff2 from "./woff2/woff2-loader";
+import { parseSfntFontMetrics } from "./woff2/fontMetrics";
 
 /**
  * Shared commands between the main thread and worker threads.
@@ -55,6 +56,14 @@ export const subsetToBinary = async (
   const compressedBinary = compress(snftSubset.buffer);
 
   return compressedBinary.buffer;
+};
+
+export const getWoff2FontMetrics = async (
+  arrayBuffer: ArrayBuffer,
+): Promise<import("./woff2/fontMetrics").Woff2FontMetrics> => {
+  const { decompress } = await loadWoff2();
+  const sfnt = decompress(arrayBuffer);
+  return parseSfntFontMetrics(sfnt);
 };
 
 /**

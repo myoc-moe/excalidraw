@@ -903,6 +903,8 @@ export type ExcalidrawUICustomItem = ExcalidrawUIItemLayout & {
   render: (context: {
     api: ExcalidrawImperativeAPI;
     appState: UIAppState;
+    /** Current canvas zoom, updated reactively when the viewport zoom changes. */
+    zoom: AppState["zoom"];
     editorInterface: EditorInterface;
     region: ExcalidrawUIRegion;
     orientation: Exclude<ExcalidrawUIOrientation, "auto">;
@@ -1129,6 +1131,14 @@ export interface ExcalidrawProps {
     element: NonDeleted<ExcalidrawEmbeddableElement>,
     appState: AppState,
   ) => JSX.Element | null;
+  /**
+   * Host-controlled Google Fonts picker access. Scene fonts load independently
+   * of this capability so viewers and non-premium editors can render or reuse
+   * families already present in the scene. Google Fonts requires
+   * `fonts.googleapis.com` in `connect-src` and `fonts.gstatic.com` in
+   * `font-src` in the host's Content Security Policy.
+   */
+  googleFonts?: GoogleFontsConfig;
   showDeprecatedFonts?: boolean;
   wheelZoomsOnDefault?: boolean;
   strokeColorTopPicks?: ColorTuple;
@@ -1177,6 +1187,14 @@ export interface ExcalidrawProps {
       signal: AbortSignal;
     },
   ) => MaybePromise<void> | AsyncGenerator<OnExportProgress, void>;
+}
+
+export interface GoogleFontsConfig {
+  canBrowse: boolean;
+  /** Returns canonical family names in popularity order. */
+  loadCatalog: () => Promise<readonly string[]>;
+  /** Optional host-rendered action shown when the user cannot browse Google Fonts. */
+  upgradeAction?: React.ReactNode;
 }
 
 export type SceneData = {

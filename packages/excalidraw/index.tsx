@@ -114,6 +114,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     children,
     validateEmbeddable,
     renderEmbeddable,
+    googleFonts,
     showDeprecatedFonts,
     wheelZoomsOnDefault,
     strokeColorTopPicks,
@@ -270,6 +271,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           imageContextMenuItems={imageContextMenuItems}
           validateEmbeddable={validateEmbeddable}
           renderEmbeddable={renderEmbeddable}
+          googleFonts={googleFonts}
           showDeprecatedFonts={showDeprecatedFonts}
           wheelZoomsOnDefault={wheelZoomsOnDefault}
           strokeColorTopPicks={strokeColorTopPicks}
@@ -495,6 +497,8 @@ export { CaptureUpdateAction } from "@excalidraw/element";
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
 export { Button } from "./components/Button";
+export { ExcalidrawToolbarItem } from "./components/ExcalidrawToolbarItem";
+export type { ExcalidrawToolbarItemName } from "./components/ExcalidrawToolbarItem";
 export * from "./components/icons";
 export { Footer };
 export { MainMenu };
@@ -539,6 +543,7 @@ export type {
   CompressImageFile,
   CompressImageFileOpts,
   ExcalidrawCommandCatalogEntry,
+  GoogleFontsConfig,
   EditorPreferences,
   ImageContextMenuItem,
   ImageDownloadErrorStatus,

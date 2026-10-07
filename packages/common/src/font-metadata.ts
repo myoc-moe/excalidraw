@@ -12,7 +12,7 @@ export interface FontMetadata {
   /** for head & hhea metrics read the woff2 with https://fontdrop.info/ */
   metrics: {
     /** head.unitsPerEm metric */
-    unitsPerEm: 1000 | 1024 | 2048;
+    unitsPerEm: number;
     /** hhea.ascender metric */
     ascender: number;
     /** hhea.descender metric */
@@ -32,7 +32,7 @@ export interface FontMetadata {
   fallback?: true;
 }
 
-export const FONT_METADATA: Record<number, FontMetadata> = {
+export const FONT_METADATA: Record<number | string, FontMetadata> = {
   [FONT_FAMILY.Excalifont]: {
     metrics: {
       unitsPerEm: 1000,
@@ -131,6 +131,17 @@ export const FONT_METADATA: Record<number, FontMetadata> = {
     local: true,
     fallback: true,
   },
+};
+
+export const registerFontMetadata = (
+  fontFamily: FontFamilyValues,
+  metadata: FontMetadata,
+) => {
+  FONT_METADATA[fontFamily] = metadata;
+};
+
+export const unregisterFontMetadata = (fontFamily: FontFamilyValues) => {
+  delete FONT_METADATA[fontFamily];
 };
 
 /** Unicode ranges defined by google fonts */

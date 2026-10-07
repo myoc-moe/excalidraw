@@ -4,6 +4,8 @@ import {
   CJK_HAND_DRAWN_FALLBACK_FONT,
   WINDOWS_EMOJI_FALLBACK_FONT,
   getFontFamilyFallbacks,
+  getGoogleFontFamilyName,
+  isGoogleFontFamily,
   FONT_SIZES,
 } from "@excalidraw/common";
 import { getContainerElement } from "@excalidraw/element";
@@ -14,6 +16,8 @@ import {
   FONT_METADATA,
   type FontMetadata,
   getFontString,
+  registerFontMetadata,
+  unregisterFontMetadata,
   PromisePool,
   promiseTry,
 } from "@excalidraw/common";
@@ -25,11 +29,12 @@ import { isTextElement } from "@excalidraw/element";
 import type {
   ExcalidrawElement,
   ExcalidrawTextElement,
+  FontFamilyValues,
 } from "@excalidraw/element/types";
 
-import type { ValueOf } from "@excalidraw/common/utility-types";
-
 import type { Scene } from "@excalidraw/element";
+
+import { getWoff2FontMetrics } from "../subset/subset-main";
 
 import { CascadiaFontFaces } from "./Cascadia";
 import { ComicShannsFontFaces } from "./ComicShanns";
@@ -42,15 +47,25 @@ import { LilitaFontFaces } from "./Lilita";
 import { NunitoFontFaces } from "./Nunito";
 import { VirgilFontFaces } from "./Virgil";
 import { XiaolaiFontFaces } from "./Xiaolai";
+import { loadGoogleFontFaces } from "./googleFonts";
+
+type CharsPerFamily = Map<FontFamilyValues, Set<string>>;
 
 export class Fonts {
   // it's ok to track fonts across multiple instances only once, so let's use
   // a static member to reduce memory footprint
   public static readonly loadedFontsCache = new Set<string>();
 
+  private static readonly googleFontPromises = new Map<
+    FontFamilyValues,
+    Promise<void>
+  >();
+
+  private static readonly googleFontMetrics = new Set<FontFamilyValues>();
+
   private static _registered:
     | Map<
-        number,
+        FontFamilyValues,
         {
           metadata: FontMetadata;
           fontFaces: ExcalidrawFontFace[];
@@ -157,6 +172,19 @@ export class Fonts {
     return Fonts.loadFontFaces(sceneFamilies, charsPerFamily);
   };
 
+  /** Load a family for picker previews and invalidate text rendered with a fallback. */
+  public loadFontFamily = async (
+    fontFamily: FontFamilyValues,
+    characters: string,
+  ) => {
+    const charsPerFamily: CharsPerFamily = new Map([
+      [fontFamily, new Set(Array.from(characters))],
+    ]);
+    const fontFaces = await Fonts.loadFontFaces([fontFamily], charsPerFamily);
+    this.onLoaded(fontFaces);
+    return fontFaces;
+  };
+
   /**
    * Load font faces for passed elements - use when the scene is unavailable (i.e. export).
    */
@@ -190,7 +218,7 @@ export class Fonts {
         const family = FONT_FAMILY_FALLBACKS[CJK_HAND_DRAWN_FALLBACK_FONT];
 
         // adding the same characters to the CJK handrawn family
-        charsPerFamily[family] = new Set(characters);
+        charsPerFamily.set(family, new Set(characters));
 
         // the order between the families and fallbacks is important, as fallbacks need to be defined first and in the reversed order
         // so that they get overriden with the later defined font faces, i.e. in case they share some codepoints
@@ -201,6 +229,7 @@ export class Fonts {
     // don't trigger hundreds of concurrent requests (each performing fetch, creating a worker, etc.),
     // instead go three requests at a time, in a controlled manner, without completely blocking the main thread
     // and avoiding potential issues such as rate limits
+    await Fonts.loadFontFaces(families, charsPerFamily);
     const iterator = Fonts.fontFacesStylesGenerator(families, charsPerFamily);
     const concurrency = 3;
     const fontFaces = await new PromisePool(iterator, concurrency).all();
@@ -211,8 +240,21 @@ export class Fonts {
 
   private static async loadFontFaces(
     fontFamilies: Array<ExcalidrawTextElement["fontFamily"]>,
-    charsPerFamily: Record<number, Set<string>>,
+    charsPerFamily: CharsPerFamily,
   ) {
+    await Promise.all(
+      fontFamilies.filter(isGoogleFontFamily).map(async (fontFamily) => {
+        try {
+          await Fonts.registerGoogleFont(fontFamily);
+        } catch (error) {
+          console.error(
+            `Failed to register Google Font "${fontFamily}"`,
+            error,
+          );
+        }
+      }),
+    );
+
     // add all registered font faces into the `document.fonts` (if not added already)
     for (const { fontFaces, metadata } of Fonts.registered.values()) {
       // skip registering font faces for local fonts (i.e. Helvetica)
@@ -236,7 +278,7 @@ export class Fonts {
 
   private static *fontFacesLoader(
     fontFamilies: Array<ExcalidrawTextElement["fontFamily"]>,
-    charsPerFamily: Record<number, Set<string>>,
+    charsPerFamily: CharsPerFamily,
   ): Generator<Promise<void | readonly [number, FontFace[]]>> {
     for (const [index, fontFamily] of fontFamilies.entries()) {
       const font = getFontString({
@@ -255,8 +297,15 @@ export class Fonts {
             // we might want to retry here, i.e.  in case CDN is down, but so far I didn't experience any issues - maybe it handles retry-like logic under the hood
             const fontFaces = await window.document.fonts.load(font, text);
 
+            if (isGoogleFontFamily(fontFamily)) {
+              await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
+            }
+
             return [index, fontFaces];
           } catch (e) {
+            if (isGoogleFontFamily(fontFamily)) {
+              Fonts.resetGoogleFont(fontFamily);
+            }
             // don't let it all fail if just one font fails to load
             console.error(
               `Failed to load font "${font}" from urls "${Fonts.registered
@@ -271,8 +320,8 @@ export class Fonts {
   }
 
   private static *fontFacesStylesGenerator(
-    families: Array<number>,
-    charsPerFamily: Record<number, Set<string>>,
+    families: Array<FontFamilyValues>,
+    charsPerFamily: CharsPerFamily,
   ): Generator<Promise<void | readonly [number, string]>> {
     for (const [familyIndex, family] of families.entries()) {
       const { fontFaces, metadata } = Fonts.registered.get(family) ?? {};
@@ -328,7 +377,7 @@ export class Fonts {
       | Fonts
       | {
           registered: Map<
-            number,
+            FontFamilyValues,
             { metadata: FontMetadata; fontFaces: ExcalidrawFontFace[] }
           >;
         },
@@ -347,8 +396,8 @@ export class Fonts {
       this.registered.set(fontFamily, {
         metadata,
         fontFaces: fontFacesDecriptors.map(
-          ({ uri, descriptors }) =>
-            new ExcalidrawFontFace(family, uri, descriptors),
+          ({ uri, descriptors, mustEmbed }) =>
+            new ExcalidrawFontFace(family, uri, descriptors, mustEmbed),
         ),
       });
     }
@@ -362,7 +411,7 @@ export class Fonts {
   private static init() {
     const fonts = {
       registered: new Map<
-        ValueOf<typeof FONT_FAMILY | typeof FONT_FAMILY_FALLBACKS>,
+        FontFamilyValues,
         { metadata: FontMetadata; fontFaces: ExcalidrawFontFace[] }
       >(),
     };
@@ -414,7 +463,7 @@ export class Fonts {
           families.add(element.fontFamily);
         }
         return families;
-      }, new Set<number>()),
+      }, new Set<FontFamilyValues>()),
     );
   }
 
@@ -423,8 +472,8 @@ export class Fonts {
    */
   private static getCharsPerFamily(
     elements: ReadonlyArray<ExcalidrawElement>,
-  ): Record<number, Set<string>> {
-    const charsPerFamily: Record<number, Set<string>> = {};
+  ): CharsPerFamily {
+    const charsPerFamily: CharsPerFamily = new Map();
 
     for (const element of elements) {
       if (!isTextElement(element)) {
@@ -433,11 +482,11 @@ export class Fonts {
 
       // gather unique codepoints only when inlining fonts
       for (const char of element.originalText) {
-        if (!charsPerFamily[element.fontFamily]) {
-          charsPerFamily[element.fontFamily] = new Set();
+        if (!charsPerFamily.has(element.fontFamily)) {
+          charsPerFamily.set(element.fontFamily, new Set());
         }
 
-        charsPerFamily[element.fontFamily].add(char);
+        charsPerFamily.get(element.fontFamily)!.add(char);
       }
     }
 
@@ -448,13 +497,109 @@ export class Fonts {
    * Get characters for a given family.
    */
   private static getCharacters(
-    charsPerFamily: Record<number, Set<string>>,
-    family: number,
+    charsPerFamily: CharsPerFamily,
+    family: FontFamilyValues,
   ) {
-    return charsPerFamily[family]
-      ? Array.from(charsPerFamily[family]).join("")
+    return charsPerFamily.get(family)
+      ? Array.from(charsPerFamily.get(family)!).join("")
       : "";
   }
+
+  private static registerGoogleFont = async (fontFamily: FontFamilyValues) => {
+    if (!isGoogleFontFamily(fontFamily) || Fonts.registered.has(fontFamily)) {
+      return;
+    }
+
+    let promise = Fonts.googleFontPromises.get(fontFamily);
+    if (!promise) {
+      promise = loadGoogleFontFaces(getGoogleFontFamilyName(fontFamily)).then(
+        (fontFaces) => {
+          if (!fontFaces.length) {
+            throw new Error(
+              `Google Fonts returned no font faces for "${fontFamily}"`,
+            );
+          }
+
+          Fonts.registered.set(fontFamily, {
+            metadata: FONT_METADATA[FONT_FAMILY.Excalifont],
+            fontFaces,
+          });
+        },
+      );
+      Fonts.googleFontPromises.set(fontFamily, promise);
+    }
+
+    try {
+      await promise;
+    } catch (error) {
+      if (Fonts.googleFontPromises.get(fontFamily) === promise) {
+        Fonts.googleFontPromises.delete(fontFamily);
+      }
+      throw error;
+    }
+  };
+
+  private static resetGoogleFont = (fontFamily: FontFamilyValues) => {
+    if (!isGoogleFontFamily(fontFamily)) {
+      return;
+    }
+
+    const registered = Fonts.registered.get(fontFamily);
+    if (registered) {
+      for (const { fontFace } of registered.fontFaces) {
+        window.document.fonts.delete(fontFace);
+        Fonts.loadedFontsCache.delete(
+          `${fontFace.family}-${fontFace.style}-${fontFace.weight}-${fontFace.unicodeRange}`,
+        );
+      }
+      Fonts.registered.delete(fontFamily);
+    }
+
+    Fonts.googleFontPromises.delete(fontFamily);
+    Fonts.googleFontMetrics.delete(fontFamily);
+    unregisterFontMetadata(fontFamily);
+  };
+
+  private static loadGoogleFontMetrics = async (
+    fontFamily: FontFamilyValues,
+    loadedFaces: readonly FontFace[],
+  ) => {
+    if (
+      !isGoogleFontFamily(fontFamily) ||
+      Fonts.googleFontMetrics.has(fontFamily)
+    ) {
+      return;
+    }
+
+    const registered = Fonts.registered.get(fontFamily);
+    const loadedFace = registered?.fontFaces.find((candidate) =>
+      loadedFaces.includes(candidate.fontFace),
+    );
+    const url = loadedFace?.urls.find((candidate) => candidate instanceof URL);
+    if (!registered || !loadedFace || !(url instanceof URL)) {
+      return;
+    }
+
+    try {
+      const metrics = await getWoff2FontMetrics(
+        await loadedFace.fetchFont(url),
+      );
+      const metadata: FontMetadata = {
+        ...registered.metadata,
+        metrics: {
+          unitsPerEm: metrics.unitsPerEm,
+          ascender: metrics.ascender,
+          descender: metrics.descender,
+          lineHeight: metrics.lineHeight,
+        },
+      };
+      registered.metadata = metadata;
+      registerFontMetadata(fontFamily, metadata);
+      Fonts.googleFontMetrics.add(fontFamily);
+    } catch (error) {
+      console.error(`Failed to parse metrics for "${fontFamily}"`, error);
+    }
+  };
 
   /**
    * Get all registered font families.
@@ -467,4 +612,5 @@ export class Fonts {
 export interface ExcalidrawFontFaceDescriptor {
   uri: string;
   descriptors?: FontFaceDescriptors;
+  mustEmbed?: boolean;
 }

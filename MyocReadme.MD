@@ -147,6 +147,7 @@ Preserve these Myoc UI removals when merging upstream Excalidraw:
 - Preserve Myoc shortcut policy:
   - number keys `1` through `0`, including shifted number combinations, are reserved for Myoc/Floref and must not select drawing tools or trigger zoom-to-fit actions
   - `P` selects pen/freedraw
+  - Keep the `V` shortcut visible on the selection/lasso popover in compact desktop mode, matching other desktop toolbar shortcuts; phone controls must continue to hide keyboard-only hints.
   - `X` selects draw-to-shape without Shift
   - `B` must not activate bucket/background fill
   - `K` must not activate laser

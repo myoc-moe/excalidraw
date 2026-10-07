@@ -17,4 +17,13 @@
       grid-template-columns: none;
     }
   }
+
+  .FontPicker__upgrade-action {
+    border-top: 1px solid var(--default-border-color);
+    padding: 0.5rem;
+
+    > * {
+      width: 100%;
+    }
+  }
 }
