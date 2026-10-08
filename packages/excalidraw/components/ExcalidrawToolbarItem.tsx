@@ -9,6 +9,7 @@ import {
   useExcalidrawSetAppState,
   useStylesPanelMode,
 } from "./App";
+import { HintViewer } from "./HintViewer";
 import { LockButton } from "./LockButton";
 import { PenModeButton } from "./PenModeButton";
 import {
@@ -151,3 +152,20 @@ export const ExcalidrawToolbarItem = ({
   const ToolButton = toolButtons[item];
   return <ToolButton {...toolProps} />;
 };
+
+/** Contextual tool guidance rendered below a host-owned toolbar. */
+export const ExcalidrawToolbarHint = () => {
+  const app = useApp();
+  const appState = useExcalidrawAppState();
+  const editorInterface = useEditorInterface();
+
+  return (
+    <HintViewer
+      appState={appState}
+      isMobile={editorInterface.formFactor === "phone"}
+      editorInterface={editorInterface}
+      app={app}
+    />
+  );
+};
+ExcalidrawToolbarHint.displayName = "ExcalidrawToolbarHint";

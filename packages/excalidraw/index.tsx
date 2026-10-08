@@ -495,7 +495,10 @@ export { CaptureUpdateAction } from "@excalidraw/element";
 
 export { Sidebar } from "./components/Sidebar/Sidebar";
 export { Button } from "./components/Button";
-export { ExcalidrawToolbarItem } from "./components/ExcalidrawToolbarItem";
+export {
+  ExcalidrawToolbarHint,
+  ExcalidrawToolbarItem,
+} from "./components/ExcalidrawToolbarItem";
 export type { ExcalidrawToolbarItemName } from "./components/ExcalidrawToolbarItem";
 export type { ExcalidrawToolbarOverflowItemName } from "./components/Toolbar";
 export * from "./components/icons";
