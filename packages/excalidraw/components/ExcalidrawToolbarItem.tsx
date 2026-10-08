@@ -17,7 +17,7 @@ import {
   ObjectsSnapModeButton,
   StrokeEyeDropperButton,
 } from "./Toolbar";
-import type { ExcalidrawToolbarOverflowItemName } from "./Toolbar";
+
 import {
   TOOLS,
   createToolButton,
@@ -27,6 +27,8 @@ import {
   FreedrawToolPopover,
 } from "./Tools";
 import { Tooltip } from "./Tooltip";
+
+import type { ExcalidrawToolbarOverflowItemName } from "./Toolbar";
 
 import type { ToolbarToolType } from "./Tools";
 
