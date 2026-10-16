@@ -62,6 +62,11 @@ import type {
 import type { ActionManager } from "../actions/manager";
 import type { ToolbarToolType } from "./Tools";
 
+export type ExcalidrawToolbarOverflowItemName =
+  | ToolbarToolType
+  | "objectsSnapMode"
+  | "strokeEyedropper";
+
 const isToolHiddenByOptions = (
   type: ToolbarToolType,
   UIOptions: AppProps["UIOptions"],
@@ -186,7 +191,11 @@ const SearchMenuDropdownItem = ({
   );
 };
 
-export const StrokeEyeDropperButton = ({ app }: { app: AppClassProperties }) => (
+export const StrokeEyeDropperButton = ({
+  app,
+}: {
+  app: AppClassProperties;
+}) => (
   <IconButton
     type="button"
     icon={eyeDropperIcon}
@@ -208,6 +217,7 @@ export const ExtraToolsDropdown = ({
   UIOptions,
   isMyocSimplifiedMode,
   actionManager,
+  overflowItems = [],
 }: {
   app: AppClassProperties;
   activeTool: UIAppState["activeTool"];
@@ -215,6 +225,7 @@ export const ExtraToolsDropdown = ({
   UIOptions: AppProps["UIOptions"];
   isMyocSimplifiedMode: boolean;
   actionManager: ActionManager;
+  overflowItems?: readonly ExcalidrawToolbarOverflowItemName[];
 }) => {
   const [isExtraToolsMenuOpen, setIsExtraToolsMenuOpen] = useState(false);
   const isFullStylesPanel = useStylesPanelMode() === "full";
@@ -232,6 +243,49 @@ export const ExtraToolsDropdown = ({
     MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES.includes(
       activeTool.type as typeof MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES[number],
     );
+  const overflowItemSelected = overflowItems.some((item) =>
+    item === "objectsSnapMode"
+      ? app.state.objectsSnapModeEnabled
+      : item !== "strokeEyedropper" && activeTool.type === item,
+  );
+
+  const renderOverflowItems = () =>
+    overflowItems.map((item) => {
+      if (item === "objectsSnapMode") {
+        return (
+          <ObjectsSnapModeDropdownItem
+            key={item}
+            actionManager={actionManager}
+            app={app}
+          />
+        );
+      }
+
+      if (item === "strokeEyedropper") {
+        return (
+          <DropdownMenu.Item
+            key={item}
+            onSelect={() =>
+              app.openEyeDropper({ type: "stroke", swapPreviewOnAlt: false })
+            }
+            icon={eyeDropperIcon}
+            data-testid="toolbar-eyedropper"
+            shortcut={KEYS.I.toLocaleUpperCase()}
+          >
+            {t("labels.eyeDropper")}
+          </DropdownMenu.Item>
+        );
+      }
+
+      return (
+        <ExtraToolsDropdownItem
+          key={item}
+          app={app}
+          activeTool={activeTool}
+          type={item}
+        />
+      );
+    });
 
   return (
     <DropdownMenu open={isExtraToolsMenuOpen}>
@@ -239,6 +293,7 @@ export const ExtraToolsDropdown = ({
         className={clsx("App-toolbar__extra-tools-trigger", {
           "App-toolbar__extra-tools-trigger--selected":
             myocSimplifiedToolSelected ||
+            overflowItemSelected ||
             frameToolSelected ||
             embeddableToolSelected ||
             (!isMyocSimplifiedMode &&
@@ -280,6 +335,10 @@ export const ExtraToolsDropdown = ({
       >
         {isMyocSimplifiedMode ? (
           <>
+            {renderOverflowItems()}
+            {overflowItems.length > 0 && (
+              <div className="App-toolbar__dropdown-divider" />
+            )}
             {isFullStylesPanel && (
               <DropdownMenu.Item
                 onSelect={() => app.setActiveTool({ type: "lasso" })}
@@ -292,7 +351,9 @@ export const ExtraToolsDropdown = ({
               </DropdownMenu.Item>
             )}
             {MYOC_SIMPLIFIED_EXTRA_TOOL_TYPES.filter(
-              (type) => !isToolHiddenByOptions(type, UIOptions),
+              (type) =>
+                !isToolHiddenByOptions(type, UIOptions) &&
+                !overflowItems.includes(type),
             ).map((type) => (
               <ExtraToolsDropdownItem
                 key={type}
@@ -371,10 +432,13 @@ export const ExtraToolsDropdown = ({
               </DropdownMenu.Item>
             )}
             <div className="App-toolbar__dropdown-divider" />
-            <ObjectsSnapModeDropdownItem
-              actionManager={actionManager}
-              app={app}
-            />
+            {renderOverflowItems()}
+            {!overflowItems.includes("objectsSnapMode") && (
+              <ObjectsSnapModeDropdownItem
+                actionManager={actionManager}
+                app={app}
+              />
+            )}
             <SearchMenuDropdownItem
               actionManager={actionManager}
               appState={app.state}

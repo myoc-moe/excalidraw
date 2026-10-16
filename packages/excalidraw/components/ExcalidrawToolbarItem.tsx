@@ -9,6 +9,7 @@ import {
   useExcalidrawSetAppState,
   useStylesPanelMode,
 } from "./App";
+import { HintViewer } from "./HintViewer";
 import { LockButton } from "./LockButton";
 import { PenModeButton } from "./PenModeButton";
 import {
@@ -16,6 +17,7 @@ import {
   ObjectsSnapModeButton,
   StrokeEyeDropperButton,
 } from "./Toolbar";
+
 import {
   TOOLS,
   createToolButton,
@@ -25,6 +27,8 @@ import {
   FreedrawToolPopover,
 } from "./Tools";
 import { Tooltip } from "./Tooltip";
+
+import type { ExcalidrawToolbarOverflowItemName } from "./Toolbar";
 
 import type { ToolbarToolType } from "./Tools";
 
@@ -60,9 +64,11 @@ const toolButtons = {
 export const ExcalidrawToolbarItem = ({
   item,
   hideShortcut,
+  overflowItems,
 }: {
   item: ExcalidrawToolbarItemName;
   hideShortcut?: boolean;
+  overflowItems?: readonly ExcalidrawToolbarOverflowItemName[];
 }) => {
   const app = useApp();
   const appProps = useAppProps();
@@ -114,6 +120,7 @@ export const ExcalidrawToolbarItem = ({
           UIOptions={appProps.UIOptions}
           isMyocSimplifiedMode={appState.myocSimplifiedMode}
           actionManager={actionManager}
+          overflowItems={overflowItems}
         />
       );
     case "objectsSnapMode":
@@ -147,3 +154,20 @@ export const ExcalidrawToolbarItem = ({
   const ToolButton = toolButtons[item];
   return <ToolButton {...toolProps} />;
 };
+
+/** Contextual tool guidance rendered below a host-owned toolbar. */
+export const ExcalidrawToolbarHint = () => {
+  const app = useApp();
+  const appState = useExcalidrawAppState();
+  const editorInterface = useEditorInterface();
+
+  return (
+    <HintViewer
+      appState={appState}
+      isMobile={editorInterface.formFactor === "phone"}
+      editorInterface={editorInterface}
+      app={app}
+    />
+  );
+};
+ExcalidrawToolbarHint.displayName = "ExcalidrawToolbarHint";
