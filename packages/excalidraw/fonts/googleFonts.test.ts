@@ -186,6 +186,33 @@ describe("Google Fonts CSS loader", () => {
     ]);
   });
 
+  it("resolves relative srcs against the CSS URL and keeps absolute ones", () => {
+    const css = `
+      @font-face {
+        font-weight: 400;
+        src: url(/fonts/google/files/s/x/v1/a.woff2) format('woff2');
+      }
+      @font-face {
+        font-weight: 700;
+        src: url(https://fonts.gstatic.com/s/x/v1/b.woff2) format('woff2');
+      }
+      @font-face {
+        font-weight: 900;
+        src: url(/fonts/google/files/s/x/v1/c.woff) format('woff');
+      }
+    `;
+    const base = "https://relay.example.com/fonts/google/css2?family=X";
+
+    expect(parseGoogleFontFaceCss(css, base).map((d) => d.uri)).toEqual([
+      "https://relay.example.com/fonts/google/files/s/x/v1/a.woff2",
+      "https://fonts.gstatic.com/s/x/v1/b.woff2",
+    ]);
+    // no base: relative srcs are skipped, absolute ones are unchanged
+    expect(parseGoogleFontFaceCss(css).map((d) => d.uri)).toEqual([
+      "https://fonts.gstatic.com/s/x/v1/b.woff2",
+    ]);
+  });
+
   it("uses the FontFace CSS family serialization for SVG declarations", async () => {
     const fontFace = new ExcalidrawFontFace(
       "Open Sans",

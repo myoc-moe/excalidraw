@@ -102,8 +102,29 @@ const getCssProperty = (css: string, property: string) => {
   return match?.[1]?.trim();
 };
 
+/** Resolves a src against the CSS URL; only http(s) `.woff2` results pass. */
+const resolveWoff2Url = (src: string, base?: string | URL) => {
+  try {
+    const url = new URL(src, base);
+    if (
+      (url.protocol !== "https:" && url.protocol !== "http:") ||
+      !url.pathname.endsWith(".woff2")
+    ) {
+      return null;
+    }
+    return url.href;
+  } catch {
+    // relative src without a usable base
+    return null;
+  }
+};
+
+/**
+ * `base` is the CSS URL; relative srcs (e.g. from a relay) resolve against it.
+ */
 export const parseGoogleFontFaceCss = (
   css: string,
+  base?: string | URL,
 ): ExcalidrawFontFaceDescriptor[] => {
   const descriptors: ExcalidrawFontFaceDescriptor[] = [];
   const fontFaceRegex = /@font-face\s*\{([^}]+)\}/gi;
@@ -112,9 +133,10 @@ export const parseGoogleFontFaceCss = (
   while ((match = fontFaceRegex.exec(css))) {
     const body = match[1];
     const src = getCssProperty(body, "src");
-    const url = src?.match(/url\((['"]?)(https?:\/\/[^'")]+)\1\)/i)?.[2];
+    const rawUrl = src?.match(/url\((['"]?)([^'")]+)\1\)/i)?.[2];
+    const url = rawUrl && resolveWoff2Url(rawUrl, base);
 
-    if (!url || !url.endsWith(".woff2")) {
+    if (!url) {
       continue;
     }
 
@@ -152,9 +174,10 @@ const fetchGoogleFontFaces = async (
   weight: number,
   source: string,
 ) => {
+  const cssUrl = getGoogleFontCssUrl(family, weight, source);
   let response: Response;
   try {
-    response = await fetch(getGoogleFontCssUrl(family, weight, source), {
+    response = await fetch(cssUrl, {
       cache: "force-cache",
       headers: { Accept: "text/css" },
     });
@@ -171,7 +194,7 @@ const fetchGoogleFontFaces = async (
     );
   }
 
-  const descriptors = parseGoogleFontFaceCss(await response.text());
+  const descriptors = parseGoogleFontFaceCss(await response.text(), cssUrl);
   if (!descriptors.length) {
     throw new Error(`Google Fonts returned no WOFF2 faces for "${fontId}"`);
   }
