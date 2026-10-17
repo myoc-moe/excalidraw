@@ -599,8 +599,15 @@
       "old": "old"
     },
     "sceneFonts": "In this scene",
+    "myFonts": "My fonts",
     "availableFonts": "Available fonts",
-    "empty": "No fonts found"
+    "builtInFonts": "Built-in",
+    "empty": "No fonts found",
+    "browse": "Browse Google Fonts…",
+    "emptyLibrary": "Your font library is empty. Browse Google Fonts to add some.",
+    "addToLibrary": "Add to library",
+    "addToLibraryLocked": "Add to library (upgrade required)",
+    "upgradeToUse": "Upgrade your plan to use Google fonts"
   },
   "userList": {
     "empty": "No users found",

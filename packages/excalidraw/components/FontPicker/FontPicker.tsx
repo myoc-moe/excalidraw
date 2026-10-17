@@ -1,19 +1,13 @@
 import { Popover } from "radix-ui";
 import clsx from "clsx";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useMemo } from "react";
 
 import { FONT_FAMILY } from "@excalidraw/common";
 
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
 import { t } from "../../i18n";
-import { useApp, useAppProps } from "../App";
+import { useAppProps } from "../App";
 import { RadioSelection } from "../RadioSelection";
 import { ButtonSeparator } from "../ButtonSeparator";
 import {
@@ -80,44 +74,7 @@ export const FontPicker = React.memo(
     onPopupChange,
     compactMode = false,
   }: FontPickerProps) => {
-    const app = useApp();
     const { googleFonts } = useAppProps();
-    const canBrowseGoogleFonts =
-      !!googleFonts?.canBrowse && !app.state.viewModeEnabled;
-    const [googleFontFamilies, setGoogleFontFamilies] = useState<
-      readonly string[]
-    >([]);
-    const googleFontCatalogRef = useRef<Promise<readonly string[]> | null>(
-      null,
-    );
-
-    useEffect(() => {
-      if (!isOpened || !canBrowseGoogleFonts) {
-        return;
-      }
-
-      if (!googleFontCatalogRef.current) {
-        googleFontCatalogRef.current = Promise.resolve()
-          .then(() => googleFonts.loadCatalog())
-          .then((families) =>
-            Array.from(
-              new Set(
-                families
-                  .map((family) => family.trim())
-                  .filter((family) => family.length > 0),
-              ),
-            ),
-          )
-          .catch((error) => {
-            googleFontCatalogRef.current = null;
-            console.error("Failed to load the Google Fonts catalog", error);
-            return [];
-          });
-      }
-
-      googleFontCatalogRef.current.then(setGoogleFontFamilies);
-    }, [isOpened, canBrowseGoogleFonts, googleFonts]);
-
     const defaultFonts = useMemo(() => DEFAULT_FONTS, []);
     const onSelectCallback = useCallback(
       (value: FontFamilyValues | false) => {
@@ -155,13 +112,8 @@ export const FontPicker = React.memo(
           />
           {isOpened && (
             <FontPickerList
-              googleFontFamilies={
-                canBrowseGoogleFonts ? googleFontFamilies : []
-              }
+              googleFonts={googleFonts}
               selectedFontFamily={selectedFontFamily}
-              upgradeAction={
-                canBrowseGoogleFonts ? undefined : googleFonts?.upgradeAction
-              }
               hoveredFontFamily={hoveredFontFamily}
               onSelect={onSelectCallback}
               onHover={onHover}

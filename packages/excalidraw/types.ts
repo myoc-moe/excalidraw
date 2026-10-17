@@ -1190,10 +1190,30 @@ export interface ExcalidrawProps {
 }
 
 export interface GoogleFontsConfig {
-  canBrowse: boolean;
-  /** Returns canonical family names in popularity order. */
-  loadCatalog: () => Promise<readonly string[]>;
-  /** Optional host-rendered action shown when the user cannot browse Google Fonts. */
+  /** The user's font library, rendered in host order (never sorted). */
+  libraryFonts: readonly {
+    family: string;
+    weights: readonly number[];
+    enabled: boolean;
+  }[];
+  /**
+   * Whether the user's plan can apply Google fonts. When `false`, scene Google
+   * fonts are shown but unselectable. A library font's own `enabled` flag only
+   * governs its "My fonts" row (the host decides).
+   */
+  canApplyGoogleFonts: boolean;
+  /** Lets the host edit a family's weights (e.g. a "More weights…" link). */
+  onEditWeights?: (family: string) => void;
+  /**
+   * Whether a scene Google family missing from the library can be added:
+   * `locked` shows a lock and still calls `onAddToLibrary` so the host can
+   * show its upgrade prompt, `unavailable` hides the button.
+   */
+  addToLibrary: "available" | "locked" | "unavailable";
+  onAddToLibrary?: (family: string) => void;
+  /** Opens the host's font browser. */
+  onBrowse?: () => void;
+  /** Optional host-rendered action shown below the font list. */
   upgradeAction?: React.ReactNode;
   /**
    * CSS2 base URLs (without query) to load a family's `@font-face` rules from,
