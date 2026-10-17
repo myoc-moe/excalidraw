@@ -119,6 +119,28 @@ describe("FontWeightPicker", () => {
     expect(missing.queryByTestId("font-weight-picker")).toBeNull();
   });
 
+  it("is hidden when Google fonts can't be applied or the font is disabled", async () => {
+    const blocked = await renderWithSelection(
+      [{ text: "a", fontFamily: google("Lato") }],
+      {
+        canApplyGoogleFonts: false,
+        libraryFonts: [{ family: "Lato", weights: [400, 700], enabled: true }],
+      },
+    );
+    expect(blocked.queryByTestId("font-family-show-fonts")).not.toBeNull();
+    expect(blocked.queryByTestId("font-weight-picker")).toBeNull();
+    blocked.unmount();
+
+    const disabled = await renderWithSelection(
+      [{ text: "a", fontFamily: google("Lato") }],
+      {
+        libraryFonts: [{ family: "Lato", weights: [400, 700], enabled: false }],
+      },
+    );
+    expect(disabled.queryByTestId("font-family-show-fonts")).not.toBeNull();
+    expect(disabled.queryByTestId("font-weight-picker")).toBeNull();
+  });
+
   it("lists only the added weights, in order", async () => {
     const { container, queryByTestId } = await renderWithSelection(
       [{ text: "a", fontFamily: google("Lato@700") }],

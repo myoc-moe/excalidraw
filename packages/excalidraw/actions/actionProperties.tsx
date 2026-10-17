@@ -1411,9 +1411,14 @@ export const actionChangeFontFamily = register<{
     const weightFamily = selection.googleFamily;
     const selectedWeight =
       parseGoogleFontId(selectedFontFamily)?.weight ?? null;
-    const libraryFont = weightFamily
-      ? googleFonts?.libraryFonts.find((font) => font.family === weightFamily)
-      : undefined;
+    // plans that can't apply Google fonts (or disabled library entries) get
+    // no weight row either
+    const libraryFont =
+      weightFamily && googleFonts?.canApplyGoogleFonts
+        ? googleFonts.libraryFonts.find(
+            (font) => font.family === weightFamily && font.enabled,
+          )
+        : undefined;
 
     // switching family keeps the current weight if the new family has it
     // added, otherwise the picked (default) weight stays; scene entries are
