@@ -4,7 +4,6 @@ import {
   CJK_HAND_DRAWN_FALLBACK_FONT,
   WINDOWS_EMOJI_FALLBACK_FONT,
   getFontFamilyFallbacks,
-  getGoogleFontFamilyName,
   isGoogleFontFamily,
   FONT_SIZES,
 } from "@excalidraw/common";
@@ -25,6 +24,8 @@ import {
 import { ShapeCache } from "@excalidraw/element";
 
 import { isTextElement } from "@excalidraw/element";
+
+import type { GoogleFontFamily } from "@excalidraw/common";
 
 import type {
   ExcalidrawElement,
@@ -47,7 +48,11 @@ import { LilitaFontFaces } from "./Lilita";
 import { NunitoFontFaces } from "./Nunito";
 import { VirgilFontFaces } from "./Virgil";
 import { XiaolaiFontFaces } from "./Xiaolai";
-import { loadGoogleFontFaces } from "./googleFonts";
+import {
+  loadGoogleFontFaces,
+  markGoogleFontSourceFailed,
+  parseGoogleFontId,
+} from "./googleFonts";
 
 type CharsPerFamily = Map<FontFamilyValues, Set<string>>;
 
@@ -62,6 +67,12 @@ export class Fonts {
   >();
 
   private static readonly googleFontMetrics = new Set<FontFamilyValues>();
+
+  /** CSS source each registered Google font was loaded from. */
+  private static readonly googleFontSources = new Map<
+    FontFamilyValues,
+    string
+  >();
 
   private static _registered:
     | Map<
@@ -293,15 +304,12 @@ export class Fonts {
       if (!window.document.fonts.check(font, text)) {
         yield promiseTry(async () => {
           try {
-            // WARN: browser prioritizes loading only font faces with unicode ranges for characters which are present in the document (html & canvas), other font faces could stay unloaded
-            // we might want to retry here, i.e.  in case CDN is down, but so far I didn't experience any issues - maybe it handles retry-like logic under the hood
-            const fontFaces = await window.document.fonts.load(font, text);
-
-            if (isGoogleFontFamily(fontFamily)) {
-              await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
-            }
-
-            return [index, fontFaces];
+            return await Fonts.loadFontFacesForFamily(
+              fontFamily,
+              font,
+              text,
+              index,
+            );
           } catch (e) {
             if (isGoogleFontFamily(fontFamily)) {
               Fonts.resetGoogleFont(fontFamily);
@@ -316,6 +324,53 @@ export class Fonts {
           }
         });
       }
+    }
+  }
+
+  private static async loadFontFacesForFamily(
+    fontFamily: ExcalidrawTextElement["fontFamily"],
+    font: string,
+    text: string,
+    index: number,
+  ): Promise<readonly [number, FontFace[]]> {
+    try {
+      // WARN: browser prioritizes loading only font faces with unicode ranges for characters which are present in the document (html & canvas), other font faces could stay unloaded
+      // we might want to retry here, i.e.  in case CDN is down, but so far I didn't experience any issues - maybe it handles retry-like logic under the hood
+      const fontFaces = await window.document.fonts.load(font, text);
+
+      if (isGoogleFontFamily(fontFamily)) {
+        await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
+      }
+
+      return [index, fontFaces];
+    } catch (error) {
+      const source = Fonts.googleFontSources.get(fontFamily);
+      const parsed = parseGoogleFontId(fontFamily);
+
+      // the faces came from a source that fails to serve them, so mark it as
+      // failed for the session and retry once with the next source (if any)
+      if (
+        !parsed ||
+        !source ||
+        !markGoogleFontSourceFailed(parsed.family, source)
+      ) {
+        throw error;
+      }
+
+      Fonts.resetGoogleFont(fontFamily);
+      await Fonts.registerGoogleFont(fontFamily);
+      for (const { fontFace } of Fonts.registered.get(fontFamily)?.fontFaces ??
+        []) {
+        window.document.fonts.add(fontFace);
+      }
+
+      const fontFaces = await window.document.fonts.load(font, text);
+      await Fonts.loadGoogleFontMetrics(
+        fontFamily as GoogleFontFamily,
+        fontFaces,
+      );
+
+      return [index, fontFaces];
     }
   }
 
@@ -512,8 +567,8 @@ export class Fonts {
 
     let promise = Fonts.googleFontPromises.get(fontFamily);
     if (!promise) {
-      promise = loadGoogleFontFaces(getGoogleFontFamilyName(fontFamily)).then(
-        (fontFaces) => {
+      promise = loadGoogleFontFaces(fontFamily).then(
+        ({ fontFaces, source }) => {
           if (!fontFaces.length) {
             throw new Error(
               `Google Fonts returned no font faces for "${fontFamily}"`,
@@ -524,6 +579,7 @@ export class Fonts {
             metadata: FONT_METADATA[FONT_FAMILY.Excalifont],
             fontFaces,
           });
+          Fonts.googleFontSources.set(fontFamily, source);
         },
       );
       Fonts.googleFontPromises.set(fontFamily, promise);
@@ -557,6 +613,7 @@ export class Fonts {
 
     Fonts.googleFontPromises.delete(fontFamily);
     Fonts.googleFontMetrics.delete(fontFamily);
+    Fonts.googleFontSources.delete(fontFamily);
     unregisterFontMetadata(fontFamily);
   };
 

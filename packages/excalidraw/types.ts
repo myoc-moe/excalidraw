@@ -1195,6 +1195,13 @@ export interface GoogleFontsConfig {
   loadCatalog: () => Promise<readonly string[]>;
   /** Optional host-rendered action shown when the user cannot browse Google Fonts. */
   upgradeAction?: React.ReactNode;
+  /**
+   * CSS2 base URLs (without query) to load a family's `@font-face` rules from,
+   * tried in order; a failing source is skipped for the rest of the session.
+   * The fork sets the `family` (`<Family>:wght@<weight>`) and `display`
+   * params. Defaults to `https://fonts.googleapis.com/css2`.
+   */
+  fontCssUrls?: (family: string) => readonly string[];
 }
 
 export type SceneData = {

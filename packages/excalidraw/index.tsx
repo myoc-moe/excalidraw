@@ -536,6 +536,11 @@ export { getDataURL } from "./data/blob";
 export { isElementLink } from "@excalidraw/element";
 
 export { Fonts } from "./fonts/Fonts";
+export {
+  formatGoogleFontId,
+  parseGoogleFontFaceCss,
+  parseGoogleFontId,
+} from "./fonts/googleFonts";
 
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 

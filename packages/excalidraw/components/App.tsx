@@ -390,6 +390,7 @@ import {
 } from "../components/hyperlink/Hyperlink";
 
 import { Fonts } from "../fonts";
+import { setGoogleFontCssSources } from "../fonts/googleFonts";
 import { editorJotaiStore, type WritableAtom } from "../editor-jotai";
 import { ImageSceneDataError, UnsupportedImageFileTypeError } from "../errors";
 import {
@@ -992,6 +993,8 @@ class App extends React.Component<AppProps, AppState> {
 
   constructor(props: AppProps) {
     super(props);
+    // set before any scene font load kicks off
+    setGoogleFontCssSources(props.googleFonts?.fontCssUrls);
     const defaultAppState = getDefaultAppState();
     const {
       viewModeEnabled = false,
@@ -3470,6 +3473,8 @@ class App extends React.Component<AppProps, AppState> {
 
   public async componentDidMount() {
     this.unmounted = false;
+    // also set here as unmount resets it (StrictMode remounts skip the constructor)
+    setGoogleFontCssSources(this.props.googleFonts?.fontCssUrls);
     this.api = this.createExcalidrawAPI();
 
     this.excalidrawContainerValue.container =
@@ -3562,6 +3567,7 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   public componentWillUnmount() {
+    setGoogleFontCssSources(undefined);
     this.gifPlayback.stop();
 
     // we're recreating the api object reference so that the
@@ -3880,6 +3886,12 @@ class App extends React.Component<AppProps, AppState> {
   }
 
   componentDidUpdate(prevProps: AppProps, prevState: AppState) {
+    if (
+      prevProps.googleFonts?.fontCssUrls !== this.props.googleFonts?.fontCssUrls
+    ) {
+      setGoogleFontCssSources(this.props.googleFonts?.fontCssUrls);
+    }
+
     // must be updated *before* state change listeners are triggered below
     if (!this._initialized && !this.state.isLoading) {
       this._initialized = true;

@@ -191,3 +191,9 @@ git add yarn.lock
 - do not use direct `yarn publish` in `packages/excalidraw`
 - keep all `@myoc/*` package versions aligned
 - ignore `Bad commits` unless changelog quality matters for the release
+
+## Google Fonts
+
+- Font ids are `google:<Family>@<weight>`; no suffix means 400. Use `parseGoogleFontId` / `formatGoogleFontId` (exported from `@myoc/excalidraw`) instead of slicing the id. Each (family, weight) is registered as its own internal CSS family (`Montserrat`, `Montserrat@700`), so rendering, measurement and export need no weight property. CSS2 requests use `wght@<weight>`.
+- `GoogleFontsConfig.fontCssUrls?: (family) => readonly string[]` returns CSS2 base URLs (no query) tried in order, e.g. a relay first and `https://fonts.googleapis.com/css2` second. The fork sets `family` and `display`. A source that fails (CSS request, or its faces fail to load) is skipped for the rest of the session. Absent, the Google CSS2 URL is used.
+- `parseGoogleFontFaceCss` is exported so a host (e.g. an offline download queue) parses `@font-face` CSS identically.
