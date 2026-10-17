@@ -98,7 +98,13 @@ import { trackEvent } from "../analytics";
 import { RadioSelection } from "../components/RadioSelection";
 import { IconButton } from "../components/IconButton";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
+import { useAppProps } from "../components/App";
 import { FontPicker } from "../components/FontPicker/FontPicker";
+import {
+  FontWeightPicker,
+  pickDefaultWeight,
+} from "../components/FontPicker/FontWeightPicker";
+import { formatGoogleFontId, parseGoogleFontId } from "../fonts/googleFonts";
 import { IconPicker } from "../components/IconPicker";
 import { Range } from "../components/Range";
 import {
@@ -1303,13 +1309,16 @@ export const actionChangeFontFamily = register<{
   },
   PanelComponent: ({ elements, appState, app, updateData }) => {
     const cachedElementsRef = useRef<ElementsMap>(new Map());
-    const prevSelectedFontFamilyRef = useRef<FontFamilyValues | null>(null);
+    const prevSelectionRef = useRef<{
+      fontFamily: FontFamilyValues | null;
+      googleFamily: string | null;
+    }>({ fontFamily: null, googleFamily: null });
     // relying on state batching as multiple `FontPicker` handlers could be called in rapid succession and we want to combine them
     const [batchedData, setBatchedData] = useState<ChangeFontFamilyData>({});
     const isUnmounted = useRef(true);
     const { stylesPanelMode, isCompact } = getStylesPanelInfo(app);
 
-    const selectedFontFamily = useMemo(() => {
+    const selection = useMemo(() => {
       const getFontFamily = (
         elementsArray: readonly ExcalidrawElement[],
         elementsMap: ElementsMap,
@@ -1336,12 +1345,48 @@ export const actionChangeFontFamily = register<{
               : appState.currentItemFontFamily || DEFAULT_FONT_FAMILY,
         );
 
+      // the Google family is read apart from the full font id, so mixed
+      // weights of one family keep the weight row (with no active weight)
+      const getGoogleFamily = (
+        elementsArray: readonly ExcalidrawElement[],
+        elementsMap: ElementsMap,
+      ) =>
+        getFormValue<string | null>(
+          elementsArray,
+          app,
+          (element) => {
+            const textElement = isTextElement(element)
+              ? element
+              : getBoundTextElement(element, elementsMap);
+            return textElement
+              ? parseGoogleFontId(textElement.fontFamily)?.family ?? null
+              : null;
+          },
+          (element) =>
+            isTextElement(element) ||
+            getBoundTextElement(element, elementsMap) !== null,
+          (hasSelection) =>
+            hasSelection
+              ? null
+              : parseGoogleFontId(
+                  appState.currentItemFontFamily || DEFAULT_FONT_FAMILY,
+                )?.family ?? null,
+        );
+
+      const read = (
+        elementsArray: readonly ExcalidrawElement[],
+        elementsMap: ElementsMap,
+      ) => ({
+        fontFamily: getFontFamily(elementsArray, elementsMap),
+        googleFamily: getGoogleFamily(elementsArray, elementsMap),
+      });
+
       // popup opened, use cached elements
       if (
         batchedData.openPopup === "fontFamily" &&
         appState.openPopup === "fontFamily"
       ) {
-        return getFontFamily(
+        return read(
           Array.from(cachedElementsRef.current?.values() ?? []),
           cachedElementsRef.current,
         );
@@ -1349,16 +1394,50 @@ export const actionChangeFontFamily = register<{
 
       // popup closed, use all elements
       if (!batchedData.openPopup && appState.openPopup !== "fontFamily") {
-        return getFontFamily(elements, app.scene.getNonDeletedElementsMap());
+        return read(elements, app.scene.getNonDeletedElementsMap());
       }
 
       // popup props are not in sync, hence we are in the middle of an update, so keeping the previous value we've had
-      return prevSelectedFontFamilyRef.current;
+      return prevSelectionRef.current;
     }, [batchedData.openPopup, appState, elements, app]);
 
+    const selectedFontFamily = selection.fontFamily;
+
     useEffect(() => {
-      prevSelectedFontFamilyRef.current = selectedFontFamily;
-    }, [selectedFontFamily]);
+      prevSelectionRef.current = selection;
+    }, [selection]);
+
+    const { googleFonts } = useAppProps();
+    const weightFamily = selection.googleFamily;
+    const selectedWeight =
+      parseGoogleFontId(selectedFontFamily)?.weight ?? null;
+    const libraryFont = weightFamily
+      ? googleFonts?.libraryFonts.find((font) => font.family === weightFamily)
+      : undefined;
+
+    // switching family keeps the current weight if the new family has it
+    // added, otherwise the picked (default) weight stays; scene entries are
+    // applied as listed
+    const mapPickedFontFamily = (picked: FontFamilyValues) => {
+      const pickedId = parseGoogleFontId(picked);
+      const current = parseGoogleFontId(selectedFontFamily);
+      if (
+        !pickedId ||
+        !current ||
+        pickedId.family === current.family ||
+        app.fonts.getSceneFamilies().includes(picked)
+      ) {
+        return picked;
+      }
+      const pickedLibraryFont = googleFonts?.libraryFonts.find(
+        (font) => font.family === pickedId.family,
+      );
+      return pickedLibraryFont &&
+        pickedId.weight === pickDefaultWeight(pickedLibraryFont.weights) &&
+        pickedLibraryFont.weights.includes(current.weight)
+        ? formatGoogleFontId(pickedId.family, current.weight)
+        : picked;
+    };
 
     useEffect(() => {
       if (Object.keys(batchedData).length) {
@@ -1388,7 +1467,8 @@ export const actionChangeFontFamily = register<{
           selectedFontFamily={selectedFontFamily}
           hoveredFontFamily={appState.currentHoveredFontFamily}
           compactMode={stylesPanelMode !== "full"}
-          onSelect={(fontFamily) => {
+          onSelect={(pickedFontFamily) => {
+            const fontFamily = mapPickedFontFamily(pickedFontFamily);
             withCaretPositionPreservation(
               () => {
                 setBatchedData({
@@ -1405,7 +1485,7 @@ export const actionChangeFontFamily = register<{
           }}
           onHover={(fontFamily) => {
             setBatchedData({
-              currentHoveredFontFamily: fontFamily,
+              currentHoveredFontFamily: mapPickedFontFamily(fontFamily),
               cachedElements: new Map(cachedElementsRef.current),
               resetContainers: true,
             });
@@ -1480,6 +1560,28 @@ export const actionChangeFontFamily = register<{
             }
           }}
         />
+        {weightFamily && libraryFont && libraryFont.weights.length > 1 && (
+          <FontWeightPicker
+            family={weightFamily}
+            weights={libraryFont.weights}
+            selectedWeight={selectedWeight}
+            compactMode={stylesPanelMode !== "full"}
+            onEditWeights={googleFonts?.onEditWeights}
+            onSelect={(weight) => {
+              withCaretPositionPreservation(
+                () =>
+                  setBatchedData({
+                    currentItemFontFamily: formatGoogleFontId(
+                      weightFamily,
+                      weight,
+                    ),
+                  }),
+                isCompact,
+                !!appState.editingTextElement,
+              );
+            }}
+          />
+        )}
       </>
     );
   },
