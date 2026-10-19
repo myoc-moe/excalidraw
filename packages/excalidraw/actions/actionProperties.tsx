@@ -102,7 +102,8 @@ import { useAppProps } from "../components/App";
 import { FontPicker } from "../components/FontPicker/FontPicker";
 import {
   FontWeightPicker,
-  pickDefaultWeight,
+  getGoogleFontWeightRow,
+  mapPickedFontFamily,
 } from "../components/FontPicker/FontWeightPicker";
 import { formatGoogleFontId, parseGoogleFontId } from "../fonts/googleFonts";
 import { IconPicker } from "../components/IconPicker";
@@ -1408,41 +1409,18 @@ export const actionChangeFontFamily = register<{
     }, [selection]);
 
     const { googleFonts } = useAppProps();
-    const weightFamily = selection.googleFamily;
-    const selectedWeight =
-      parseGoogleFontId(selectedFontFamily)?.weight ?? null;
-    // plans that can't apply Google fonts (or disabled library entries) get
-    // no weight row either
-    const libraryFont =
-      weightFamily && googleFonts?.canApplyGoogleFonts
-        ? googleFonts.libraryFonts.find(
-            (font) => font.family === weightFamily && font.enabled,
-          )
-        : undefined;
-
-    // switching family keeps the current weight if the new family has it
-    // added, otherwise the picked (default) weight stays; scene entries are
-    // applied as listed
-    const mapPickedFontFamily = (picked: FontFamilyValues) => {
-      const pickedId = parseGoogleFontId(picked);
-      const current = parseGoogleFontId(selectedFontFamily);
-      if (
-        !pickedId ||
-        !current ||
-        pickedId.family === current.family ||
-        app.fonts.getSceneFamilies().includes(picked)
-      ) {
-        return picked;
-      }
-      const pickedLibraryFont = googleFonts?.libraryFonts.find(
-        (font) => font.family === pickedId.family,
+    const {
+      family: weightFamily,
+      weights: libraryWeights,
+      selectedWeight,
+    } = getGoogleFontWeightRow(selection, googleFonts);
+    const mapPicked = (picked: FontFamilyValues) =>
+      mapPickedFontFamily(
+        picked,
+        selectedFontFamily,
+        googleFonts?.libraryFonts,
+        app.fonts.getSceneFamilies(),
       );
-      return pickedLibraryFont &&
-        pickedId.weight === pickDefaultWeight(pickedLibraryFont.weights) &&
-        pickedLibraryFont.weights.includes(current.weight)
-        ? formatGoogleFontId(pickedId.family, current.weight)
-        : picked;
-    };
 
     useEffect(() => {
       if (Object.keys(batchedData).length) {
@@ -1473,7 +1451,7 @@ export const actionChangeFontFamily = register<{
           hoveredFontFamily={appState.currentHoveredFontFamily}
           compactMode={stylesPanelMode !== "full"}
           onSelect={(pickedFontFamily) => {
-            const fontFamily = mapPickedFontFamily(pickedFontFamily);
+            const fontFamily = mapPicked(pickedFontFamily);
             withCaretPositionPreservation(
               () => {
                 setBatchedData({
@@ -1490,7 +1468,7 @@ export const actionChangeFontFamily = register<{
           }}
           onHover={(fontFamily) => {
             setBatchedData({
-              currentHoveredFontFamily: mapPickedFontFamily(fontFamily),
+              currentHoveredFontFamily: mapPicked(fontFamily),
               cachedElements: new Map(cachedElementsRef.current),
               resetContainers: true,
             });
@@ -1565,10 +1543,10 @@ export const actionChangeFontFamily = register<{
             }
           }}
         />
-        {weightFamily && libraryFont && libraryFont.weights.length > 1 && (
+        {weightFamily && libraryWeights && libraryWeights.length > 1 && (
           <FontWeightPicker
             family={weightFamily}
-            weights={libraryFont.weights}
+            weights={libraryWeights}
             selectedWeight={selectedWeight}
             compactMode={stylesPanelMode !== "full"}
             onEditWeights={googleFonts?.onEditWeights}

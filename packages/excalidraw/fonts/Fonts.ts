@@ -25,8 +25,6 @@ import { ShapeCache } from "@excalidraw/element";
 
 import { isTextElement } from "@excalidraw/element";
 
-import type { GoogleFontFamily } from "@excalidraw/common";
-
 import type {
   ExcalidrawElement,
   ExcalidrawTextElement,
@@ -333,44 +331,38 @@ export class Fonts {
     text: string,
     index: number,
   ): Promise<readonly [number, FontFace[]]> {
-    try {
-      // WARN: browser prioritizes loading only font faces with unicode ranges for characters which are present in the document (html & canvas), other font faces could stay unloaded
-      // we might want to retry here, i.e.  in case CDN is down, but so far I didn't experience any issues - maybe it handles retry-like logic under the hood
-      const fontFaces = await window.document.fonts.load(font, text);
+    // a failing Google source is marked failed for the session, then the load
+    // is retried with the next source until none remains
+    while (true) {
+      try {
+        // WARN: browser prioritizes loading only font faces with unicode ranges for characters which are present in the document (html & canvas), other font faces could stay unloaded
+        // we might want to retry here, i.e.  in case CDN is down, but so far I didn't experience any issues - maybe it handles retry-like logic under the hood
+        const fontFaces = await window.document.fonts.load(font, text);
 
-      if (isGoogleFontFamily(fontFamily)) {
-        await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
+        if (isGoogleFontFamily(fontFamily)) {
+          await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
+        }
+
+        return [index, fontFaces];
+      } catch (error) {
+        const source = Fonts.googleFontSources.get(fontFamily);
+        const parsed = parseGoogleFontId(fontFamily);
+
+        if (
+          !parsed ||
+          !source ||
+          !markGoogleFontSourceFailed(parsed.family, source)
+        ) {
+          throw error;
+        }
+
+        Fonts.resetGoogleFont(fontFamily);
+        await Fonts.registerGoogleFont(fontFamily);
+        for (const { fontFace } of Fonts.registered.get(fontFamily)
+          ?.fontFaces ?? []) {
+          window.document.fonts.add(fontFace);
+        }
       }
-
-      return [index, fontFaces];
-    } catch (error) {
-      const source = Fonts.googleFontSources.get(fontFamily);
-      const parsed = parseGoogleFontId(fontFamily);
-
-      // the faces came from a source that fails to serve them, so mark it as
-      // failed for the session and retry once with the next source (if any)
-      if (
-        !parsed ||
-        !source ||
-        !markGoogleFontSourceFailed(parsed.family, source)
-      ) {
-        throw error;
-      }
-
-      Fonts.resetGoogleFont(fontFamily);
-      await Fonts.registerGoogleFont(fontFamily);
-      for (const { fontFace } of Fonts.registered.get(fontFamily)?.fontFaces ??
-        []) {
-        window.document.fonts.add(fontFace);
-      }
-
-      const fontFaces = await window.document.fonts.load(font, text);
-      await Fonts.loadGoogleFontMetrics(
-        fontFamily as GoogleFontFamily,
-        fontFaces,
-      );
-
-      return [index, fontFaces];
     }
   }
 

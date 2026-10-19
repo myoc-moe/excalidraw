@@ -4,15 +4,23 @@ import { useEffect, useState } from "react";
 
 import { getFontFamilyString } from "@excalidraw/common";
 
+import type { FontFamilyValues } from "@excalidraw/element/types";
+
 import {
   DEFAULT_GOOGLE_FONT_WEIGHT,
   formatGoogleFontId,
+  parseGoogleFontId,
 } from "../../fonts/googleFonts";
 import { t } from "../../i18n";
 import { useApp, useExcalidrawContainer } from "../App";
 import { PropertiesPopover } from "../PropertiesPopover";
 
-const WEIGHT_NAME_KEYS: Record<number, string> = {
+import type enLocale from "../../locales/en.json";
+import type { GoogleFontsConfig } from "../../types";
+
+type WeightNameKey = Exclude<keyof typeof enLocale["fontWeight"], "more">;
+
+const WEIGHT_NAME_KEYS: Record<number, WeightNameKey> = {
   100: "thin",
   200: "extraLight",
   300: "light",
@@ -26,7 +34,7 @@ const WEIGHT_NAME_KEYS: Record<number, string> = {
 
 const getFontWeightLabel = (weight: number) => {
   const key = WEIGHT_NAME_KEYS[weight];
-  return key ? t(`fontWeight.${key}` as any) : String(weight);
+  return key ? t(`fontWeight.${key}`) : String(weight);
 };
 
 /** 400 if present, else the lowest weight. */
@@ -36,6 +44,62 @@ export const pickDefaultWeight = (weights: readonly number[]) =>
     : weights.length
     ? Math.min(...weights)
     : DEFAULT_GOOGLE_FONT_WEIGHT;
+
+/**
+ * Switching family keeps the current weight if the picked family has it
+ * added, otherwise the picked (default) weight stays; scene entries are
+ * applied as listed.
+ */
+export const mapPickedFontFamily = (
+  picked: FontFamilyValues,
+  current: FontFamilyValues | null,
+  libraryFonts: GoogleFontsConfig["libraryFonts"] | undefined,
+  sceneFamilies: readonly FontFamilyValues[],
+) => {
+  const pickedId = parseGoogleFontId(picked);
+  const currentId = parseGoogleFontId(current);
+  if (
+    !pickedId ||
+    !currentId ||
+    pickedId.family === currentId.family ||
+    sceneFamilies.includes(picked)
+  ) {
+    return picked;
+  }
+  const pickedLibraryFont = libraryFonts?.find(
+    (font) => font.family === pickedId.family,
+  );
+  return pickedLibraryFont &&
+    pickedId.weight === pickDefaultWeight(pickedLibraryFont.weights) &&
+    pickedLibraryFont.weights.includes(currentId.weight)
+    ? formatGoogleFontId(pickedId.family, currentId.weight)
+    : picked;
+};
+
+/**
+ * The weight row of the selected Google family. Plans that can't apply Google
+ * fonts (or disabled library entries) get no row (`weights` is `undefined`).
+ */
+export const getGoogleFontWeightRow = (
+  selection: {
+    fontFamily: FontFamilyValues | null;
+    googleFamily: string | null;
+  },
+  googleFonts: GoogleFontsConfig | undefined,
+) => {
+  const family = selection.googleFamily;
+  const libraryFont =
+    family && googleFonts?.canApplyGoogleFonts
+      ? googleFonts.libraryFonts.find(
+          (font) => font.family === family && font.enabled,
+        )
+      : undefined;
+  return {
+    family,
+    weights: libraryFont?.weights,
+    selectedWeight: parseGoogleFontId(selection.fontFamily)?.weight ?? null,
+  };
+};
 
 interface FontWeightPickerProps {
   family: string;
@@ -80,7 +144,7 @@ export const FontWeightPicker = ({
 
   // so each option can render in its own weight
   useEffect(() => {
-    for (const weight of weightsKey ? weightsKey.split(",").map(Number) : []) {
+    for (const weight of sortedWeights) {
       const fontId = formatGoogleFontId(family, weight);
       fonts
         .loadFontFamily(fontId, getFontWeightLabel(weight))
@@ -88,6 +152,8 @@ export const FontWeightPicker = ({
           console.error(`Failed to load font weight "${fontId}"`, error);
         });
     }
+    // `sortedWeights` is a fresh array each render, `weightsKey` stands in for it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fonts, family, weightsKey]);
 
   if (sortedWeights.length < 2) {
