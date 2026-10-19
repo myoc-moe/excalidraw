@@ -32,3 +32,7 @@ yarn fix             # Auto-fix formatting and linting issues
 - Internal packages use path aliases (see `vitest.config.mts`)
 - Build system uses esbuild for packages, Vite for the app
 - TypeScript throughout with strict configuration
+
+## Releases
+
+- Never run `yarn release` (or any `release:*` script), `npm publish`, or anything else that publishes `@myoc/excalidraw`. Releases are done manually by the maintainer, who holds the npm auth.
