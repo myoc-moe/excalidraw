@@ -114,6 +114,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     children,
     validateEmbeddable,
     renderEmbeddable,
+    googleFonts,
     showDeprecatedFonts,
     wheelZoomsOnDefault,
     strokeColorTopPicks,
@@ -270,6 +271,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           imageContextMenuItems={imageContextMenuItems}
           validateEmbeddable={validateEmbeddable}
           renderEmbeddable={renderEmbeddable}
+          googleFonts={googleFonts}
           showDeprecatedFonts={showDeprecatedFonts}
           wheelZoomsOnDefault={wheelZoomsOnDefault}
           strokeColorTopPicks={strokeColorTopPicks}
@@ -534,6 +536,11 @@ export { getDataURL } from "./data/blob";
 export { isElementLink } from "@excalidraw/element";
 
 export { Fonts } from "./fonts/Fonts";
+export {
+  formatGoogleFontId,
+  parseGoogleFontFaceCss,
+  parseGoogleFontId,
+} from "./fonts/googleFonts";
 
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
@@ -545,6 +552,7 @@ export type {
   CompressImageFile,
   CompressImageFileOpts,
   ExcalidrawCommandCatalogEntry,
+  GoogleFontsConfig,
   EditorPreferences,
   ImageContextMenuItem,
   ImageDownloadErrorStatus,

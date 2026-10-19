@@ -71,6 +71,11 @@ export const subsetWoff2GlyphsByCodepoints = async (
   });
 };
 
+export const getWoff2FontMetrics = async (arrayBuffer: ArrayBuffer) => {
+  const { getWoff2FontMetrics } = await lazyLoadSharedSubsetChunk();
+  return getWoff2FontMetrics(arrayBuffer);
+};
+
 // lazy-loaded and cached chunks
 let subsetWorker: Promise<typeof import("./subset-worker.chunk")> | null = null;
 let subsetShared: Promise<typeof import("./subset-shared.chunk")> | null = null;

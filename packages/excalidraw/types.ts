@@ -1131,6 +1131,14 @@ export interface ExcalidrawProps {
     element: NonDeleted<ExcalidrawEmbeddableElement>,
     appState: AppState,
   ) => JSX.Element | null;
+  /**
+   * Host-controlled Google Fonts picker access. Scene fonts load independently
+   * of this capability so viewers and non-premium editors can render or reuse
+   * families already present in the scene. Google Fonts requires
+   * `fonts.googleapis.com` in `connect-src` and `fonts.gstatic.com` in
+   * `font-src` in the host's Content Security Policy.
+   */
+  googleFonts?: GoogleFontsConfig;
   showDeprecatedFonts?: boolean;
   wheelZoomsOnDefault?: boolean;
   strokeColorTopPicks?: ColorTuple;
@@ -1179,6 +1187,41 @@ export interface ExcalidrawProps {
       signal: AbortSignal;
     },
   ) => MaybePromise<void> | AsyncGenerator<OnExportProgress, void>;
+}
+
+export interface GoogleFontsConfig {
+  /** The user's font library, rendered in host order (never sorted). */
+  libraryFonts: readonly {
+    family: string;
+    weights: readonly number[];
+    enabled: boolean;
+  }[];
+  /**
+   * Whether the user's plan can apply Google fonts. When `false`, scene Google
+   * fonts are shown but unselectable. A library font's own `enabled` flag only
+   * governs its "My fonts" row (the host decides).
+   */
+  canApplyGoogleFonts: boolean;
+  /** Lets the host edit a family's weights (e.g. a "More weights…" link). */
+  onEditWeights?: (family: string) => void;
+  /**
+   * Whether a scene Google family missing from the library can be added:
+   * `locked` shows a lock and still calls `onAddToLibrary` so the host can
+   * show its upgrade prompt, `unavailable` hides the button.
+   */
+  addToLibrary: "available" | "locked" | "unavailable";
+  onAddToLibrary?: (family: string) => void;
+  /** Opens the host's font browser. */
+  onBrowse?: () => void;
+  /** Optional host-rendered action shown below the font list. */
+  upgradeAction?: React.ReactNode;
+  /**
+   * CSS2 base URLs (without query) to load a family's `@font-face` rules from,
+   * tried in order; a failing source is skipped for the rest of the session.
+   * The fork sets the `family` (`<Family>:wght@<weight>`) and `display`
+   * params. Defaults to `https://fonts.googleapis.com/css2`.
+   */
+  fontCssUrls?: (family: string) => readonly string[];
 }
 
 export type SceneData = {

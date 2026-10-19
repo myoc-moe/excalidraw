@@ -140,6 +140,22 @@ export const FONT_FAMILY = {
   Assistant: 10,
 };
 
+export const GOOGLE_FONT_FAMILY_PREFIX = "google:";
+export type GoogleFontFamily = `${typeof GOOGLE_FONT_FAMILY_PREFIX}${string}`;
+
+export const isGoogleFontFamily = (
+  fontFamily: unknown,
+): fontFamily is GoogleFontFamily =>
+  typeof fontFamily === "string" &&
+  fontFamily.startsWith(GOOGLE_FONT_FAMILY_PREFIX) &&
+  fontFamily.length > GOOGLE_FONT_FAMILY_PREFIX.length;
+
+export const toGoogleFontFamily = (family: string): GoogleFontFamily =>
+  `${GOOGLE_FONT_FAMILY_PREFIX}${family}`;
+
+export const getGoogleFontFamilyName = (fontFamily: GoogleFontFamily) =>
+  fontFamily.slice(GOOGLE_FONT_FAMILY_PREFIX.length);
+
 // Segoe UI Emoji fails to properly fallback for some glyphs: ∞, ∫, ≠
 // so we need to have generic font fallback before it
 export const SANS_SERIF_GENERIC_FONT = "sans-serif";
@@ -157,8 +173,12 @@ export const FONT_FAMILY_FALLBACKS = {
 };
 
 export function getGenericFontFamilyFallback(
-  fontFamily: number,
+  fontFamily: number | GoogleFontFamily,
 ): keyof typeof FONT_FAMILY_GENERIC_FALLBACKS {
+  if (typeof fontFamily === "string") {
+    return SANS_SERIF_GENERIC_FONT;
+  }
+
   switch (fontFamily) {
     case FONT_FAMILY.Cascadia:
     case FONT_FAMILY["Comic Shanns"]:
@@ -170,7 +190,7 @@ export function getGenericFontFamilyFallback(
 }
 
 export const getFontFamilyFallbacks = (
-  fontFamily: number,
+  fontFamily: number | GoogleFontFamily,
 ): Array<keyof typeof FONT_FAMILY_FALLBACKS> => {
   const genericFallbackFont = getGenericFontFamilyFallback(fontFamily);
 

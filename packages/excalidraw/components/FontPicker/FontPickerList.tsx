@@ -14,11 +14,17 @@ import {
   debounce,
   FONT_FAMILY,
   getFontFamilyString,
+  isGoogleFontFamily,
 } from "@excalidraw/common";
 
 import type { ValueOf } from "@excalidraw/common/utility-types";
 
 import { Fonts } from "../../fonts";
+import {
+  DEFAULT_GOOGLE_FONT_WEIGHT,
+  formatGoogleFontId,
+  parseGoogleFontId,
+} from "../../fonts/googleFonts";
 import { t } from "../../i18n";
 import {
   useApp,
@@ -41,15 +47,20 @@ import {
   FontFamilyHeadingIcon,
   FontFamilyNormalIcon,
   FreedrawIcon,
+  LockedIcon,
+  PlusIcon,
+  searchIcon,
 } from "../icons";
 
 import { fontPickerKeyHandler } from "./keyboardNavHandlers";
+
+import type { GoogleFontsConfig } from "../../types";
 
 import type { JSX } from "react";
 import type { ExcalidrawFontFace } from "../../fonts/ExcalidrawFontFace";
 
 export interface FontDescriptor {
-  value: number;
+  value: FontFamilyValues;
   icon: JSX.Element;
   text: string;
   deprecated?: true;
@@ -57,13 +68,20 @@ export interface FontDescriptor {
     type: ValueOf<typeof DropDownMenuItemBadgeType>;
     placeholder: string;
   };
+  /** Shown but unselectable and skipped by keyboard navigation */
+  disabled?: boolean;
+  /** Hover text, defaults to the label */
+  title?: string;
+  /** Google family and state of the row's Add to library button */
+  addToLibrary?: { family: string; state: "available" | "locked" };
 }
 
 interface FontPickerListProps {
+  googleFonts?: GoogleFontsConfig;
   selectedFontFamily: FontFamilyValues | null;
   hoveredFontFamily: FontFamilyValues | null;
-  onSelect: (value: number) => void;
-  onHover: (value: number) => void;
+  onSelect: (value: FontFamilyValues) => void;
+  onHover: (value: FontFamilyValues) => void;
   onLeave: () => void;
   onOpen: () => void;
   onClose: () => void;
@@ -90,14 +108,23 @@ const getFontFamilyIcon = (fontFamily: FontFamilyValues): JSX.Element => {
 const getFontFamilyLabel = (
   fontFamily: FontFamilyValues,
   fontFaces: ExcalidrawFontFace[],
-) =>
+) => {
+  if (isGoogleFontFamily(fontFamily)) {
+    // weighted ids such as `google:Montserrat@700` are labelled by family
+    return parseGoogleFontId(fontFamily)?.family ?? "Unknown";
+  }
+
   // prefer our config as the browser resolved names may be wrapped in quotes and such
-  Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
-  fontFaces[0]?.fontFace?.family ??
-  "Unknown";
+  return (
+    Object.entries(FONT_FAMILY).find(([, id]) => id === fontFamily)?.[0] ??
+    fontFaces[0]?.fontFace?.family ??
+    "Unknown"
+  );
+};
 
 export const FontPickerList = React.memo(
   ({
+    googleFonts,
     selectedFontFamily,
     hoveredFontFamily,
     onSelect,
@@ -110,15 +137,26 @@ export const FontPickerList = React.memo(
     const app = useApp();
     const { fonts } = app;
     const { showDeprecatedFonts } = useAppProps();
+    const canManageLibrary = !!googleFonts && !app.state.viewModeEnabled;
     const stylesPanelMode = useStylesPanelMode();
 
     const [searchTerm, setSearchTerm] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
+    const sceneFamilies = useMemo(
+      () => new Set(fonts.getSceneFamilies()),
+      // cache per selected font family, so hover re-render won't mess it up
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      [selectedFontFamily],
+    );
+
     const allFonts = useMemo(
       () =>
         Array.from(Fonts.registered.entries())
           .filter(
-            ([_, { metadata }]) => !metadata.private && !metadata.fallback,
+            ([familyId, { metadata }]) =>
+              !metadata.private &&
+              !metadata.fallback &&
+              !isGoogleFontFamily(familyId),
           )
           .map(([familyId, { metadata, fontFaces }]) => {
             const fontDescriptor = {
@@ -145,16 +183,79 @@ export const FontPickerList = React.memo(
       [],
     );
 
-    const sceneFamilies = useMemo(
-      () => new Set(fonts.getSceneFamilies()),
-      // cache per selected font family, so hover re-render won't mess it up
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      [selectedFontFamily],
+    const libraryByFamily = useMemo(
+      () =>
+        new Map(
+          (googleFonts?.libraryFonts ?? []).map((font) => [font.family, font]),
+        ),
+      [googleFonts?.libraryFonts],
     );
 
     const sceneFonts = useMemo(
-      () => allFonts.filter((font) => sceneFamilies.has(font.value)), // always show all the fonts in the scene, even those that were deprecated
-      [allFonts, sceneFamilies],
+      () => {
+        const registeredSceneFonts = allFonts.filter((font) =>
+          sceneFamilies.has(font.value),
+        );
+        const googleSceneFonts = Array.from(sceneFamilies)
+          .filter(isGoogleFontFamily)
+          .map((fontFamily): FontDescriptor => {
+            const { family, weight } = parseGoogleFontId(fontFamily)!;
+            const libraryFont = libraryByFamily.get(family);
+            const addToLibraryState =
+              canManageLibrary &&
+              !libraryFont &&
+              googleFonts.addToLibrary !== "unavailable"
+                ? googleFonts.addToLibrary
+                : undefined;
+            const label =
+              weight === DEFAULT_GOOGLE_FONT_WEIGHT
+                ? family
+                : `${family} ${weight}`;
+            // the host decides whether the plan can apply Google fonts
+            const disabled = !!googleFonts && !googleFonts.canApplyGoogleFonts;
+
+            return {
+              value: fontFamily,
+              icon: getFontFamilyIcon(fontFamily),
+              text: label,
+              title: disabled ? t("fontList.upgradeToUse") : label,
+              disabled,
+              addToLibrary: addToLibraryState && {
+                family,
+                state: addToLibraryState,
+              },
+            };
+          });
+
+        return [...registeredSceneFonts, ...googleSceneFonts];
+      }, // always show all the fonts in the scene, even those that were deprecated
+      [allFonts, sceneFamilies, libraryByFamily, googleFonts, canManageLibrary],
+    );
+
+    const libraryFonts = useMemo(
+      () =>
+        (googleFonts?.libraryFonts ?? [])
+          .map((font): FontDescriptor => {
+            const weight = font.weights.includes(DEFAULT_GOOGLE_FONT_WEIGHT)
+              ? DEFAULT_GOOGLE_FONT_WEIGHT
+              : font.weights.length
+              ? Math.min(...font.weights)
+              : DEFAULT_GOOGLE_FONT_WEIGHT;
+            const value = formatGoogleFontId(font.family, weight);
+
+            return {
+              value,
+              icon: getFontFamilyIcon(value),
+              text:
+                weight === DEFAULT_GOOGLE_FONT_WEIGHT
+                  ? font.family
+                  : `${font.family} ${weight}`,
+              disabled: !font.enabled,
+            };
+          })
+          // fonts already in the scene are listed there
+          .filter((font) => !sceneFamilies.has(font.value)),
+      [googleFonts, sceneFamilies],
     );
 
     const availableFonts = useMemo(
@@ -167,14 +268,50 @@ export const FontPickerList = React.memo(
       [allFonts, sceneFamilies, showDeprecatedFonts],
     );
 
+    const sections = useMemo(() => {
+      const normalizedSearchTerm = searchTerm.trim().toLowerCase();
+      const matchesSearch = (font: FontDescriptor) =>
+        font.text.toLowerCase().includes(normalizedSearchTerm);
+
+      return {
+        scene: sceneFonts.filter(matchesSearch),
+        library: libraryFonts.filter(matchesSearch),
+        available: availableFonts.filter(matchesSearch),
+      };
+    }, [sceneFonts, libraryFonts, availableFonts, searchTerm]);
+
+    // keyboard navigation and hover only visit selectable fonts
     const filteredFonts = useMemo(
       () =>
         arrayToList(
-          [...sceneFonts, ...availableFonts].filter((font) =>
-            font.text?.toLowerCase().includes(searchTerm),
-          ),
+          [
+            ...sections.scene,
+            ...sections.library,
+            ...sections.available,
+          ].filter((font) => !font.disabled),
         ),
-      [sceneFonts, availableFonts, searchTerm],
+      [sections],
+    );
+
+    const handleHover = useCallback(
+      (fontFamily: FontFamilyValues) => {
+        onHover(fontFamily);
+        if (isGoogleFontFamily(fontFamily)) {
+          const font = filteredFonts.find((item) => item.value === fontFamily);
+          void fonts
+            .loadFontFamily(
+              fontFamily,
+              font?.text || parseGoogleFontId(fontFamily)?.family || "",
+            )
+            .catch((error) => {
+              console.error(
+                `Failed to preview Google Font "${fontFamily}"`,
+                error,
+              );
+            });
+        }
+      },
+      [filteredFonts, fonts, onHover],
     );
 
     const hoveredFont = useMemo(() => {
@@ -189,7 +326,7 @@ export const FontPickerList = React.memo(
       if (!font && searchTerm) {
         if (filteredFonts[0]?.value) {
           // hover first element on search
-          onHover(filteredFonts[0].value);
+          handleHover(filteredFonts[0].value);
         } else {
           // re-render cache on no results
           onLeave();
@@ -202,7 +339,7 @@ export const FontPickerList = React.memo(
       selectedFontFamily,
       searchTerm,
       filteredFonts,
-      onHover,
+      handleHover,
       onLeave,
     ]);
 
@@ -250,7 +387,7 @@ export const FontPickerList = React.memo(
           hoveredFont,
           filteredFonts,
           onSelect: wrappedOnSelect,
-          onHover,
+          onHover: handleHover,
           onClose,
         });
 
@@ -259,7 +396,7 @@ export const FontPickerList = React.memo(
           event.stopPropagation();
         }
       },
-      [hoveredFont, filteredFonts, wrappedOnSelect, onHover, onClose],
+      [hoveredFont, filteredFonts, wrappedOnSelect, handleHover, onClose],
     );
 
     useEffect(() => {
@@ -271,16 +408,6 @@ export const FontPickerList = React.memo(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const sceneFilteredFonts = useMemo(
-      () => filteredFonts.filter((font) => sceneFamilies.has(font.value)),
-      [filteredFonts, sceneFamilies],
-    );
-
-    const availableFilteredFonts = useMemo(
-      () => filteredFonts.filter((font) => !sceneFamilies.has(font.value)),
-      [filteredFonts, sceneFamilies],
-    );
-
     const FontPickerListItem = ({
       font,
       order,
@@ -288,6 +415,7 @@ export const FontPickerList = React.memo(
       font: FontDescriptor;
       order: number;
     }) => {
+      const { disabled } = font;
       const ref = useRef<HTMLButtonElement>(null);
       const isHovered = font.value === hoveredFont?.value;
       const isSelected = font.value === selectedFontFamily;
@@ -304,65 +432,130 @@ export const FontPickerList = React.memo(
         }
       }, [isHovered, order]);
 
+      const addLabel =
+        font.addToLibrary?.state === "locked"
+          ? t("fontList.addToLibraryLocked")
+          : t("fontList.addToLibrary");
+
       return (
-        <button
-          ref={ref}
-          type="button"
-          value={font.value}
-          className={getDropdownMenuItemClassName("", isSelected, isHovered)}
-          title={font.text}
-          // allow to tab between search and selected font
-          tabIndex={isSelected ? 0 : -1}
-          onClick={(e) => {
-            wrappedOnSelect(Number(e.currentTarget.value));
-          }}
-          onMouseMove={() => {
-            if (hoveredFont?.value !== font.value) {
-              onHover(font.value);
-            }
-          }}
-        >
-          <MenuItemContent
-            icon={font.icon}
-            badge={
-              font.badge && (
-                <DropDownMenuItemBadge type={font.badge.type}>
-                  {font.badge.placeholder}
-                </DropDownMenuItemBadge>
-              )
-            }
-            textStyle={{
-              fontFamily: getFontFamilyString({ fontFamily: font.value }),
+        <div className="FontPicker__row" data-testid="font-picker-row">
+          <button
+            ref={ref}
+            type="button"
+            value={font.value}
+            disabled={disabled}
+            data-testid={`font-picker-item-${font.value}`}
+            className={getDropdownMenuItemClassName("", isSelected, isHovered)}
+            title={font.title ?? font.text}
+            // allow to tab between search and selected font
+            tabIndex={isSelected ? 0 : -1}
+            onClick={() => {
+              if (!disabled) {
+                wrappedOnSelect(font.value);
+              }
+            }}
+            onMouseMove={() => {
+              if (!disabled && hoveredFont?.value !== font.value) {
+                handleHover(font.value);
+              }
             }}
           >
-            {font.text}
-          </MenuItemContent>
-        </button>
+            <MenuItemContent
+              icon={font.icon}
+              badge={
+                font.badge && (
+                  <DropDownMenuItemBadge type={font.badge.type}>
+                    {font.badge.placeholder}
+                  </DropDownMenuItemBadge>
+                )
+              }
+              textStyle={{
+                fontFamily: getFontFamilyString({ fontFamily: font.value }),
+              }}
+            >
+              {font.text}
+            </MenuItemContent>
+          </button>
+          {font.addToLibrary && (
+            <button
+              type="button"
+              className="FontPicker__row-action"
+              data-testid={`font-picker-add-${font.value}`}
+              data-locked={font.addToLibrary.state === "locked" || undefined}
+              title={addLabel}
+              aria-label={addLabel}
+              onClick={() =>
+                googleFonts?.onAddToLibrary?.(font.addToLibrary!.family)
+              }
+            >
+              {font.addToLibrary.state === "locked" ? LockedIcon : PlusIcon}
+            </button>
+          )}
+        </div>
       );
     };
 
     const groups = [];
+    let offset = 0;
 
-    if (sceneFilteredFonts.length) {
+    if (sections.scene.length) {
       groups.push(
         <DropdownMenuGroup title={t("fontList.sceneFonts")} key="group_1">
-          {sceneFilteredFonts.map((font, index) => (
+          {sections.scene.map((font, index) => (
             <FontPickerListItem key={font.value} font={font} order={index} />
+          ))}
+        </DropdownMenuGroup>,
+      );
+      offset += sections.scene.length;
+    }
+
+    if (sections.library.length) {
+      groups.push(
+        <DropdownMenuGroup title={t("fontList.myFonts")} key="group_2">
+          {sections.library.map((font, index) => (
+            <FontPickerListItem
+              key={font.value}
+              font={font}
+              order={index + offset}
+            />
+          ))}
+        </DropdownMenuGroup>,
+      );
+      offset += sections.library.length;
+    }
+
+    if (sections.available.length) {
+      groups.push(
+        <DropdownMenuGroup title={t("fontList.builtInFonts")} key="group_3">
+          {sections.available.map((font, index) => (
+            <FontPickerListItem
+              key={font.value}
+              font={font}
+              order={index + offset}
+            />
           ))}
         </DropdownMenuGroup>,
       );
     }
 
-    if (availableFilteredFonts.length) {
+    if (canManageLibrary && googleFonts.onBrowse) {
       groups.push(
-        <DropdownMenuGroup title={t("fontList.availableFonts")} key="group_2">
-          {availableFilteredFonts.map((font, index) => (
-            <FontPickerListItem
-              key={font.value}
-              font={font}
-              order={index + sceneFilteredFonts.length}
-            />
-          ))}
+        <DropdownMenuGroup key="group_browse">
+          {!(googleFonts.libraryFonts ?? []).length && (
+            <p className="FontPicker__empty-library">
+              {t("fontList.emptyLibrary")}
+            </p>
+          )}
+          <button
+            type="button"
+            className={getDropdownMenuItemClassName()}
+            data-testid="font-picker-browse"
+            onClick={() => googleFonts.onBrowse?.()}
+          >
+            <MenuItemContent icon={searchIcon}>
+              {t("fontList.browse")}
+            </MenuItemContent>
+          </button>
         </DropdownMenuGroup>,
       );
     }
@@ -391,7 +584,8 @@ export const FontPickerList = React.memo(
         onKeyDown={onKeyDown}
         preventAutoFocusOnTouch={!!app.state.editingTextElement}
       >
-        {stylesPanelMode === "full" && (
+        {(stylesPanelMode === "full" ||
+          !!googleFonts?.libraryFonts?.length) && (
           <QuickSearch
             ref={inputRef}
             placeholder={t("quickSearch.placeholder")}
@@ -404,10 +598,16 @@ export const FontPickerList = React.memo(
         >
           {groups.length ? groups : null}
         </ScrollableList>
+        {googleFonts?.upgradeAction && (
+          <div className="FontPicker__upgrade-action">
+            {googleFonts.upgradeAction}
+          </div>
+        )}
       </PropertiesPopover>
     );
   },
   (prev, next) =>
+    prev.googleFonts === next.googleFonts &&
     prev.selectedFontFamily === next.selectedFontFamily &&
     prev.hoveredFontFamily === next.hoveredFontFamily,
 );

@@ -1,7 +1,12 @@
 import { pointFrom } from "@excalidraw/math";
 import { vi } from "vitest";
 
-import { DEFAULT_SIDEBAR, FONT_FAMILY, ROUNDNESS } from "@excalidraw/common";
+import {
+  DEFAULT_SIDEBAR,
+  FONT_FAMILY,
+  ROUNDNESS,
+  toGoogleFontFamily,
+} from "@excalidraw/common";
 
 import { newElementWith } from "@excalidraw/element";
 import * as sizeHelpers from "@excalidraw/element";
@@ -146,6 +151,22 @@ describe("restoreElements", () => {
       seed: expect.any(Number),
       versionNonce: expect.any(Number),
     });
+  });
+
+  it("preserves Google font family IDs when restoring scenes", () => {
+    const googleFontFamily = toGoogleFontFamily("Open Sans");
+    const textElement = API.createElement({
+      type: "text",
+      fontFamily: googleFontFamily,
+      text: "Google font",
+    });
+
+    const [restoredText] = restore.restoreElements(
+      [textElement],
+      null,
+    ) as ExcalidrawTextElement[];
+
+    expect(restoredText.fontFamily).toBe(googleFontFamily);
   });
 
   it("should not delete empty text element when opts.deleteInvisibleElements is not defined", () => {

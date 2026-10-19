@@ -7,6 +7,7 @@ import { FONT_FAMILY } from "@excalidraw/common";
 import type { FontFamilyValues } from "@excalidraw/element/types";
 
 import { t } from "../../i18n";
+import { useAppProps } from "../App";
 import { RadioSelection } from "../RadioSelection";
 import { ButtonSeparator } from "../ButtonSeparator";
 import {
@@ -43,8 +44,8 @@ export const DEFAULT_FONTS = [
 
 const defaultFontFamilies = new Set(DEFAULT_FONTS.map((x) => x.value));
 
-export const isDefaultFont = (fontFamily: number | null) => {
-  if (!fontFamily) {
+export const isDefaultFont = (fontFamily: FontFamilyValues | null) => {
+  if (!fontFamily || typeof fontFamily !== "number") {
     return false;
   }
 
@@ -73,9 +74,10 @@ export const FontPicker = React.memo(
     onPopupChange,
     compactMode = false,
   }: FontPickerProps) => {
+    const { googleFonts } = useAppProps();
     const defaultFonts = useMemo(() => DEFAULT_FONTS, []);
     const onSelectCallback = useCallback(
-      (value: number | false) => {
+      (value: FontFamilyValues | false) => {
         if (value) {
           onSelect(value);
         }
@@ -110,6 +112,7 @@ export const FontPicker = React.memo(
           />
           {isOpened && (
             <FontPickerList
+              googleFonts={googleFonts}
               selectedFontFamily={selectedFontFamily}
               hoveredFontFamily={hoveredFontFamily}
               onSelect={onSelectCallback}

@@ -2,6 +2,7 @@ import type { LocalPoint, Radians } from "@excalidraw/math";
 
 import type {
   FONT_FAMILY,
+  GoogleFontFamily,
   ROUNDNESS,
   TEXT_ALIGN,
   THEME,
@@ -18,7 +19,7 @@ import type {
 export type ChartType = "bar" | "line" | "radar";
 export type FillStyle = "hachure" | "cross-hatch" | "solid" | "zigzag";
 export type FontFamilyKeys = keyof typeof FONT_FAMILY;
-export type FontFamilyValues = typeof FONT_FAMILY[FontFamilyKeys];
+export type FontFamilyValues = number | GoogleFontFamily;
 export type Theme = typeof THEME[keyof typeof THEME];
 export type FontString = string & { _brand: "fontString" };
 export type GroupId = string;

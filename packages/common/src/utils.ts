@@ -16,6 +16,8 @@ import {
   DEFAULT_VERSION,
   ENV,
   FONT_FAMILY,
+  getGoogleFontFamilyName,
+  isGoogleFontFamily,
   getFontFamilyFallbacks,
   WINDOWS_EMOJI_FALLBACK_FONT,
 } from "./constants";
@@ -96,6 +98,18 @@ export const getFontFamilyString = ({
 }: {
   fontFamily: FontFamilyValues;
 }) => {
+  if (isGoogleFontFamily(fontFamily)) {
+    const familyName = getGoogleFontFamilyName(fontFamily);
+    // Font names are normally plain words. Quote unusual names so imported
+    // scene data cannot inject CSS into SVG exports.
+    const cssFamilyName = /^[\p{L}\p{N}_ -]+$/u.test(familyName)
+      ? familyName
+      : JSON.stringify(familyName);
+    return `${cssFamilyName}${getFontFamilyFallbacks(fontFamily)
+      .map((x) => `, ${x}`)
+      .join("")}`;
+  }
+
   for (const [fontFamilyString, id] of Object.entries(FONT_FAMILY)) {
     if (id === fontFamily) {
       return `${fontFamilyString}${getFontFamilyFallbacks(id)
