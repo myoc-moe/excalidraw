@@ -1,10 +1,9 @@
 name: Auto release excalidraw next
 on:
+  # feng publishes by pushing master to release; nothing else triggers it
   push:
     branches:
       - release
-  # run from master (or any branch) without updating release
-  workflow_dispatch:
 
 concurrency:
   group: autorelease-excalidraw-next
@@ -31,6 +30,15 @@ jobs:
           registry-url: https://registry.npmjs.org
       - name: Install npm with trusted publishing support
         run: npm install -g npm@^11.5.1
+      - name: Install
+        run: yarn --frozen-lockfile
+      - name: Lint and typecheck
+        run: |
+          yarn test:other
+          yarn test:code
+          yarn test:typecheck
+      - name: Test
+        run: yarn test:app --watch=false
       - name: Auto release
         run: yarn release --tag=next --non-interactive
       - name: Summary
