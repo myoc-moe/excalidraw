@@ -117,6 +117,11 @@ const createESMRawBuild = async () => {
     ...chunksConfig,
   });
 
+  // fonts are fetched from EXCALIDRAW_ASSET_PATH or the esm.sh `dist/prod/`
+  // fallback, never relative to the module, so the dev copy (~14 MB) is dead
+  // weight in the published tarball
+  fs.rmSync("dist/dev/fonts", { recursive: true, force: true });
+
   // production minified buld without sourcemaps
   await buildProd({
     ...getConfig("dist/prod"),
