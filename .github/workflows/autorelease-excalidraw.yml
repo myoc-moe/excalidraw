@@ -2,7 +2,8 @@ name: Auto release excalidraw next
 on:
   push:
     branches:
-      - master
+      - release
+  # run from master (or any branch) without updating release
   workflow_dispatch:
 
 concurrency:
