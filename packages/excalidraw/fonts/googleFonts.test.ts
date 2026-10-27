@@ -162,6 +162,17 @@ describe("Google Fonts CSS loader", () => {
     fetchMock.mockRestore();
   });
 
+  it("quotes family names in font strings", () => {
+    // `document.fonts.check` rejects unquoted names with a word that is not an
+    // identifier, such as "2P".
+    expect(
+      getFontString({ fontFamily: "google:Press Start 2P", fontSize: 10 }),
+    ).toMatch(/^10px "Press Start 2P", /);
+    expect(
+      getFontString({ fontFamily: 'google:Odd"Name\\', fontSize: 10 }),
+    ).toMatch(/^10px "Odd\\"Name\\\\", /);
+  });
+
   it("parses WOFF2 faces and their unicode ranges", () => {
     const descriptors = parseGoogleFontFaceCss(`
       @font-face {

@@ -100,11 +100,12 @@ export const getFontFamilyString = ({
 }) => {
   if (isGoogleFontFamily(fontFamily)) {
     const familyName = getGoogleFontFamilyName(fontFamily);
-    // Font names are normally plain words. Quote unusual names so imported
-    // scene data cannot inject CSS into SVG exports.
-    const cssFamilyName = /^[\p{L}\p{N}_ -]+$/u.test(familyName)
-      ? familyName
-      : JSON.stringify(familyName);
+    // Always quote: an unquoted name is only valid CSS when every word is an
+    // identifier ("Press Start 2P" is not, and `document.fonts.check` throws),
+    // and quoting keeps imported scene data from injecting CSS into SVG exports.
+    const cssFamilyName = `"${familyName
+      .replace(/[\\"]/g, "\\$&")
+      .replace(/[\n\r\f]/g, " ")}"`;
     return `${cssFamilyName}${getFontFamilyFallbacks(fontFamily)
       .map((x) => `, ${x}`)
       .join("")}`;
