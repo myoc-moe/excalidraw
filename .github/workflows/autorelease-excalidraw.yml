@@ -1,11 +1,22 @@
 name: Auto release excalidraw next
 on:
+  # feng publishes by pushing master to release; nothing else triggers it
   push:
     branches:
       - release
 
+concurrency:
+  group: autorelease-excalidraw-next
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # npm trusted publishing (OIDC); no NPM_TOKEN secret
+  id-token: write
+
 jobs:
   Auto-release-excalidraw-next:
+    if: github.repository == 'myoc-moe/excalidraw'
     runs-on: ubuntu-latest
 
     steps:
@@ -16,12 +27,21 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20.x
-      - name: Set up publish access
+          registry-url: https://registry.npmjs.org
+      - name: Install npm with trusted publishing support
+        run: npm install -g npm@^11.5.1
+      - name: Install
+        run: yarn --frozen-lockfile
+      - name: Lint and typecheck
         run: |
-          npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          yarn test:other
+          yarn test:code
+          yarn test:typecheck
+      - name: Test
+        run: yarn test:app --watch=false
       - name: Auto release
+        run: yarn release --tag=next --non-interactive
+      - name: Summary
         run: |
-          yarn add @actions/core -W
-          yarn release --tag=next --non-interactive
+          echo "Published @myoc/* with dist-tag next:" >> "$GITHUB_STEP_SUMMARY"
+          npm view @myoc/excalidraw dist-tags.next >> "$GITHUB_STEP_SUMMARY"

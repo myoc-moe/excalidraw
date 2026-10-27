@@ -36,3 +36,4 @@ yarn fix             # Auto-fix formatting and linting issues
 ## Releases
 
 - Never run `yarn release` (or any `release:*` script), `npm publish`, or anything else that publishes `@myoc/excalidraw`. Releases are done manually by the maintainer, who holds the npm auth.
+- feng publishes by pushing `master` to the `release` branch; agents never push to or touch `release`. Each push runs lint, typecheck and tests, then publishes snapshot versions (`<next patch>-next-<sha>`, dist-tag `next`) of all `@myoc/*` packages from CI (`.github/workflows/autorelease-excalidraw.yml`, npm trusted publishing). Consumers pin the exact snapshot version. Stable `latest` releases stay manual.
