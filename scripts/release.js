@@ -24,6 +24,7 @@ const PACKAGES_DIR = path.resolve(__dirname, "../packages");
  * - yarn release --tag=test                      -> same as above
  * - yarn release --tag=next                      -> publishes `@myoc` packages with "next" tag and version "-[hash]" suffix
  * - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
+ *   (test/next versions look like "0.21.1-next-abc1234": the patch after the newest stable release, plus the commit hash)
  * - yarn release --tag=latest --version=0.19.0   -> publishesy
  *  `@excalidraw` packages with "latest" tag and version "0.19.0" & prepares changelog for the release
  *
@@ -75,7 +76,8 @@ const getArguments = () => {
   }
 
   if (!version) {
-    // set the next version based on the excalidraw package version + commit hash
+    // snapshot version: the patch after the newest stable release, plus the
+    // commit hash, so it sorts above every stable version it builds on
     const excalidrawPackageVersion = require(getPackageJsonPath(
       "excalidraw",
     )).version;
@@ -83,7 +85,11 @@ const getArguments = () => {
     const hash = getShortCommitHash();
 
     if (!excalidrawPackageVersion.includes(hash)) {
-      version = `${excalidrawPackageVersion}-${hash}`;
+      const base = maxStableVersion(
+        excalidrawPackageVersion,
+        getPublishedLatestVersion(),
+      );
+      version = `${bumpPatch(base)}-${tag}-${hash}`;
     } else {
       // ensuring idempotency
       version = excalidrawPackageVersion;
@@ -201,6 +207,34 @@ const applyPublishAliases = (nextVersion) => {
   }
 };
 
+const getPublishedLatestVersion = () => {
+  try {
+    return execSync("npm view @myoc/excalidraw dist-tags.latest")
+      .toString()
+      .trim();
+  } catch {
+    return "0.0.0";
+  }
+};
+
+const parseStableVersion = (version) =>
+  version.split("-")[0].split(".").map(Number);
+
+const maxStableVersion = (a, b) => {
+  const [pa, pb] = [parseStableVersion(a), parseStableVersion(b)];
+  for (let i = 0; i < 3; i++) {
+    if (pa[i] !== pb[i]) {
+      return (pa[i] > pb[i] ? pa : pb).join(".");
+    }
+  }
+  return pa.join(".");
+};
+
+const bumpPatch = (version) => {
+  const [major, minor, patch] = parseStableVersion(version);
+  return `${major}.${minor}.${patch + 1}`;
+};
+
 const getShortCommitHash = () => {
   return execSync("git rev-parse --short HEAD").toString().trim();
 };
@@ -280,7 +314,8 @@ const askToPublish = (tag, version) => {
 
 const publishPackages = (tag, version) => {
   for (const packageName of PACKAGES) {
-    execSync(`yarn publish --tag ${tag}`, {
+    // npm, not yarn: trusted publishing (OIDC) from CI needs npm >= 11.5.1
+    execSync(`npm publish --tag ${tag}`, {
       cwd: path.resolve(PACKAGES_DIR, packageName),
       stdio: "inherit",
     });
