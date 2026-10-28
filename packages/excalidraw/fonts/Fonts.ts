@@ -54,6 +54,42 @@ import {
 
 type CharsPerFamily = Map<FontFamilyValues, Set<string>>;
 
+/** Whether a FontFace `weight` ("500", "bold", "100 900") covers `weight`. */
+export const fontFaceCoversWeight = (faceWeight: string, weight: number) => {
+  const named: Record<string, number> = { normal: 400, bold: 700 };
+  const [min, max = min] = faceWeight
+    .trim()
+    .split(/\s+/)
+    .map((part) => named[part] ?? Number(part));
+  return weight >= min && weight <= max;
+};
+
+/**
+ * Logs when a Google font id loads no face of its own weight: the canvas then
+ * draws the text with another weight, or with a fallback font.
+ */
+const warnOnGoogleWeightFallback = (
+  fontFamily: FontFamilyValues,
+  loadedFaces: readonly FontFace[],
+) => {
+  const parsed = parseGoogleFontId(fontFamily);
+  if (
+    !parsed ||
+    loadedFaces.some((face) => fontFaceCoversWeight(face.weight, parsed.weight))
+  ) {
+    return;
+  }
+  console.warn(
+    loadedFaces.length
+      ? `Google font "${fontFamily}" has no ${
+          parsed.weight
+        } face; text uses weight ${loadedFaces
+          .map((face) => face.weight)
+          .join(", ")}`
+      : `Google font "${fontFamily}" loaded no face; text uses a fallback font`,
+  );
+};
+
 export class Fonts {
   // it's ok to track fonts across multiple instances only once, so let's use
   // a static member to reduce memory footprint
@@ -340,6 +376,7 @@ export class Fonts {
         const fontFaces = await window.document.fonts.load(font, text);
 
         if (isGoogleFontFamily(fontFamily)) {
+          warnOnGoogleWeightFallback(fontFamily, fontFaces);
           await Fonts.loadGoogleFontMetrics(fontFamily, fontFaces);
         }
 

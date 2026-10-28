@@ -26,6 +26,17 @@ describe("FontWeightPicker", () => {
     vi.restoreAllMocks();
   });
 
+  /** Opens the compact toolbar's text properties (Tt) popover. */
+  const openTextProperties = async () => {
+    const trigger = document.querySelector<HTMLButtonElement>(
+      'button.properties-trigger[title="Text align"]',
+    );
+    expect(trigger).not.toBeNull();
+    await act(async () => {
+      trigger!.click();
+    });
+  };
+
   const renderWithSelection = async (
     texts: TextSpec[],
     googleFonts: Partial<GoogleFontsConfig> | undefined,
@@ -270,7 +281,7 @@ describe("FontWeightPicker", () => {
     expect(window.h.elements[0].x).toBe(before);
   });
 
-  it("keeps arrow keys from nudging while the compact menu is open", async () => {
+  it("keeps arrow keys from nudging in the compact Weight section", async () => {
     const { queryByTestId } = await renderWithSelection(
       [{ text: "a", fontFamily: google("Lato") }],
       {
@@ -278,12 +289,7 @@ describe("FontWeightPicker", () => {
       },
       { formFactor: "tablet" },
     );
-    await waitFor(() => {
-      expect(queryByTestId("font-weight-trigger")).not.toBeNull();
-    });
-    await act(async () => {
-      queryByTestId("font-weight-trigger")!.click();
-    });
+    await openTextProperties();
     await waitFor(() => {
       expect(queryByTestId("font-weight-700")).not.toBeNull();
     });
@@ -326,9 +332,9 @@ describe("FontWeightPicker", () => {
     });
   });
 
-  it("shows a single trigger and menu in compact mode", async () => {
+  it("shows weights as numbers in the compact text properties", async () => {
     const onEditWeights = vi.fn();
-    const { queryByTestId } = await renderWithSelection(
+    const { queryByTestId, queryAllByTestId } = await renderWithSelection(
       [{ text: "a", fontFamily: google("Lato@700") }],
       {
         libraryFonts: [{ family: "Lato", weights: [400, 700], enabled: true }],
@@ -337,34 +343,26 @@ describe("FontWeightPicker", () => {
       { formFactor: "tablet" },
     );
 
-    await waitFor(() => {
-      expect(queryByTestId("font-weight-trigger")).not.toBeNull();
-    });
-    const trigger = queryByTestId("font-weight-trigger")!;
-    expect(trigger.getAttribute("aria-label")).toBe("Weight: Bold");
-    expect(trigger.textContent).toContain("Bold");
-    expect(queryByTestId("font-weight-700")).toBeNull();
+    // no weight control beside the font family in the compact toolbar
+    expect(queryByTestId("font-weight-picker")).toBeNull();
 
-    await act(async () => {
-      trigger.click();
-    });
+    await openTextProperties();
     await waitFor(() => {
-      expect(queryByTestId("font-weight-700")).not.toBeNull();
+      expect(queryAllByTestId("font-weight-picker")).toHaveLength(1);
     });
-    expect(queryByTestId("font-weight-700")!.textContent).toContain("✓");
-    expect(queryByTestId("font-weight-400")!.textContent).not.toContain("✓");
+    expect(queryByTestId("font-weight-400")!.textContent).toBe("400");
+    expect(queryByTestId("font-weight-700")!.getAttribute("aria-pressed")).toBe(
+      "true",
+    );
+    expect(queryByTestId("font-weight-700")!.getAttribute("aria-label")).toBe(
+      "Bold",
+    );
 
     fireEvent.click(queryByTestId("font-weight-400")!);
     await waitFor(() => {
       expect((window.h.elements[0] as any).fontFamily).toBe(google("Lato"));
     });
 
-    await act(async () => {
-      queryByTestId("font-weight-trigger")!.click();
-    });
-    await waitFor(() => {
-      expect(queryByTestId("font-weight-more")).not.toBeNull();
-    });
     fireEvent.click(queryByTestId("font-weight-more")!);
     expect(onEditWeights).toHaveBeenCalledWith("Lato");
   });

@@ -493,6 +493,7 @@ const CombinedTextProperties = ({
           >
             <div className="selected-shape-actions">
               {predicates.text && renderAction("changeFontSize")}
+              {predicates.text && renderAction("changeFontWeight")}
               {predicates.textAlign && renderAction("changeTextAlign")}
               {predicates.verticalAlign && renderAction("changeVerticalAlign")}
             </div>
