@@ -349,12 +349,14 @@ describe("FontWeightPicker", () => {
     await waitFor(() => {
       expect(queryAllByTestId("font-weight-picker")).toHaveLength(1);
     });
-    expect(queryByTestId("font-weight-400")!.textContent).toBe("400");
-    expect(queryByTestId("font-weight-700")!.getAttribute("aria-pressed")).toBe(
-      "true",
-    );
-    expect(queryByTestId("font-weight-700")!.getAttribute("aria-label")).toBe(
-      "Bold",
+    // the same radio buttons as the font size section
+    const bold = queryByTestId("font-weight-700") as HTMLInputElement;
+    expect(bold.type).toBe("radio");
+    expect(bold.checked).toBe(true);
+    expect(bold.parentElement!.classList.contains("active")).toBe(true);
+    expect(bold.parentElement!.getAttribute("title")).toBe("Bold");
+    expect(queryByTestId("font-weight-400")!.parentElement!.textContent).toBe(
+      "400",
     );
 
     fireEvent.click(queryByTestId("font-weight-400")!);

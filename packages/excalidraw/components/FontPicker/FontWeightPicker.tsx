@@ -11,6 +11,7 @@ import {
   parseGoogleFontId,
 } from "../../fonts/googleFonts";
 import { t } from "../../i18n";
+import { RadioSelection } from "../RadioSelection";
 import { useApp } from "../App";
 
 import type enLocale from "../../locales/en.json";
@@ -186,27 +187,18 @@ export const FontWeightPicker = ({
         data-testid="font-weight-picker"
       >
         <legend>{t("labels.fontWeight")}</legend>
-        <div
-          className="buttonList"
-          role="group"
-          aria-label={t("labels.fontWeight")}
-        >
-          {sortedWeights.map((weight) => (
-            <button
-              key={weight}
-              type="button"
-              className={clsx("FontWeightPicker__number", {
-                active: weight === selectedWeight,
-              })}
-              title={getFontWeightLabel(weight)}
-              aria-label={getFontWeightLabel(weight)}
-              aria-pressed={weight === selectedWeight}
-              data-testid={`font-weight-${weight}`}
-              onClick={() => onSelect(weight)}
-            >
-              {weight}
-            </button>
-          ))}
+        <div className="buttonList">
+          <RadioSelection
+            group="font-weight"
+            options={sortedWeights.map((weight) => ({
+              value: weight,
+              text: getFontWeightLabel(weight),
+              icon: <span className="FontWeightPicker__number">{weight}</span>,
+              testId: `font-weight-${weight}`,
+            }))}
+            value={selectedWeight}
+            onChange={onSelect}
+          />
         </div>
       </fieldset>
     );
