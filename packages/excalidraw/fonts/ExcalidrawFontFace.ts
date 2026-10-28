@@ -4,6 +4,15 @@ import { subsetWoff2GlyphsByCodepoints } from "../subset/subset-main";
 
 type DataURL = string;
 
+/**
+ * `FontFace.family` is the raw name. Names that are not plain identifiers
+ * (`Montserrat@700`, `Press Start 2P`) need quotes in a CSS declaration.
+ */
+const toCssFamily = (family: string) =>
+  /^-?[A-Za-z_][\w-]*(?: -?[A-Za-z_][\w-]*)*$/.test(family)
+    ? family
+    : `"${family.replace(/[\\"]/g, "\\$&").replace(/[\n\r\f]/g, " ")}"`;
+
 export class ExcalidrawFontFace {
   public readonly urls: URL[] | DataURL[];
   public readonly fontFace: FontFace;
@@ -56,9 +65,9 @@ export class ExcalidrawFontFace {
         return "";
       }
 
-      // FontFace.family is already serialized as a valid CSS family value,
-      // including quotes for names containing spaces or punctuation.
-      return `@font-face { font-family: ${this.fontFace.family}; src: url(${content}); }`;
+      return `@font-face { font-family: ${toCssFamily(
+        this.fontFace.family,
+      )}; src: url(${content}); }`;
     });
   }
 

@@ -1597,7 +1597,6 @@ export const actionChangeFontWeight = register<FontFamilyValues>({
         family={family}
         weights={weights}
         selectedWeight={selectedWeight}
-        onEditWeights={googleFonts?.onEditWeights}
         onSelect={(weight) =>
           withCaretPositionPreservation(
             () => updateData(formatGoogleFontId(family, weight)),

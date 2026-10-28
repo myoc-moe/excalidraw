@@ -106,6 +106,7 @@ interface FontWeightPickerProps {
   /** `null` when the selection has mixed weights */
   selectedWeight: number | null;
   onSelect: (weight: number) => void;
+  /** shows a "More weights…" link in the `row` variant */
   onEditWeights?: (family: string) => void;
   /**
    * `row`: weight names under the font picker (full panel).
@@ -207,7 +208,6 @@ export const FontWeightPicker = ({
             </button>
           ))}
         </div>
-        {moreButton}
       </fieldset>
     );
   }

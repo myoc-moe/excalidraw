@@ -333,12 +333,11 @@ describe("FontWeightPicker", () => {
   });
 
   it("shows weights as numbers in the compact text properties", async () => {
-    const onEditWeights = vi.fn();
     const { queryByTestId, queryAllByTestId } = await renderWithSelection(
       [{ text: "a", fontFamily: google("Lato@700") }],
       {
         libraryFonts: [{ family: "Lato", weights: [400, 700], enabled: true }],
-        onEditWeights,
+        onEditWeights: vi.fn(),
       },
       { formFactor: "tablet" },
     );
@@ -363,7 +362,7 @@ describe("FontWeightPicker", () => {
       expect((window.h.elements[0] as any).fontFamily).toBe(google("Lato"));
     });
 
-    fireEvent.click(queryByTestId("font-weight-more")!);
-    expect(onEditWeights).toHaveBeenCalledWith("Lato");
+    // the compact section has no "More weights…" link
+    expect(queryByTestId("font-weight-more")).toBeNull();
   });
 });
