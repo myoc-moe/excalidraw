@@ -158,13 +158,6 @@ export const parseGoogleFontFaceCss = (
   return descriptors;
 };
 
-/** CSS family name the faces are registered under (matches the renderer's). */
-const getInternalCssFamily = (fontId: GoogleFontFamily) => {
-  const name = getGoogleFontFamilyName(fontId);
-  // names such as `Montserrat@700` are not a valid unquoted CSS identifier
-  return /^[\p{L}\p{N}_ -]+$/u.test(name) ? name : JSON.stringify(name);
-};
-
 /** Whether a failure says the source itself is unhealthy (vs. this family). */
 class SourceFailure extends Error {}
 
@@ -199,10 +192,12 @@ const fetchGoogleFontFaces = async (
     throw new Error(`Google Fonts returned no WOFF2 faces for "${fontId}"`);
   }
 
-  const cssFamily = getInternalCssFamily(fontId);
+  // FontFace takes the raw name (`Montserrat@700`): quotes would become part
+  // of it, and the renderer's quoted `"Montserrat@700"` would match no face.
+  const familyName = getGoogleFontFamilyName(fontId);
   return descriptors.map(
     ({ uri, descriptors, mustEmbed }) =>
-      new ExcalidrawFontFace(cssFamily, uri, descriptors, mustEmbed),
+      new ExcalidrawFontFace(familyName, uri, descriptors, mustEmbed),
   );
 };
 

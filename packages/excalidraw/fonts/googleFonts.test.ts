@@ -65,7 +65,9 @@ describe("Google Fonts CSS loader", () => {
     const bold = await loadGoogleFontFaces("google:Weighty@700");
 
     expect(regular.fontFaces[0].fontFace.family).toBe("Weighty");
-    expect(bold.fontFaces[0].fontFace.family).toBe('"Weighty@700"');
+    // FontFace takes the raw name: quotes would become part of the name, and
+    // `"Weighty@700"` in the canvas font string would then match no face.
+    expect(bold.fontFaces[0].fontFace.family).toBe("Weighty@700");
     expect(
       new URL(String(fetchMock.mock.calls[1][0])).searchParams.get("family"),
     ).toBe("Weighty:wght@700");
@@ -224,7 +226,7 @@ describe("Google Fonts CSS loader", () => {
     ]);
   });
 
-  it("uses the FontFace CSS family serialization for SVG declarations", async () => {
+  it("keeps identifier family names unquoted in SVG declarations", async () => {
     const fontFace = new ExcalidrawFontFace(
       "Open Sans",
       "https://fonts.gstatic.com/s/opensans/v1/regular.woff2",
@@ -236,7 +238,7 @@ describe("Google Fonts CSS loader", () => {
     );
 
     await expect(fontFace.toCSS("A")).resolves.toBe(
-      `@font-face { font-family: ${fontFace.fontFace.family}; src: url(data:font/woff2;base64,AA==); }`,
+      `@font-face { font-family: Open Sans; src: url(data:font/woff2;base64,AA==); }`,
     );
   });
 
