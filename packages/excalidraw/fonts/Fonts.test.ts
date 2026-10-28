@@ -6,7 +6,7 @@ import {
   setGoogleFontCssSources,
 } from "./googleFonts";
 
-import { Fonts } from "./Fonts";
+import { Fonts, fontFaceCoversWeight } from "./Fonts";
 
 describe("Google Fonts registration retry", () => {
   it("keeps the scene family and retries after the CSS request fails", async () => {
@@ -129,6 +129,8 @@ describe("Google Fonts weights and sources", () => {
     const consoleError = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
+    // no face loads, so the weight fallback is logged
+    const consoleWarn = vi.spyOn(console, "warn").mockImplementation(() => {});
 
     await Fonts.loadElementsFonts([element]);
 
@@ -142,7 +144,71 @@ describe("Google Fonts weights and sources", () => {
     check.mockRestore();
     load.mockRestore();
     consoleError.mockRestore();
+    consoleWarn.mockRestore();
     setGoogleFontCssSources(undefined);
     resetGoogleFontSourceFailures();
+  });
+});
+
+describe("Google font weight fallback log", () => {
+  it("reads single, named and variable face weights", () => {
+    expect(fontFaceCoversWeight("700", 700)).toBe(true);
+    expect(fontFaceCoversWeight("400", 700)).toBe(false);
+    expect(fontFaceCoversWeight("bold", 700)).toBe(true);
+    expect(fontFaceCoversWeight("normal", 400)).toBe(true);
+    expect(fontFaceCoversWeight("100 900", 500)).toBe(true);
+    expect(fontFaceCoversWeight("100 400", 500)).toBe(false);
+  });
+
+  const loadWith = async (name: string, loaded: Partial<FontFace>[]) => {
+    const fontFamily = toGoogleFontFamily(`${name}@700`);
+    const element = {
+      type: "text",
+      fontFamily,
+      text: "A",
+      originalText: "A",
+    } as any;
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockImplementation(
+      async () =>
+        ({
+          ok: true,
+          text: async () => `
+            @font-face {
+              font-family: '${name}';
+              font-weight: 700;
+              src: url(https://fonts.gstatic.com/s/${name}/v1/bold.woff2) format('woff2');
+            }
+          `,
+        } as Response),
+    );
+    const fonts = document.fonts as any;
+    const check = vi.spyOn(fonts, "check").mockReturnValue(false);
+    const load = vi.spyOn(fonts, "load").mockResolvedValue(loaded);
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    await Fonts.loadElementsFonts([element]);
+    const messages = warn.mock.calls.map(([message]) => String(message));
+
+    fetchMock.mockRestore();
+    check.mockRestore();
+    load.mockRestore();
+    warn.mockRestore();
+    return messages;
+  };
+
+  it("logs nothing when the face of the weight loads", async () => {
+    expect(await loadWith("Has Bold", [{ weight: "700" }])).toEqual([]);
+  });
+
+  it("logs when only another weight loads", async () => {
+    expect(await loadWith("Only Regular", [{ weight: "400" }])).toEqual([
+      'Google font "google:Only Regular@700" has no 700 face; text uses weight 400',
+    ]);
+  });
+
+  it("logs when no face loads", async () => {
+    expect(await loadWith("No Face", [])).toEqual([
+      'Google font "google:No Face@700" loaded no face; text uses a fallback font',
+    ]);
   });
 });

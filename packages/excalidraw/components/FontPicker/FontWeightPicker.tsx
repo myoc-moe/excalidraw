@@ -1,6 +1,5 @@
-import { Popover } from "radix-ui";
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { getFontFamilyString } from "@excalidraw/common";
 
@@ -12,8 +11,7 @@ import {
   parseGoogleFontId,
 } from "../../fonts/googleFonts";
 import { t } from "../../i18n";
-import { useApp, useExcalidrawContainer } from "../App";
-import { PropertiesPopover } from "../PropertiesPopover";
+import { useApp } from "../App";
 
 import type enLocale from "../../locales/en.json";
 import type { GoogleFontsConfig } from "../../types";
@@ -109,7 +107,12 @@ interface FontWeightPickerProps {
   selectedWeight: number | null;
   onSelect: (weight: number) => void;
   onEditWeights?: (family: string) => void;
-  compactMode?: boolean;
+  /**
+   * `row`: weight names under the font picker (full panel).
+   * `section`: a "Weight" section of numbers, like the font size section
+   * (compact text properties popover).
+   */
+  variant?: "row" | "section";
 }
 
 const isArrowKey = (key: string) =>
@@ -134,11 +137,9 @@ export const FontWeightPicker = ({
   selectedWeight,
   onSelect,
   onEditWeights,
-  compactMode = false,
+  variant = "row",
 }: FontWeightPickerProps) => {
   const { fonts } = useApp();
-  const { container } = useExcalidrawContainer();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const sortedWeights = [...weights].sort((a, b) => a - b);
   const weightsKey = sortedWeights.join(",");
 
@@ -165,84 +166,48 @@ export const FontWeightPicker = ({
       fontFamily: formatGoogleFontId(family, weight),
     });
 
-  if (compactMode) {
+  const moreButton = onEditWeights && (
+    <button
+      type="button"
+      className="FontWeightPicker__more"
+      data-testid="font-weight-more"
+      onClick={() => onEditWeights(family)}
+    >
+      {t("fontWeight.more")}
+    </button>
+  );
+
+  if (variant === "section") {
     return (
       <fieldset
-        className="FontWeightPicker FontWeightPicker--compact"
+        onKeyDown={stopArrowKeys}
+        className="FontWeightPicker FontWeightPicker--section"
         data-testid="font-weight-picker"
       >
-        <Popover.Root open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <Popover.Trigger asChild>
+        <legend>{t("labels.fontWeight")}</legend>
+        <div
+          className="buttonList"
+          role="group"
+          aria-label={t("labels.fontWeight")}
+        >
+          {sortedWeights.map((weight) => (
             <button
+              key={weight}
               type="button"
-              className="FontWeightPicker__trigger"
-              data-testid="font-weight-trigger"
-              aria-label={
-                selectedWeight !== null
-                  ? `${t("labels.fontWeight")}: ${getFontWeightLabel(
-                      selectedWeight,
-                    )}`
-                  : t("labels.fontWeight")
-              }
-              style={
-                selectedWeight !== null
-                  ? { fontFamily: getOptionFontFamily(selectedWeight) }
-                  : undefined
-              }
+              className={clsx("FontWeightPicker__number", {
+                active: weight === selectedWeight,
+              })}
+              title={getFontWeightLabel(weight)}
+              aria-label={getFontWeightLabel(weight)}
+              aria-pressed={weight === selectedWeight}
+              data-testid={`font-weight-${weight}`}
+              onClick={() => onSelect(weight)}
             >
-              {selectedWeight !== null
-                ? getFontWeightLabel(selectedWeight)
-                : t("labels.fontWeight")}{" "}
-              ▾
+              {weight}
             </button>
-          </Popover.Trigger>
-          {isMenuOpen && (
-            <PropertiesPopover
-              onKeyDown={stopArrowKeys}
-              className="FontWeightPicker__popover"
-              container={container}
-              onClose={() => {}}
-            >
-              <div className="FontWeightPicker__menu">
-                {sortedWeights.map((weight) => (
-                  <button
-                    key={weight}
-                    type="button"
-                    className="FontWeightPicker__menu-item"
-                    aria-pressed={weight === selectedWeight}
-                    data-testid={`font-weight-${weight}`}
-                    style={{ fontFamily: getOptionFontFamily(weight) }}
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      onSelect(weight);
-                    }}
-                  >
-                    <span>{getFontWeightLabel(weight)}</span>
-                    {weight === selectedWeight && (
-                      <span aria-hidden="true">✓</span>
-                    )}
-                  </button>
-                ))}
-                {onEditWeights && (
-                  <>
-                    <hr className="FontWeightPicker__divider" />
-                    <button
-                      type="button"
-                      className="FontWeightPicker__menu-item"
-                      data-testid="font-weight-more"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        onEditWeights(family);
-                      }}
-                    >
-                      {t("fontWeight.more")}
-                    </button>
-                  </>
-                )}
-              </div>
-            </PropertiesPopover>
-          )}
-        </Popover.Root>
+          ))}
+        </div>
+        {moreButton}
       </fieldset>
     );
   }
@@ -275,16 +240,7 @@ export const FontWeightPicker = ({
           </button>
         ))}
       </div>
-      {onEditWeights && (
-        <button
-          type="button"
-          className="FontWeightPicker__more"
-          data-testid="font-weight-more"
-          onClick={() => onEditWeights(family)}
-        >
-          {t("fontWeight.more")}
-        </button>
-      )}
+      {moreButton}
     </fieldset>
   );
 };

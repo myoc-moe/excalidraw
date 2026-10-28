@@ -1094,6 +1094,53 @@ type ChangeFontFamilyData = Partial<
   resetContainers?: true;
 };
 
+/**
+ * The font of the selected text (or of the next text when nothing is
+ * selected), and its Google family read apart from the full font id, so
+ * mixed weights of one family keep the weight row (with no active weight).
+ */
+const readFontSelection = (
+  elementsArray: readonly ExcalidrawElement[],
+  elementsMap: ElementsMap,
+  appState: Pick<AppState, "currentItemFontFamily">,
+  app: AppClassProperties,
+): { fontFamily: FontFamilyValues | null; googleFamily: string | null } => {
+  const hasText = (element: ExcalidrawElement) =>
+    isTextElement(element) ||
+    getBoundTextElement(element, elementsMap) !== null;
+  const textOf = (element: ExcalidrawElement) =>
+    isTextElement(element)
+      ? element
+      : getBoundTextElement(element, elementsMap);
+  const currentFontFamily =
+    appState.currentItemFontFamily || DEFAULT_FONT_FAMILY;
+
+  return {
+    fontFamily: getFormValue(
+      elementsArray,
+      app,
+      (element) => textOf(element)?.fontFamily ?? null,
+      hasText,
+      (hasSelection) => (hasSelection ? null : currentFontFamily),
+    ),
+    googleFamily: getFormValue<string | null>(
+      elementsArray,
+      app,
+      (element) => {
+        const textElement = textOf(element);
+        return textElement
+          ? parseGoogleFontId(textElement.fontFamily)?.family ?? null
+          : null;
+      },
+      hasText,
+      (hasSelection) =>
+        hasSelection
+          ? null
+          : parseGoogleFontId(currentFontFamily)?.family ?? null,
+    ),
+  };
+};
+
 export const actionChangeFontFamily = register<{
   currentItemFontFamily: any;
   currentHoveredFontFamily: any;
@@ -1320,67 +1367,10 @@ export const actionChangeFontFamily = register<{
     const { stylesPanelMode, isCompact } = getStylesPanelInfo(app);
 
     const selection = useMemo(() => {
-      const getFontFamily = (
-        elementsArray: readonly ExcalidrawElement[],
-        elementsMap: ElementsMap,
-      ) =>
-        getFormValue(
-          elementsArray,
-          app,
-          (element) => {
-            if (isTextElement(element)) {
-              return element.fontFamily;
-            }
-            const boundTextElement = getBoundTextElement(element, elementsMap);
-            if (boundTextElement) {
-              return boundTextElement.fontFamily;
-            }
-            return null;
-          },
-          (element) =>
-            isTextElement(element) ||
-            getBoundTextElement(element, elementsMap) !== null,
-          (hasSelection) =>
-            hasSelection
-              ? null
-              : appState.currentItemFontFamily || DEFAULT_FONT_FAMILY,
-        );
-
-      // the Google family is read apart from the full font id, so mixed
-      // weights of one family keep the weight row (with no active weight)
-      const getGoogleFamily = (
-        elementsArray: readonly ExcalidrawElement[],
-        elementsMap: ElementsMap,
-      ) =>
-        getFormValue<string | null>(
-          elementsArray,
-          app,
-          (element) => {
-            const textElement = isTextElement(element)
-              ? element
-              : getBoundTextElement(element, elementsMap);
-            return textElement
-              ? parseGoogleFontId(textElement.fontFamily)?.family ?? null
-              : null;
-          },
-          (element) =>
-            isTextElement(element) ||
-            getBoundTextElement(element, elementsMap) !== null,
-          (hasSelection) =>
-            hasSelection
-              ? null
-              : parseGoogleFontId(
-                  appState.currentItemFontFamily || DEFAULT_FONT_FAMILY,
-                )?.family ?? null,
-        );
-
       const read = (
         elementsArray: readonly ExcalidrawElement[],
         elementsMap: ElementsMap,
-      ) => ({
-        fontFamily: getFontFamily(elementsArray, elementsMap),
-        googleFamily: getGoogleFamily(elementsArray, elementsMap),
-      });
+      ) => readFontSelection(elementsArray, elementsMap, appState, app);
 
       // popup opened, use cached elements
       if (
@@ -1543,29 +1533,80 @@ export const actionChangeFontFamily = register<{
             }
           }}
         />
-        {weightFamily && libraryWeights && libraryWeights.length > 1 && (
-          <FontWeightPicker
-            family={weightFamily}
-            weights={libraryWeights}
-            selectedWeight={selectedWeight}
-            compactMode={stylesPanelMode !== "full"}
-            onEditWeights={googleFonts?.onEditWeights}
-            onSelect={(weight) => {
-              withCaretPositionPreservation(
-                () =>
-                  setBatchedData({
-                    currentItemFontFamily: formatGoogleFontId(
-                      weightFamily,
-                      weight,
-                    ),
-                  }),
-                isCompact,
-                !!appState.editingTextElement,
-              );
-            }}
-          />
-        )}
+        {/* compact panels show weights in the text properties popover */}
+        {stylesPanelMode === "full" &&
+          weightFamily &&
+          libraryWeights &&
+          libraryWeights.length > 1 && (
+            <FontWeightPicker
+              family={weightFamily}
+              weights={libraryWeights}
+              selectedWeight={selectedWeight}
+              onEditWeights={googleFonts?.onEditWeights}
+              onSelect={(weight) => {
+                withCaretPositionPreservation(
+                  () =>
+                    setBatchedData({
+                      currentItemFontFamily: formatGoogleFontId(
+                        weightFamily,
+                        weight,
+                      ),
+                    }),
+                  isCompact,
+                  !!appState.editingTextElement,
+                );
+              }}
+            />
+          )}
       </>
+    );
+  },
+});
+
+export const actionChangeFontWeight = register<FontFamilyValues>({
+  name: "changeFontWeight",
+  label: "labels.fontWeight",
+  trackEvent: false,
+  perform: (elements, appState, value, app) =>
+    actionChangeFontFamily.perform(
+      elements,
+      appState,
+      { currentItemFontFamily: value, currentHoveredFontFamily: null },
+      app,
+    ),
+  PanelComponent: ({ elements, appState, updateData, app, data }) => {
+    const { isCompact } = getStylesPanelInfo(app);
+    const { googleFonts } = useAppProps();
+    const { family, weights, selectedWeight } = getGoogleFontWeightRow(
+      readFontSelection(
+        elements,
+        app.scene.getNonDeletedElementsMap(),
+        appState,
+        app,
+      ),
+      googleFonts,
+    );
+
+    if (!family || !weights || weights.length < 2) {
+      return null;
+    }
+
+    return (
+      <FontWeightPicker
+        variant="section"
+        family={family}
+        weights={weights}
+        selectedWeight={selectedWeight}
+        onEditWeights={googleFonts?.onEditWeights}
+        onSelect={(weight) =>
+          withCaretPositionPreservation(
+            () => updateData(formatGoogleFontId(family, weight)),
+            isCompact,
+            !!appState.editingTextElement,
+            data?.onPreventClose,
+          )
+        }
+      />
     );
   },
 });
