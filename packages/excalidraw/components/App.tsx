@@ -3461,11 +3461,16 @@ class App extends React.Component<AppProps, AppState> {
     this.forceUpdate();
   };
 
-  private clearImageShapeCache(filesMap?: BinaryFiles) {
+  private clearImageShapeCache(
+    filesMap?: BinaryFiles,
+    keepImageCacheFileIds?: ReadonlySet<FileId>,
+  ) {
     const files = filesMap ?? this.files;
     this.scene.getNonDeletedElements().forEach((element) => {
       if (isInitializedImageElement(element) && files[element.fileId]) {
-        this.imageCache.delete(element.fileId);
+        if (!keepImageCacheFileIds?.has(element.fileId)) {
+          this.imageCache.delete(element.fileId);
+        }
         ShapeCache.delete(element);
       }
     });
@@ -5083,21 +5088,29 @@ class App extends React.Component<AppProps, AppState> {
    * */
   public addFiles: ExcalidrawImperativeAPI["addFiles"] = withBatchedUpdates(
     (files) => {
-      const placeholderImages = new Map<FileId, Promise<HTMLImageElement>>();
+      const placeholderFileIds = new Set<FileId>();
+      // MyOC: placeholders whose thumbnail has loaded stay in imageCache, so
+      // the canvas draws the thumbnail (not the blur) until updateImageCache
+      // replaces it with the full image
+      const loadedPlaceholderFileIds = new Set<FileId>();
       for (const file of files) {
         const fileId = file.id as FileId;
         const cacheEntry = this.imageCache.get(fileId);
         if (cacheEntry && !this.files[fileId]) {
-          placeholderImages.set(fileId, Promise.resolve(cacheEntry.image));
+          placeholderFileIds.add(fileId);
+          if (
+            cacheEntry.isPlaceholder &&
+            !(cacheEntry.image instanceof Promise)
+          ) {
+            loadedPlaceholderFileIds.add(fileId);
+          }
         }
       }
 
       const { addedFiles } = this.addMissingFiles(files);
 
-      this.clearImageShapeCache(addedFiles);
+      this.clearImageShapeCache(addedFiles, loadedPlaceholderFileIds);
       this.scene.triggerUpdate();
-
-      const placeholderFileIds = new Set(placeholderImages.keys());
 
       const refreshImageCache = _updateImageCache({
         imageCache: this.imageCache,
@@ -5108,19 +5121,12 @@ class App extends React.Component<AppProps, AppState> {
           this.props.imageOptions.gifAutoDecodeMaxFileSizeBytes,
       });
 
-      refreshImageCache.then(async ({ updatedFiles }) => {
-        for (const [fileId, placeholderImagePromise] of placeholderImages) {
-          const cacheEntry = this.imageCache.get(fileId);
-          if (!cacheEntry || !updatedFiles.has(fileId)) {
-            continue;
+      refreshImageCache.then(({ updatedFiles }) => {
+        // updateImageCache writes the placeholder transition
+        for (const fileId of placeholderFileIds) {
+          if (this.imageCache.has(fileId) && updatedFiles.has(fileId)) {
+            this.clearImageLoadingProgress(fileId);
           }
-
-          this.imageCache.set(fileId, {
-            ...cacheEntry,
-            placeholderImage: await placeholderImagePromise,
-            transitionStart: performance.now(),
-          });
-          this.clearImageLoadingProgress(fileId);
         }
 
         if (placeholderFileIds.size) {

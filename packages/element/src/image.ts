@@ -147,19 +147,21 @@ export const updateImageCache = async ({
               }
 
               const previousCacheEntry = imageCache.get(fileId);
+              // MyOC: a placeholder (thumbnail) that has loaded stays in the
+              // cache until the new image is ready, so the renderer keeps
+              // drawing it instead of the blur or the GIF decode placeholder
+              const loadedPlaceholder =
+                previousCacheEntry?.isPlaceholder &&
+                !(previousCacheEntry.image instanceof Promise)
+                  ? previousCacheEntry.image
+                  : undefined;
+              const isGif = fileData.mimeType === MIME_TYPES.gif;
               const imagePromise = loadHTMLImageElement(fileData.dataURL);
               const data = {
                 image: imagePromise,
                 mimeType: fileData.mimeType,
-                gifDecodeStatus:
-                  fileData.mimeType === MIME_TYPES.gif ? "pending" : undefined,
+                gifDecodeStatus: isGif ? "pending" : undefined,
               } as const;
-              // store the promise immediately to indicate there's an in-progress
-              // initialization
-              imageCache.set(fileId, data);
-              if (data.gifDecodeStatus === "pending") {
-                onImageCacheUpdate?.(fileId);
-              }
 
               let image: HTMLImageElement | Promise<HTMLImageElement> =
                 imagePromise;
@@ -167,79 +169,75 @@ export const updateImageCache = async ({
                 | Awaited<ReturnType<typeof decodeGifFramesQueued>>
                 | undefined;
               let gifDecodeStatus: "success" | "error" | "deferred" | undefined;
+              let failed = false;
+
+              // store the promise immediately to indicate there's an in-progress
+              // initialization (skipped while a loaded placeholder is shown)
+              if (!loadedPlaceholder) {
+                imageCache.set(fileId, data);
+                if (isGif) {
+                  onImageCacheUpdate?.(fileId);
+                }
+              }
 
               try {
                 image = await imagePromise;
-                if (fileData.mimeType === MIME_TYPES.gif) {
-                  const decodingData = {
-                    ...data,
-                    image,
-                    gifDecodeStatus: "pending" as const,
-                  };
-                  imageCache.set(fileId, decodingData);
+                if (isGif && !loadedPlaceholder) {
+                  imageCache.set(fileId, { ...data, image });
                   onImageCacheUpdate?.(fileId);
                 }
                 if (
-                  fileData.mimeType === MIME_TYPES.gif &&
+                  isGif &&
                   !forceGifDecode &&
                   getDataURLByteLength(fileData.dataURL) >
                     gifAutoDecodeMaxFileSizeBytes
                 ) {
                   gifDecodeStatus = "deferred";
-                } else {
-                  gif =
-                    fileData.mimeType === MIME_TYPES.gif
-                      ? await decodeGifFramesQueued(fileData.dataURL)
-                      : undefined;
-
-                  if (fileData.mimeType === MIME_TYPES.gif) {
-                    gifDecodeStatus = "success";
-                  }
+                } else if (isGif) {
+                  gif = await decodeGifFramesQueued(fileData.dataURL);
+                  gifDecodeStatus = "success";
                 }
               } catch (error: any) {
+                failed = true;
                 erroredFiles.set(fileId, true);
-                if (fileData.mimeType === MIME_TYPES.gif) {
+                if (isGif) {
                   gifDecodeStatus = "error";
                 }
-              } finally {
-                if (fileData.mimeType === MIME_TYPES.gif) {
+              }
+
+              const placeholderTransition = loadedPlaceholder
+                ? {
+                    placeholderImage: loadedPlaceholder,
+                    transitionStart: performance.now(),
+                  }
+                : {};
+
+              if (failed) {
+                // a failed GIF keeps its error status in the cache. A failed
+                // image keeps its rejected promise, so the element is drawn
+                // with the image placeholder and App marks it as errored.
+                if (isGif || loadedPlaceholder) {
                   imageCache.set(fileId, {
                     ...data,
                     image,
                     gif,
-                    gifDecodeStatus: gifDecodeStatus ?? "error",
+                    gifDecodeStatus,
+                    ...placeholderTransition,
                   });
+                }
+                if (isGif) {
                   onImageCacheUpdate?.(fileId);
                 }
-              }
-
-              if (erroredFiles.has(fileId)) {
                 return;
               }
 
-              if (previousCacheEntry?.isPlaceholder) {
-                imageCache.set(fileId, {
-                  ...data,
-                  image,
-                  gif,
-                  gifDecodeStatus:
-                    fileData.mimeType === MIME_TYPES.gif
-                      ? gifDecodeStatus
-                      : undefined,
-                  placeholderImage: await previousCacheEntry.image,
-                  transitionStart: performance.now(),
-                });
-              } else {
-                imageCache.set(fileId, {
-                  ...data,
-                  image,
-                  gif,
-                  gifDecodeStatus:
-                    fileData.mimeType === MIME_TYPES.gif
-                      ? gifDecodeStatus
-                      : undefined,
-                });
-              }
+              imageCache.set(fileId, {
+                ...data,
+                image,
+                gif,
+                gifDecodeStatus,
+                ...placeholderTransition,
+              });
               onImageCacheUpdate?.(fileId);
             } catch (error: any) {
               erroredFiles.set(fileId, true);

@@ -35,9 +35,11 @@ import {
 } from "./fixtures/constants";
 import { INITIALIZED_IMAGE_PROPS } from "./helpers/constants";
 
+import type { MockInstance } from "vitest";
+
 import type { UnsupportedImageFileTypeError } from "../errors";
 
-import type { ExcalidrawProps } from "../types";
+import type { DataURL, ExcalidrawProps } from "../types";
 
 const { h } = window;
 
@@ -771,6 +773,277 @@ describe("image insertion", () => {
         expect.any(Number),
       );
       expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
+    });
+  });
+
+  describe("MyOC regression: full image after a placeholder thumbnail", () => {
+    type ImageCache = typeof h.app.imageCache;
+    type ImageCacheEntry = ReturnType<ImageCache["get"]>;
+
+    let setSpy: MockInstance<ImageCache["set"]> | undefined;
+    let deleteSpy: MockInstance<ImageCache["delete"]> | undefined;
+
+    afterEach(() => {
+      setSpy?.mockRestore();
+      deleteSpy?.mockRestore();
+      setSpy = undefined;
+      deleteSpy = undefined;
+    });
+
+    const GIF_DATA_URL = `data:${MIME_TYPES.gif};base64,${btoa(
+      "GIF89a-full",
+    )}` as DataURL;
+
+    const createImageElement = (fileId: FileId) => {
+      API.setElements([
+        API.createElement({
+          type: "image",
+          fileId,
+          width: 100,
+          height: 100,
+        }),
+      ]);
+    };
+
+    const addLoadedPlaceholder = async (fileId: FileId) => {
+      createImageElement(fileId);
+      const file = await API.loadFile("./fixtures/deer.png");
+      await h.app.api.addImagePlaceholder(fileId, file);
+      const thumbnail = h.app.imageCache.get(fileId)?.image;
+      expect(thumbnail).toBeInstanceOf(HTMLImageElement);
+      return { file, thumbnail };
+    };
+
+    /** The next `new Image()` loads or fails only when the test says so. */
+    const holdNextImageLoad = () => {
+      const BaseImage = globalThis.Image;
+      const held: { load?: () => void; fail?: () => void } = {};
+      let isNext = true;
+      vi.stubGlobal(
+        "Image",
+        class extends BaseImage {
+          constructor() {
+            super();
+            if (!isNext) {
+              return;
+            }
+            isNext = false;
+            // the base mock calls `onload` in a microtask: hide it until load()
+            Object.defineProperty(this, "onload", {
+              configurable: true,
+              get: () => null,
+              set: (onload: ((event: Event) => void) | null) => {
+                held.load = () => onload?.(new Event("load"));
+              },
+            });
+            held.fail = () => this.onerror?.(new Event("error"));
+          }
+        },
+      );
+      return held;
+    };
+
+    const spyOnImageCache = () => {
+      setSpy = vi.spyOn(h.app.imageCache, "set");
+      deleteSpy = vi.spyOn(h.app.imageCache, "delete");
+    };
+
+    const addFullImage = async (
+      fileId: FileId,
+      file: File,
+      mimeType: typeof MIME_TYPES.png | typeof MIME_TYPES.gif,
+      dataURL?: DataURL,
+    ) => {
+      const fullDataURL = dataURL ?? (await blobModule.getDataURL(file));
+      act(() => {
+        h.app.api.addFiles([
+          {
+            id: fileId,
+            fileName: file.name,
+            mimeType,
+            dataURL: fullDataURL,
+            created: Date.now(),
+          },
+        ]);
+      });
+    };
+
+    const getRecordedEntries = (fileId: FileId): ImageCacheEntry[] =>
+      (setSpy?.mock.calls ?? [])
+        .filter(([id]) => id === fileId)
+        .map(([, entry]) => entry);
+
+    const expectNoBlurEntries = (fileId: FileId) => {
+      // a missing entry also makes the renderer draw the blur
+      expect(
+        (deleteSpy?.mock.calls ?? []).filter(([id]) => id === fileId),
+      ).toEqual([]);
+      for (const entry of getRecordedEntries(fileId)) {
+        expect(entry?.image).not.toBeInstanceOf(Promise);
+        if (entry?.gifDecodeStatus === "pending") {
+          expect(entry.gif).toBeDefined();
+        }
+      }
+    };
+
+    it("MyOC regression: never shows the blur after a placeholder thumbnail", async () => {
+      await setupImageTest(
+        [
+          { width: 32, height: 32 },
+          { width: 64, height: 64 },
+        ],
+        { imageOptions: { placeholderTransitionDuration: 10_000 } },
+      );
+      const fileId = "progressive-png-file" as FileId;
+      const { file, thumbnail } = await addLoadedPlaceholder(fileId);
+
+      spyOnImageCache();
+      await addFullImage(fileId, file, MIME_TYPES.png);
+
+      await waitFor(() => {
+        expect(h.app.imageCache.get(fileId)?.transitionStart).toEqual(
+          expect.any(Number),
+        );
+      });
+
+      const finalEntry = h.app.imageCache.get(fileId);
+      expect(finalEntry?.image).toBeInstanceOf(HTMLImageElement);
+      expect(finalEntry?.image).not.toBe(thumbnail);
+      expect(finalEntry?.placeholderImage).toBe(thumbnail);
+      expectNoBlurEntries(fileId);
+    });
+
+    it("MyOC regression: never shows the blur or GIF decode placeholder after a placeholder thumbnail", async () => {
+      mockSuccessfulGifDecode();
+      await setupImageTest(
+        [
+          { width: 32, height: 32 },
+          { width: 64, height: 64 },
+        ],
+        { imageOptions: { placeholderTransitionDuration: 10_000 } },
+      );
+      const fileId = "progressive-gif-file" as FileId;
+      const { file, thumbnail } = await addLoadedPlaceholder(fileId);
+
+      spyOnImageCache();
+      await addFullImage(fileId, file, MIME_TYPES.gif, GIF_DATA_URL);
+
+      await waitFor(() => {
+        expect(h.app.imageCache.get(fileId)?.transitionStart).toEqual(
+          expect.any(Number),
+        );
+      });
+
+      const finalEntry = h.app.imageCache.get(fileId);
+      expect(finalEntry?.image).toBeInstanceOf(HTMLImageElement);
+      expect(finalEntry?.image).not.toBe(thumbnail);
+      expect(finalEntry?.placeholderImage).toBe(thumbnail);
+      expect(finalEntry?.gifDecodeStatus).toBe("success");
+      expect(finalEntry?.gif?.frames).toHaveLength(2);
+      expectNoBlurEntries(fileId);
+    });
+
+    it("MyOC regression: shows the full image without waiting for a thumbnail that still decodes", async () => {
+      await setupImageTest([
+        { width: 32, height: 32 },
+        { width: 64, height: 64 },
+      ]);
+      const thumbnailLoad = holdNextImageLoad();
+      const fileId = "progressive-slow-thumbnail-file" as FileId;
+      createImageElement(fileId);
+      const file = await API.loadFile("./fixtures/deer.png");
+      const placeholderPromise = h.app.api.addImagePlaceholder(fileId, file);
+      await waitFor(() => {
+        expect(thumbnailLoad.load).toBeDefined();
+      });
+
+      await addFullImage(fileId, file, MIME_TYPES.png);
+
+      await waitFor(() => {
+        expect(h.app.imageCache.get(fileId)?.image).toBeInstanceOf(
+          HTMLImageElement,
+        );
+      });
+      const fullImage = h.app.imageCache.get(fileId)?.image;
+      expect(h.app.imageCache.get(fileId)?.placeholderImage).toBeUndefined();
+
+      thumbnailLoad.load!();
+      await placeholderPromise;
+      expect(h.app.imageCache.get(fileId)?.image).toBe(fullImage);
+    });
+
+    it("MyOC regression: shows the full image when a thumbnail that still decodes fails", async () => {
+      await setupImageTest([
+        { width: 32, height: 32 },
+        { width: 64, height: 64 },
+      ]);
+      const thumbnailLoad = holdNextImageLoad();
+      const fileId = "progressive-failed-thumbnail-file" as FileId;
+      createImageElement(fileId);
+      const file = await API.loadFile("./fixtures/deer.png");
+      const placeholderPromise = h.app.api.addImagePlaceholder(fileId, file);
+      await waitFor(() => {
+        expect(thumbnailLoad.fail).toBeDefined();
+      });
+
+      await addFullImage(fileId, file, MIME_TYPES.png);
+      thumbnailLoad.fail!();
+      await expect(placeholderPromise).rejects.toThrow();
+
+      await waitFor(() => {
+        expect(h.app.imageCache.get(fileId)?.image).toBeInstanceOf(
+          HTMLImageElement,
+        );
+        expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
+      });
+      expect(h.elements[0]).not.toEqual(
+        expect.objectContaining({ status: "error" }),
+      );
+    });
+
+    it("MyOC regression: still writes the error entry when the full image fails to load after a placeholder thumbnail", async () => {
+      // one size only: the full image `new Image()` throws, so its load fails
+      await setupImageTest([{ width: 32, height: 32 }]);
+      const fileId = "progressive-failed-file" as FileId;
+      const { file, thumbnail } = await addLoadedPlaceholder(fileId);
+
+      spyOnImageCache();
+      await addFullImage(fileId, file, MIME_TYPES.png);
+
+      await waitFor(() => {
+        expect(getRecordedEntries(fileId)).not.toHaveLength(0);
+      });
+
+      const finalEntry = h.app.imageCache.get(fileId);
+      expect(finalEntry?.image).toBeInstanceOf(Promise);
+      await expect(finalEntry?.image).rejects.toBeDefined();
+      expect(finalEntry?.placeholderImage).toBe(thumbnail);
+    });
+
+    it("MyOC regression: still writes the GIF error entry when the full GIF fails to decode after a placeholder thumbnail", async () => {
+      vi.mocked(decodeAnimated).mockRejectedValueOnce(
+        new Error("malformed GIF"),
+      );
+      await setupImageTest([
+        { width: 32, height: 32 },
+        { width: 64, height: 64 },
+      ]);
+      const fileId = "progressive-failed-gif-file" as FileId;
+      const { file, thumbnail } = await addLoadedPlaceholder(fileId);
+
+      spyOnImageCache();
+      await addFullImage(fileId, file, MIME_TYPES.gif, GIF_DATA_URL);
+
+      await waitFor(() => {
+        expect(h.app.imageCache.get(fileId)?.gifDecodeStatus).toBe("error");
+      });
+
+      const finalEntry = h.app.imageCache.get(fileId);
+      expect(finalEntry?.image).toBeInstanceOf(HTMLImageElement);
+      expect(finalEntry?.image).not.toBe(thumbnail);
+      expect(finalEntry?.gif).toBeUndefined();
+      expect(finalEntry?.placeholderImage).toBe(thumbnail);
+      expectNoBlurEntries(fileId);
     });
   });
 
