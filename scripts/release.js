@@ -14,6 +14,9 @@ const PACKAGES = [
   "excalidraw",
 ];
 const PACKAGES_DIR = path.resolve(__dirname, "../packages");
+const RELEASE_DIST_DIR = path.resolve(__dirname, "../release-dist");
+const GITHUB_RELEASES_URL =
+  "https://github.com/myoc-moe/excalidraw/releases/download";
 
 /**
  * Returns the arguments for the release script.
@@ -24,29 +27,33 @@ const PACKAGES_DIR = path.resolve(__dirname, "../packages");
  * - yarn release --tag=test                      -> same as above
  * - yarn release --tag=next                      -> publishes `@myoc` packages with "next" tag and version "-[hash]" suffix
  * - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
+ * - yarn release --tag=next --github             -> packs `@myoc` packages into `release-dist/` for a GitHub release, without publishing
  *   (test/next versions look like "0.21.1-next-abc1234": the patch after the newest stable release, plus the commit hash)
  * - yarn release --tag=latest --version=0.19.0   -> publishesy
  *  `@excalidraw` packages with "latest" tag and version "0.19.0" & prepares changelog for the release
  *
- * @returns [tag, version, nonInteractive]
+ * @returns [tag, version, nonInteractive, github]
  */
 const getArguments = () => {
   let tag = "test";
   let version = "";
   let nonInteractive = false;
+  let github = false;
 
   for (const argument of process.argv.slice(2)) {
     if (/--help/.test(argument)) {
       console.info(`Available arguments:
   --tag=<tag>                                    -> (optional) "test" (default), "next" for auto release, "latest" for stable release
   --version=<version>                            -> (optional) for "next" and "test", (required) for "latest" i.e. "0.19.0"
-  --non-interactive                              -> (optional) disables interactive prompts`);
+  --non-interactive                              -> (optional) disables interactive prompts
+  --github                                       -> (optional) packs tarballs into release-dist/ for a GitHub release, does not publish to npm`);
 
       console.info(`\nUsage examples:
   - yarn release                                 -> publishes \`@myoc\` packages with "test" tag and "-[hash]" version suffix
   - yarn release --tag=test                      -> same as above
   - yarn release --tag=next                      -> publishes \`@myoc\` packages with "next" tag and version "-[hash]" suffix
   - yarn release --tag=next --non-interactive    -> skips interactive prompts (runs on CI/CD), otherwise same as above
+  - yarn release --tag=next --github             -> packs \`@myoc\` packages into release-dist/ for a GitHub release (runs on CI/CD)
   - yarn release --tag=latest --version=0.19.0   -> publishes \`@myoc\` packages with "latest" tag and version "0.19.0" & prepares changelog for the release`);
 
       process.exit(0);
@@ -63,10 +70,21 @@ const getArguments = () => {
     if (/--non-interactive/.test(argument)) {
       nonInteractive = true;
     }
+
+    if (/--github/.test(argument)) {
+      github = true;
+    }
   }
 
   if (tag !== "latest" && tag !== "next" && tag !== "test") {
     console.error(`Unsupported tag "${tag}", use "latest", "next" or "test".`);
+    process.exit(1);
+  }
+
+  if (github && tag !== "next") {
+    console.error(
+      `Only "next" snapshots go to GitHub releases, don't pass --github with "${tag}"!`,
+    );
     process.exit(1);
   }
 
@@ -98,7 +116,7 @@ const getArguments = () => {
 
   console.info(`Running with tag "${tag}" and version "${version}"...`);
 
-  return [tag, version, nonInteractive];
+  return [tag, version, nonInteractive, github];
 };
 
 const validatePackageName = (packageName) => {
@@ -179,7 +197,15 @@ const restoreDependencies = (snapshot) => {
   }
 };
 
-const applyPublishAliases = (nextVersion) => {
+const getTarballName = (packageName, version) =>
+  `myoc-${packageName}-${version}.tgz`;
+
+const getGithubTarballUrl = (packageName, version) =>
+  `${GITHUB_RELEASES_URL}/v${version}/${getTarballName(packageName, version)}`;
+
+// github: internal dependencies point to the tarballs of the same GitHub
+// release, so consumers pin only the packages they import
+const applyPublishAliases = (nextVersion, github) => {
   const packageJsons = new Map();
 
   for (const packageName of PACKAGES) {
@@ -189,7 +215,9 @@ const applyPublishAliases = (nextVersion) => {
       for (const dependencyName of PACKAGES) {
         const myocName = `@myoc/${dependencyName}`;
         const excalidrawName = `@excalidraw/${dependencyName}`;
-        const aliasVersion = `npm:@myoc/${dependencyName}@${nextVersion}`;
+        const aliasVersion = github
+          ? getGithubTarballUrl(dependencyName, nextVersion)
+          : `npm:@myoc/${dependencyName}@${nextVersion}`;
 
         if (pkg.dependencies[myocName] || pkg.dependencies[excalidrawName]) {
           delete pkg.dependencies[myocName];
@@ -326,9 +354,35 @@ const publishPackages = (tag, version) => {
   }
 };
 
+const packPackages = (version) => {
+  fs.rmSync(RELEASE_DIST_DIR, { recursive: true, force: true });
+  fs.mkdirSync(RELEASE_DIST_DIR, { recursive: true });
+
+  for (const packageName of PACKAGES) {
+    execSync(`npm pack --pack-destination "${RELEASE_DIST_DIR}"`, {
+      cwd: path.resolve(PACKAGES_DIR, packageName),
+      stdio: "inherit",
+    });
+
+    const tarballPath = path.resolve(
+      RELEASE_DIST_DIR,
+      getTarballName(packageName, version),
+    );
+    if (!fs.existsSync(tarballPath)) {
+      console.error(`Expected tarball "${tarballPath}" not found!`);
+      process.exit(1);
+    }
+
+    console.info(`Packed "@myoc/${packageName}" with version "${version}"!`);
+  }
+
+  // read by the release workflow to name the GitHub release
+  fs.writeFileSync(path.resolve(RELEASE_DIST_DIR, "VERSION"), version, "utf-8");
+};
+
 /** main */
 (async () => {
-  const [tag, version, nonInteractive] = getArguments();
+  const [tag, version, nonInteractive, github] = getArguments();
 
   const dependenciesSnapshot = snapshotDependencies();
 
@@ -339,9 +393,11 @@ const publishPackages = (tag, version) => {
   }
 
   updatePackageJsons(version);
-  applyPublishAliases(version);
+  applyPublishAliases(version, github);
 
-  if (nonInteractive) {
+  if (github) {
+    packPackages(version);
+  } else if (nonInteractive) {
     publishPackages(tag, version);
   } else {
     await askToPublish(tag, version);

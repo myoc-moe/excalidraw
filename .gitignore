@@ -31,3 +31,4 @@ meta*.json
 packages/excalidraw/dist/
 .tmp/
 .playwright-cli/
+release-dist

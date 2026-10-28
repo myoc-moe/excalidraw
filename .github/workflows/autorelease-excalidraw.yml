@@ -1,4 +1,4 @@
-name: Auto release excalidraw next
+name: Auto release excalidraw next (GitHub release)
 on:
   # feng publishes by pushing master to release; nothing else triggers it
   push:
@@ -10,9 +10,8 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
-  # npm trusted publishing (OIDC); no NPM_TOKEN secret
-  id-token: write
+  # creates the GitHub release and uploads the tarballs with GITHUB_TOKEN
+  contents: write
 
 jobs:
   Auto-release-excalidraw-next:
@@ -23,13 +22,13 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 2
+          # install, lint and tests run third-party code: keep the write token
+          # out of .git/config, only the GitHub release step gets it
+          persist-credentials: false
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 20.x
-          registry-url: https://registry.npmjs.org
-      - name: Install npm with trusted publishing support
-        run: npm install -g npm@^11.5.1
       - name: Install
         run: yarn --frozen-lockfile
       - name: Lint and typecheck
@@ -39,9 +38,50 @@ jobs:
           yarn test:typecheck
       - name: Test
         run: yarn test:app --watch=false
-      - name: Auto release
-        run: yarn release --tag=next --non-interactive
+      - name: Pack
+        run: yarn release --tag=next --github
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(cat release-dist/VERSION)"
+          tag="v${version}"
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}"
+          echo "version=${version}" >> "$GITHUB_ENV"
+          echo "base=${base}" >> "$GITHUB_ENV"
+          # assets are immutable: consumers pin their integrity in lockfiles
+          if gh release view "$tag" > /dev/null 2>&1; then
+            # a re-run: never replace assets, only check that all of them exist
+            existing="$(gh release view "$tag" --json assets -q '.assets[].name')"
+            for file in release-dist/*.tgz; do
+              if ! grep -qx "$(basename "$file")" <<< "$existing"; then
+                echo "::error::Release ${tag} has no asset $(basename "$file")"
+                exit 1
+              fi
+            done
+            echo "::notice::Release ${tag} exists already, its assets stay unchanged"
+            exit 0
+          fi
+          {
+            echo "Snapshot of ${GITHUB_SHA}. Pin in canvas \`packages/app/package.json\`:"
+            echo
+            echo '```json'
+            echo "\"@myoc/element\": \"${base}/myoc-element-${version}.tgz\","
+            echo "\"@myoc/excalidraw\": \"${base}/myoc-excalidraw-${version}.tgz\""
+            echo '```'
+            echo
+            echo "Move both pins to the same version together, or pnpm installs two copies of @myoc/element."
+          } > release-dist/NOTES.md
+          gh release create "$tag" release-dist/*.tgz \
+            --prerelease \
+            --target "$GITHUB_SHA" \
+            --title "$tag" \
+            --notes-file release-dist/NOTES.md
       - name: Summary
         run: |
-          echo "Published @myoc/* with dist-tag next:" >> "$GITHUB_STEP_SUMMARY"
-          npm view @myoc/excalidraw dist-tags.next >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "GitHub release v${version} of @myoc/* is ready:"
+            echo
+            echo "- ${base}/myoc-element-${version}.tgz"
+            echo "- ${base}/myoc-excalidraw-${version}.tgz"
+          } >> "$GITHUB_STEP_SUMMARY"
