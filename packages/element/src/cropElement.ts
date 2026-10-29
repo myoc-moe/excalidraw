@@ -565,6 +565,22 @@ export const getUncroppedWidthAndHeight = (element: ExcalidrawImageElement) => {
   };
 };
 
+/**
+ * MyOC: the pixel size that crop editing works in. An existing crop keeps the
+ * size of the image that the user cropped, because imageCache can hold a
+ * smaller progressive-load thumbnail while the full image loads.
+ */
+export const getCropNaturalSize = (
+  element: ExcalidrawImageElement,
+  image: HTMLImageElement,
+) =>
+  element.crop
+    ? {
+        naturalWidth: element.crop.naturalWidth,
+        naturalHeight: element.crop.naturalHeight,
+      }
+    : { naturalWidth: image.naturalWidth, naturalHeight: image.naturalHeight };
+
 const adjustCropPosition = (
   crop: ImageCrop,
   scale: ExcalidrawImageElement["scale"],
