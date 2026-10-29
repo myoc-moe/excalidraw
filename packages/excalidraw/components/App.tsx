@@ -252,6 +252,7 @@ import {
   handleFocusPointPointerDown,
   handleFocusPointPointerUp,
   maybeHandleArrowPointlikeDrag,
+  getCropNaturalSize,
   getUncroppedWidthAndHeight,
   getActiveTextElement,
   isEligibleFrameChildType,
@@ -11503,6 +11504,10 @@ class App extends React.Component<AppProps, AppState> {
                 this.imageCache.get(croppingElement.fileId)?.image;
 
               if (image && !(image instanceof Promise)) {
+                const { naturalWidth, naturalHeight } = getCropNaturalSize(
+                  croppingElement,
+                  image,
+                );
                 const uncroppedSize =
                   getUncroppedWidthAndHeight(croppingElement);
                 const instantDragOffset = vector(
@@ -11513,10 +11518,8 @@ class App extends React.Component<AppProps, AppState> {
                 // to reduce cursor:image drift, we need to take into account
                 // the canvas image element scaling so we can accurately
                 // track the pixels on movement
-                instantDragOffset[0] *=
-                  image.naturalWidth / uncroppedSize.width;
-                instantDragOffset[1] *=
-                  image.naturalHeight / uncroppedSize.height;
+                instantDragOffset[0] *= naturalWidth / uncroppedSize.width;
+                instantDragOffset[1] *= naturalHeight / uncroppedSize.height;
 
                 const [x1, y1, x2, y2, cx, cy] = getElementAbsoluteCoords(
                   croppingElement,
@@ -11563,13 +11566,13 @@ class App extends React.Component<AppProps, AppState> {
                     crop.x -
                       offsetVector[0] * Math.sign(croppingElement.scale[0]),
                     0,
-                    image.naturalWidth - crop.width,
+                    naturalWidth - crop.width,
                   ),
                   y: clamp(
                     crop.y -
                       offsetVector[1] * Math.sign(croppingElement.scale[1]),
                     0,
-                    image.naturalHeight - crop.height,
+                    naturalHeight - crop.height,
                   ),
                 };
 
@@ -14152,6 +14155,11 @@ class App extends React.Component<AppProps, AppState> {
 
         this.maybeCacheReferenceSnapPoints(event, [croppingElement]);
 
+        const { naturalWidth, naturalHeight } = getCropNaturalSize(
+          croppingElement,
+          image,
+        );
+
         const { snapOffset, snapLines } = snapResizingElements(
           [croppingElement],
           [croppingAtStateStart],
@@ -14167,8 +14175,8 @@ class App extends React.Component<AppProps, AppState> {
             croppingElement,
             this.scene.getNonDeletedElementsMap(),
             transformHandleType,
-            image.naturalWidth,
-            image.naturalHeight,
+            naturalWidth,
+            naturalHeight,
             x + snapOffset.x,
             y + snapOffset.y,
             event.shiftKey
