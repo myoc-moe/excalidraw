@@ -565,6 +565,35 @@ export const getUncroppedWidthAndHeight = (element: ExcalidrawImageElement) => {
   };
 };
 
+/**
+ * MyOC: the source rectangle to draw from an image of `sourceWidth` x
+ * `sourceHeight` pixels. The crop is in the pixels of the image that the user
+ * cropped, which can differ from the image that renders now (the ThumbHash
+ * blur, the progressive-load thumbnail, or the full image), so it is scaled.
+ */
+export const getImageCropSourceRect = (
+  crop: ImageCrop | null,
+  sourceWidth: number,
+  sourceHeight: number,
+) => {
+  if (!crop) {
+    return { x: 0, y: 0, width: sourceWidth, height: sourceHeight };
+  }
+
+  // keep the crop as it is when a size is unknown (0), as upstream does
+  const scaleX =
+    sourceWidth && crop.naturalWidth ? sourceWidth / crop.naturalWidth : 1;
+  const scaleY =
+    sourceHeight && crop.naturalHeight ? sourceHeight / crop.naturalHeight : 1;
+
+  return {
+    x: crop.x * scaleX,
+    y: crop.y * scaleY,
+    width: crop.width * scaleX,
+    height: crop.height * scaleY,
+  };
+};
+
 const adjustCropPosition = (
   crop: ImageCrop,
   scale: ExcalidrawImageElement["scale"],
