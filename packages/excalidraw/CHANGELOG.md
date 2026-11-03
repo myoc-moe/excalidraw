@@ -17,6 +17,8 @@ Please add the latest change on the top under the correct section.
 
 ### Features
 
+- Add the spoiler API for images: `markFileSpoilered`, `setSpoileredFileVisibility`, `setAllSpoileredFilesVisibility` and `getSpoileredFiles` on the imperative API, the `onSpoileredFilesChange` prop, a "Show spoiler" button on hidden images, "Show spoiler" and "Hide spoiler" context menu items, and the `spoileredFileIds` option of `exportToCanvas`, `exportToBlob` and `exportToSvg` [#TODO](https://github.com/myoc-moe/excalidraw/pull/TODO)
+
 - Add ability to turn off compression for files that are smaller than a given size
 
 - Add lock tool to the dropdown and also add the status of the extra tools to be the same icon as the selected tool

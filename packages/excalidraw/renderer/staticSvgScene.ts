@@ -12,7 +12,7 @@ import {
   MIME_TYPES,
 } from "@excalidraw/common";
 import { normalizeLink, toValidURL } from "@excalidraw/common";
-import { hashString } from "@excalidraw/element";
+import { getThumbHashPlaceholder, hashString } from "@excalidraw/element";
 import { getUncroppedWidthAndHeight } from "@excalidraw/element";
 import {
   createPlaceholderEmbeddableLabel,
@@ -38,6 +38,7 @@ import { getElementAbsoluteCoords } from "@excalidraw/element";
 
 import type {
   ExcalidrawElement,
+  ExcalidrawImageElement,
   ExcalidrawTextElementWithContainer,
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
@@ -82,6 +83,24 @@ const maybeWrapNodesInFrameClipPath = (
   }
 
   return null;
+};
+
+/** MyOC: the ThumbHash blur of `element` as a data URL, or a grey box when
+ * the element has no (valid) ThumbHash */
+const getSpoilerPlaceholderDataURL = (
+  element: ExcalidrawImageElement,
+  theme: SVGRenderConfig["theme"],
+) => {
+  if (element.status !== "error" && element.thumbHash) {
+    const dataURL = getThumbHashPlaceholder(element.thumbHash)?.toDataURL();
+    if (dataURL) {
+      return dataURL;
+    }
+  }
+  const fill = theme === THEME.DARK ? "#2E2E2E" : "#E7E7E7";
+  return `data:${MIME_TYPES.svg},${encodeURIComponent(
+    `<svg xmlns="${SVG_NS}" width="1" height="1"><rect width="1" height="1" fill="${fill}"/></svg>`,
+  )}`;
 };
 
 const renderElementToSvg = (
@@ -445,12 +464,27 @@ const renderElementToSvg = (
     case "image": {
       const width = Math.round(element.width);
       const height = Math.round(element.height);
-      const fileData =
-        isInitializedImageElement(element) && files[element.fileId];
-      if (fileData) {
+      const fileData = isInitializedImageElement(element)
+        ? files[element.fileId]
+        : undefined;
+      // MyOC: a spoilered file writes the placeholder, never the file data,
+      // also when the file is not in `files`
+      const isSpoilered =
+        isInitializedImageElement(element) &&
+        !!renderConfig.spoileredFileIds?.has(element.fileId);
+      if (isInitializedImageElement(element) && (isSpoilered || fileData)) {
+        // the dark theme filter is for an svg file only, not for the blur
+        const isSvgFile = !isSpoilered && fileData?.mimeType === MIME_TYPES.svg;
         const { reuseImages = true } = renderConfig;
 
-        let symbolId = `image-${fileData.id}`;
+        const fileId = element.fileId;
+        // the blur belongs to the element, so a spoilered symbol is not shared
+        // between elements with a different ThumbHash
+        const variant = isSpoilered
+          ? `-spoiler-${hashString(element.thumbHash ?? "")}`
+          : "";
+
+        let symbolId = `image-${fileId}${variant}`;
 
         let uncroppedWidth = element.width;
         let uncroppedHeight = element.height;
@@ -458,7 +492,7 @@ const renderElementToSvg = (
           ({ width: uncroppedWidth, height: uncroppedHeight } =
             getUncroppedWidthAndHeight(element));
 
-          symbolId = `image-crop-${fileData.id}-${hashString(
+          symbolId = `image-crop-${fileId}${variant}-${hashString(
             `${uncroppedWidth}x${uncroppedHeight}`,
           )}`;
         }
@@ -473,7 +507,12 @@ const renderElementToSvg = (
           symbol.id = symbolId;
 
           const image = svgRoot.ownerDocument.createElementNS(SVG_NS, "image");
-          image.setAttribute("href", fileData.dataURL);
+          image.setAttribute(
+            "href",
+            isSpoilered
+              ? getSpoilerPlaceholderDataURL(element, renderConfig.theme)
+              : fileData!.dataURL,
+          );
           image.setAttribute("preserveAspectRatio", "none");
 
           if (element.crop || !reuseImages) {
@@ -530,10 +569,7 @@ const renderElementToSvg = (
 
         const g = svgRoot.ownerDocument.createElementNS(SVG_NS, "g");
 
-        if (
-          renderConfig.theme === THEME.DARK &&
-          fileData.mimeType === MIME_TYPES.svg
-        ) {
+        if (renderConfig.theme === THEME.DARK && isSvgFile) {
           g.setAttribute("filter", DARK_THEME_FILTER);
         }
 

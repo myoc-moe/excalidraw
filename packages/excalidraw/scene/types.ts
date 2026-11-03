@@ -73,6 +73,8 @@ export type SVGRenderConfig = {
    * @default true
    */
   reuseImages: boolean;
+  /** MyOC: files whose image is replaced by the ThumbHash placeholder */
+  spoileredFileIds?: ReadonlySet<FileId>;
   theme: AppState["theme"];
 };
 

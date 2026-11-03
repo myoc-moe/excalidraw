@@ -44,6 +44,7 @@ import type { Bounds } from "@excalidraw/common";
 import type {
   ExcalidrawFrameLikeElement,
   ExcalidrawTextElement,
+  FileId,
   NonDeleted,
   NonDeletedExcalidrawElement,
   NonDeletedSceneElementsMap,
@@ -60,7 +61,7 @@ import { renderSceneToSvg } from "../renderer/staticSvgScene";
 
 import type { RenderableElementsMap } from "./types";
 
-import type { AppState, BinaryFiles } from "../types";
+import type { AppState, BinaryFiles, SpoilerVisibility } from "../types";
 
 const truncateText = (
   element: NonDeleted<ExcalidrawTextElement>,
@@ -186,11 +187,15 @@ export const exportToCanvas = async (
     exportPadding = DEFAULT_EXPORT_PADDING,
     viewBackgroundColor,
     exportingFrame,
+    spoileredFileIds,
   }: {
     exportBackground: boolean;
     exportPadding?: number;
     viewBackgroundColor: string;
     exportingFrame?: NonDeleted<ExcalidrawFrameLikeElement> | null;
+    /** MyOC: images of these files draw the placeholder (ThumbHash blur)
+     * and never the image. No button or icon.  The option changes only the drawn image: the real image data stays in the embedded scene when `exportEmbedScene` is on. */
+    spoileredFileIds?: readonly FileId[];
   },
   createCanvas: (
     width: number,
@@ -238,11 +243,18 @@ export const exportToCanvas = async (
 
   const defaultAppState = getDefaultAppState();
 
+  const spoileredFiles = spoileredFileIds?.length
+    ? new Map<FileId, SpoilerVisibility>(
+        spoileredFileIds.map((fileId) => [fileId, "hidden"]),
+      )
+    : undefined;
+
   const { imageCache } = await updateImageCache({
     imageCache: new Map(),
-    fileIds: getInitializedImageElements(elementsForRender).map(
-      (element) => element.fileId,
-    ),
+    // a hidden file is never decoded, its image is never drawn
+    fileIds: getInitializedImageElements(elementsForRender)
+      .map((element) => element.fileId)
+      .filter((fileId) => !spoileredFiles?.has(fileId)),
     files,
   });
 
@@ -272,6 +284,7 @@ export const exportToCanvas = async (
       imageCache,
       renderGrid: false,
       isExporting: true,
+      spoileredFiles,
       // empty disables embeddable rendering
       embedsValidationStatus: new Map(),
       elementsPendingErasure: new Set(),
@@ -310,6 +323,9 @@ export const exportToSvg = async (
     exportingFrame?: NonDeleted<ExcalidrawFrameLikeElement> | null;
     skipInliningFonts?: true;
     reuseImages?: boolean;
+    /** MyOC: images of these files write the ThumbHash (or a grey box) in
+     * place of the file data URL. The option changes only the drawn image: the real image data stays in the embedded scene when `exportEmbedScene` is on. */
+    spoileredFileIds?: readonly FileId[];
   },
 ): Promise<SVGSVGElement> => {
   const frameRendering = getFrameRenderingConfig(
@@ -498,6 +514,9 @@ export const exportToSvg = async (
           )
         : new Map(),
       reuseImages: opts?.reuseImages ?? true,
+      spoileredFileIds: opts?.spoileredFileIds?.length
+        ? new Set(opts.spoileredFileIds)
+        : undefined,
       theme: exportWithDarkMode ? THEME.DARK : THEME.LIGHT,
     },
   );

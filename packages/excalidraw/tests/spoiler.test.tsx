@@ -2,6 +2,7 @@ import {
   CaptureUpdateAction,
   elementWithCanvasCache,
   getSpoilerButtonRect,
+  getThumbHashPlaceholder,
   newElementWith,
 } from "@excalidraw/element";
 import { ShapeCache } from "@excalidraw/element";
@@ -12,6 +13,12 @@ import {
   viewportCoordsToSceneCoords,
 } from "@excalidraw/common";
 import { pointFrom, pointRotateRads } from "@excalidraw/math";
+import {
+  exportToBlob as exportToBlobUtils,
+  exportToCanvas as exportToCanvasUtils,
+  exportToSvg as exportToSvgUtils,
+} from "@excalidraw/utils";
+import { rgbaToThumbHash } from "thumbhash";
 
 import type { GlobalPoint } from "@excalidraw/math";
 
@@ -26,6 +33,11 @@ import { actionToggleCropEditor } from "../actions/actionCropEditor";
 import { clearAppStateForLocalStorage } from "../appState";
 import { serializeAsJSON } from "../data/json";
 import { Excalidraw } from "../index";
+import {
+  decodeSvgBase64Payload,
+  exportToCanvas as exportToCanvasScene,
+  exportToSvg as exportToSvgScene,
+} from "../scene/export";
 import * as StaticScene from "../renderer/staticScene";
 
 import { API } from "./helpers/api";
@@ -39,7 +51,7 @@ import {
   restoreOriginalGetBoundingClientRect,
 } from "./test-utils";
 
-import type { DataURL, ExcalidrawProps } from "../types";
+import type { BinaryFiles, DataURL, ExcalidrawProps } from "../types";
 
 const { h } = window;
 
@@ -2540,6 +2552,631 @@ describe("Show spoiler button", () => {
         await nextFrame();
         expect(elementWithCanvasCache.get(getLatest("img-b"))).toBe(other);
       });
+    });
+  });
+});
+
+// 1.5 export: `spoileredFileIds` draws the ThumbHash blur (or a grey box) in
+// place of the image. No button, no icon. Without it, exports draw the image.
+describe("export with spoileredFileIds", () => {
+  const REAL_URL = {
+    [A]: "data:image/png;base64,REALFILEAAAA",
+    [B]: "data:image/png;base64,REALFILEBBBB",
+    [C]: "data:image/png;base64,REALFILECCCC",
+  } as Record<FileId, string>;
+
+  const createThumbHash = (shade: number) =>
+    btoa(
+      String.fromCharCode(
+        ...rgbaToThumbHash(32, 24, new Uint8Array(32 * 24 * 4).fill(shade)),
+      ),
+    );
+  const HASH_A = createThumbHash(40);
+  const HASH_B = createThumbHash(120);
+  const HASH_C = createThumbHash(200);
+
+  const HASH: Record<string, string> = {
+    [A]: HASH_A,
+    [B]: HASH_B,
+    [C]: HASH_C,
+  };
+
+  const createFiles = (ids: FileId[] = [A, B, C]) =>
+    Object.fromEntries(
+      ids.map((id) => [
+        id,
+        {
+          id,
+          mimeType: MIME_TYPES.png,
+          dataURL: REAL_URL[id] as DataURL,
+          created: 1,
+        },
+      ]),
+    ) as BinaryFiles;
+
+  const createImage = (
+    id: string,
+    fileId: FileId | null,
+    x: number,
+    opts: { thumbHash?: string | null } = {},
+  ) => {
+    const image = API.createElement({
+      type: "image",
+      id,
+      fileId: fileId as string,
+      x,
+      y: 0,
+      width: 200,
+      height: 100,
+      status: "saved",
+    });
+    const thumbHash =
+      opts.thumbHash === undefined
+        ? fileId
+          ? HASH[fileId]
+          : null
+        : opts.thumbHash;
+    return newElementWith(image, { thumbHash } as Partial<typeof image>);
+  };
+
+  const exportAppState = {
+    exportBackground: true,
+    viewBackgroundColor: "#ffffff",
+    exportPadding: 10,
+  };
+
+  let drawImage: ReturnType<typeof vi.spyOn>;
+  let fillText: ReturnType<typeof vi.spyOn>;
+  let stroke: ReturnType<typeof vi.spyOn>;
+  let fillRect: ReturnType<typeof vi.spyOn>;
+  const originalSrc = Object.getOwnPropertyDescriptor(
+    HTMLImageElement.prototype,
+    "src",
+  );
+
+  beforeEach(() => {
+    // jsdom does not load images: a data URL loads at once, with a size
+    Object.defineProperty(HTMLImageElement.prototype, "src", {
+      configurable: true,
+      get() {
+        return this.__src ?? "";
+      },
+      set(value: string) {
+        this.__src = value;
+        Object.defineProperty(this, "naturalWidth", {
+          value: 400,
+          configurable: true,
+        });
+        Object.defineProperty(this, "naturalHeight", {
+          value: 200,
+          configurable: true,
+        });
+        queueMicrotask(() => this.onload?.(new Event("load")));
+      },
+    });
+    // the canvas mock binds prototype methods when a context is made, so the
+    // spies must exist before the export makes its canvas
+    drawImage = vi.spyOn(CanvasRenderingContext2D.prototype, "drawImage");
+    fillText = vi.spyOn(CanvasRenderingContext2D.prototype, "fillText");
+    stroke = vi.spyOn(CanvasRenderingContext2D.prototype, "stroke");
+    fillRect = vi.spyOn(CanvasRenderingContext2D.prototype, "fillRect");
+  });
+
+  afterEach(() => {
+    if (originalSrc) {
+      Object.defineProperty(HTMLImageElement.prototype, "src", originalSrc);
+    }
+    vi.restoreAllMocks();
+  });
+
+  /** the source of every drawImage call, as a file id (real image), a hash
+   * (blur) or "other" */
+  const getDrawn = () =>
+    drawImage.mock.calls.map((args: unknown[]) => {
+      const source = args[0];
+      if (source instanceof HTMLImageElement) {
+        const file = (Object.keys(REAL_URL) as FileId[]).find(
+          (id) => REAL_URL[id] === source.src,
+        );
+        return file ? `real:${file}` : "other";
+      }
+      for (const id of [A, B, C]) {
+        if (source === getThumbHashPlaceholder(HASH[id])) {
+          return `blur:${id}`;
+        }
+      }
+      return "other";
+    });
+
+  const expectNoOverlay = () => {
+    expect(fillText).not.toHaveBeenCalled();
+    expect(
+      stroke.mock.calls.filter((args: unknown[]) => args[0] instanceof Path2D),
+    ).toHaveLength(0);
+    expect(getDrawn()).not.toContain("other");
+  };
+
+  describe.each([
+    [
+      "scene exportToCanvas",
+      (
+        elements: ExcalidrawElement[],
+        files: BinaryFiles,
+        spoileredFileIds?: FileId[],
+      ) =>
+        exportToCanvasScene(
+          elements as never,
+          { ...h.state, exportScale: 1 },
+          files,
+          {
+            exportBackground: true,
+            viewBackgroundColor: "#ffffff",
+            spoileredFileIds,
+          },
+        ),
+    ],
+    [
+      "utils exportToCanvas",
+      (
+        elements: ExcalidrawElement[],
+        files: BinaryFiles,
+        spoileredFileIds?: FileId[],
+      ) =>
+        exportToCanvasUtils({
+          elements: elements as never,
+          appState: exportAppState,
+          files,
+          spoileredFileIds,
+        }),
+    ],
+    [
+      "utils exportToBlob",
+      (
+        elements: ExcalidrawElement[],
+        files: BinaryFiles,
+        spoileredFileIds?: FileId[],
+      ) =>
+        exportToBlobUtils({
+          elements: elements as never,
+          appState: exportAppState,
+          files,
+          spoileredFileIds,
+        }),
+    ],
+  ])("%s", (_name, run) => {
+    beforeEach(async () => {
+      await render(<Excalidraw />);
+    });
+
+    // 1.5.1
+    it("blurs the listed files only", async () => {
+      const elements = [
+        createImage("a", A, 0),
+        createImage("b", B, 300),
+        createImage("c", C, 600),
+      ];
+      await run(elements, createFiles(), [A, C]);
+      expect(getDrawn().sort()).toEqual([
+        "blur:file-a",
+        "blur:file-c",
+        "real:file-b",
+      ]);
+      expectNoOverlay();
+    });
+
+    it("does not decode the image of a listed file", async () => {
+      const elements = [createImage("a", A, 0), createImage("b", B, 300)];
+      await run(elements, createFiles(), [A]);
+      expect(getDrawn()).not.toContain("real:file-a");
+    });
+
+    it("blurs with the grey box when the element has no ThumbHash", async () => {
+      const elements = [
+        createImage("a", A, 0, { thumbHash: null }),
+        createImage("b", B, 300),
+      ];
+      await run(elements, createFiles(), [A]);
+      const drawn = getDrawn();
+      expect(drawn).not.toContain("real:file-a");
+      expect(drawn).toContain("real:file-b");
+      expect(fillText).not.toHaveBeenCalled();
+      // the grey box covers the element
+      expect(
+        fillRect.mock.calls.some(
+          (args: unknown[]) =>
+            args[0] === 0 &&
+            args[1] === 0 &&
+            args[2] === 200 &&
+            args[3] === 100,
+        ),
+      ).toBe(true);
+    });
+
+    it("ignores an id that is not in the scene", async () => {
+      const elements = [createImage("b", B, 0)];
+      await run(elements, createFiles([B]), ["not-in-scene" as FileId]);
+      expect(getDrawn()).toEqual(["real:file-b"]);
+      expectNoOverlay();
+    });
+
+    it("blurs both elements of one file id", async () => {
+      const elements = [
+        createImage("a1", A, 0),
+        createImage("a2", A, 300),
+        createImage("b", B, 600),
+      ];
+      await run(elements, createFiles(), [A]);
+      const drawn = getDrawn();
+      expect(drawn.filter((x) => x === "blur:file-a")).toHaveLength(2);
+      expect(drawn.filter((x) => x === "real:file-b")).toHaveLength(1);
+      expect(drawn.filter((x) => x === "real:file-a")).toHaveLength(0);
+    });
+
+    it("draws real images for an empty list", async () => {
+      const elements = [createImage("a", A, 0), createImage("b", B, 300)];
+      await run(elements, createFiles(), []);
+      expect(getDrawn().sort()).toEqual(["real:file-a", "real:file-b"]);
+      expectNoOverlay();
+    });
+
+    it("draws real images without the option", async () => {
+      const elements = [createImage("a", A, 0), createImage("b", B, 300)];
+      await run(elements, createFiles());
+      expect(getDrawn().sort()).toEqual(["real:file-a", "real:file-b"]);
+      expectNoOverlay();
+    });
+
+    // 1.5.3
+    it("draws real images when the App has hidden files", async () => {
+      mark(A);
+      mark(B);
+      expect(h.app.api.getSpoileredFiles().get(A)).toBe("hidden");
+      const elements = [createImage("a", A, 0), createImage("b", B, 300)];
+      await run(elements, createFiles());
+      expect(getDrawn().sort()).toEqual(["real:file-a", "real:file-b"]);
+      expectNoOverlay();
+    });
+
+    it("blurs a listed file whether or not the App hides it", async () => {
+      mark(B);
+      const elements = [createImage("a", A, 0), createImage("b", B, 300)];
+      await run(elements, createFiles(), [A]);
+      expect(getDrawn().sort()).toEqual(["blur:file-a", "real:file-b"]);
+    });
+
+    it("does not change the App map", async () => {
+      mark(A);
+      setOne(A, "shown");
+      const elements = [createImage("a", A, 0)];
+      await run(elements, createFiles(), [A, B]);
+      expect([...h.app.api.getSpoileredFiles()]).toEqual([[A, "shown"]]);
+    });
+
+    it("draws the blur of a cropped image with the crop", async () => {
+      const crop = {
+        x: 100,
+        y: 50,
+        width: 200,
+        height: 100,
+        naturalWidth: 400,
+        naturalHeight: 200,
+      };
+      const cropped = newElementWith(createImage("a", A, 0), { crop });
+      await run([cropped], createFiles(), [A]);
+      const blur = getThumbHashPlaceholder(HASH_A)!;
+      const call = drawImage.mock.calls.find(
+        (args: unknown[]) => args[0] === blur,
+      )!;
+      expect(call).toBeDefined();
+      // source rect: the crop, scaled to the size of the blur
+      expect(call[1]).toBeCloseTo((100 / 400) * blur.width);
+      expect(call[2]).toBeCloseTo((50 / 200) * blur.height);
+      expect(call[3]).toBeCloseTo((200 / 400) * blur.width);
+      expect(call[4]).toBeCloseTo((100 / 200) * blur.height);
+      expectNoOverlay();
+    });
+  });
+
+  describe("scene exportToCanvas with other options", () => {
+    beforeEach(async () => {
+      await render(<Excalidraw />);
+    });
+
+    it("draws no overlay on a small image", async () => {
+      const small = newElementWith(createImage("a", A, 0), {
+        width: 20,
+        height: 10,
+      });
+      await exportToCanvasScene(
+        [small] as never,
+        { ...h.state, exportScale: 2 },
+        createFiles(),
+        {
+          exportBackground: false,
+          viewBackgroundColor: "#ffffff",
+          spoileredFileIds: [A],
+        },
+      );
+      expect(getDrawn()).toEqual(["blur:file-a"]);
+      expectNoOverlay();
+    });
+
+    it("draws no overlay in the dark theme", async () => {
+      await exportToCanvasScene(
+        [createImage("a", A, 0)] as never,
+        { ...h.state, exportScale: 1, exportWithDarkMode: true },
+        createFiles(),
+        {
+          exportBackground: false,
+          viewBackgroundColor: "#ffffff",
+          spoileredFileIds: [A],
+        },
+      );
+      expect(getDrawn()).toEqual(["blur:file-a"]);
+      expectNoOverlay();
+    });
+
+    it("draws the real image of a file with no ThumbHash and no listing", async () => {
+      await exportToCanvasScene(
+        [createImage("a", A, 0, { thumbHash: null })] as never,
+        { ...h.state, exportScale: 1 },
+        createFiles(),
+        { exportBackground: false, viewBackgroundColor: "#ffffff" },
+      );
+      expect(getDrawn()).toEqual(["real:file-a"]);
+    });
+  });
+
+  describe.each([
+    ["scene exportToSvg", "scene"],
+    ["utils exportToSvg", "utils"],
+  ] as const)("%s", (_name, path) => {
+    const run = async (
+      elements: ExcalidrawElement[],
+      files: BinaryFiles,
+      spoileredFileIds?: FileId[],
+      opts: { reuseImages?: boolean; dark?: boolean; embed?: boolean } = {},
+    ) => {
+      if (path === "scene") {
+        return exportToSvgScene(
+          elements as never,
+          {
+            exportBackground: false,
+            viewBackgroundColor: "#ffffff",
+            exportWithDarkMode: opts.dark,
+            exportEmbedScene: opts.embed,
+          },
+          files,
+          { spoileredFileIds, reuseImages: opts.reuseImages },
+        );
+      }
+      return exportToSvgUtils({
+        elements: elements as never,
+        appState: {
+          exportBackground: false,
+          exportWithDarkMode: opts.dark,
+          exportEmbedScene: opts.embed,
+        },
+        files,
+        spoileredFileIds,
+        reuseImages: opts.reuseImages,
+      });
+    };
+
+    const hrefs = (svg: SVGSVGElement) =>
+      [...svg.querySelectorAll("image")].map((node) =>
+        node.getAttribute("href"),
+      );
+
+    const blurURL = (hash: string) =>
+      getThumbHashPlaceholder(hash)!.toDataURL();
+
+    // 1.5.2
+    it("writes the ThumbHash data URL for the listed files only", async () => {
+      const svg = await run(
+        [createImage("a", A, 0), createImage("b", B, 300)],
+        createFiles(),
+        [A],
+      );
+      expect(hrefs(svg)).toContain(blurURL(HASH_A));
+      expect(hrefs(svg)).toContain(REAL_URL[B]);
+      expect(svg.outerHTML).not.toContain(REAL_URL[A]);
+      expect(svg.outerHTML).not.toContain("REALFILEAAAA");
+    });
+
+    it("writes the grey box when the element has no ThumbHash", async () => {
+      const svg = await run(
+        [createImage("a", A, 0, { thumbHash: null })],
+        createFiles(),
+        [A],
+      );
+      const [href] = hrefs(svg);
+      expect(href).toMatch(/^data:image\/svg\+xml,/);
+      expect(decodeURIComponent(href!)).toContain("#E7E7E7");
+      expect(svg.outerHTML).not.toContain(REAL_URL[A]);
+    });
+
+    it("writes the dark grey box in the dark theme", async () => {
+      const svg = await run(
+        [createImage("a", A, 0, { thumbHash: null })],
+        createFiles(),
+        [A],
+        { dark: true },
+      );
+      expect(decodeURIComponent(hrefs(svg)[0]!)).toContain("#2E2E2E");
+    });
+
+    it("writes the grey box for an invalid ThumbHash", async () => {
+      vi.spyOn(console, "warn").mockImplementation(() => {});
+      const svg = await run(
+        [createImage("a", A, 0, { thumbHash: "%%not-a-hash%%" })],
+        createFiles(),
+        [A],
+      );
+      expect(hrefs(svg)[0]).toMatch(/^data:image\/svg\+xml,/);
+      expect(svg.outerHTML).not.toContain(REAL_URL[A]);
+    });
+
+    it.each([true, false])(
+      "leaks no file data for a listed id (reuseImages %s)",
+      async (reuseImages) => {
+        const svg = await run(
+          [
+            createImage("a1", A, 0),
+            createImage("a2", A, 300),
+            createImage("b", B, 600),
+          ],
+          createFiles(),
+          [A],
+          { reuseImages },
+        );
+        expect(svg.outerHTML).not.toContain("REALFILEAAAA");
+        // every <use> points to a <symbol> in the svg
+        for (const use of svg.querySelectorAll("use")) {
+          const id = use.getAttribute("href")!.slice(1);
+          const symbol = svg.querySelector(`[id="${id}"]`)!;
+          expect(symbol).not.toBeNull();
+          expect(symbol.innerHTML).not.toContain("REALFILEAAAA");
+        }
+        expect(svg.querySelectorAll("use")).toHaveLength(3);
+        expect(svg.outerHTML).toContain("REALFILEBBBB");
+      },
+    );
+
+    it("writes the blur for two elements with one file id", async () => {
+      const svg = await run(
+        [createImage("a1", A, 0), createImage("a2", A, 300)],
+        createFiles(),
+        [A],
+      );
+      expect(hrefs(svg).every((href) => href === blurURL(HASH_A))).toBe(true);
+      expect(svg.querySelectorAll("use")).toHaveLength(2);
+      expect(svg.outerHTML).not.toContain("REALFILEAAAA");
+    });
+
+    it("writes each ThumbHash for two elements with one file id and two hashes", async () => {
+      const svg = await run(
+        [
+          createImage("a1", A, 0, { thumbHash: HASH_A }),
+          createImage("a2", A, 300, { thumbHash: HASH_C }),
+        ],
+        createFiles(),
+        [A],
+      );
+      const uses = [...svg.querySelectorAll("use")].map((use) =>
+        svg
+          .querySelector(`[id="${use.getAttribute("href")!.slice(1)}"] image`)!
+          .getAttribute("href"),
+      );
+      expect(uses).toEqual([blurURL(HASH_A), blurURL(HASH_C)]);
+    });
+
+    it("keeps the crop of a listed image", async () => {
+      const crop = {
+        x: 100,
+        y: 50,
+        width: 200,
+        height: 100,
+        naturalWidth: 400,
+        naturalHeight: 200,
+      };
+      const cropped = newElementWith(createImage("a", A, 0), { crop });
+      const plain = await run([cropped], createFiles());
+      const spoiler = await run([cropped], createFiles(), [A]);
+      const strip = (svg: SVGSVGElement) =>
+        svg.outerHTML.replace(/href="data:[^"]*"/g, 'href=""');
+      // same layout (masks, sizes, transforms), other image data
+      expect(strip(spoiler).replace(/image-crop-[^"#)]*/g, "ID")).toBe(
+        strip(plain).replace(/image-crop-[^"#)]*/g, "ID"),
+      );
+      expect(spoiler.outerHTML).not.toContain("REALFILEAAAA");
+    });
+
+    it("draws a placeholder for a listed file that is not in the files", async () => {
+      const svg = await run([createImage("a", A, 0)], {}, [A]);
+      expect(hrefs(svg)).toEqual([blurURL(HASH_A)]);
+    });
+
+    it("draws nothing for an unlisted file that is not in the files", async () => {
+      const svg = await run([createImage("a", A, 0)], {}, []);
+      expect(hrefs(svg)).toEqual([]);
+    });
+
+    it("keeps the real file in the embedded scene, and draws the blur", async () => {
+      const svg = await run([createImage("a", A, 0)], createFiles(), [A], {
+        embed: true,
+      });
+      // the drawn image is the blur
+      expect(hrefs(svg)).toEqual([blurURL(HASH_A)]);
+      // the embedded scene still has the file
+      const payload = JSON.parse(
+        decodeSvgBase64Payload({
+          svg: svg.querySelector("metadata")!.innerHTML,
+        }),
+      );
+      expect(payload.files[A].dataURL).toBe(REAL_URL[A]);
+    });
+
+    it("writes the grey box for an image in the error status", async () => {
+      const errored = newElementWith(createImage("a", A, 0), {
+        status: "error",
+      });
+      const svg = await run([errored], createFiles(), [A]);
+      expect(hrefs(svg)[0]).toMatch(/^data:image\/svg\+xml,/);
+      expect(svg.outerHTML).not.toContain("REALFILEAAAA");
+    });
+
+    it("applies no dark filter to a spoilered SVG file", async () => {
+      const files = {
+        [A]: {
+          id: A,
+          mimeType: MIME_TYPES.svg,
+          dataURL: "data:image/svg+xml;base64,REALFILEAAAA" as DataURL,
+          created: 1,
+        },
+      } as BinaryFiles;
+      const plain = await run([createImage("a", A, 0)], files, [], {
+        dark: true,
+      });
+      const spoiler = await run([createImage("a", A, 0)], files, [A], {
+        dark: true,
+      });
+      // the filter is set on the svg file only
+      expect(plain.querySelector("g[filter]")).not.toBeNull();
+      expect(spoiler.querySelector("[filter]")).toBeNull();
+      expect(spoiler.outerHTML).not.toContain("REALFILEAAAA");
+    });
+
+    it("ignores an id that is not in the scene", async () => {
+      const withId = await run([createImage("b", B, 0)], createFiles(), [
+        "not-in-scene" as FileId,
+      ]);
+      const without = await run([createImage("b", B, 0)], createFiles());
+      expect(withId.outerHTML).toBe(without.outerHTML);
+      expect(withId.outerHTML).toContain("REALFILEBBBB");
+    });
+
+    it("writes real images for an empty list", async () => {
+      const withEmpty = await run([createImage("a", A, 0)], createFiles(), []);
+      const without = await run([createImage("a", A, 0)], createFiles());
+      expect(withEmpty.outerHTML).toBe(without.outerHTML);
+      expect(withEmpty.outerHTML).toContain("REALFILEAAAA");
+    });
+
+    // 1.5.3
+    it("writes real images when the App has hidden files", async () => {
+      await render(<Excalidraw />);
+      mark(A);
+      const svg = await run([createImage("a", A, 0)], createFiles());
+      expect(svg.outerHTML).toContain("REALFILEAAAA");
+    });
+
+    it("does not change the elements or the files", async () => {
+      const elements = [createImage("a", A, 0)];
+      const files = createFiles();
+      const before = JSON.stringify([elements, files]);
+      await run(elements, files, [A]);
+      expect(JSON.stringify([elements, files])).toBe(before);
     });
   });
 });
