@@ -13548,8 +13548,10 @@ class App extends React.Component<AppProps, AppState> {
       if (!cacheEntry || !updatedFiles.has(fileId)) {
         continue;
       }
-      // MyOC: a file that loads while it is hidden starts no cross-fade
+      // MyOC: a file that loads while it is hidden starts no cross-fade. The
+      // old image can be a load that failed, so its rejection is ignored.
       if (this.spoilers.isFileHidden(fileId)) {
+        placeholderImagePromise.catch(() => {});
         this.spoilers.endCrossFade(fileId);
         continue;
       }

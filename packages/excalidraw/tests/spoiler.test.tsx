@@ -2578,6 +2578,36 @@ describe("Show spoiler button", () => {
         expect(hoveredId()).toBe(null);
       });
 
+      it.each(["view mode", "hand tool"])(
+        "keeps the grabbing cursor and does not repaint during a %s pan that starts on the button",
+        async (mode) => {
+          await spoilerSetup(
+            mode === "view mode" ? { viewModeEnabled: true } : {},
+          );
+          const start = toClient(buttonPoint("img-a"));
+          mouse.moveTo(start.x, start.y);
+          expect(hoveredId()).toBe("img-a");
+          if (mode === "hand tool") {
+            act(() => h.app.setActiveTool({ type: "hand" }));
+          }
+          const trigger = vi.spyOn(
+            h.app.imagePlaceholderUpdateEmitter,
+            "trigger",
+          );
+          const scrollX = h.state.scrollX;
+
+          mouse.downAt(start.x, start.y);
+          mouse.moveTo(start.x + 30, start.y + 40);
+          expect(cursor()).toBe("grabbing");
+          mouse.moveTo(start.x + 60, start.y + 80);
+          expect(h.state.scrollX).not.toBe(scrollX);
+          expect(cursor()).toBe("grabbing");
+          expect(trigger).not.toHaveBeenCalled();
+          mouse.upAt(start.x + 60, start.y + 80);
+          trigger.mockRestore();
+        },
+      );
+
       it("does not hover after the pointer left the canvas", async () => {
         await spoilerSetup();
         hoverAt(buttonPoint("img-a"));

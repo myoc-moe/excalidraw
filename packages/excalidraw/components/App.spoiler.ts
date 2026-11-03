@@ -192,8 +192,8 @@ export class AppSpoilers {
         this.endCrossFade(fileId);
       }
     }
-    // the button under a still pointer can come or go. The repaint below
-    // draws the new hover state too.
+    // the button under a still pointer can come or go (not during a press).
+    // The repaint below draws the new hover state too.
     this.refreshHover({ repaint: false });
     this.app.imagePlaceholderUpdateEmitter.trigger();
     this.emitter.trigger();
@@ -278,6 +278,12 @@ export class AppSpoilers {
       the element canvas cache key holds the hover state, so only that
       element draws again. */
   refreshHover = ({ repaint }: { repaint: boolean }) => {
+    // no position while a press runs: the press owns the cursor, and a pan
+    // must not repaint the button mid-gesture. The next pointer move sets
+    // the hover again.
+    if (!this.lastPointer) {
+      return;
+    }
     const hoveredId = this.getButtonAtLastPointer();
     if (this.setHoveredElementId(hoveredId, repaint)) {
       if (hoveredId) {

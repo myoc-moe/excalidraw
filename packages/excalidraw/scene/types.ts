@@ -54,7 +54,8 @@ export type StaticCanvasRenderConfig = {
   imageCache: AppClassProperties["imageCache"];
   getGifFrameIndex?: (element: ExcalidrawImageElement) => number | undefined;
   imageTransitionDuration?: number;
-  /** MyOC: hidden spoilered files. Not set when no file is hidden. */
+  /** MyOC: hidden spoilered files. Not set for an export with no listed
+   files (the App always sets it). */
   spoiler?: StaticCanvasSpoilerConfig;
   renderGrid: boolean;
   /** whether to render link icons on elements with links (never rendered
@@ -87,7 +88,8 @@ export type SVGRenderConfig = {
    * @default true
    */
   reuseImages: boolean;
-  /** MyOC: hidden spoilered files. Not set when no file is hidden. */
+  /** MyOC: hidden spoilered files. Not set for an export with no listed
+   files (the App always sets it). */
   spoiler?: SpoilerRenderConfig;
   theme: AppState["theme"];
 };
