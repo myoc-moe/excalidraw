@@ -4088,6 +4088,9 @@ class App extends React.Component<AppProps, AppState> {
 
     this.store.commit(elementsMap, this.state);
 
+    // after the commit, so that the guard's own update carries its store change
+    this.endCroppingOfHiddenImage();
+
     // Do not notify consumers if we're still loading the scene. Among other
     // potential issues, this fixes a case where the tab isn't focused during
     // init, which would trigger onChange with empty elements, which would then
@@ -7300,6 +7303,10 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private startImageCropping = (image: ExcalidrawImageElement) => {
+    // a hidden image has no visible pixels to crop
+    if (this.spoileredFiles.get(image.fileId as FileId) === "hidden") {
+      return;
+    }
     this.store.scheduleCapture();
     this.setState({
       croppingElementId: image.id,
@@ -13462,6 +13469,37 @@ class App extends React.Component<AppProps, AppState> {
     this.imagePlaceholderUpdateEmitter.trigger();
     this.spoileredFilesEmitter.trigger();
     this.props.onSpoileredFilesChange?.(this.getSpoileredFiles());
+
+    this.endCroppingOfHiddenImage();
+    this.gifPlayback.resetFrameTimers(changedFileIds);
+    // showing a file lets its GIF play again. A no-op when nothing plays.
+    this.ensureGifPlaybackLoop();
+  };
+
+  /** Crop mode cannot be on for a hidden image. Called when a file is hidden
+      and from `componentDidUpdate` (after its store commit), which also
+      catches undo and redo that restore crop mode. Ends crop mode without a
+      history capture. The only `setState` of the spoiler code, and only when
+      this state is reached. */
+  private endCroppingOfHiddenImage = () => {
+    const croppingElement = this.state.croppingElementId
+      ? this.scene.getNonDeletedElementsMap().get(this.state.croppingElementId)
+      : null;
+    if (
+      croppingElement &&
+      isInitializedImageElement(croppingElement) &&
+      this.spoileredFiles.get(croppingElement.fileId) === "hidden"
+    ) {
+      // a micro action puts only this change in the store snapshot. A macro
+      // `NEVER` would also put there any pending `EVENTUALLY` change, which
+      // would then be lost from history.
+      this.store.scheduleMicroAction({
+        action: CaptureUpdateAction.NEVER,
+        elements: undefined,
+        appState: { ...this.state, croppingElementId: null },
+      });
+      this.setState({ croppingElementId: null });
+    }
   };
 
   public markFileSpoilered = (fileId: FileId, spoilered: boolean) => {

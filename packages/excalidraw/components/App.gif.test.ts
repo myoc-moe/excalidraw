@@ -54,6 +54,7 @@ describe("AppGifPlayback", () => {
     const triggerVisualRedraw = vi.fn();
     const app = {
       unmounted: false,
+      spoileredFiles: new Map(),
       scene: {
         getNonDeletedElements: () => [element],
         triggerUpdate,

@@ -168,6 +168,12 @@ export const GifPlaybackControls = ({
     liveAppState.zoom.value,
   ]);
 
+  // a spoiler change shows or hides the controls without an App render
+  React.useEffect(
+    () => app.spoileredFilesEmitter.on(() => rerenderGifControls()),
+    [app],
+  );
+
   const updateGifPlayback = (
     element: NonDeletedExcalidrawElement,
     gifPlayback: NonNullable<ExcalidrawImageElement["gifPlayback"]>,
@@ -189,6 +195,7 @@ export const GifPlaybackControls = ({
     .flatMap((element) => {
       if (
         !isInitializedImageElement(element) ||
+        app.spoileredFiles.get(element.fileId) === "hidden" ||
         files[element.fileId]?.mimeType !== MIME_TYPES.gif ||
         app.imageCache.get(element.fileId)?.gifDecodeStatus !== "deferred"
       ) {
@@ -226,6 +233,7 @@ export const GifPlaybackControls = ({
     const selectedElement = selectedElements[0];
     if (
       !isInitializedImageElement(selectedElement) ||
+      app.spoileredFiles.get(selectedElement.fileId) === "hidden" ||
       files[selectedElement.fileId]?.mimeType !== MIME_TYPES.gif
     ) {
       return null;
