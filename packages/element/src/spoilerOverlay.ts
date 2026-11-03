@@ -237,7 +237,7 @@ const DARK_FOREGROUND_LUMINANCE = getLuminance(
 export const getSpoilerOverlayColors = (
   thumbHash: string | null,
   hovered: boolean,
-  theme: "light" | "dark" = "light",
+  theme: "light" | "dark",
 ) => {
   const base =
     (thumbHash ? getThumbHashAverageColor(thumbHash) : null) ??

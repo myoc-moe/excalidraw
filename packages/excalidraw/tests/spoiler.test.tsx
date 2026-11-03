@@ -1570,6 +1570,31 @@ describe("Show spoiler button", () => {
         expect(overlayKey()).toBe(`0|0|${LABEL}`);
       });
 
+      it("draws the button after the progress ends for a file hidden during the progress", async () => {
+        await spoilerSetup();
+        setOne(A, "shown");
+        act(() => h.app.api.setDownloadProgress(A, 0.5));
+        setOne(A, "hidden");
+        await nextFrame();
+        expect(overlayKey()).toBe(null);
+
+        act(() => h.app.api.setDownloadProgress(A, null));
+        await nextFrame();
+        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+      });
+
+      it("draws no button after a file with a progress is hidden, then the button once the progress ends", async () => {
+        await spoilerSetup();
+        mark(A, false);
+        act(() => h.app.api.setDownloadProgress(A, 0.5));
+        mark(A);
+        await nextFrame();
+        expect(overlayKey()).toBe(null);
+        act(() => h.app.api.setDownloadProgress(A, null));
+        await nextFrame();
+        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+      });
+
       it("draws only the cover while the download error shows", async () => {
         await spoilerSetup();
         await nextFrame();

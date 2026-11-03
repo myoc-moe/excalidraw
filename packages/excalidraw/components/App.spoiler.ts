@@ -47,8 +47,9 @@ export class AppSpoilers {
 
   /** the image whose "Show spoiler" button is under the pointer */
   private hoveredElementId: ExcalidrawElement["id"] | null = null;
-  /** the last pointer position on the canvas while no button is pressed, so
-      that the hover follows a zoom, a pan or a state change with no move.
+  /** the last pointer position that the move handler saw, so that the hover
+      follows a zoom, a pan or a state change with no move. Null from a
+      pointer down until the next such move, and after the pointer leaves.
       `hoverable` is false over the scroll bars. */
   private lastPointer: (ClientPoint & { hoverable: boolean }) | null = null;
   /** the button under the last pointer down. A click shows the file only
@@ -83,10 +84,23 @@ export class AppSpoilers {
           box, so the pointer can hover a button */
       isHoverIdle: () => boolean;
     },
-  ) {
-    app.imageStatusEmitter.on(this.onImageStatusChange);
-    app.imageLoadingProgressEmitter.on(this.onImageStatusChange);
-  }
+  ) {}
+
+  /** Repaints when a centre status comes or goes on a hidden file. The App
+      calls it in `componentDidMount` and calls the returned function in
+      `componentWillUnmount`. */
+  subscribeToImageStatus = () => {
+    const unsubscribeStatus = this.app.imageStatusEmitter.on(
+      this.onImageStatusChange,
+    );
+    const unsubscribeProgress = this.app.imageLoadingProgressEmitter.on(
+      this.onImageStatusChange,
+    );
+    return () => {
+      unsubscribeStatus();
+      unsubscribeProgress();
+    };
+  };
 
   // ---------------------------------------------------------------------------
   // state
@@ -147,15 +161,22 @@ export class AppSpoilers {
     return this.renderConfig.config;
   };
 
-  /** A centre status that comes or goes on a hidden file adds or removes its
-      button: repaint the static canvas then, and only then. */
-  private onImageStatusChange = () => {
+  /** the hidden files with a centre status now. A change of the map or of a
+      status changes it. */
+  private getCenterStatusKey = () => {
     let key = "";
     for (const [fileId, visibility] of this.map) {
       if (visibility === "hidden" && this.hasCenterStatus(fileId)) {
         key += `${fileId}\n`;
       }
     }
+    return key;
+  };
+
+  /** A centre status that comes or goes on a hidden file adds or removes its
+      button: repaint the static canvas then, and only then. */
+  private onImageStatusChange = () => {
+    const key = this.getCenterStatusKey();
     if (key === this.centerStatusKey) {
       return;
     }
@@ -253,6 +274,9 @@ export class AppSpoilers {
         this.endCrossFade(fileId);
       }
     }
+    // the repaint below draws the buttons for this key, so a later status
+    // change compares against what is drawn
+    this.centerStatusKey = this.getCenterStatusKey();
     // the button under a still pointer can come or go (not during a press).
     // The repaint below draws the new hover state too.
     this.refreshHover({ repaint: false });
@@ -333,9 +357,10 @@ export class AppSpoilers {
       the element canvas cache key holds the hover state, so only that
       element draws again. */
   refreshHover = ({ repaint }: { repaint: boolean }) => {
-    // no position while a press runs: the press owns the cursor, and a pan
-    // must not repaint the button mid-gesture. The next pointer move sets
-    // the hover again.
+    // no position from a pointer down until the next move that the move
+    // handler sees (a pan with the hand tool, the space key or in view mode
+    // sees none): the press owns the cursor, and a pan does not repaint the
+    // button mid-gesture
     if (!this.lastPointer) {
       return;
     }

@@ -726,6 +726,7 @@ class App extends React.Component<AppProps, AppState> {
     },
     isHoverIdle: () => this.isHoverIdle(),
   });
+  private unsubscribeSpoilerImageStatus: (() => void) | null = null;
   private zDragZoom: {
     origin: { clientX: number; clientY: number };
     initialZoom: number;
@@ -3500,6 +3501,8 @@ class App extends React.Component<AppProps, AppState> {
 
   public async componentDidMount() {
     this.unmounted = false;
+    this.unsubscribeSpoilerImageStatus?.();
+    this.unsubscribeSpoilerImageStatus = this.spoilers.subscribeToImageStatus();
     // also set here as unmount resets it (StrictMode remounts skip the constructor)
     setGoogleFontCssSources(this.props.googleFonts?.fontCssUrls);
     this.api = this.createExcalidrawAPI();
@@ -3596,6 +3599,8 @@ class App extends React.Component<AppProps, AppState> {
   public componentWillUnmount() {
     setGoogleFontCssSources(undefined);
     this.gifPlayback.stop();
+    this.unsubscribeSpoilerImageStatus?.();
+    this.unsubscribeSpoilerImageStatus = null;
 
     // we're recreating the api object reference so that the
     // <ExcalidrawAPIContext.Provider/> picks up on it
@@ -3965,7 +3970,8 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     // MyOC: a scroll, a zoom or a scene change can move a "Show spoiler"
-    // button under a still pointer. A no-op while a press runs.
+    // button under a still pointer. A no-op from the pointer down until the
+    // next pointer move (a pan moves no pointer the move handler sees).
     this.spoilers.refreshHover({ repaint: true });
 
     if (

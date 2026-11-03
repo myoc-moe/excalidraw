@@ -1370,9 +1370,14 @@ describe("spoiler overlay colours", () => {
       expect(channels(colors.button)[3]).toBeGreaterThan(0.5);
     });
 
-    it("uses the light theme when no theme is given", () => {
-      expect(getSpoilerOverlayColors(null, false)).toEqual(
+    it('uses the light theme colours when "light" is given', () => {
+      // the theme is required: "light" gives the light grey cover colours,
+      // which differ from the dark ones
+      expect(getSpoilerOverlayColors(null, false, "light")).toEqual(
         getSpoilerOverlayColors(null, false, "light"),
+      );
+      expect(getSpoilerOverlayColors(null, false, "light")).not.toEqual(
+        getSpoilerOverlayColors(null, false, "dark"),
       );
     });
 
@@ -1415,37 +1420,46 @@ describe("spoiler overlay colours", () => {
 
     it("uses a white icon for pure black and a dark icon for pure white", () => {
       expect(
-        getSpoilerOverlayColors(createColorThumbHash(0, 0, 0), false)
+        getSpoilerOverlayColors(createColorThumbHash(0, 0, 0), false, "light")
           .foreground,
       ).toBe(SPOILER_FOREGROUND_LIGHT);
       expect(
-        getSpoilerOverlayColors(createColorThumbHash(255, 255, 255), false)
-          .foreground,
+        getSpoilerOverlayColors(
+          createColorThumbHash(255, 255, 255),
+          false,
+          "light",
+        ).foreground,
       ).toBe(SPOILER_FOREGROUND_DARK);
     });
 
     it("takes the hue of the average colour", () => {
       const red = channels(
-        getSpoilerOverlayColors(createColorThumbHash(200, 20, 20), false)
-          .button,
+        getSpoilerOverlayColors(
+          createColorThumbHash(200, 20, 20),
+          false,
+          "light",
+        ).button,
       );
       const blue = channels(
-        getSpoilerOverlayColors(createColorThumbHash(20, 20, 200), false)
-          .button,
+        getSpoilerOverlayColors(
+          createColorThumbHash(20, 20, 200),
+          false,
+          "light",
+        ).button,
       );
       expect(red[0]).toBeGreaterThan(red[2]);
       expect(blue[2]).toBeGreaterThan(blue[0]);
     });
 
     it("keeps more of the average colour on hover (dark cover: lighter)", () => {
-      const normal = getSpoilerOverlayColors(DARK_HASH, false).button;
-      const hovered = getSpoilerOverlayColors(DARK_HASH, true).button;
+      const normal = getSpoilerOverlayColors(DARK_HASH, false, "light").button;
+      const hovered = getSpoilerOverlayColors(DARK_HASH, true, "light").button;
       expect(brightness(hovered)).toBeGreaterThan(brightness(normal));
     });
 
     it("keeps more of the average colour on hover (light cover: darker)", () => {
-      const normal = getSpoilerOverlayColors(LIGHT_HASH, false).button;
-      const hovered = getSpoilerOverlayColors(LIGHT_HASH, true).button;
+      const normal = getSpoilerOverlayColors(LIGHT_HASH, false, "light").button;
+      const hovered = getSpoilerOverlayColors(LIGHT_HASH, true, "light").button;
       expect(brightness(hovered)).toBeLessThan(brightness(normal));
     });
 
@@ -1464,7 +1478,7 @@ describe("spoiler overlay colours", () => {
         return 0.2126 * r + 0.7152 * g + 0.0722 * b;
       };
       for (const hovered of [false, true]) {
-        const colors = getSpoilerOverlayColors(hash, hovered);
+        const colors = getSpoilerOverlayColors(hash, hovered, "light");
         const button = lum(channels(colors.button).slice(0, 3));
         const label =
           colors.foreground === SPOILER_FOREGROUND_DARK
@@ -1699,10 +1713,10 @@ describe("spoiler overlay draw", () => {
         getHoveredSpoilerElementId: () => element.id,
       });
       expect(fillStyles.map(channels)).toContainEqual(
-        channels(getSpoilerOverlayColors(null, true).button),
+        channels(getSpoilerOverlayColors(null, true, "light").button),
       );
       expect(fillStyles.map(channels)).not.toContainEqual(
-        channels(getSpoilerOverlayColors(null, false).button),
+        channels(getSpoilerOverlayColors(null, false, "light").button),
       );
     });
 
@@ -1712,10 +1726,10 @@ describe("spoiler overlay draw", () => {
         getHoveredSpoilerElementId: () => "other",
       });
       expect(fillStyles.map(channels)).toContainEqual(
-        channels(getSpoilerOverlayColors(null, false).button),
+        channels(getSpoilerOverlayColors(null, false, "light").button),
       );
       expect(fillStyles.map(channels)).not.toContainEqual(
-        channels(getSpoilerOverlayColors(null, true).button),
+        channels(getSpoilerOverlayColors(null, true, "light").button),
       );
     });
 
@@ -1727,7 +1741,11 @@ describe("spoiler overlay draw", () => {
         spoileredFiles: hidden(),
         getHoveredSpoilerElementId: () => element.id,
       });
-      const expected = getSpoilerOverlayColors(element.thumbHash, true).button;
+      const expected = getSpoilerOverlayColors(
+        element.thumbHash,
+        true,
+        "light",
+      ).button;
       expect(fillStyles.map(channels)).toContainEqual(channels(expected));
     });
   });
