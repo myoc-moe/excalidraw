@@ -258,6 +258,7 @@ import {
   isEligibleFrameChildType,
   getBindingStrategyForDraggingBindingElementEndpoints,
   isNonDeletedElement,
+  isPointInSpoilerButton,
 } from "@excalidraw/element";
 
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
@@ -598,6 +599,9 @@ let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
 let isHoldingZ: boolean = false;
 let isPanning: boolean = false;
+/** MyOC: a double-click this soon after a click that showed a spoilered
+    file belongs to that click (browsers use about 500ms) */
+const SPOILER_REVEAL_DOUBLE_CLICK_TIMEOUT = 500;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
 let touchTimeout = 0;
@@ -689,6 +693,21 @@ class App extends React.Component<AppProps, AppState> {
   /** visibility given to files marked from now on */
   public spoilerDefaultVisibility: SpoilerVisibility = "hidden";
   public spoileredFilesEmitter = new Emitter<[]>();
+  /** the image whose "Show spoiler" button is under the pointer */
+  private hoveredSpoilerElementId: ExcalidrawElement["id"] | null = null;
+  /** the button under the last pointer down. A click shows the file only
+      when it ends on the same button with no drag. */
+  private spoilerButtonPointerDown: {
+    elementId: ExcalidrawElement["id"];
+    clientX: number;
+    clientY: number;
+  } | null = null;
+  /** the last click that showed a file, so that its double-click does not
+      act on the shown image */
+  private lastSpoilerReveal: {
+    elementId: ExcalidrawElement["id"];
+    time: number;
+  } | null = null;
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
    * Indicates whether the embeddable's url has been validated for rendering.
@@ -2598,6 +2617,9 @@ class App extends React.Component<AppProps, AppState> {
                               imageCache: this.imageCache,
                               getGifFrameIndex: this.gifPlayback.getFrameIndex,
                               spoileredFiles: this.spoileredFiles,
+                              getHoveredSpoilerElementId:
+                                this.getHoveredSpoilerElementId,
+                              spoilerButtonLabel: t("labels.showSpoiler"),
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
@@ -2628,6 +2650,9 @@ class App extends React.Component<AppProps, AppState> {
                                 getGifFrameIndex:
                                   this.gifPlayback.getFrameIndex,
                                 spoileredFiles: this.spoileredFiles,
+                                getHoveredSpoilerElementId:
+                                  this.getHoveredSpoilerElementId,
+                                spoilerButtonLabel: t("labels.showSpoiler"),
                                 isExporting: false,
                                 imageTransitionDuration:
                                   this.props.imageOptions
@@ -7372,6 +7397,12 @@ class App extends React.Component<AppProps, AppState> {
       return;
     }
 
+    // MyOC: a click of this double-click showed the file. The double-click
+    // does nothing to that image (no smart zoom, no crop).
+    if (this.isDoubleClickOfSpoilerReveal(event)) {
+      return;
+    }
+
     if (this.state.viewModeEnabled) {
       const { x: sceneX, y: sceneY } = viewportCoordsToSceneCoords(
         event,
@@ -7625,6 +7656,30 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
+    // MyOC: the "Show spoiler" button of a hidden image. Only a click that
+    // starts and ends on the same button, with no drag (pan, box selection).
+    const spoilerPointerDown = this.spoilerButtonPointerDown;
+    this.spoilerButtonPointerDown = null;
+    const spoilerImage = this.getSpoilerButtonAtPosition(scenePointer);
+    if (
+      spoilerImage &&
+      spoilerPointerDown?.elementId === spoilerImage.id &&
+      pointDistance(
+        pointFrom(spoilerPointerDown.clientX, spoilerPointerDown.clientY),
+        pointFrom(event.clientX, event.clientY),
+      ) < DRAGGING_THRESHOLD
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.lastSpoilerReveal = {
+        elementId: spoilerImage.id,
+        time: performance.now(),
+      };
+      this.setSpoileredFileVisibility(spoilerImage.fileId, "shown");
+      this.updateHoveredSpoilerButton(null);
+      return;
+    }
+
     const imageStatusAction = this.getImageStatusActionAtPosition(scenePointer);
     if (imageStatusAction) {
       event.preventDefault();
@@ -7689,6 +7744,89 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     return null;
+  };
+
+  /** MyOC: the hidden image whose "Show spoiler" button is at `scenePointer`
+      and is not covered there by another element. The top hit element at the
+      point must be the image itself. */
+  private getSpoilerButtonAtPosition = (scenePointer: {
+    x: number;
+    y: number;
+  }): InitializedExcalidrawImageElement | null => {
+    if (!this.spoileredFiles.size) {
+      return null;
+    }
+    const label = t("labels.showSpoiler");
+    const zoom = this.state.zoom.value;
+    const isHiddenImage = (
+      element: ExcalidrawElement | null,
+    ): element is InitializedExcalidrawImageElement =>
+      !!element &&
+      isInitializedImageElement(element) &&
+      this.spoileredFiles.get(element.fileId) === "hidden";
+
+    // cheap check first: the pointer is on a drawn button
+    if (
+      !this.visibleElements.some(
+        (element) =>
+          isHiddenImage(element) &&
+          isPointInSpoilerButton(element, scenePointer, zoom, label),
+      )
+    ) {
+      return null;
+    }
+
+    const topElement = this.getElementAtPosition(
+      scenePointer.x,
+      scenePointer.y,
+      { includeBoundTextElement: true, includeLockedElements: true },
+    );
+    return isHiddenImage(topElement) &&
+      isPointInSpoilerButton(topElement, scenePointer, zoom, label)
+      ? topElement
+      : null;
+  };
+
+  public getHoveredSpoilerElementId = () => this.hoveredSpoilerElementId;
+
+  /** MyOC: repaints only when the pointer enters or leaves a button. The
+      element canvas cache key holds the hover state, so only that element
+      draws again. */
+  private updateHoveredSpoilerButton = (
+    scenePointer: { x: number; y: number } | null,
+  ) => {
+    const hoveredId = scenePointer
+      ? this.getSpoilerButtonAtPosition(scenePointer)?.id ?? null
+      : null;
+    if (hoveredId === this.hoveredSpoilerElementId) {
+      return;
+    }
+    this.hoveredSpoilerElementId = hoveredId;
+    this.imagePlaceholderUpdateEmitter.trigger();
+  };
+
+  private isDoubleClickOfSpoilerReveal = (event: {
+    clientX: number;
+    clientY: number;
+  }) => {
+    const reveal = this.lastSpoilerReveal;
+    if (
+      !reveal ||
+      performance.now() - reveal.time > SPOILER_REVEAL_DOUBLE_CLICK_TIMEOUT
+    ) {
+      return false;
+    }
+    const { x, y } = viewportCoordsToSceneCoords(event, this.state);
+    return (
+      this.getElementAtPosition(x, y, {
+        includeBoundTextElement: true,
+        includeLockedElements: true,
+      })?.id === reveal.elementId
+    );
+  };
+
+  private onCanvasPointerLeave = () => {
+    this.updateHoveredSpoilerButton(null);
   };
 
   private isPointInsideImageStatusOverlay = (
@@ -8227,14 +8365,19 @@ class App extends React.Component<AppProps, AppState> {
       event.clientY - this.state.offsetTop,
     );
     const isOverScrollBar = isPointerOverScrollBars.isOverEither;
-    if (
+    const isIdle =
       !this.state.newElement &&
       !this.state.selectionElement &&
       !this.state.selectedElementsAreBeingDragged &&
-      !this.state.multiElement
-    ) {
+      !this.state.multiElement;
+    this.updateHoveredSpoilerButton(
+      isIdle && !isOverScrollBar ? scenePointer : null,
+    );
+    if (isIdle) {
       if (isOverScrollBar) {
         this.cursor.set(CURSOR_TYPE.AUTO);
+      } else if (this.hoveredSpoilerElementId) {
+        this.cursor.set(CURSOR_TYPE.POINTER);
       } else if (this.getImageStatusActionAtPosition(scenePointer)) {
         this.cursor.set(CURSOR_TYPE.POINTER);
       } else {
@@ -8727,6 +8870,11 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
+    // MyOC: the selection hover above sets the move or grab cursor
+    if (this.hoveredSpoilerElementId) {
+      this.cursor.set(CURSOR_TYPE.POINTER);
+    }
+
     if (this.state.openDialog?.name === "elementLinkSelector" && hitElement) {
       this.setState((prevState) => {
         return {
@@ -8960,6 +9108,18 @@ class App extends React.Component<AppProps, AppState> {
       y: scenePointerY,
     };
 
+    // MyOC: before every early return (pans in view mode, with the hand tool
+    // or the space key), so that the click can check where the press started
+    const spoilerImageAtPointerDown =
+      this.getSpoilerButtonAtPosition(scenePointer);
+    this.spoilerButtonPointerDown = spoilerImageAtPointerDown
+      ? {
+          elementId: spoilerImageAtPointerDown.id,
+          clientX: event.clientX,
+          clientY: event.clientY,
+        }
+      : null;
+
     // MyOC: Intercept pointer-down for the held-F target-zoom gesture.
     if (this.handleSmartZoomPointerDown(event, scenePointer)) {
       return;
@@ -9188,6 +9348,11 @@ class App extends React.Component<AppProps, AppState> {
     // State for the duration of a pointer interaction, which starts with a
     // pointerDown event, ends with a pointerUp event (or another pointerDown)
     const pointerDownState = this.initialPointerDownState(event);
+
+    // MyOC: a press on a "Show spoiler" button selects but never moves
+    if (this.spoilerButtonPointerDown) {
+      pointerDownState.drag.blockDragging = true;
+    }
 
     this.setState({
       selectedElementsAreBeingDragged: false,
@@ -13741,6 +13906,10 @@ class App extends React.Component<AppProps, AppState> {
         { passive: false },
       );
       this.interactiveCanvas.addEventListener(EVENT.TOUCH_END, this.onTouchEnd);
+      this.interactiveCanvas.addEventListener(
+        "pointerleave",
+        this.onCanvasPointerLeave,
+      );
       // -----------------------------------------------------------------------
     } else {
       this.interactiveCanvas?.removeEventListener(
@@ -13750,6 +13919,10 @@ class App extends React.Component<AppProps, AppState> {
       this.interactiveCanvas?.removeEventListener(
         EVENT.TOUCH_END,
         this.onTouchEnd,
+      );
+      this.interactiveCanvas?.removeEventListener(
+        "pointerleave",
+        this.onCanvasPointerLeave,
       );
     }
   };

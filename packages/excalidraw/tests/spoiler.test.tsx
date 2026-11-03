@@ -1,6 +1,19 @@
-import { CaptureUpdateAction, newElementWith } from "@excalidraw/element";
+import {
+  CaptureUpdateAction,
+  elementWithCanvasCache,
+  getSpoilerButtonRect,
+  newElementWith,
+} from "@excalidraw/element";
 import { ShapeCache } from "@excalidraw/element";
-import { KEYS, MIME_TYPES } from "@excalidraw/common";
+import {
+  KEYS,
+  MIME_TYPES,
+  sceneCoordsToViewportCoords,
+  viewportCoordsToSceneCoords,
+} from "@excalidraw/common";
+import { pointFrom, pointRotateRads } from "@excalidraw/math";
+
+import type { GlobalPoint } from "@excalidraw/math";
 
 import type {
   ExcalidrawElement,
@@ -13,10 +26,18 @@ import { actionToggleCropEditor } from "../actions/actionCropEditor";
 import { clearAppStateForLocalStorage } from "../appState";
 import { serializeAsJSON } from "../data/json";
 import { Excalidraw } from "../index";
+import * as StaticScene from "../renderer/staticScene";
 
 import { API } from "./helpers/api";
 import { Keyboard, Pointer } from "./helpers/ui";
-import { act, render } from "./test-utils";
+import {
+  act,
+  fireEvent,
+  GlobalTestState,
+  mockBoundingClientRect,
+  render,
+  restoreOriginalGetBoundingClientRect,
+} from "./test-utils";
 
 import type { DataURL, ExcalidrawProps } from "../types";
 
@@ -1303,6 +1324,1222 @@ describe("GIF playback guard", () => {
       expect(loadLarge()).not.toBe(null);
       setOne(GIF_A, "hidden");
       expect(loadLarge()).toBe(null);
+    });
+  });
+});
+
+// -----------------------------------------------------------------------------
+// MyOC: the "Show spoiler" button (step 4, tests.md 1.3)
+// -----------------------------------------------------------------------------
+
+const LABEL = "Show spoiler";
+
+const getLatest = (id: string) =>
+  h.app.scene.getElement(id) as ExcalidrawImageElement;
+
+/** a point of the button in scene space. `fx` and `fy` are fractions of the
+    button width and height (0.5 is the centre). */
+const buttonPoint = (id: string, fx = 0.5, fy = 0.5) => {
+  const element = getLatest(id);
+  const { button } = getSpoilerButtonRect(element, h.state.zoom.value, LABEL);
+  expect(button).not.toBeNull();
+  const center = pointFrom<GlobalPoint>(
+    element.x + element.width / 2,
+    element.y + element.height / 2,
+  );
+  const [x, y] = pointRotateRads(
+    pointFrom<GlobalPoint>(
+      element.x + button!.x + button!.width * fx,
+      element.y + button!.y + button!.height * fy,
+    ),
+    center,
+    element.angle,
+  );
+  return { x, y };
+};
+
+const toClient = (point: { x: number; y: number }) =>
+  sceneCoordsToViewportCoords({ sceneX: point.x, sceneY: point.y }, h.state);
+
+/** pointer down, pointer up and the click at one client point, as a
+    browser sends them */
+const clickClientAt = (x: number, y: number) => {
+  mouse.clickAt(x, y);
+  fireEvent.click(GlobalTestState.interactiveCanvas, {
+    button: 0,
+    clientX: x,
+    clientY: y,
+  });
+};
+
+const clickCanvasAt = (point: { x: number; y: number }) => {
+  const { x, y } = toClient(point);
+  clickClientAt(x, y);
+};
+
+/** the click event alone, with no pointer down before it */
+const clickEventOnlyAt = (point: { x: number; y: number }) => {
+  const { x, y } = toClient(point);
+  fireEvent.click(GlobalTestState.interactiveCanvas, {
+    button: 0,
+    clientX: x,
+    clientY: y,
+  });
+};
+
+/** a press at `from`, a move and a release at `to`, then the click that a
+    browser sends at the release point */
+const dragAndClick = (
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+) => {
+  const start = toClient(from);
+  const end = toClient(to);
+  mouse.downAt(start.x, start.y);
+  mouse.moveTo((start.x + end.x) / 2, (start.y + end.y) / 2);
+  mouse.moveTo(end.x, end.y);
+  mouse.upAt(end.x, end.y);
+  fireEvent.click(GlobalTestState.interactiveCanvas, {
+    button: 0,
+    clientX: end.x,
+    clientY: end.y,
+  });
+};
+
+const hoverAt = (point: { x: number; y: number }) => {
+  const { x, y } = toClient(point);
+  mouse.moveTo(x, y);
+};
+
+const nextFrame = () =>
+  act(
+    () =>
+      new Promise<void>((resolve) => requestAnimationFrame(() => resolve())),
+  );
+
+const visibility = (id: FileId) => h.app.api.getSpoileredFiles().get(id);
+
+const spoilerSetup = async (
+  props: Partial<ExcalidrawProps> = {},
+  elementProps: Partial<ExcalidrawImageElement> = {},
+) => {
+  const result = await setup(props);
+  const image = API.createElement({
+    type: "image",
+    id: "img-a",
+    fileId: A,
+    x: 100,
+    y: 100,
+    width: 400,
+    height: 300,
+    status: "saved",
+    ...elementProps,
+  } as any) as unknown as ExcalidrawImageElement;
+  API.setElements([image]);
+  mark(A);
+  result.onSpoileredFilesChange.mockClear();
+  return { ...result, image };
+};
+
+describe("Show spoiler button", () => {
+  // a real viewport, so that the App has visible elements
+  beforeAll(() => {
+    mockBoundingClientRect({ width: 1200, height: 900 });
+  });
+
+  afterAll(() => {
+    restoreOriginalGetBoundingClientRect();
+  });
+
+  beforeEach(() => {
+    mouse.reset();
+  });
+
+  describe("static draw", () => {
+    // 1.3.1
+    it("draws the icon and the localized button in the image draw", async () => {
+      const fillText = vi.spyOn(CanvasRenderingContext2D.prototype, "fillText");
+      await spoilerSetup();
+      await nextFrame();
+      expect(fillText).toHaveBeenCalledWith(
+        LABEL,
+        expect.any(Number),
+        expect.any(Number),
+      );
+      expect(
+        elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey,
+      ).toBe(`0|0|${LABEL}`);
+      fillText.mockRestore();
+    });
+
+    it.each([0.5, 2, 4])(
+      "draws the button at one on-screen size at zoom %s",
+      async (zoom) => {
+        await spoilerSetup({}, { width: 1000, height: 800 } as any);
+        const before = getSpoilerButtonRect(getLatest("img-a"), 1, LABEL);
+        act(() => API.setAppState({ zoom: { value: zoom as any } }));
+        await nextFrame();
+        const after = getSpoilerButtonRect(getLatest("img-a"), zoom, LABEL);
+        expect(after.button!.width * zoom).toBeCloseTo(before.button!.width);
+        expect(after.button!.height * zoom).toBeCloseTo(24);
+        // the element canvas was made for the new zoom
+        expect(elementWithCanvasCache.get(getLatest("img-a"))?.zoomValue).toBe(
+          zoom,
+        );
+      },
+    );
+
+    it("draws no button for a shown file", async () => {
+      await spoilerSetup();
+      setOne(A, "shown");
+      await nextFrame();
+      expect(
+        elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey ??
+          null,
+      ).toBe(null);
+    });
+
+    // 1.3.11 (the canvas part: the button is part of the static canvas)
+    it("blits the overlay to the static canvas as part of the image", async () => {
+      const drawImage = vi.spyOn(
+        CanvasRenderingContext2D.prototype,
+        "drawImage",
+      );
+      await spoilerSetup();
+      await nextFrame();
+      const elementCanvas = elementWithCanvasCache.get(
+        getLatest("img-a"),
+      )!.canvas;
+      const blits = drawImage.mock.calls
+        .map((args, index) => ({
+          source: args[0],
+          target: (drawImage.mock.contexts[index] as CanvasRenderingContext2D)
+            .canvas,
+        }))
+        .filter(({ source }) => source === elementCanvas);
+      expect(blits.length).toBeGreaterThan(0);
+      expect(blits.every(({ target }) => target === h.app.canvas)).toBe(true);
+      drawImage.mockRestore();
+    });
+  });
+
+  describe("click", () => {
+    // 1.3.2
+    it("shows the file and fires onSpoileredFilesChange once", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+      expect(onSpoileredFilesChange).toHaveBeenCalledTimes(1);
+      expect(onSpoileredFilesChange.mock.calls[0][0].get(A)).toBe("shown");
+    });
+
+    it("shows the file on a full pointer click and selects the image", async () => {
+      await spoilerSetup();
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+      expect(h.state.selectedElementIds).toEqual({ "img-a": true });
+    });
+
+    it.each([
+      [0.02, 0.5],
+      [0.98, 0.5],
+      [0.5, 0.05],
+      [0.5, 0.95],
+    ])(
+      "shows the file on a click at the button point (%s, %s)",
+      async (fx, fy) => {
+        await spoilerSetup();
+        clickCanvasAt(buttonPoint("img-a", fx, fy));
+        expect(visibility(A)).toBe("shown");
+      },
+    );
+
+    it("shows every element of the file", async () => {
+      await spoilerSetup();
+      const copy = API.createElement({
+        type: "image",
+        id: "img-b",
+        fileId: A,
+        x: 600,
+        y: 100,
+        width: 400,
+        height: 300,
+        status: "saved",
+      });
+      API.setElements([getLatest("img-a"), copy]);
+      clickCanvasAt(buttonPoint("img-b"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    // 1.3.3
+    it.each([
+      ["the blur", { x: 120, y: 120 }],
+      ["the icon", null],
+      ["just left of the button", "left"],
+    ] as const)(
+      "does not show the file on a click on %s, and selects as usual",
+      async (_, where) => {
+        await spoilerSetup();
+        const point =
+          where === null
+            ? (() => {
+                const element = getLatest("img-a");
+                const { icon } = getSpoilerButtonRect(element, 1, LABEL);
+                return { x: element.x + icon!.x, y: element.y + icon!.y };
+              })()
+            : where === "left"
+            ? (() => {
+                const p = buttonPoint("img-a", 0, 0.5);
+                return { x: p.x - 2, y: p.y };
+              })()
+            : where;
+        clickCanvasAt(point);
+        expect(visibility(A)).toBe("hidden");
+        expect(h.state.selectedElementIds).toEqual({ "img-a": true });
+      },
+    );
+
+    it("does not show the file on a click outside the image", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      clickCanvasAt({ x: 50, y: 50 });
+      expect(visibility(A)).toBe("hidden");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("does nothing at the button position of a shown file", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      const point = buttonPoint("img-a");
+      setOne(A, "shown");
+      onSpoileredFilesChange.mockClear();
+      clickCanvasAt(point);
+      expect(visibility(A)).toBe("shown");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("does nothing at the button position of an unmarked file", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      const point = buttonPoint("img-a");
+      mark(A, false);
+      onSpoileredFilesChange.mockClear();
+      clickCanvasAt(point);
+      expect(visibility(A)).toBe(undefined);
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("ignores a click with another mouse button", async () => {
+      await spoilerSetup();
+      const { x, y } = toClient(buttonPoint("img-a"));
+      fireEvent.click(GlobalTestState.interactiveCanvas, {
+        button: 1,
+        clientX: x,
+        clientY: y,
+      });
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("works for a locked image", async () => {
+      await spoilerSetup({}, { locked: true });
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("does not change the scene or add a history entry", async () => {
+      await spoilerSetup();
+      const { x, y } = toClient(buttonPoint("img-a"));
+      // the press selects the image (a history entry of its own)
+      mouse.clickAt(x, y);
+      const version = getLatest("img-a").version;
+      const undoLength = h.history.undoStack.length;
+      fireEvent.click(GlobalTestState.interactiveCanvas, {
+        button: 0,
+        clientX: x,
+        clientY: y,
+      });
+      expect(visibility(A)).toBe("shown");
+      expect(getLatest("img-a").version).toBe(version);
+      expect(h.history.undoStack.length).toBe(undoLength);
+    });
+
+    // 1.3.4
+    it("does not show a small image (icon only)", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup({}, {
+        width: 56,
+        height: 44,
+      } as any);
+      const element = getLatest("img-a");
+      expect(getSpoilerButtonRect(element, 1, LABEL).button).toBeNull();
+      clickCanvasAt({ x: element.x + 28, y: element.y + 22 });
+      expect(visibility(A)).toBe("hidden");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("does not show an image that the zoom makes small", async () => {
+      await spoilerSetup();
+      const point = buttonPoint("img-a");
+      act(() => API.setAppState({ zoom: { value: 0.25 as any } }));
+      expect(
+        getSpoilerButtonRect(getLatest("img-a"), 0.25, LABEL).button,
+      ).toBeNull();
+      clickCanvasAt(point);
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    // 1.3.5
+    it("follows a rotated element", async () => {
+      await spoilerSetup({}, { angle: Math.PI / 2 } as any);
+      const element = getLatest("img-a");
+      const { button } = getSpoilerButtonRect(element, 1, LABEL);
+      // the unrotated button centre is outside the rotated button
+      clickCanvasAt({
+        x: element.x + button!.x + button!.width / 2,
+        y: element.y + button!.y + button!.height / 2,
+      });
+      expect(visibility(A)).toBe("hidden");
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it.each([[[-1, 1]], [[1, -1]], [[-1, -1]]] as [[number, number]][])(
+      "keeps the button where it draws for the flip %j",
+      async (scale) => {
+        await spoilerSetup({}, { scale } as any);
+        const element = getLatest("img-a");
+        const point = buttonPoint("img-a");
+        // the vertical mirror of the button centre is on the blur
+        clickCanvasAt({ x: point.x, y: 2 * (element.y + 150) - point.y });
+        expect(visibility(A)).toBe("hidden");
+        clickCanvasAt(point);
+        expect(visibility(A)).toBe("shown");
+      },
+    );
+
+    // 1.3.6
+    it("works in view mode", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup({
+        viewModeEnabled: true,
+      });
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+      expect(onSpoileredFilesChange).toHaveBeenCalledTimes(1);
+    });
+
+    it("does nothing when the editor takes no input", async () => {
+      await spoilerSetup({ interaction: false } as any);
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("hidden");
+    });
+  });
+
+  describe("press and release", () => {
+    it("ignores a click event with no pointer down on the button", async () => {
+      await spoilerSetup();
+      clickEventOnlyAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("shows the file when the pointer moves less than the drag threshold", async () => {
+      await spoilerSetup();
+      const start = buttonPoint("img-a", 0.5, 0.5);
+      dragAndClick(start, { x: start.x + 4, y: start.y + 3 });
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("does not show the file after a drag inside the button", async () => {
+      await spoilerSetup();
+      dragAndClick(
+        buttonPoint("img-a", 0.1, 0.5),
+        buttonPoint("img-a", 0.9, 0.5),
+      );
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("does not show the file after a view-mode pan that starts and ends on the button", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup({
+        viewModeEnabled: true,
+      });
+      const start = toClient(buttonPoint("img-a"));
+      const scrollX = h.state.scrollX;
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 30, start.y);
+      mouse.moveTo(start.x + 60, start.y);
+      mouse.upAt(start.x + 60, start.y);
+      // the canvas moved with the pointer, so the release is on the button
+      expect(h.state.scrollX).not.toBe(scrollX);
+      expect(toClient(buttonPoint("img-a")).x).toBeCloseTo(start.x + 60);
+      fireEvent.click(GlobalTestState.interactiveCanvas, {
+        button: 0,
+        clientX: start.x + 60,
+        clientY: start.y,
+      });
+      expect(visibility(A)).toBe("hidden");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("does not show the file after a hand tool pan that starts and ends on the button", async () => {
+      await spoilerSetup();
+      act(() => h.app.setActiveTool({ type: "hand" }));
+      const start = toClient(buttonPoint("img-a"));
+      const scrollX = h.state.scrollX;
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 30, start.y);
+      mouse.moveTo(start.x + 60, start.y);
+      mouse.upAt(start.x + 60, start.y);
+      expect(h.state.scrollX).not.toBe(scrollX);
+      fireEvent.click(GlobalTestState.interactiveCanvas, {
+        button: 0,
+        clientX: start.x + 60,
+        clientY: start.y,
+      });
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("still shows the file on a plain click in view mode", async () => {
+      await spoilerSetup({ viewModeEnabled: true });
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("does not show the file after a box selection that ends on the button", async () => {
+      await spoilerSetup();
+      dragAndClick({ x: 40, y: 40 }, buttonPoint("img-a"));
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("does not show a file when the press is on button A and the release on button B", async () => {
+      await spoilerSetup();
+      const b = API.createElement({
+        type: "image",
+        id: "img-b",
+        fileId: B,
+        x: 600,
+        y: 100,
+        width: 400,
+        height: 300,
+        status: "saved",
+      });
+      API.setElements([getLatest("img-a"), b]);
+      mark(B);
+      dragAndClick(buttonPoint("img-a"), buttonPoint("img-b"));
+      expect(visibility(A)).toBe("hidden");
+      expect(visibility(B)).toBe("hidden");
+    });
+
+    it("does not show the file when the press is on the blur and the release on the button", async () => {
+      await spoilerSetup();
+      dragAndClick({ x: 120, y: 120 }, buttonPoint("img-a"));
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("forgets the press after the click", async () => {
+      await spoilerSetup();
+      const point = buttonPoint("img-a");
+      clickCanvasAt(point);
+      setOne(A, "hidden");
+      // a second click event with no new press
+      clickEventOnlyAt(point);
+      expect(visibility(A)).toBe("hidden");
+    });
+  });
+
+  describe("double-click", () => {
+    let executeAction: ReturnType<typeof vi.spyOn>;
+    afterEach(() => {
+      executeAction?.mockRestore();
+    });
+
+    const smartZoomCalls = () =>
+      executeAction.mock.calls.filter(
+        ([action]: any[]) => action.name === "smartZoom",
+      );
+
+    /** the events of a browser double-click at one point */
+    const doubleClickAt = (point: { x: number; y: number }) => {
+      clickCanvasAt(point);
+      clickCanvasAt(point);
+      const { x, y } = toClient(point);
+      fireEvent.doubleClick(GlobalTestState.interactiveCanvas, {
+        clientX: x,
+        clientY: y,
+      });
+    };
+
+    it.each([
+      ["edit mode", {}],
+      ["view mode", { viewModeEnabled: true }],
+    ] as const)(
+      "does nothing to the image whose file a click of it showed (%s)",
+      async (_, props) => {
+        await spoilerSetup(props);
+        executeAction = vi.spyOn(h.app.actionManager, "executeAction");
+        const zoom = h.state.zoom.value;
+        doubleClickAt(buttonPoint("img-a"));
+        expect(visibility(A)).toBe("shown");
+        expect(smartZoomCalls()).toHaveLength(0);
+        expect(h.state.zoom.value).toBe(zoom);
+        expect(h.state.croppingElementId).toBe(null);
+        expect(h.state.editingTextElement).toBe(null);
+      },
+    );
+
+    it("smart-zooms a shown image on a later double-click", async () => {
+      await spoilerSetup({ viewModeEnabled: true });
+      const point = buttonPoint("img-a");
+      clickCanvasAt(point);
+      expect(visibility(A)).toBe("shown");
+      const now = performance.now();
+      const clock = vi.spyOn(performance, "now").mockReturnValue(now + 2000);
+      executeAction = vi.spyOn(h.app.actionManager, "executeAction");
+      const { x, y } = toClient(point);
+      fireEvent.doubleClick(GlobalTestState.interactiveCanvas, {
+        clientX: x,
+        clientY: y,
+      });
+      clock.mockRestore();
+      expect(smartZoomCalls()).toHaveLength(1);
+    });
+
+    it("smart-zooms an unmarked image on a double-click at the same point", async () => {
+      await spoilerSetup({ viewModeEnabled: true });
+      const point = buttonPoint("img-a");
+      mark(A, false);
+      executeAction = vi.spyOn(h.app.actionManager, "executeAction");
+      doubleClickAt(point);
+      expect(smartZoomCalls()).toHaveLength(1);
+    });
+
+    it("smart-zooms another image soon after a reveal", async () => {
+      await spoilerSetup({ viewModeEnabled: true });
+      const other = API.createElement({
+        type: "image",
+        id: "img-b",
+        fileId: B,
+        x: 600,
+        y: 100,
+        width: 400,
+        height: 300,
+        status: "saved",
+      });
+      API.setElements([getLatest("img-a"), other]);
+      clickCanvasAt(buttonPoint("img-a"));
+      executeAction = vi.spyOn(h.app.actionManager, "executeAction");
+      const { x, y } = toClient({ x: 800, y: 250 });
+      fireEvent.doubleClick(GlobalTestState.interactiveCanvas, {
+        clientX: x,
+        clientY: y,
+      });
+      expect(smartZoomCalls()).toHaveLength(1);
+    });
+  });
+
+  // 1.3.7
+  describe("drag", () => {
+    it("does not move the element when the drag starts on the button", async () => {
+      await spoilerSetup();
+      const start = toClient(buttonPoint("img-a"));
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 120, start.y + 80);
+      mouse.upAt(start.x + 120, start.y + 80);
+      const element = getLatest("img-a");
+      expect([element.x, element.y]).toEqual([100, 100]);
+      expect(h.state.selectedElementIds).toEqual({ "img-a": true });
+    });
+
+    it("does not move a selected element when the drag starts on the button", async () => {
+      await spoilerSetup();
+      select(getLatest("img-a"));
+      const start = toClient(buttonPoint("img-a"));
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x - 60, start.y + 40);
+      mouse.upAt();
+      const element = getLatest("img-a");
+      expect([element.x, element.y]).toEqual([100, 100]);
+      expect(element.width).toBe(400);
+      expect(element.height).toBe(300);
+    });
+
+    it("moves the element when the drag starts on the blur", async () => {
+      await spoilerSetup();
+      const start = toClient({ x: 130, y: 130 });
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 120, start.y + 80);
+      mouse.upAt();
+      const element = getLatest("img-a");
+      expect([element.x, element.y]).toEqual([220, 180]);
+    });
+
+    it("moves the element from the button position once the file is shown", async () => {
+      await spoilerSetup();
+      const point = buttonPoint("img-a");
+      setOne(A, "shown");
+      const start = toClient(point);
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 50, start.y + 50);
+      mouse.upAt();
+      expect(getLatest("img-a").x).toBe(150);
+    });
+
+    it("allows the next drag from the blur after a blocked drag", async () => {
+      await spoilerSetup();
+      const start = toClient(buttonPoint("img-a"));
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 50, start.y);
+      mouse.upAt();
+      const blur = toClient({ x: 130, y: 130 });
+      mouse.downAt(blur.x, blur.y);
+      mouse.moveTo(blur.x + 50, blur.y);
+      mouse.upAt();
+      expect(getLatest("img-a").x).toBe(150);
+    });
+  });
+
+  describe("off screen", () => {
+    let renderStaticScene: ReturnType<typeof vi.spyOn>;
+    beforeEach(() => {
+      renderStaticScene = vi.spyOn(StaticScene, "renderStaticScene");
+    });
+    afterEach(() => {
+      renderStaticScene.mockRestore();
+    });
+
+    const lastVisibleIds = () =>
+      (
+        renderStaticScene.mock.lastCall![0] as {
+          visibleElements: readonly ExcalidrawElement[];
+        }
+      ).visibleElements.map((element) => element.id);
+
+    // 1.3.8
+    it("draws nothing and ignores a click at the old position when panned out", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      const oldClient = toClient(buttonPoint("img-a"));
+      act(() => API.setAppState({ scrollX: -5000, scrollY: 0 }));
+      await nextFrame();
+      expect(lastVisibleIds()).not.toContain("img-a");
+      clickClientAt(oldClient.x, oldClient.y);
+      expect(visibility(A)).toBe("hidden");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+    });
+
+    it("shows the button again when panned back", async () => {
+      await spoilerSetup();
+      act(() => API.setAppState({ scrollX: -5000 }));
+      act(() => API.setAppState({ scrollX: 0 }));
+      await nextFrame();
+      expect(lastVisibleIds()).toContain("img-a");
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    // 1.3.9
+    describe("partly off screen", () => {
+      // the element centre (300, 250) is at the left viewport edge
+      const panCentreToLeftEdge = () =>
+        act(() =>
+          API.setAppState({ scrollX: -300 - h.state.offsetLeft, scrollY: 0 }),
+        );
+
+      it("keeps the button at the element centre, cut at the edge", async () => {
+        await spoilerSetup();
+        panCentreToLeftEdge();
+        await nextFrame();
+        expect(lastVisibleIds()).toContain("img-a");
+        const left = toClient(buttonPoint("img-a", 0, 0.5));
+        const right = toClient(buttonPoint("img-a", 1, 0.5));
+        // the button crosses the edge
+        expect(left.x).toBeLessThan(h.state.offsetLeft);
+        expect(right.x).toBeGreaterThan(h.state.offsetLeft);
+        // the element canvas holds the whole button: the canvas edge cuts it
+        expect(
+          elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey,
+        ).not.toBe(null);
+      });
+
+      it("shows the image on a click on the visible part", async () => {
+        await spoilerSetup();
+        panCentreToLeftEdge();
+        clickCanvasAt(buttonPoint("img-a", 0.9, 0.5));
+        expect(visibility(A)).toBe("shown");
+      });
+
+      it("does not clamp the button into the viewport", async () => {
+        await spoilerSetup();
+        panCentreToLeftEdge();
+        const element = getLatest("img-a");
+        const { button } = getSpoilerButtonRect(element, 1, LABEL);
+        // where a clamped button would start: at the viewport edge
+        const clampedRight = toClient(buttonPoint("img-a", 0.5, 0.5));
+        const { x, y } = {
+          x: clampedRight.x + button!.width * 0.75,
+          y: clampedRight.y,
+        };
+        clickClientAt(x, y);
+        expect(visibility(A)).toBe("hidden");
+      });
+    });
+  });
+
+  // 1.3.10
+  describe("anchored to the element", () => {
+    /** the old button centre misses, the new one hits */
+    const expectButtonMoved = (oldPoint: { x: number; y: number }) => {
+      const element = getLatest("img-a");
+      // the element canvas holds the overlay, so image and button draw in
+      // one blit, in the same frame
+      expect(elementWithCanvasCache.get(element)?.spoilerOverlayKey).not.toBe(
+        null,
+      );
+      clickCanvasAt(oldPoint);
+      expect(visibility(A)).toBe("hidden");
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    };
+
+    /** the old button position in client space, mapped to the scene now */
+    const oldClientPoint = () => {
+      const client = toClient(buttonPoint("img-a"));
+      return () =>
+        viewportCoordsToSceneCoords(
+          { clientX: client.x, clientY: client.y },
+          h.state,
+        );
+    };
+
+    it("after a pan", async () => {
+      await spoilerSetup();
+      const old = oldClientPoint();
+      act(() => API.setAppState({ scrollX: 200, scrollY: 150 }));
+      await nextFrame();
+      expectButtonMoved(old());
+    });
+
+    it("after a zoom", async () => {
+      await spoilerSetup();
+      const old = oldClientPoint();
+      act(() => API.setAppState({ zoom: { value: 2 as any } }));
+      await nextFrame();
+      expectButtonMoved(old());
+    });
+
+    it("after an element drag", async () => {
+      await spoilerSetup();
+      const old = buttonPoint("img-a");
+      const start = toClient({ x: 130, y: 130 });
+      mouse.downAt(start.x, start.y);
+      mouse.moveTo(start.x + 200, start.y + 120);
+      mouse.upAt();
+      await nextFrame();
+      expect(getLatest("img-a").x).toBe(300);
+      expectButtonMoved(old);
+    });
+
+    it("after a resize", async () => {
+      await spoilerSetup();
+      const old = buttonPoint("img-a");
+      API.updateElement(getLatest("img-a"), { width: 800, height: 600 });
+      await nextFrame();
+      expectButtonMoved(old);
+    });
+
+    it("after a rotation", async () => {
+      await spoilerSetup();
+      const old = buttonPoint("img-a");
+      API.updateElement(getLatest("img-a"), { angle: (Math.PI / 2) as any });
+      await nextFrame();
+      expectButtonMoved(old);
+    });
+
+    it("after an undo", async () => {
+      await setup();
+      const image = API.createElement({
+        type: "image",
+        id: "img-a",
+        fileId: A,
+        x: 100,
+        y: 100,
+        width: 400,
+        height: 300,
+        status: "saved",
+      });
+      // both changes go to history, so the undo reverts the move only
+      act(() => {
+        h.app.updateScene({
+          elements: [image],
+          captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+        });
+      });
+      mark(A);
+      act(() => {
+        h.app.updateScene({
+          elements: [newElementWith(getLatest("img-a"), { x: 300, y: 180 })],
+          captureUpdate: CaptureUpdateAction.IMMEDIATELY,
+        });
+      });
+      const moved = buttonPoint("img-a");
+      Keyboard.undo();
+      await nextFrame();
+      expect(getLatest("img-a").x).toBe(100);
+      expect(getLatest("img-a").isDeleted).toBe(false);
+      expectButtonMoved(moved);
+    });
+
+    it("makes a new element canvas with the overlay after a resize", async () => {
+      await spoilerSetup();
+      await nextFrame();
+      const before = elementWithCanvasCache.get(getLatest("img-a"));
+      API.updateElement(getLatest("img-a"), { width: 800 });
+      await nextFrame();
+      const after = elementWithCanvasCache.get(getLatest("img-a"));
+      expect(after).toBeDefined();
+      expect(after).not.toBe(before);
+      expect(after!.spoilerOverlayKey).not.toBe(null);
+    });
+  });
+
+  // 1.3.11 (unit part; e2e proves the real DOM stacking)
+  describe("under UI", () => {
+    it("a click on a UI element over the button area does not show the image", async () => {
+      await spoilerSetup();
+      const { x, y } = toClient(buttonPoint("img-a"));
+      const ui = document.querySelector(".App-toolbar") as HTMLElement;
+      expect(ui).not.toBeNull();
+      fireEvent.pointerDown(ui, { clientX: x, clientY: y });
+      fireEvent.pointerUp(ui, { clientX: x, clientY: y });
+      fireEvent.click(ui, { button: 0, clientX: x, clientY: y });
+      expect(visibility(A)).toBe("hidden");
+    });
+  });
+
+  // 1.3.12
+  describe("under elements on top", () => {
+    const addRectangleOverLeftHalf = (opts: Record<string, unknown> = {}) => {
+      const left = buttonPoint("img-a", 0, 0);
+      const middle = buttonPoint("img-a", 0.5, 1);
+      const rectangle = API.createElement({
+        type: "rectangle",
+        id: "rect",
+        x: left.x - 20,
+        y: left.y - 20,
+        width: middle.x - left.x + 20,
+        height: middle.y - left.y + 40,
+        backgroundColor: "#ff0000",
+        fillStyle: "solid",
+        ...opts,
+      });
+      API.setElements([getLatest("img-a"), rectangle]);
+      return rectangle;
+    };
+
+    it("a click on the covered part goes to the element on top", async () => {
+      const { onSpoileredFilesChange } = await spoilerSetup();
+      addRectangleOverLeftHalf();
+      clickCanvasAt(buttonPoint("img-a", 0.2, 0.5));
+      expect(visibility(A)).toBe("hidden");
+      expect(onSpoileredFilesChange).not.toHaveBeenCalled();
+      expect(h.state.selectedElementIds).toEqual({ rect: true });
+    });
+
+    it("a click on the visible part shows the image", async () => {
+      await spoilerSetup();
+      addRectangleOverLeftHalf();
+      clickCanvasAt(buttonPoint("img-a", 0.8, 0.5));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("an unfilled shape on top does not block the button inside its outline", async () => {
+      await spoilerSetup();
+      const image = getLatest("img-a");
+      const outline = API.createElement({
+        type: "rectangle",
+        id: "outline",
+        x: image.x + 20,
+        y: image.y + 20,
+        width: image.width - 40,
+        height: image.height - 40,
+        backgroundColor: "transparent",
+      });
+      API.setElements([image, outline]);
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("an element below the image does not block the button", async () => {
+      await spoilerSetup();
+      const image = getLatest("img-a");
+      const below = API.createElement({
+        type: "rectangle",
+        id: "below",
+        x: image.x,
+        y: image.y,
+        width: image.width,
+        height: image.height,
+        backgroundColor: "#ff0000",
+        fillStyle: "solid",
+      });
+      API.setElements([below, image]);
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(A)).toBe("shown");
+    });
+
+    it("a hidden image on top of another hidden image takes the click", async () => {
+      await spoilerSetup();
+      const lower = getLatest("img-a");
+      const upper = API.createElement({
+        type: "image",
+        id: "img-b",
+        fileId: B,
+        x: lower.x,
+        y: lower.y,
+        width: lower.width,
+        height: lower.height,
+        status: "saved",
+      });
+      API.setElements([lower, upper]);
+      mark(B);
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(visibility(B)).toBe("shown");
+      expect(visibility(A)).toBe("hidden");
+    });
+
+    it("paints the elements on top after the image and its button", async () => {
+      const drawImage = vi.spyOn(
+        CanvasRenderingContext2D.prototype,
+        "drawImage",
+      );
+      await spoilerSetup();
+      addRectangleOverLeftHalf();
+      await nextFrame();
+      const imageCanvas = elementWithCanvasCache.get(
+        getLatest("img-a"),
+      )!.canvas;
+      const rectCanvas = elementWithCanvasCache.get(
+        h.app.scene.getElement("rect")!,
+      )!.canvas;
+      const sources = drawImage.mock.calls.map((args) => args[0]);
+      const lastImage = sources.lastIndexOf(imageCanvas);
+      const lastRect = sources.lastIndexOf(rectCanvas);
+      expect(lastImage).toBeGreaterThan(-1);
+      expect(lastRect).toBeGreaterThan(lastImage);
+      drawImage.mockRestore();
+    });
+  });
+
+  // 1.3.13
+  describe("hover", () => {
+    const hoveredId = () => h.app.getHoveredSpoilerElementId();
+    const cursor = () => GlobalTestState.interactiveCanvas.style.cursor;
+
+    it("highlights the button and sets the pointer cursor on enter", async () => {
+      await spoilerSetup();
+      await nextFrame();
+      const normal = elementWithCanvasCache.get(getLatest("img-a"));
+      hoverAt(buttonPoint("img-a"));
+      expect(hoveredId()).toBe("img-a");
+      expect(cursor()).toBe("pointer");
+      await nextFrame();
+      const hovered = elementWithCanvasCache.get(getLatest("img-a"));
+      expect(hovered).not.toBe(normal);
+      expect(hovered!.spoilerOverlayKey).toBe(`1|0|${LABEL}`);
+    });
+
+    it("keeps the pointer cursor on a selected image", async () => {
+      await spoilerSetup();
+      select(getLatest("img-a"));
+      hoverAt(buttonPoint("img-a"));
+      expect(cursor()).toBe("pointer");
+    });
+
+    it("sets the pointer cursor in view mode", async () => {
+      await spoilerSetup({ viewModeEnabled: true });
+      hoverAt(buttonPoint("img-a"));
+      expect(hoveredId()).toBe("img-a");
+      expect(cursor()).toBe("pointer");
+      hoverAt({ x: 120, y: 120 });
+      expect(hoveredId()).toBe(null);
+      expect(cursor()).toBe("grab");
+    });
+
+    it("draws the normal colour and cursor again on leave", async () => {
+      await spoilerSetup();
+      hoverAt(buttonPoint("img-a"));
+      await nextFrame();
+      hoverAt({ x: 120, y: 120 });
+      expect(hoveredId()).toBe(null);
+      expect(cursor()).not.toBe("pointer");
+      await nextFrame();
+      expect(
+        elementWithCanvasCache.get(getLatest("img-a"))!.spoilerOverlayKey,
+      ).toBe(`0|0|${LABEL}`);
+    });
+
+    it("ends the hover when the pointer leaves the canvas", async () => {
+      await spoilerSetup();
+      hoverAt(buttonPoint("img-a"));
+      fireEvent.pointerLeave(GlobalTestState.interactiveCanvas);
+      expect(hoveredId()).toBe(null);
+    });
+
+    it("ends the hover when the pointer moves onto an element above the button", async () => {
+      await spoilerSetup();
+      const image = getLatest("img-a");
+      const left = buttonPoint("img-a", 0, 0);
+      const rectangle = API.createElement({
+        type: "rectangle",
+        id: "rect",
+        x: left.x - 10,
+        y: left.y - 10,
+        width: 40,
+        height: 60,
+        backgroundColor: "#ff0000",
+        fillStyle: "solid",
+      });
+      API.setElements([image, rectangle]);
+      hoverAt(buttonPoint("img-a", 0.8, 0.5));
+      expect(hoveredId()).toBe("img-a");
+      hoverAt(buttonPoint("img-a", 0.05, 0.5));
+      expect(hoveredId()).toBe(null);
+      expect(cursor()).not.toBe("pointer");
+    });
+
+    it("does not hover the button of a small image", async () => {
+      await spoilerSetup({}, { width: 56, height: 44 } as any);
+      hoverAt({ x: 128, y: 122 });
+      expect(hoveredId()).toBe(null);
+    });
+
+    it("does not hover the button of a shown file", async () => {
+      await spoilerSetup();
+      const point = buttonPoint("img-a");
+      setOne(A, "shown");
+      hoverAt(point);
+      expect(hoveredId()).toBe(null);
+      expect(cursor()).not.toBe("pointer");
+    });
+
+    it("ends the hover when the button is clicked", async () => {
+      await spoilerSetup();
+      hoverAt(buttonPoint("img-a"));
+      clickCanvasAt(buttonPoint("img-a"));
+      expect(hoveredId()).toBe(null);
+    });
+
+    it("does not hover while an element is dragged over the button", async () => {
+      await spoilerSetup();
+      const rectangle = API.createElement({
+        type: "rectangle",
+        id: "rect",
+        x: 600,
+        y: 100,
+        width: 50,
+        height: 50,
+        backgroundColor: "#ff0000",
+        fillStyle: "solid",
+      });
+      API.setElements([getLatest("img-a"), rectangle]);
+      const start = toClient({ x: 625, y: 125 });
+      mouse.downAt(start.x, start.y);
+      const target = toClient(buttonPoint("img-a", 0.9, 0.5));
+      mouse.moveTo(target.x, target.y);
+      expect(hoveredId()).toBe(null);
+      mouse.upAt();
+    });
+
+    describe("repaint", () => {
+      let renderStaticScene: ReturnType<typeof vi.spyOn>;
+      let trigger: ReturnType<typeof vi.spyOn>;
+      beforeEach(() => {
+        renderStaticScene = vi.spyOn(StaticScene, "renderStaticScene");
+      });
+      afterEach(() => {
+        renderStaticScene.mockRestore();
+        trigger?.mockRestore();
+      });
+
+      it("repaints once on enter and once on leave, and not for moves inside", async () => {
+        await spoilerSetup();
+        await nextFrame();
+        trigger = vi.spyOn(h.app.imagePlaceholderUpdateEmitter, "trigger");
+
+        hoverAt(buttonPoint("img-a", 0.5, 0.5));
+        expect(trigger).toHaveBeenCalledTimes(1);
+        await nextFrame();
+        const afterEnter = renderStaticScene.mock.calls.length;
+        expect(afterEnter).toBeGreaterThan(0);
+        const hoveredCanvas = elementWithCanvasCache.get(getLatest("img-a"));
+
+        for (const [fx, fy] of [
+          [0.2, 0.3],
+          [0.8, 0.7],
+          [0.1, 0.5],
+          [0.95, 0.2],
+        ]) {
+          hoverAt(buttonPoint("img-a", fx, fy));
+        }
+        await nextFrame();
+        expect(trigger).toHaveBeenCalledTimes(1);
+        expect(renderStaticScene.mock.calls.length).toBe(afterEnter);
+        expect(elementWithCanvasCache.get(getLatest("img-a"))).toBe(
+          hoveredCanvas,
+        );
+
+        hoverAt({ x: 120, y: 120 });
+        expect(trigger).toHaveBeenCalledTimes(2);
+        await nextFrame();
+        expect(renderStaticScene.mock.calls.length).toBe(afterEnter + 1);
+      });
+
+      it("does not repaint for moves on the blur", async () => {
+        await spoilerSetup();
+        await nextFrame();
+        trigger = vi.spyOn(h.app.imagePlaceholderUpdateEmitter, "trigger");
+        renderStaticScene.mockClear();
+        hoverAt({ x: 120, y: 120 });
+        hoverAt({ x: 140, y: 130 });
+        hoverAt({ x: 400, y: 350 });
+        await nextFrame();
+        expect(trigger).not.toHaveBeenCalled();
+        expect(renderStaticScene).not.toHaveBeenCalled();
+      });
+
+      it("repaints when the pointer moves from one button to another", async () => {
+        await spoilerSetup();
+        const copy = API.createElement({
+          type: "image",
+          id: "img-b",
+          fileId: A,
+          x: 600,
+          y: 100,
+          width: 400,
+          height: 300,
+          status: "saved",
+        });
+        API.setElements([getLatest("img-a"), copy]);
+        trigger = vi.spyOn(h.app.imagePlaceholderUpdateEmitter, "trigger");
+        hoverAt(buttonPoint("img-a"));
+        hoverAt(buttonPoint("img-b"));
+        expect(hoveredId()).toBe("img-b");
+        expect(trigger).toHaveBeenCalledTimes(2);
+      });
+
+      it("keeps the element canvas of a second hidden image on hover", async () => {
+        await spoilerSetup();
+        const copy = API.createElement({
+          type: "image",
+          id: "img-b",
+          fileId: A,
+          x: 600,
+          y: 100,
+          width: 400,
+          height: 300,
+          status: "saved",
+        });
+        API.setElements([getLatest("img-a"), copy]);
+        await nextFrame();
+        const other = elementWithCanvasCache.get(getLatest("img-b"));
+        expect(other).toBeDefined();
+        hoverAt(buttonPoint("img-a"));
+        await nextFrame();
+        expect(elementWithCanvasCache.get(getLatest("img-b"))).toBe(other);
+      });
     });
   });
 });

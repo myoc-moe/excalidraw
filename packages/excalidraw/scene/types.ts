@@ -37,6 +37,11 @@ export type StaticCanvasRenderConfig = {
   /** view state of spoilered files. Images of a `"hidden"` file draw the
    placeholder (blur) and never the image. Not set when exporting. */
   spoileredFiles?: ReadonlyMap<FileId, SpoilerVisibility>;
+  /** the id of the image whose "Show spoiler" button is under the pointer.
+   A getter, so that a hover change repaints with no App render. */
+  getHoveredSpoilerElementId?: () => ExcalidrawElement["id"] | null;
+  /** the localized label of the "Show spoiler" button */
+  spoilerButtonLabel?: string;
   renderGrid: boolean;
   /** whether to render link icons on elements with links (never rendered
    when exporting). @default true */

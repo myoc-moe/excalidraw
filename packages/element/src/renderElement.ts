@@ -73,6 +73,7 @@ import { ShapeCache } from "./shape";
 import { getThumbHashPlaceholder } from "./image";
 import { getGifRenderFrame } from "./gif";
 import { drawGifDecodePlaceholder } from "./renderGif";
+import { drawSpoilerOverlay } from "./spoilerOverlay";
 
 import type {
   ExcalidrawElement,
@@ -148,7 +149,43 @@ export interface ExcalidrawElementWithCanvas {
   canvasOffsetY: number;
   imageCrop: ExcalidrawImageElement["crop"] | null;
   containingFrameOpacity: number;
+  /** MyOC: the spoiler overlay state baked into `canvas`, or null */
+  spoilerOverlayKey: string | null;
 }
+
+/** MyOC: the hover, flip and label state of the spoiler overlay of a hidden
+ * image, or null when the element draws no overlay. Part of the element
+ * canvas cache key, so a hover change regenerates only that element. */
+const getSpoilerOverlayKey = (
+  element: ExcalidrawElement,
+  renderConfig: StaticCanvasRenderConfig,
+): string | null => {
+  if (
+    renderConfig.isExporting ||
+    !isInitializedImageElement(element) ||
+    renderConfig.spoileredFiles?.get(element.fileId) !== "hidden"
+  ) {
+    return null;
+  }
+  return `${isSpoilerButtonHovered(element, renderConfig) ? 1 : 0}|${
+    isElementCanvasFlipped(element, renderConfig) ? 1 : 0
+  }|${getSpoilerButtonLabel(renderConfig)}`;
+};
+
+const isSpoilerButtonHovered = (
+  element: ExcalidrawElement,
+  renderConfig: StaticCanvasRenderConfig,
+) => renderConfig.getHoveredSpoilerElementId?.() === element.id;
+
+/** the element canvas of a pending image is drawn with no flip (see
+ * `drawElementFromCanvas`) */
+const isElementCanvasFlipped = (
+  element: ExcalidrawElement,
+  renderConfig: StaticCanvasRenderConfig,
+) => !isPendingImageElement(element, renderConfig);
+
+const getSpoilerButtonLabel = (renderConfig: StaticCanvasRenderConfig) =>
+  renderConfig.spoilerButtonLabel ?? "Show spoiler";
 
 const cappedElementCanvasSize = (
   element: NonDeletedExcalidrawElement,
@@ -257,7 +294,7 @@ const generateElementCanvas = (
 
   const rc = rough.canvas(canvas);
 
-  drawElementOnCanvas(element, rc, context, renderConfig);
+  drawElementOnCanvas(element, rc, context, renderConfig, zoom.value);
 
   context.restore();
 
@@ -272,6 +309,7 @@ const generateElementCanvas = (
     containingFrameOpacity:
       getContainingFrame(element, elementsMap)?.opacity || 100,
     imageCrop: isImageElement(element) ? element.crop : null,
+    spoilerOverlayKey: getSpoilerOverlayKey(element, renderConfig),
   };
 };
 
@@ -368,6 +406,9 @@ const drawElementOnCanvas = (
   rc: RoughCanvas,
   context: CanvasRenderingContext2D,
   renderConfig: StaticCanvasRenderConfig,
+  /** MyOC: set for the element canvas (screen render) only. The spoiler
+   * overlay needs it for its on-screen size. */
+  zoomValue?: number,
 ) => {
   switch (element.type) {
     case "rectangle":
@@ -437,6 +478,16 @@ const drawElementOnCanvas = (
           delete cacheEntry.transitionStart;
         }
         drawImagePlaceholder(element, context, renderConfig.theme);
+        // the icon and the button. Never in exports.
+        if (zoomValue !== undefined && !renderConfig.isExporting) {
+          drawSpoilerOverlay(element, context, {
+            zoom: zoomValue,
+            label: getSpoilerButtonLabel(renderConfig),
+            hovered: isSpoilerButtonHovered(element, renderConfig),
+            flipped: isElementCanvasFlipped(element, renderConfig),
+            theme: renderConfig.theme,
+          });
+        }
       } else if (
         cacheEntry?.gifDecodeStatus === "pending" &&
         !cacheEntry.gif?.frames.length
@@ -673,7 +724,9 @@ const generateElementWithCanvas = (
     prevElementWithCanvas.theme !== appState.theme ||
     prevElementWithCanvas.imageCrop !== imageCrop ||
     hasActiveImageTransition ||
-    prevElementWithCanvas.containingFrameOpacity !== containingFrameOpacity
+    prevElementWithCanvas.containingFrameOpacity !== containingFrameOpacity ||
+    prevElementWithCanvas.spoilerOverlayKey !==
+      getSpoilerOverlayKey(element, renderConfig)
   ) {
     const elementWithCanvas = generateElementCanvas(
       element,

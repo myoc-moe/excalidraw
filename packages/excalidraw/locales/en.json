@@ -182,6 +182,8 @@
     "autoResize": "Enable text auto-resizing",
     "imageCropping": "Image cropping",
     "unCroppedDimension": "Uncropped dimension",
+    "showSpoiler": "Show spoiler",
+    "hideSpoiler": "Hide spoiler",
     "copyElementLink": "Copy link to object",
     "linkToElement": "Link to object",
     "wrapSelectionInFrame": "Wrap selection in frame",
