@@ -111,6 +111,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     userToFollow,
     onDuplicate,
     imageContextMenuItems,
+    onSpoileredFilesChange,
     children,
     validateEmbeddable,
     renderEmbeddable,
@@ -269,6 +270,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           userToFollow={userToFollow}
           onDuplicate={onDuplicate}
           imageContextMenuItems={imageContextMenuItems}
+          onSpoileredFilesChange={onSpoileredFilesChange}
           validateEmbeddable={validateEmbeddable}
           renderEmbeddable={renderEmbeddable}
           googleFonts={googleFonts}

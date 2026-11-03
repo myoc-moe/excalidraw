@@ -499,6 +499,7 @@ import type {
   NullableGridSize,
   UIConfig,
   ImageStatus,
+  SpoilerVisibility,
   ExcalidrawCommandCatalogEntry,
 } from "../types";
 import type { ToolbarToolType } from "./Tools";
@@ -679,6 +680,15 @@ class App extends React.Component<AppProps, AppState> {
   public imageStatus = new Map<FileId, ImageStatus>();
   public imageStatusEmitter = new Emitter<[]>();
   public imagePlaceholderUpdateEmitter = new Emitter<[]>();
+  /**
+   * View state of spoilered files. Lives outside `appState`, so it never
+   * reaches the store, history, `onChange`, local storage or exported JSON.
+   * Mutated in place so the identity stays stable for the static canvas.
+   */
+  public spoileredFiles = new Map<FileId, SpoilerVisibility>();
+  /** visibility given to files marked from now on */
+  public spoilerDefaultVisibility: SpoilerVisibility = "hidden";
+  public spoileredFilesEmitter = new Emitter<[]>();
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
    * Indicates whether the embeddable's url has been validated for rendering.
@@ -946,6 +956,10 @@ class App extends React.Component<AppProps, AppState> {
       mutateElement: this.mutateElement,
       addFiles: this.addFiles,
       addImagePlaceholder: this.addImagePlaceholder,
+      markFileSpoilered: this.markFileSpoilered,
+      setSpoileredFileVisibility: this.setSpoileredFileVisibility,
+      setAllSpoileredFilesVisibility: this.setAllSpoileredFilesVisibility,
+      getSpoileredFiles: this.getSpoileredFiles,
       setDownloadProgress: this.setDownloadProgress,
       setDownloadError: this.setDownloadError,
       setUploadProgress: this.setUploadProgress,
@@ -13417,6 +13431,79 @@ class App extends React.Component<AppProps, AppState> {
       height,
       crop: null,
     };
+  };
+
+  public getSpoileredFiles = (): ReadonlyMap<FileId, SpoilerVisibility> =>
+    new Map(this.spoileredFiles);
+
+  /** a file with no shown entry left resets the default for new marks */
+  private resetSpoilerDefaultIfNoneShown = () => {
+    for (const visibility of this.spoileredFiles.values()) {
+      if (visibility === "shown") {
+        return;
+      }
+    }
+    this.spoilerDefaultVisibility = "hidden";
+  };
+
+  /** clears the render caches of the affected files only, repaints the static
+      canvas once and notifies the host. Never touches `setState`. */
+  private onSpoileredFilesChanged = (changedFileIds: ReadonlySet<FileId>) => {
+    for (const element of this.scene.getElementsIncludingDeleted()) {
+      if (
+        isInitializedImageElement(element) &&
+        changedFileIds.has(element.fileId)
+      ) {
+        ShapeCache.delete(element);
+      }
+    }
+    this.imagePlaceholderUpdateEmitter.trigger();
+    this.spoileredFilesEmitter.trigger();
+    this.props.onSpoileredFilesChange?.(this.getSpoileredFiles());
+  };
+
+  public markFileSpoilered = (fileId: FileId, spoilered: boolean) => {
+    if (spoilered) {
+      if (this.spoileredFiles.has(fileId)) {
+        return;
+      }
+      this.spoileredFiles.set(fileId, this.spoilerDefaultVisibility);
+    } else {
+      if (!this.spoileredFiles.delete(fileId)) {
+        return;
+      }
+      this.resetSpoilerDefaultIfNoneShown();
+    }
+    this.onSpoileredFilesChanged(new Set([fileId]));
+  };
+
+  public setSpoileredFileVisibility = (
+    fileId: FileId,
+    visibility: SpoilerVisibility,
+  ) => {
+    const current = this.spoileredFiles.get(fileId);
+    if (current === undefined || current === visibility) {
+      return;
+    }
+    this.spoileredFiles.set(fileId, visibility);
+    this.resetSpoilerDefaultIfNoneShown();
+    this.onSpoileredFilesChanged(new Set([fileId]));
+  };
+
+  /** Also sets the default when no file is marked. The reset rule does not
+      apply here. */
+  public setAllSpoileredFilesVisibility = (visibility: SpoilerVisibility) => {
+    this.spoilerDefaultVisibility = visibility;
+    const changed = new Set<FileId>();
+    for (const [fileId, current] of this.spoileredFiles) {
+      if (current !== visibility) {
+        this.spoileredFiles.set(fileId, visibility);
+        changed.add(fileId);
+      }
+    }
+    if (changed.size) {
+      this.onSpoileredFilesChanged(changed);
+    }
   };
 
   /** updates image cache, refreshing updated elements and/or setting status
