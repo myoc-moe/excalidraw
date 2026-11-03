@@ -13686,13 +13686,29 @@ class App extends React.Component<AppProps, AppState> {
     fileId: FileId,
     visibility: SpoilerVisibility,
   ) => {
-    const current = this.spoileredFiles.get(fileId);
-    if (current === undefined || current === visibility) {
+    this.setMarkedSpoileredFilesVisibility([fileId], visibility);
+  };
+
+  /** Sets many marked files at once. One repaint and one
+      `onSpoileredFilesChange` call, and none when nothing changes. Unmarked
+      files are skipped. */
+  private setMarkedSpoileredFilesVisibility = (
+    fileIds: Iterable<FileId>,
+    visibility: SpoilerVisibility,
+  ) => {
+    const changed = new Set<FileId>();
+    for (const fileId of fileIds) {
+      const current = this.spoileredFiles.get(fileId);
+      if (current !== undefined && current !== visibility) {
+        this.spoileredFiles.set(fileId, visibility);
+        changed.add(fileId);
+      }
+    }
+    if (!changed.size) {
       return;
     }
-    this.spoileredFiles.set(fileId, visibility);
     this.resetSpoilerDefaultIfNoneShown();
-    this.onSpoileredFilesChanged(new Set([fileId]));
+    this.onSpoileredFilesChanged(changed);
   };
 
   /** Also sets the default when no file is marked. The reset rule does not
@@ -14660,6 +14676,48 @@ class App extends React.Component<AppProps, AppState> {
     return [];
   };
 
+  /** "Show spoiler" or "Hide spoiler" for the selected images with a marked
+      file. The label is "Hide spoiler" when any of them is shown. The item
+      sets all of them to the same target. */
+  private getSpoilerContextMenuItems = (
+    hitElement?: NonDeletedExcalidrawElement | null,
+  ): ContextMenuItems => {
+    if (!this.spoileredFiles.size) {
+      return [];
+    }
+
+    const selectedElements = this.scene.getSelectedElements(this.state);
+    const candidates =
+      hitElement && !this.state.selectedElementIds[hitElement.id]
+        ? [hitElement]
+        : selectedElements;
+
+    const fileIds = new Set<FileId>();
+    for (const element of candidates) {
+      if (
+        isInitializedImageElement(element) &&
+        this.spoileredFiles.has(element.fileId)
+      ) {
+        fileIds.add(element.fileId);
+      }
+    }
+    if (!fileIds.size) {
+      return [];
+    }
+
+    const anyShown = [...fileIds].some(
+      (fileId) => this.spoileredFiles.get(fileId) === "shown",
+    );
+    const target: SpoilerVisibility = anyShown ? "hidden" : "shown";
+    return [
+      {
+        key: "toggleSpoiler",
+        label: t(anyShown ? "labels.hideSpoiler" : "labels.showSpoiler"),
+        onSelect: () => this.setMarkedSpoileredFilesVisibility(fileIds, target),
+      },
+    ];
+  };
+
   private getImageActionContextMenuItems = (
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
@@ -14712,7 +14770,11 @@ class App extends React.Component<AppProps, AppState> {
     type: "canvas" | "element",
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
-    const imageContextMenuItems = this.getImageContextMenuItems(hitElement);
+    // the built-in spoiler item goes before the host items
+    const imageContextMenuItems = [
+      ...this.getSpoilerContextMenuItems(hitElement),
+      ...this.getImageContextMenuItems(hitElement),
+    ];
     const imageActionContextMenuItems =
       this.getImageActionContextMenuItems(hitElement);
     const elementLinkContextMenuItems =
