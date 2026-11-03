@@ -2597,6 +2597,7 @@ class App extends React.Component<AppProps, AppState> {
                             renderConfig={{
                               imageCache: this.imageCache,
                               getGifFrameIndex: this.gifPlayback.getFrameIndex,
+                              spoileredFiles: this.spoileredFiles,
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
@@ -2626,6 +2627,7 @@ class App extends React.Component<AppProps, AppState> {
                                 imageCache: this.imageCache,
                                 getGifFrameIndex:
                                   this.gifPlayback.getFrameIndex,
+                                spoileredFiles: this.spoileredFiles,
                                 isExporting: false,
                                 imageTransitionDuration:
                                   this.props.imageOptions

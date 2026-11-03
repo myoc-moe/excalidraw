@@ -2,6 +2,7 @@ import type { UserIdleState, EditorInterface } from "@excalidraw/common";
 import type {
   ExcalidrawElement,
   ExcalidrawImageElement,
+  FileId,
   NonDeletedElementsMap,
   NonDeletedExcalidrawElement,
   NonDeletedSceneElementsMap,
@@ -17,6 +18,7 @@ import type {
   InteractiveCanvasAppState,
   StaticCanvasAppState,
   SocketId,
+  SpoilerVisibility,
   PendingExcalidrawElements,
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
@@ -32,6 +34,9 @@ export type StaticCanvasRenderConfig = {
   imageCache: AppClassProperties["imageCache"];
   getGifFrameIndex?: (element: ExcalidrawImageElement) => number | undefined;
   imageTransitionDuration?: number;
+  /** view state of spoilered files. Images of a `"hidden"` file draw the
+   placeholder (blur) and never the image. Not set when exporting. */
+  spoileredFiles?: ReadonlyMap<FileId, SpoilerVisibility>;
   renderGrid: boolean;
   /** whether to render link icons on elements with links (never rendered
    when exporting). @default true */

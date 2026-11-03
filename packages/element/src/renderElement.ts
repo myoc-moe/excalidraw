@@ -424,7 +424,20 @@ const drawElementOnCanvas = (
         ? cacheEntry?.image
         : undefined;
 
+      // MyOC: a hidden spoilered file never draws the image, the GIF frame or
+      // the cross-fade. Only the placeholder (blur) shows.
       if (
+        element.fileId !== null &&
+        renderConfig.spoileredFiles?.get(element.fileId) === "hidden"
+      ) {
+        // end the cross-fade, or each static render would make the element
+        // canvas again while the file is hidden
+        if (cacheEntry?.transitionStart !== undefined) {
+          delete cacheEntry.placeholderImage;
+          delete cacheEntry.transitionStart;
+        }
+        drawImagePlaceholder(element, context, renderConfig.theme);
+      } else if (
         cacheEntry?.gifDecodeStatus === "pending" &&
         !cacheEntry.gif?.frames.length
       ) {
