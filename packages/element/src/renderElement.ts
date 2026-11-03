@@ -70,10 +70,13 @@ import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 
 import { ShapeCache } from "./shape";
-import { getThumbHashPlaceholder } from "./image";
 import { getGifRenderFrame } from "./gif";
 import { drawGifDecodePlaceholder } from "./renderGif";
-import { drawSpoilerOverlay } from "./spoilerOverlay";
+import {
+  drawSpoilerOverlay,
+  getSpoilerCover,
+  isImageSpoilerHidden,
+} from "./spoilerOverlay";
 
 import type {
   ExcalidrawElement,
@@ -153,39 +156,43 @@ export interface ExcalidrawElementWithCanvas {
   spoilerOverlayKey: string | null;
 }
 
-/** MyOC: the hover, flip and label state of the spoiler overlay of a hidden
- * image, or null when the element draws no overlay. Part of the element
- * canvas cache key, so a hover change regenerates only that element. */
+/** MyOC: the "Show spoiler" overlay of `element`, or null when the element
+ * draws none: it is not a hidden image, or the render config has no overlay
+ * (an export). */
+const getSpoilerOverlay = (
+  element: ExcalidrawElement,
+  renderConfig: StaticCanvasRenderConfig,
+) => {
+  const overlay = renderConfig.spoiler?.overlay;
+  if (
+    !overlay ||
+    !isImageElement(element) ||
+    !isImageSpoilerHidden(element, renderConfig.spoiler)
+  ) {
+    return null;
+  }
+  return {
+    element,
+    label: overlay.label,
+    hovered: overlay.getHoveredElementId() === element.id,
+    // the element canvas of a pending image is drawn with no flip (see
+    // `drawElementFromCanvas`)
+    flipped: !isPendingImageElement(element, renderConfig),
+  };
+};
+
+/** MyOC: the hover, flip and label state of the spoiler overlay, or null when
+ * the element draws no overlay. Part of the element canvas cache key, so a
+ * hover change regenerates only that element. */
 const getSpoilerOverlayKey = (
   element: ExcalidrawElement,
   renderConfig: StaticCanvasRenderConfig,
 ): string | null => {
-  if (
-    renderConfig.isExporting ||
-    !isInitializedImageElement(element) ||
-    renderConfig.spoileredFiles?.get(element.fileId) !== "hidden"
-  ) {
-    return null;
-  }
-  return `${isSpoilerButtonHovered(element, renderConfig) ? 1 : 0}|${
-    isElementCanvasFlipped(element, renderConfig) ? 1 : 0
-  }|${getSpoilerButtonLabel(renderConfig)}`;
+  const overlay = getSpoilerOverlay(element, renderConfig);
+  return overlay
+    ? `${overlay.hovered ? 1 : 0}|${overlay.flipped ? 1 : 0}|${overlay.label}`
+    : null;
 };
-
-const isSpoilerButtonHovered = (
-  element: ExcalidrawElement,
-  renderConfig: StaticCanvasRenderConfig,
-) => renderConfig.getHoveredSpoilerElementId?.() === element.id;
-
-/** the element canvas of a pending image is drawn with no flip (see
- * `drawElementFromCanvas`) */
-const isElementCanvasFlipped = (
-  element: ExcalidrawElement,
-  renderConfig: StaticCanvasRenderConfig,
-) => !isPendingImageElement(element, renderConfig);
-
-const getSpoilerButtonLabel = (renderConfig: StaticCanvasRenderConfig) =>
-  renderConfig.spoilerButtonLabel ?? "Show spoiler";
 
 const cappedElementCanvasSize = (
   element: NonDeletedExcalidrawElement,
@@ -294,7 +301,20 @@ const generateElementCanvas = (
 
   const rc = rough.canvas(canvas);
 
-  drawElementOnCanvas(element, rc, context, renderConfig, zoom.value);
+  drawElementOnCanvas(element, rc, context, renderConfig);
+
+  // MyOC: the icon and the button of a hidden image, in the element canvas so
+  // that they move with the element
+  const spoilerOverlay = getSpoilerOverlay(element, renderConfig);
+  if (spoilerOverlay) {
+    drawSpoilerOverlay(spoilerOverlay.element, context, {
+      zoom: zoom.value,
+      label: spoilerOverlay.label,
+      hovered: spoilerOverlay.hovered,
+      flipped: spoilerOverlay.flipped,
+      theme: renderConfig.theme,
+    });
+  }
 
   context.restore();
 
@@ -367,21 +387,31 @@ const drawCroppedImage = (
   );
 };
 
+/** MyOC: the cover fill (the ThumbHash blur or the grey box) with no glyph.
+ * A hidden spoilered image draws only this. */
+const drawImageCover = (
+  element: ExcalidrawImageElement,
+  context: CanvasRenderingContext2D,
+  theme: StaticCanvasRenderConfig["theme"],
+) => {
+  const cover = getSpoilerCover(element, theme);
+  if (cover.type === "thumbHash") {
+    drawCroppedImage(element, context, cover.canvas);
+  } else {
+    context.fillStyle = cover.color;
+    context.fillRect(0, 0, element.width, element.height);
+  }
+  return cover;
+};
+
 const drawImagePlaceholder = (
   element: ExcalidrawImageElement,
   context: CanvasRenderingContext2D,
   theme: StaticCanvasRenderConfig["theme"],
 ) => {
-  if (element.status !== "error" && element.thumbHash) {
-    const thumbHashPlaceholder = getThumbHashPlaceholder(element.thumbHash);
-    if (thumbHashPlaceholder) {
-      drawCroppedImage(element, context, thumbHashPlaceholder);
-      return;
-    }
+  if (drawImageCover(element, context, theme).type === "thumbHash") {
+    return;
   }
-
-  context.fillStyle = theme === THEME.DARK ? "#2E2E2E" : "#E7E7E7";
-  context.fillRect(0, 0, element.width, element.height);
 
   const imageMinWidthOrHeight = Math.min(element.width, element.height);
 
@@ -406,9 +436,6 @@ const drawElementOnCanvas = (
   rc: RoughCanvas,
   context: CanvasRenderingContext2D,
   renderConfig: StaticCanvasRenderConfig,
-  /** MyOC: set for the element canvas (screen render) only. The spoiler
-   * overlay needs it for its on-screen size. */
-  zoomValue?: number,
 ) => {
   switch (element.type) {
     case "rectangle":
@@ -466,28 +493,9 @@ const drawElementOnCanvas = (
         : undefined;
 
       // MyOC: a hidden spoilered file never draws the image, the GIF frame or
-      // the cross-fade. Only the placeholder (blur) shows.
-      if (
-        element.fileId !== null &&
-        renderConfig.spoileredFiles?.get(element.fileId) === "hidden"
-      ) {
-        // end the cross-fade, or each static render would make the element
-        // canvas again while the file is hidden
-        if (cacheEntry?.transitionStart !== undefined) {
-          delete cacheEntry.placeholderImage;
-          delete cacheEntry.transitionStart;
-        }
-        drawImagePlaceholder(element, context, renderConfig.theme);
-        // the icon and the button. Never in exports.
-        if (zoomValue !== undefined && !renderConfig.isExporting) {
-          drawSpoilerOverlay(element, context, {
-            zoom: zoomValue,
-            label: getSpoilerButtonLabel(renderConfig),
-            hovered: isSpoilerButtonHovered(element, renderConfig),
-            flipped: isElementCanvasFlipped(element, renderConfig),
-            theme: renderConfig.theme,
-          });
-        }
+      // the cross-fade. Only the cover shows, with no glyph.
+      if (isImageSpoilerHidden(element, renderConfig.spoiler)) {
+        drawImageCover(element, context, renderConfig.theme);
       } else if (
         cacheEntry?.gifDecodeStatus === "pending" &&
         !cacheEntry.gif?.frames.length
@@ -711,9 +719,12 @@ const generateElementWithCanvas = (
     prevElementWithCanvas.zoomValue !== zoom.value &&
     !appState?.shouldCacheIgnoreZoom;
   const imageCrop = isImageElement(element) ? element.crop : null;
+  // MyOC: a hidden file draws no cross-fade, so it needs no new canvas
   const hasActiveImageTransition =
     isInitializedImageElement(element) &&
-    renderConfig.imageCache.get(element.fileId)?.transitionStart !== undefined;
+    renderConfig.imageCache.get(element.fileId)?.transitionStart !==
+      undefined &&
+    !isImageSpoilerHidden(element, renderConfig.spoiler);
 
   const containingFrameOpacity =
     getContainingFrame(element, elementsMap)?.opacity || 100;

@@ -776,6 +776,57 @@ describe("image insertion", () => {
     });
   });
 
+  it("MyOC: starts no cross-fade when the file loads while it is spoiler-hidden", async () => {
+    await setupImageTest(
+      [
+        { width: 32, height: 32 },
+        { width: 64, height: 64 },
+      ],
+      { imageOptions: { placeholderTransitionDuration: 10_000 } },
+    );
+
+    const fileId = "hidden-placeholder-file" as FileId;
+    API.setElements([
+      API.createElement({
+        type: "image",
+        fileId,
+        width: 100,
+        height: 100,
+      }),
+    ]);
+    act(() => h.app.api.markFileSpoilered(fileId, true));
+    const file = await API.loadFile("./fixtures/deer.png");
+
+    await h.app.api.addImagePlaceholder(fileId, file);
+    const temporaryImage = h.app.imageCache.get(fileId)?.image;
+    expect(temporaryImage).toBeInstanceOf(HTMLImageElement);
+
+    // cleared in the same step that ends the cross-fade of a hidden file
+    h.app.api.setDownloadProgress(fileId, 1);
+    const fileDataURL = await blobModule.getDataURL(file);
+    act(() => {
+      h.app.api.addFiles([
+        {
+          id: fileId,
+          fileName: file.name,
+          mimeType: MIME_TYPES.png,
+          dataURL: fileDataURL,
+          created: Date.now(),
+        },
+      ]);
+    });
+
+    await waitFor(() => {
+      expect(h.app.imageCache.get(fileId)?.image).toBeInstanceOf(
+        HTMLImageElement,
+      );
+      expect(h.app.imageCache.get(fileId)?.image).not.toBe(temporaryImage);
+      expect(h.app.imageLoadingProgress.has(fileId)).toBe(false);
+    });
+    expect(h.app.imageCache.get(fileId)?.transitionStart).toBeUndefined();
+    expect(h.app.imageCache.get(fileId)?.placeholderImage).toBeUndefined();
+  });
+
   describe("MyOC regression: full image after a placeholder thumbnail", () => {
     type ImageCache = typeof h.app.imageCache;
     type ImageCacheEntry = ReturnType<ImageCache["get"]>;

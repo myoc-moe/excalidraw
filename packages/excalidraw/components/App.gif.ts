@@ -8,7 +8,6 @@ import {
 import { MIME_TYPES } from "@excalidraw/common";
 
 import type {
-  ExcalidrawElement,
   ExcalidrawImageElement,
   FileId,
   InitializedExcalidrawImageElement,
@@ -34,24 +33,16 @@ export class AppGifPlayback {
     this.runtimeState.clear();
   };
 
-  /** a hidden spoilered GIF does not play. Its metadata and runtime frame stay
-      as they are, so it resumes where it was when the file is shown. */
-  private isSpoilerHidden = (element: NonDeleted<ExcalidrawElement>) =>
-    isInitializedImageElement(element) &&
-    this.app.spoileredFiles.get(element.fileId) === "hidden";
-
   /** a shown file restarts the frame timer, so the first frame after the
       pause does not jump */
   resetFrameTimers = (fileIds: ReadonlySet<FileId>) => {
     const now = performance.now();
     for (const element of this.app.scene.getNonDeletedElements()) {
-      const state = isInitializedImageElement(element)
-        ? this.runtimeState.get(element.id)
-        : undefined;
-      if (
-        state &&
-        fileIds.has((element as InitializedExcalidrawImageElement).fileId)
-      ) {
+      const state =
+        isInitializedImageElement(element) && fileIds.has(element.fileId)
+          ? this.runtimeState.get(element.id)
+          : undefined;
+      if (state) {
         state.lastFrameTime = now;
       }
     }
@@ -79,7 +70,11 @@ export class AppGifPlayback {
       !hasPlayableGif(
         this.app.scene
           .getNonDeletedElements()
-          .filter((element) => !this.isSpoilerHidden(element)),
+          // a hidden spoilered GIF does not play. Its metadata and runtime
+          // frame stay as they are, so it resumes where it was when shown.
+          .filter(
+            (element) => !this.app.spoilers.isImageSpoilerHidden(element),
+          ),
         this.app.imageCache,
       )
     ) {
@@ -162,7 +157,7 @@ export class AppGifPlayback {
       if (
         !isInitializedImageElement(element) ||
         !element.gifPlayback?.playing ||
-        this.isSpoilerHidden(element)
+        this.app.spoilers.isImageSpoilerHidden(element)
       ) {
         continue;
       }

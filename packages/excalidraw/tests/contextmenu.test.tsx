@@ -984,16 +984,19 @@ describe("contextMenu spoiler item", () => {
 
     it("hiding all shown files from the menu resets the default for new marks", async () => {
       await setup();
+      // the default is private: read it with an element access
+      /* eslint-disable dot-notation */
       selectTwo("hidden", "hidden");
       act(() => h.app.api.setAllSpoileredFilesVisibility("shown"));
-      expect(h.app.spoilerDefaultVisibility).toBe("shown");
+      expect(h.app.spoilers["defaultVisibility"]).toBe("shown");
       openMenu(50, 50);
       expectLabel(HIDE);
       fireEvent.click(getSpoilerItem()!);
       expect(h.app.api.getSpoileredFiles().get(FA)).toBe("hidden");
       expect(h.app.api.getSpoileredFiles().get(FB)).toBe("hidden");
       // no shown file is left, so the reset rule applies through the batch
-      expect(h.app.spoilerDefaultVisibility).toBe("hidden");
+      expect(h.app.spoilers["defaultVisibility"]).toBe("hidden");
+      /* eslint-enable dot-notation */
       act(() => h.app.api.markFileSpoilered(FC, true));
       expect(h.app.api.getSpoileredFiles().get(FC)).toBe("hidden");
     });

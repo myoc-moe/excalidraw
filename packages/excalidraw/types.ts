@@ -1348,9 +1348,7 @@ export type AppClassProperties = {
   imageStatus: App["imageStatus"];
   imageStatusEmitter: App["imageStatusEmitter"];
   imagePlaceholderUpdateEmitter: App["imagePlaceholderUpdateEmitter"];
-  spoileredFiles: App["spoileredFiles"];
-  spoilerDefaultVisibility: App["spoilerDefaultVisibility"];
-  spoileredFilesEmitter: App["spoileredFilesEmitter"];
+  spoilers: App["spoilers"];
   files: BinaryFiles;
   editorInterface: App["editorInterface"];
   scene: App["scene"];

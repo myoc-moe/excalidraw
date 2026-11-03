@@ -2,7 +2,7 @@ import { isImageElement } from "@excalidraw/element";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
-import type { ExcalidrawImageElement, FileId } from "@excalidraw/element/types";
+import type { ExcalidrawImageElement } from "@excalidraw/element/types";
 
 import { IconButton } from "../components/IconButton";
 import { cropIcon } from "../components/icons";
@@ -24,7 +24,7 @@ export const actionToggleCropEditor = register({
     })[0] as ExcalidrawImageElement;
 
     // a hidden image has no visible pixels to crop
-    if (app.spoileredFiles.get(selectedElement.fileId as FileId) === "hidden") {
+    if (app.spoilers.isImageSpoilerHidden(selectedElement)) {
       return false;
     }
 
@@ -43,7 +43,7 @@ export const actionToggleCropEditor = register({
       !appState.croppingElementId &&
       selectedElements.length === 1 &&
       isImageElement(selectedElements[0]) &&
-      app.spoileredFiles.get(selectedElements[0].fileId as FileId) !== "hidden"
+      !app.spoilers.isImageSpoilerHidden(selectedElements[0])
     ) {
       return true;
     }

@@ -19,7 +19,7 @@ import { newImageElement } from "../src/newElement";
 import { elementWithCanvasCache, renderElement } from "../src/renderElement";
 import { ShapeCache } from "../src/shape";
 import {
-  getSpoilerButtonRect,
+  getSpoilerOverlayLayout,
   getSpoilerOverlayColors,
   isPointInSpoilerButton,
   SPOILER_FOREGROUND_DARK,
@@ -103,6 +103,7 @@ const renderImages = (
   } = {},
 ) => {
   const theme = opts.theme ?? THEME.LIGHT;
+  const { spoileredFiles } = opts;
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d")!;
   const elementsMap = arrayToMap(elements);
@@ -110,9 +111,13 @@ const renderImages = (
     canvasBackgroundColor: "#ffffff",
     imageCache,
     imageTransitionDuration: opts.imageTransitionDuration,
-    spoileredFiles: opts.spoileredFiles,
-    getHoveredSpoilerElementId: opts.getHoveredSpoilerElementId,
-    spoilerButtonLabel: opts.spoilerButtonLabel,
+    spoiler: spoileredFiles && {
+      isFileHidden: (fileId) => spoileredFiles.get(fileId) === "hidden",
+      overlay: {
+        label: opts.spoilerButtonLabel ?? LABEL,
+        getHoveredElementId: opts.getHoveredSpoilerElementId ?? (() => null),
+      },
+    },
     renderGrid: false,
     isExporting: opts.isExporting ?? false,
     embedsValidationStatus: new Map(),
@@ -272,7 +277,7 @@ describe("static render of a spoilered file", () => {
   });
 
   describe("hidden file with no ThumbHash", () => {
-    it("draws the grey placeholder and not the image", () => {
+    it("draws the grey box with no glyph and not the image", () => {
       const element = createElement();
       const full = createImage(FULL_WIDTH, FULL_HEIGHT);
 
@@ -282,8 +287,27 @@ describe("static render of a spoilered file", () => {
       });
 
       expect(fillRect).toHaveBeenCalledWith(0, 0, 400, 300);
-      expect(getIconDrawCount(drawImage)).toBe(1);
+      expect(getIconDrawCount(drawImage)).toBe(0);
       expect(getDrawCount(drawImage, full)).toBe(0);
+    });
+
+    it("draws no glyph in the screen render path", () => {
+      renderImage(createElement(), new Map(), {
+        spoileredFiles: new Map([[FILE_ID, "hidden"]]),
+      });
+
+      expect(fillRect).toHaveBeenCalledWith(0, 0, 400, 300);
+      expect(getIconDrawCount(drawImage)).toBe(0);
+    });
+
+    it("keeps the glyph of the placeholder of a shown or unmarked file", () => {
+      renderImage(createElement(), new Map(), {
+        spoileredFiles: new Map([[FILE_ID, "shown"]]),
+      });
+      renderImage(createElement(), new Map(), { spoileredFiles: new Map() });
+      renderImage(createElement(), new Map(), { isExporting: true });
+
+      expect(getIconDrawCount(drawImage)).toBe(3);
     });
 
     it("draws the grey placeholder in the screen render path", () => {
@@ -712,7 +736,7 @@ describe("static render of a spoilered file", () => {
       expect(elementWithCanvasCache.get(element)).toBe(cached);
     });
 
-    it("clears the cross-fade state of a hidden file", () => {
+    it("does not change the cross-fade state of a hidden file (the App ends it)", () => {
       const element = createElement({
         thumbHash: createThumbHash(64, 48, 195),
       });
@@ -727,8 +751,8 @@ describe("static render of a spoilered file", () => {
       });
 
       const entry = imageCache.get(FILE_ID)!;
-      expect(entry.transitionStart).toBeUndefined();
-      expect(entry.placeholderImage).toBeUndefined();
+      expect(entry.transitionStart).toBeDefined();
+      expect(entry.placeholderImage).toBeDefined();
     });
 
     it("does not cross-fade from a stale thumbnail when the file is shown later", () => {
@@ -748,6 +772,10 @@ describe("static render of a spoilered file", () => {
         imageTransitionDuration: 60_000,
       });
 
+      // the App ends the cross-fade when the file is hidden (App.spoiler.ts)
+      const entry = imageCache.get(FILE_ID)!;
+      delete entry.placeholderImage;
+      delete entry.transitionStart;
       spoileredFiles.set(FILE_ID, "shown");
       ShapeCache.delete(element);
       drawImage.mockClear();
@@ -943,6 +971,33 @@ describe("static render of a spoilered file", () => {
       expect(getDrawCount(drawImage, full)).toBe(0);
       expect(getDrawCount(drawImage, blur)).toBe(0);
     });
+
+    it("draws the grey box with no error glyph for a hidden file in error", () => {
+      const element = createElement({
+        status: "error",
+        thumbHash: createThumbHash(64, 48, 221),
+      });
+
+      renderImage(element, new Map(), {
+        spoileredFiles: new Map([[FILE_ID, "hidden"]]),
+      });
+
+      expect(fillRect).toHaveBeenCalledWith(0, 0, 400, 300);
+      expect(getIconDrawCount(drawImage)).toBe(0);
+    });
+
+    it("keeps the error glyph for a shown file in error", () => {
+      const element = createElement({
+        status: "error",
+        thumbHash: createThumbHash(64, 48, 222),
+      });
+
+      renderImage(element, new Map(), {
+        spoileredFiles: new Map([[FILE_ID, "shown"]]),
+      });
+
+      expect(getIconDrawCount(drawImage)).toBe(1);
+    });
   });
 });
 
@@ -993,8 +1048,8 @@ describe("spoiler overlay geometry", () => {
     "keeps one on-screen size and the element centre at zoom %s",
     (zoom) => {
       const big = createSizedElement(400 / zoom + 400, 300 / zoom + 300);
-      const reference = getSpoilerButtonRect(big, 1, LABEL);
-      const layout = getSpoilerButtonRect(big, zoom, LABEL);
+      const reference = getSpoilerOverlayLayout(big, 1, LABEL);
+      const layout = getSpoilerOverlayLayout(big, zoom, LABEL);
 
       expect(layout.button).not.toBeNull();
       const screen = toScreen(layout.button!, big, zoom);
@@ -1013,7 +1068,7 @@ describe("spoiler overlay geometry", () => {
   );
 
   it("centres the icon and the button together on the element centre", () => {
-    const { icon, button } = getSpoilerButtonRect(element, 1, LABEL);
+    const { icon, button } = getSpoilerOverlayLayout(element, 1, LABEL);
     const top = icon!.y - icon!.size / 2;
     const bottom = button!.y + button!.height;
     expect((top + bottom) / 2).toBeCloseTo(element.height / 2);
@@ -1022,15 +1077,15 @@ describe("spoiler overlay geometry", () => {
   });
 
   it("makes the button wider for a longer label", () => {
-    const short = getSpoilerButtonRect(element, 1, "Show");
-    const long = getSpoilerButtonRect(element, 1, "Show the spoiler now");
+    const short = getSpoilerOverlayLayout(element, 1, "Show");
+    const long = getSpoilerOverlayLayout(element, 1, "Show the spoiler now");
     expect(long.button!.width).toBeGreaterThan(short.button!.width);
   });
 
   describe("minimum on-screen size", () => {
     it("has no button and keeps the icon for a small element", () => {
       const small = createSizedElement(56, 44);
-      const { icon, button } = getSpoilerButtonRect(small, 1, LABEL);
+      const { icon, button } = getSpoilerOverlayLayout(small, 1, LABEL);
       expect(button).toBeNull();
       expect(icon).not.toBeNull();
       expect(icon!.x).toBe(28);
@@ -1038,45 +1093,48 @@ describe("spoiler overlay geometry", () => {
     });
 
     it("drops the button when the zoom makes the element small", () => {
-      expect(getSpoilerButtonRect(element, 1, LABEL).button).not.toBeNull();
-      expect(getSpoilerButtonRect(element, 0.25, LABEL).button).toBeNull();
-      expect(getSpoilerButtonRect(element, 0.25, LABEL).icon).not.toBeNull();
+      expect(getSpoilerOverlayLayout(element, 1, LABEL).button).not.toBeNull();
+      expect(getSpoilerOverlayLayout(element, 0.25, LABEL).button).toBeNull();
+      expect(getSpoilerOverlayLayout(element, 0.25, LABEL).icon).not.toBeNull();
     });
 
     it("adds the button when the zoom makes a small element big", () => {
       const small = createSizedElement(56, 44);
-      expect(getSpoilerButtonRect(small, 1, LABEL).button).toBeNull();
-      expect(getSpoilerButtonRect(small, 4, LABEL).button).not.toBeNull();
+      expect(getSpoilerOverlayLayout(small, 1, LABEL).button).toBeNull();
+      expect(getSpoilerOverlayLayout(small, 4, LABEL).button).not.toBeNull();
     });
 
     it("has no button when only the width is too small", () => {
       const narrow = createSizedElement(80, 600);
-      expect(getSpoilerButtonRect(narrow, 1, LABEL).button).toBeNull();
+      expect(getSpoilerOverlayLayout(narrow, 1, LABEL).button).toBeNull();
     });
 
     it("has no button when only the height is too small", () => {
       const flat = createSizedElement(800, 50);
-      expect(getSpoilerButtonRect(flat, 1, LABEL).button).toBeNull();
+      expect(getSpoilerOverlayLayout(flat, 1, LABEL).button).toBeNull();
     });
 
     it("keeps the button at the exact limit and drops it 1px below", () => {
-      const { button } = getSpoilerButtonRect(element, 1, LABEL);
+      const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
       // 8px free on each side
       const minWidth = button!.width + 16;
       const minHeight = 22 + 6 + 24 + 16;
       expect(
-        getSpoilerButtonRect(createSizedElement(minWidth, minHeight), 1, LABEL)
-          .button,
+        getSpoilerOverlayLayout(
+          createSizedElement(minWidth, minHeight),
+          1,
+          LABEL,
+        ).button,
       ).not.toBeNull();
       expect(
-        getSpoilerButtonRect(
+        getSpoilerOverlayLayout(
           createSizedElement(minWidth - 1, minHeight),
           1,
           LABEL,
         ).button,
       ).toBeNull();
       expect(
-        getSpoilerButtonRect(
+        getSpoilerOverlayLayout(
           createSizedElement(minWidth, minHeight - 1),
           1,
           LABEL,
@@ -1086,13 +1144,13 @@ describe("spoiler overlay geometry", () => {
 
     it("makes the icon smaller in a very small element", () => {
       const tiny = createSizedElement(20, 20);
-      const { icon } = getSpoilerButtonRect(tiny, 1, LABEL);
+      const { icon } = getSpoilerOverlayLayout(tiny, 1, LABEL);
       expect(icon!.size).toBe(10);
     });
 
     it("draws nothing when the icon would be smaller than 6px", () => {
       const tiny = createSizedElement(10, 10);
-      expect(getSpoilerButtonRect(tiny, 1, LABEL)).toEqual({
+      expect(getSpoilerOverlayLayout(tiny, 1, LABEL)).toEqual({
         icon: null,
         button: null,
       });
@@ -1112,7 +1170,7 @@ describe("spoiler overlay geometry", () => {
 
     it("is true inside the button and false outside it", () => {
       const placed = createSizedElement(400, 300, { x: 100, y: 50 });
-      const { button, icon } = getSpoilerButtonRect(placed, 1, LABEL);
+      const { button, icon } = getSpoilerOverlayLayout(placed, 1, LABEL);
       const c = center(button!);
       expect(
         isPointInSpoilerButton(placed, { x: 100 + c.x, y: 50 + c.y }, 1, LABEL),
@@ -1153,7 +1211,7 @@ describe("spoiler overlay geometry", () => {
 
     it("follows the zoom", () => {
       const placed = createSizedElement(400, 300);
-      const atOne = getSpoilerButtonRect(placed, 1, LABEL).button!;
+      const atOne = getSpoilerOverlayLayout(placed, 1, LABEL).button!;
       // a point inside the button at zoom 1, just right of the button at
       // zoom 2 (the button is half as wide in scene units)
       const point = { x: atOne.x + 2, y: atOne.y + atOne.height / 2 };
@@ -1172,7 +1230,7 @@ describe("spoiler overlay geometry", () => {
       const rotated = createSizedElement(400, 300, {
         angle: Math.PI / 2,
       });
-      const { button } = getSpoilerButtonRect(rotated, 1, LABEL);
+      const { button } = getSpoilerOverlayLayout(rotated, 1, LABEL);
       const c = center(button!);
       // offset of the button centre from the element centre
       const dx = c.x - 200;
@@ -1189,7 +1247,7 @@ describe("spoiler overlay geometry", () => {
 
     it("follows the element when it is rotated by a half turn", () => {
       const rotated = createSizedElement(400, 300, { angle: Math.PI });
-      const { button } = getSpoilerButtonRect(rotated, 1, LABEL);
+      const { button } = getSpoilerOverlayLayout(rotated, 1, LABEL);
       const c = center(button!);
       expect(
         isPointInSpoilerButton(
@@ -1206,7 +1264,7 @@ describe("spoiler overlay geometry", () => {
       "keeps the button where it draws for the flip %j",
       (scale) => {
         const flipped = createSizedElement(400, 300, { scale });
-        const { button } = getSpoilerButtonRect(flipped, 1, LABEL);
+        const { button } = getSpoilerOverlayLayout(flipped, 1, LABEL);
         const c = center(button!);
         // the draw cancels the flip, so the button is not mirrored
         expect(isPointInSpoilerButton(flipped, c, 1, LABEL)).toBe(true);
@@ -1221,7 +1279,7 @@ describe("spoiler overlay geometry", () => {
         angle: Math.PI / 2,
         scale: [1, -1],
       });
-      const c = center(getSpoilerButtonRect(element, 1, LABEL).button!);
+      const c = center(getSpoilerOverlayLayout(element, 1, LABEL).button!);
       const dx = c.x - 200;
       const dy = c.y - 150;
       expect(
@@ -1456,7 +1514,7 @@ describe("spoiler overlay draw", () => {
       thumbHash: createThumbHash(64, 48, 12),
     });
     renderImage(element, new Map(), { spoileredFiles: hidden() });
-    const { button } = getSpoilerButtonRect(element, 1, LABEL);
+    const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
     expect(labelCalls()[0]).toEqual([
       LABEL,
       button!.x + button!.width / 2,
@@ -1653,7 +1711,7 @@ describe("spoiler overlay draw", () => {
       expectForeground(SPOILER_FOREGROUND_DARK);
     });
 
-    it("keeps the grey placeholder glyph under the overlay", () => {
+    it("draws no grey placeholder glyph under the overlay", () => {
       const drawImage = vi.spyOn(
         CanvasRenderingContext2D.prototype,
         "drawImage",
@@ -1661,7 +1719,7 @@ describe("spoiler overlay draw", () => {
       renderImage(createSizedElement(400, 300), new Map(), {
         spoileredFiles: hidden(),
       });
-      expect(getIconDrawCount(drawImage)).toBe(1);
+      expect(getIconDrawCount(drawImage)).toBe(0);
       drawImage.mockRestore();
     });
   });

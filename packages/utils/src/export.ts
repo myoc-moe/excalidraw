@@ -34,7 +34,9 @@ type ExportOpts = {
   maxWidthOrHeight?: number;
   exportingFrame?: NonDeleted<ExcalidrawFrameLikeElement> | null;
   /** images of these files draw the ThumbHash blur (or a grey box) in place
-   * of the image. No button or icon. The option changes only the drawn image: the real image data stays in the embedded scene when `exportEmbedScene` is on. */
+   * of the image. No button or icon. The option changes only the drawn
+   * image: the real image data stays in the embedded scene when
+   * `exportEmbedScene` is on. */
   spoileredFileIds?: readonly FileId[];
   getDimensions?: (
     width: number,

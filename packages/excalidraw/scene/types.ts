@@ -18,7 +18,6 @@ import type {
   InteractiveCanvasAppState,
   StaticCanvasAppState,
   SocketId,
-  SpoilerVisibility,
   PendingExcalidrawElements,
 } from "../types";
 import type { RoughCanvas } from "roughjs/bin/canvas";
@@ -27,6 +26,27 @@ import type { Drawable } from "roughjs/bin/core";
 export type RenderableElementsMap = NonDeletedElementsMap &
   MakeBrand<"RenderableElementsMap">;
 
+/** MyOC: the spoiler input that the canvas and the SVG render share. A
+ * predicate, not a set of ids: the App reads its live map through it, so the
+ * render config keeps one identity and has no copy to keep in sync. */
+export type SpoilerRenderConfig = {
+  /** images of a hidden file draw only the cover (the ThumbHash blur or the
+   grey box), never the image */
+  isFileHidden: (fileId: FileId) => boolean;
+};
+
+export type StaticCanvasSpoilerConfig = SpoilerRenderConfig & {
+  /** the "Show spoiler" button of the screen render. Null for an export,
+   which draws no button. */
+  overlay: {
+    /** the localized label of the button */
+    label: string;
+    /** the id of the image whose button is under the pointer. A getter, so
+     that a hover change repaints with no App render. */
+    getHoveredElementId: () => ExcalidrawElement["id"] | null;
+  } | null;
+};
+
 export type StaticCanvasRenderConfig = {
   canvasBackgroundColor: AppState["viewBackgroundColor"];
   // extra options passed to the renderer
@@ -34,14 +54,8 @@ export type StaticCanvasRenderConfig = {
   imageCache: AppClassProperties["imageCache"];
   getGifFrameIndex?: (element: ExcalidrawImageElement) => number | undefined;
   imageTransitionDuration?: number;
-  /** view state of spoilered files. Images of a `"hidden"` file draw the
-   placeholder (blur) and never the image. Not set when exporting. */
-  spoileredFiles?: ReadonlyMap<FileId, SpoilerVisibility>;
-  /** the id of the image whose "Show spoiler" button is under the pointer.
-   A getter, so that a hover change repaints with no App render. */
-  getHoveredSpoilerElementId?: () => ExcalidrawElement["id"] | null;
-  /** the localized label of the "Show spoiler" button */
-  spoilerButtonLabel?: string;
+  /** MyOC: hidden spoilered files. Not set when no file is hidden. */
+  spoiler?: StaticCanvasSpoilerConfig;
   renderGrid: boolean;
   /** whether to render link icons on elements with links (never rendered
    when exporting). @default true */
@@ -73,8 +87,8 @@ export type SVGRenderConfig = {
    * @default true
    */
   reuseImages: boolean;
-  /** MyOC: files whose image is replaced by the ThumbHash placeholder */
-  spoileredFileIds?: ReadonlySet<FileId>;
+  /** MyOC: hidden spoilered files. Not set when no file is hidden. */
+  spoiler?: SpoilerRenderConfig;
   theme: AppState["theme"];
 };
 

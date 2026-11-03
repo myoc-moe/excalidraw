@@ -170,7 +170,7 @@ export const GifPlaybackControls = ({
 
   // a spoiler change shows or hides the controls without an App render
   React.useEffect(
-    () => app.spoileredFilesEmitter.on(() => rerenderGifControls()),
+    () => app.spoilers.emitter.on(() => rerenderGifControls()),
     [app],
   );
 
@@ -195,7 +195,7 @@ export const GifPlaybackControls = ({
     .flatMap((element) => {
       if (
         !isInitializedImageElement(element) ||
-        app.spoileredFiles.get(element.fileId) === "hidden" ||
+        app.spoilers.isImageSpoilerHidden(element) ||
         files[element.fileId]?.mimeType !== MIME_TYPES.gif ||
         app.imageCache.get(element.fileId)?.gifDecodeStatus !== "deferred"
       ) {
@@ -233,7 +233,7 @@ export const GifPlaybackControls = ({
     const selectedElement = selectedElements[0];
     if (
       !isInitializedImageElement(selectedElement) ||
-      app.spoileredFiles.get(selectedElement.fileId) === "hidden" ||
+      app.spoilers.isImageSpoilerHidden(selectedElement) ||
       files[selectedElement.fileId]?.mimeType !== MIME_TYPES.gif
     ) {
       return null;

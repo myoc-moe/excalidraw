@@ -1,15 +1,64 @@
-// MyOC: the eye-closed icon and the "Show spoiler" button that a hidden
-// spoilered image draws over its placeholder (blur). The draw and the hit test
-// use the same geometry, so the click area is always the drawn button.
+// MyOC: the cover of a hidden spoilered image, and the eye-closed icon and
+// the "Show spoiler" button that the screen render draws over it. The draw
+// and the hit test use the same geometry, so the click area is always the
+// drawn button.
 
+import { IMAGE_PLACEHOLDER_COLOR } from "@excalidraw/common";
 import { pointFrom, pointRotateRads, type Radians } from "@excalidraw/math";
 import { thumbHashToAverageRGBA } from "thumbhash";
 
 import type { GlobalPoint } from "@excalidraw/math";
+import type { SpoilerRenderConfig } from "@excalidraw/excalidraw/scene/types";
+import type { AppState } from "@excalidraw/excalidraw/types";
 
+import { getThumbHashPlaceholder } from "./image";
 import { getLineWidth } from "./textMeasurements";
+import { isInitializedImageElement } from "./typeChecks";
 
-import type { ExcalidrawImageElement, FontString } from "./types";
+import type {
+  ExcalidrawElement,
+  ExcalidrawImageElement,
+  FontString,
+} from "./types";
+
+// -----------------------------------------------------------------------------
+// hidden state and cover
+// -----------------------------------------------------------------------------
+
+/** The render-side spoiler predicate: true for an image whose file the render
+ * config hides. False for an element with no file id. */
+export const isImageSpoilerHidden = (
+  element: ExcalidrawElement | null | undefined,
+  spoiler: SpoilerRenderConfig | null | undefined,
+): boolean =>
+  !!element &&
+  !!spoiler &&
+  isInitializedImageElement(element) &&
+  spoiler.isFileHidden(element.fileId);
+
+export type SpoilerCover =
+  | { type: "thumbHash"; thumbHash: string; canvas: HTMLCanvasElement }
+  | { type: "color"; color: string };
+
+/** The cover of a hidden image: the ThumbHash blur, or the grey box of the
+ * theme when the element is in error or has no usable ThumbHash. The canvas
+ * and the SVG render both draw it. It has no glyph. */
+export const getSpoilerCover = (
+  element: ExcalidrawImageElement,
+  theme: AppState["theme"],
+): SpoilerCover => {
+  if (element.status !== "error" && element.thumbHash) {
+    const canvas = getThumbHashPlaceholder(element.thumbHash);
+    if (canvas) {
+      return { type: "thumbHash", thumbHash: element.thumbHash, canvas };
+    }
+  }
+  return { type: "color", color: IMAGE_PLACEHOLDER_COLOR[theme] };
+};
+
+// -----------------------------------------------------------------------------
+// layout and hit test
+// -----------------------------------------------------------------------------
 
 // sizes in screen px. The draw divides them by the zoom, so the overlay keeps
 // one on-screen size at every zoom.
@@ -22,7 +71,10 @@ const BUTTON_PADDING_X = 12;
 /** space to keep free between the button and the element edges */
 const EDGE_MARGIN = 8;
 
-const FONT = `600 ${FONT_SIZE}px system-ui, sans-serif` as FontString;
+/** the font of the button label, at `fontSize` px. The measure and the draw
+ * both use it. */
+export const getSpoilerLabelFont = (fontSize: number) =>
+  `600 ${fontSize}px system-ui, sans-serif` as FontString;
 
 type Rect = { x: number; y: number; width: number; height: number };
 
@@ -38,7 +90,7 @@ const labelWidthCache = new Map<string, number>();
 const getLabelWidth = (label: string) => {
   let width = labelWidthCache.get(label);
   if (width === undefined) {
-    width = getLineWidth(label, FONT);
+    width = getLineWidth(label, getSpoilerLabelFont(FONT_SIZE));
     labelWidthCache.set(label, width);
   }
   return width;
@@ -46,7 +98,7 @@ const getLabelWidth = (label: string) => {
 
 /** The icon and the button in element space: origin at the element top-left,
  * no rotation and no flip. Centred in the element. */
-export const getSpoilerButtonRect = (
+export const getSpoilerOverlayLayout = (
   element: Pick<ExcalidrawImageElement, "width" | "height">,
   zoom: number,
   label: string,
@@ -94,7 +146,7 @@ export const isPointInSpoilerButton = (
   zoom: number,
   label: string,
 ) => {
-  const { button } = getSpoilerButtonRect(element, zoom, label);
+  const { button } = getSpoilerOverlayLayout(element, zoom, label);
   if (!button) {
     return false;
   }
@@ -125,10 +177,14 @@ export const isPointInSpoilerButton = (
 export const SPOILER_FOREGROUND_LIGHT = "#ffffff";
 export const SPOILER_FOREGROUND_DARK = "#1d1d1b";
 
-/** the grey placeholder colours of `drawImagePlaceholder` (no ThumbHash) */
-const PLACEHOLDER_COLOR = {
-  light: [0xe7 / 255, 0xe7 / 255, 0xe7 / 255],
-  dark: [0x2e / 255, 0x2e / 255, 0x2e / 255],
+/** the channels (0..1) of a `#rrggbb` colour */
+const hexToChannels = (hex: string) =>
+  [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16) / 255);
+
+/** the grey box of the cover (no ThumbHash), as channels */
+const PLACEHOLDER_CHANNELS = {
+  light: hexToChannels(IMAGE_PLACEHOLDER_COLOR.light),
+  dark: hexToChannels(IMAGE_PLACEHOLDER_COLOR.dark),
 } as const;
 
 const averageColorCache = new Map<string, [number, number, number] | null>();
@@ -165,11 +221,9 @@ const getLuminance = ([r, g, b]: readonly number[]) =>
 const getContrast = (a: number, b: number) =>
   (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 
-const DARK_FOREGROUND_LUMINANCE = getLuminance([
-  0x1d / 255,
-  0x1d / 255,
-  0x1b / 255,
-]);
+const DARK_FOREGROUND_LUMINANCE = getLuminance(
+  hexToChannels(SPOILER_FOREGROUND_DARK),
+);
 
 /**
  * The colours come from the colour under the overlay: the ThumbHash average
@@ -186,7 +240,7 @@ export const getSpoilerOverlayColors = (
 ) => {
   const base =
     (thumbHash ? getThumbHashAverageColor(thumbHash) : null) ??
-    PLACEHOLDER_COLOR[theme];
+    PLACEHOLDER_CHANNELS[theme];
   const channels = base.map((channel) => Math.min(1, Math.max(0, channel)));
   const luminance = getLuminance(channels);
   const isLightCover =
@@ -216,7 +270,7 @@ export const getSpoilerOverlayColors = (
 const EYE_CLOSED_PATH =
   "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M15 12a3 3 0 1 1-6 0a3 3 0 1 1 6 0z M3 3l18 18";
 
-/** Draws in element space (see `getSpoilerButtonRect`). Set `flipped` when
+/** Draws in element space (see `getSpoilerOverlayLayout`). Set `flipped` when
  * the caller applies the element flip to this context, so the overlay text
  * and icon do not mirror. */
 export const drawSpoilerOverlay = (
@@ -231,13 +285,14 @@ export const drawSpoilerOverlay = (
   },
 ) => {
   const { zoom, label, hovered, flipped, theme } = opts;
-  const { icon, button } = getSpoilerButtonRect(element, zoom, label);
+  const { icon, button } = getSpoilerOverlayLayout(element, zoom, label);
   if (!icon && !button) {
     return;
   }
-  // `drawImagePlaceholder` draws the grey box, not the ThumbHash, on error
+  // the colours follow the cover under the overlay
+  const cover = getSpoilerCover(element, theme);
   const colors = getSpoilerOverlayColors(
-    element.status !== "error" ? element.thumbHash ?? null : null,
+    cover.type === "thumbHash" ? cover.thumbHash : null,
     hovered,
     theme,
   );
@@ -280,7 +335,7 @@ export const drawSpoilerOverlay = (
     context.fill();
 
     context.fillStyle = colors.foreground;
-    context.font = `600 ${FONT_SIZE / zoom}px system-ui, sans-serif`;
+    context.font = getSpoilerLabelFont(FONT_SIZE / zoom);
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(

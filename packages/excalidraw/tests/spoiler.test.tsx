@@ -1,11 +1,11 @@
 import {
   CaptureUpdateAction,
   elementWithCanvasCache,
-  getSpoilerButtonRect,
   getThumbHashPlaceholder,
   newElementWith,
 } from "@excalidraw/element";
 import { ShapeCache } from "@excalidraw/element";
+import { getSpoilerOverlayLayout } from "@excalidraw/element/spoilerOverlay";
 import {
   KEYS,
   MIME_TYPES,
@@ -309,7 +309,7 @@ describe("spoilered files state and API", () => {
 
     expect(h.app.api.getSpoileredFiles().get(A)).toBe("hidden");
     expect(h.app.api.getSpoileredFiles().size).toBe(1);
-    expect(h.app.api.getSpoileredFiles()).not.toBe(h.app.spoileredFiles);
+    expect(h.app.api.getSpoileredFiles()).not.toBe(h.app.spoilers.files);
     expect(h.app.api.getSpoileredFiles()).not.toBe(
       h.app.api.getSpoileredFiles(),
     );
@@ -362,7 +362,7 @@ describe("spoilered files state and API", () => {
       const { onSpoileredFilesChange } = await setup();
       mark(A);
       const received = onSpoileredFilesChange.mock.lastCall![0];
-      expect(received).not.toBe(h.app.spoileredFiles);
+      expect(received).not.toBe(h.app.spoilers.files);
       mark(B);
       expect(received.has(B)).toBe(false);
     });
@@ -576,13 +576,37 @@ describe("spoilered files state and API", () => {
       deleteSpy.mockRestore();
     });
 
+    it("ends the cross-fade of a file when it is hidden, and only then", async () => {
+      await setup();
+      const setCrossFade = (fileId: FileId) =>
+        h.app.imageCache.set(fileId, {
+          image: new Image(),
+          mimeType: MIME_TYPES.png,
+          placeholderImage: new Image(),
+          transitionStart: performance.now(),
+        });
+      setCrossFade(A);
+      setCrossFade(B);
+      setAll("shown");
+      mark(A);
+      mark(B);
+      expect(h.app.imageCache.get(A)!.transitionStart).toBeDefined();
+
+      setOne(A, "hidden");
+
+      expect(h.app.imageCache.get(A)!.transitionStart).toBeUndefined();
+      expect(h.app.imageCache.get(A)!.placeholderImage).toBeUndefined();
+      expect(h.app.imageCache.get(B)!.transitionStart).toBeDefined();
+      expect(h.app.imageCache.get(B)!.placeholderImage).toBeDefined();
+    });
+
     it("keeps the map identity stable", async () => {
       await setup();
-      const map = h.app.spoileredFiles;
+      const map = h.app.spoilers.files;
       mark(A);
       setAll("shown");
       mark(A, false);
-      expect(h.app.spoileredFiles).toBe(map);
+      expect(h.app.spoilers.files).toBe(map);
     });
   });
 });
@@ -1353,7 +1377,11 @@ const getLatest = (id: string) =>
     button width and height (0.5 is the centre). */
 const buttonPoint = (id: string, fx = 0.5, fy = 0.5) => {
   const element = getLatest(id);
-  const { button } = getSpoilerButtonRect(element, h.state.zoom.value, LABEL);
+  const { button } = getSpoilerOverlayLayout(
+    element,
+    h.state.zoom.value,
+    LABEL,
+  );
   expect(button).not.toBeNull();
   const center = pointFrom<GlobalPoint>(
     element.x + element.width / 2,
@@ -1488,10 +1516,10 @@ describe("Show spoiler button", () => {
       "draws the button at one on-screen size at zoom %s",
       async (zoom) => {
         await spoilerSetup({}, { width: 1000, height: 800 } as any);
-        const before = getSpoilerButtonRect(getLatest("img-a"), 1, LABEL);
+        const before = getSpoilerOverlayLayout(getLatest("img-a"), 1, LABEL);
         act(() => API.setAppState({ zoom: { value: zoom as any } }));
         await nextFrame();
-        const after = getSpoilerButtonRect(getLatest("img-a"), zoom, LABEL);
+        const after = getSpoilerOverlayLayout(getLatest("img-a"), zoom, LABEL);
         expect(after.button!.width * zoom).toBeCloseTo(before.button!.width);
         expect(after.button!.height * zoom).toBeCloseTo(24);
         // the element canvas was made for the new zoom
@@ -1596,7 +1624,7 @@ describe("Show spoiler button", () => {
           where === null
             ? (() => {
                 const element = getLatest("img-a");
-                const { icon } = getSpoilerButtonRect(element, 1, LABEL);
+                const { icon } = getSpoilerOverlayLayout(element, 1, LABEL);
                 return { x: element.x + icon!.x, y: element.y + icon!.y };
               })()
             : where === "left"
@@ -1679,7 +1707,7 @@ describe("Show spoiler button", () => {
         height: 44,
       } as any);
       const element = getLatest("img-a");
-      expect(getSpoilerButtonRect(element, 1, LABEL).button).toBeNull();
+      expect(getSpoilerOverlayLayout(element, 1, LABEL).button).toBeNull();
       clickCanvasAt({ x: element.x + 28, y: element.y + 22 });
       expect(visibility(A)).toBe("hidden");
       expect(onSpoileredFilesChange).not.toHaveBeenCalled();
@@ -1690,7 +1718,7 @@ describe("Show spoiler button", () => {
       const point = buttonPoint("img-a");
       act(() => API.setAppState({ zoom: { value: 0.25 as any } }));
       expect(
-        getSpoilerButtonRect(getLatest("img-a"), 0.25, LABEL).button,
+        getSpoilerOverlayLayout(getLatest("img-a"), 0.25, LABEL).button,
       ).toBeNull();
       clickCanvasAt(point);
       expect(visibility(A)).toBe("hidden");
@@ -1700,7 +1728,7 @@ describe("Show spoiler button", () => {
     it("follows a rotated element", async () => {
       await spoilerSetup({}, { angle: Math.PI / 2 } as any);
       const element = getLatest("img-a");
-      const { button } = getSpoilerButtonRect(element, 1, LABEL);
+      const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
       // the unrotated button centre is outside the rotated button
       clickCanvasAt({
         x: element.x + button!.x + button!.width / 2,
@@ -2077,7 +2105,7 @@ describe("Show spoiler button", () => {
         await spoilerSetup();
         panCentreToLeftEdge();
         const element = getLatest("img-a");
-        const { button } = getSpoilerButtonRect(element, 1, LABEL);
+        const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
         // where a clamped button would start: at the viewport edge
         const clampedRight = toClient(buttonPoint("img-a", 0.5, 0.5));
         const { x, y } = {
@@ -2337,7 +2365,7 @@ describe("Show spoiler button", () => {
 
   // 1.3.13
   describe("hover", () => {
-    const hoveredId = () => h.app.getHoveredSpoilerElementId();
+    const hoveredId = () => h.app.spoilers.getHoveredElementId();
     const cursor = () => GlobalTestState.interactiveCanvas.style.cursor;
 
     it("highlights the button and sets the pointer cursor on enter", async () => {
@@ -2453,6 +2481,111 @@ describe("Show spoiler button", () => {
       mouse.moveTo(target.x, target.y);
       expect(hoveredId()).toBe(null);
       mouse.upAt();
+    });
+
+    describe("with a still pointer", () => {
+      // the wheel listener is on the excalidraw container, so the event
+      // bubbles from the canvas. A plain wheel pans.
+      const wheelPan = (deltaY: number) =>
+        act(() => {
+          fireEvent.wheel(GlobalTestState.interactiveCanvas, {
+            deltaX: 0,
+            deltaY,
+          });
+        });
+
+      it("ends the hover when a wheel pan moves the button away, and hovers it again when it comes back", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        expect(hoveredId()).toBe("img-a");
+        const scrollY = h.state.scrollY;
+
+        wheelPan(100);
+        expect(h.state.scrollY).not.toBe(scrollY);
+        expect(hoveredId()).toBe(null);
+        expect(cursor()).not.toBe("pointer");
+
+        wheelPan(-100);
+        expect(h.state.scrollY).toBe(scrollY);
+        expect(hoveredId()).toBe("img-a");
+        expect(cursor()).toBe("pointer");
+      });
+
+      it("hovers the button when a wheel pan moves it under the pointer", async () => {
+        await spoilerSetup();
+        const point = buttonPoint("img-a");
+        const client = toClient(point);
+        mouse.moveTo(client.x, client.y - 100);
+        expect(hoveredId()).toBe(null);
+
+        wheelPan(100);
+        expect(hoveredId()).toBe("img-a");
+      });
+
+      it("does not repaint for a wheel pan that keeps the pointer on the button", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        const trigger = vi.spyOn(
+          h.app.imagePlaceholderUpdateEmitter,
+          "trigger",
+        );
+        wheelPan(2);
+        expect(hoveredId()).toBe("img-a");
+        expect(trigger).not.toHaveBeenCalled();
+        trigger.mockRestore();
+      });
+
+      it("follows an API change", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+
+        setOne(A, "shown");
+        expect(hoveredId()).toBe(null);
+
+        setOne(A, "hidden");
+        expect(hoveredId()).toBe("img-a");
+      });
+
+      it("repaints once for an API change that also changes the hover", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        const trigger = vi.spyOn(
+          h.app.imagePlaceholderUpdateEmitter,
+          "trigger",
+        );
+        setOne(A, "shown");
+        expect(trigger).toHaveBeenCalledTimes(1);
+        trigger.mockRestore();
+      });
+
+      it("follows a context menu change", async () => {
+        await spoilerSetup();
+        select(getLatest("img-a"));
+        hoverAt(buttonPoint("img-a"));
+        const { x, y } = toClient(buttonPoint("img-a"));
+        fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+          button: 2,
+          clientX: x,
+          clientY: y,
+        });
+        const item = document.querySelector<HTMLElement>(
+          '[data-testid="toggleSpoiler"]',
+        );
+        expect(item).not.toBeNull();
+        fireEvent.click(item!);
+
+        expect(visibility(A)).toBe("shown");
+        expect(hoveredId()).toBe(null);
+      });
+
+      it("does not hover after the pointer left the canvas", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        fireEvent.pointerLeave(GlobalTestState.interactiveCanvas);
+        setOne(A, "shown");
+        setOne(A, "hidden");
+        expect(hoveredId()).toBe(null);
+      });
     });
 
     describe("repaint", () => {
@@ -3069,6 +3202,30 @@ describe("export with spoileredFileIds", () => {
           .getAttribute("href"),
       );
       expect(uses).toEqual([blurURL(HASH_A), blurURL(HASH_C)]);
+    });
+
+    it("writes the grey box and the blur for an error and a normal element of one file and one ThumbHash", async () => {
+      const svg = await run(
+        [
+          newElementWith(createImage("a1", A, 0, { thumbHash: HASH_A }), {
+            status: "error",
+          }),
+          createImage("a2", A, 300, { thumbHash: HASH_A }),
+        ],
+        createFiles(),
+        [A],
+        { reuseImages: true },
+      );
+      const symbolIds = [...svg.querySelectorAll("use")].map((use) =>
+        use.getAttribute("href")!.slice(1),
+      );
+      expect(new Set(symbolIds).size).toBe(2);
+      const uses = symbolIds.map((id) =>
+        svg.querySelector(`[id="${id}"] image`)!.getAttribute("href"),
+      );
+      expect(uses[0]).toMatch(/^data:image\/svg\+xml,/);
+      expect(decodeURIComponent(uses[0]!)).toContain("#E7E7E7");
+      expect(uses[1]).toBe(blurURL(HASH_A));
     });
 
     it("keeps the crop of a listed image", async () => {

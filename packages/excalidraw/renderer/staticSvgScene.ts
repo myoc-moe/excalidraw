@@ -12,7 +12,11 @@ import {
   MIME_TYPES,
 } from "@excalidraw/common";
 import { normalizeLink, toValidURL } from "@excalidraw/common";
-import { getThumbHashPlaceholder, hashString } from "@excalidraw/element";
+import {
+  getSpoilerCover,
+  hashString,
+  isImageSpoilerHidden,
+} from "@excalidraw/element";
 import { getUncroppedWidthAndHeight } from "@excalidraw/element";
 import {
   createPlaceholderEmbeddableLabel,
@@ -85,21 +89,18 @@ const maybeWrapNodesInFrameClipPath = (
   return null;
 };
 
-/** MyOC: the ThumbHash blur of `element` as a data URL, or a grey box when
- * the element has no (valid) ThumbHash */
-const getSpoilerPlaceholderDataURL = (
+/** MyOC: the cover of a hidden image (the ThumbHash blur, or the grey box)
+ * as a data URL. The canvas render draws the same cover. */
+const getSpoilerCoverDataURL = (
   element: ExcalidrawImageElement,
   theme: SVGRenderConfig["theme"],
 ) => {
-  if (element.status !== "error" && element.thumbHash) {
-    const dataURL = getThumbHashPlaceholder(element.thumbHash)?.toDataURL();
-    if (dataURL) {
-      return dataURL;
-    }
+  const cover = getSpoilerCover(element, theme);
+  if (cover.type === "thumbHash") {
+    return cover.canvas.toDataURL();
   }
-  const fill = theme === THEME.DARK ? "#2E2E2E" : "#E7E7E7";
   return `data:${MIME_TYPES.svg},${encodeURIComponent(
-    `<svg xmlns="${SVG_NS}" width="1" height="1"><rect width="1" height="1" fill="${fill}"/></svg>`,
+    `<svg xmlns="${SVG_NS}" width="1" height="1"><rect width="1" height="1" fill="${cover.color}"/></svg>`,
   )}`;
 };
 
@@ -469,20 +470,22 @@ const renderElementToSvg = (
         : undefined;
       // MyOC: a spoilered file writes the placeholder, never the file data,
       // also when the file is not in `files`
-      const isSpoilered =
-        isInitializedImageElement(element) &&
-        !!renderConfig.spoileredFileIds?.has(element.fileId);
+      const spoilerDataURL = isImageSpoilerHidden(element, renderConfig.spoiler)
+        ? getSpoilerCoverDataURL(element, renderConfig.theme)
+        : null;
+      const isSpoilered = spoilerDataURL !== null;
       if (isInitializedImageElement(element) && (isSpoilered || fileData)) {
         // the dark theme filter is for an svg file only, not for the blur
         const isSvgFile = !isSpoilered && fileData?.mimeType === MIME_TYPES.svg;
         const { reuseImages = true } = renderConfig;
 
         const fileId = element.fileId;
-        // the blur belongs to the element, so a spoilered symbol is not shared
-        // between elements with a different ThumbHash
-        const variant = isSpoilered
-          ? `-spoiler-${hashString(element.thumbHash ?? "")}`
-          : "";
+        // the cover belongs to the element (its ThumbHash and status), so a
+        // spoilered symbol is shared only between elements with one cover
+        const variant =
+          spoilerDataURL !== null
+            ? `-spoiler-${hashString(spoilerDataURL)}`
+            : "";
 
         let symbolId = `image-${fileId}${variant}`;
 
@@ -507,12 +510,7 @@ const renderElementToSvg = (
           symbol.id = symbolId;
 
           const image = svgRoot.ownerDocument.createElementNS(SVG_NS, "image");
-          image.setAttribute(
-            "href",
-            isSpoilered
-              ? getSpoilerPlaceholderDataURL(element, renderConfig.theme)
-              : fileData!.dataURL,
-          );
+          image.setAttribute("href", spoilerDataURL ?? fileData!.dataURL);
           image.setAttribute("preserveAspectRatio", "none");
 
           if (element.crop || !reuseImages) {

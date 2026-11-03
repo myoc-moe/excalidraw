@@ -258,7 +258,6 @@ import {
   isEligibleFrameChildType,
   getBindingStrategyForDraggingBindingElementEndpoints,
   isNonDeletedElement,
-  isPointInSpoilerButton,
 } from "@excalidraw/element";
 
 import type { GlobalPoint, LocalPoint, Radians } from "@excalidraw/math";
@@ -437,6 +436,7 @@ import { AppCursor } from "./App.cursor";
 import { AppDrawShape } from "./App.drawshape";
 import { AppFlowchart } from "./App.flowchart";
 import { AppGifPlayback } from "./App.gif";
+import { AppSpoilers } from "./App.spoiler";
 import { AppViewport, RIGHT_SIDEBAR_WIDTH } from "./App.viewport";
 import BraveMeasureTextError from "./BraveMeasureTextError";
 import { ContextMenu, CONTEXT_MENU_SEPARATOR } from "./ContextMenu";
@@ -500,7 +500,6 @@ import type {
   NullableGridSize,
   UIConfig,
   ImageStatus,
-  SpoilerVisibility,
   ExcalidrawCommandCatalogEntry,
 } from "../types";
 import type { ToolbarToolType } from "./Tools";
@@ -599,9 +598,6 @@ let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
 let isHoldingZ: boolean = false;
 let isPanning: boolean = false;
-/** MyOC: a double-click this soon after a click that showed a spoilered
-    file belongs to that click (browsers use about 500ms) */
-const SPOILER_REVEAL_DOUBLE_CLICK_TIMEOUT = 500;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
 let touchTimeout = 0;
@@ -684,30 +680,6 @@ class App extends React.Component<AppProps, AppState> {
   public imageStatus = new Map<FileId, ImageStatus>();
   public imageStatusEmitter = new Emitter<[]>();
   public imagePlaceholderUpdateEmitter = new Emitter<[]>();
-  /**
-   * View state of spoilered files. Lives outside `appState`, so it never
-   * reaches the store, history, `onChange`, local storage or exported JSON.
-   * Mutated in place so the identity stays stable for the static canvas.
-   */
-  public spoileredFiles = new Map<FileId, SpoilerVisibility>();
-  /** visibility given to files marked from now on */
-  public spoilerDefaultVisibility: SpoilerVisibility = "hidden";
-  public spoileredFilesEmitter = new Emitter<[]>();
-  /** the image whose "Show spoiler" button is under the pointer */
-  private hoveredSpoilerElementId: ExcalidrawElement["id"] | null = null;
-  /** the button under the last pointer down. A click shows the file only
-      when it ends on the same button with no drag. */
-  private spoilerButtonPointerDown: {
-    elementId: ExcalidrawElement["id"];
-    clientX: number;
-    clientY: number;
-  } | null = null;
-  /** the last click that showed a file, so that its double-click does not
-      act on the shown image */
-  private lastSpoilerReveal: {
-    elementId: ExcalidrawElement["id"];
-    time: number;
-  } | null = null;
   private iFrameRefs = new Map<ExcalidrawElement["id"], HTMLIFrameElement>();
   /**
    * Indicates whether the embeddable's url has been validated for rendering.
@@ -744,6 +716,15 @@ class App extends React.Component<AppProps, AppState> {
   public flowchart: AppFlowchart = new AppFlowchart(this);
   public cursor: AppCursor = new AppCursor(this);
   private gifPlayback: AppGifPlayback = new AppGifPlayback(this);
+  /** MyOC: the view state of spoilered files and the "Show spoiler" button */
+  public spoilers: AppSpoilers = new AppSpoilers(this, {
+    onChange: (changedFileIds) => {
+      this.endCroppingOfHiddenImage();
+      this.gifPlayback.resetFrameTimers(changedFileIds);
+      // showing a file lets its GIF play again. A no-op when nothing plays.
+      this.ensureGifPlaybackLoop();
+    },
+  });
   private zDragZoom: {
     origin: { clientX: number; clientY: number };
     initialZoom: number;
@@ -975,10 +956,10 @@ class App extends React.Component<AppProps, AppState> {
       mutateElement: this.mutateElement,
       addFiles: this.addFiles,
       addImagePlaceholder: this.addImagePlaceholder,
-      markFileSpoilered: this.markFileSpoilered,
-      setSpoileredFileVisibility: this.setSpoileredFileVisibility,
-      setAllSpoileredFilesVisibility: this.setAllSpoileredFilesVisibility,
-      getSpoileredFiles: this.getSpoileredFiles,
+      markFileSpoilered: this.spoilers.markFile,
+      setSpoileredFileVisibility: this.spoilers.setFileVisibility,
+      setAllSpoileredFilesVisibility: this.spoilers.setAllFilesVisibility,
+      getSpoileredFiles: this.spoilers.getFiles,
       setDownloadProgress: this.setDownloadProgress,
       setDownloadError: this.setDownloadError,
       setUploadProgress: this.setUploadProgress,
@@ -2616,10 +2597,9 @@ class App extends React.Component<AppProps, AppState> {
                             renderConfig={{
                               imageCache: this.imageCache,
                               getGifFrameIndex: this.gifPlayback.getFrameIndex,
-                              spoileredFiles: this.spoileredFiles,
-                              getHoveredSpoilerElementId:
-                                this.getHoveredSpoilerElementId,
-                              spoilerButtonLabel: t("labels.showSpoiler"),
+                              spoiler: this.spoilers.getRenderConfig(
+                                t("labels.showSpoiler"),
+                              ),
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
@@ -2649,10 +2629,9 @@ class App extends React.Component<AppProps, AppState> {
                                 imageCache: this.imageCache,
                                 getGifFrameIndex:
                                   this.gifPlayback.getFrameIndex,
-                                spoileredFiles: this.spoileredFiles,
-                                getHoveredSpoilerElementId:
-                                  this.getHoveredSpoilerElementId,
-                                spoilerButtonLabel: t("labels.showSpoiler"),
+                                spoiler: this.spoilers.getRenderConfig(
+                                  t("labels.showSpoiler"),
+                                ),
                                 isExporting: false,
                                 imageTransitionDuration:
                                   this.props.imageOptions
@@ -3982,6 +3961,8 @@ class App extends React.Component<AppProps, AppState> {
         this.state.scrollY,
         this.state.zoom,
       );
+      // MyOC: a wheel zoom or pan moves the buttons under a still pointer
+      this.spoilers.refreshHover({ repaint: true });
     }
 
     if (
@@ -5171,6 +5152,10 @@ class App extends React.Component<AppProps, AppState> {
         for (const fileId of placeholderFileIds) {
           if (this.imageCache.has(fileId) && updatedFiles.has(fileId)) {
             this.clearImageLoadingProgress(fileId);
+            // MyOC: a file that loads while it is hidden starts no cross-fade
+            if (this.spoilers.isFileHidden(fileId)) {
+              this.spoilers.endCrossFade(fileId);
+            }
           }
         }
 
@@ -7329,7 +7314,7 @@ class App extends React.Component<AppProps, AppState> {
 
   private startImageCropping = (image: ExcalidrawImageElement) => {
     // a hidden image has no visible pixels to crop
-    if (this.spoileredFiles.get(image.fileId as FileId) === "hidden") {
+    if (this.spoilers.isImageSpoilerHidden(image)) {
       return;
     }
     this.store.scheduleCapture();
@@ -7399,7 +7384,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // MyOC: a click of this double-click showed the file. The double-click
     // does nothing to that image (no smart zoom, no crop).
-    if (this.isDoubleClickOfSpoilerReveal(event)) {
+    if (this.spoilers.isDoubleClickOfReveal(event)) {
       return;
     }
 
@@ -7656,27 +7641,8 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
-    // MyOC: the "Show spoiler" button of a hidden image. Only a click that
-    // starts and ends on the same button, with no drag (pan, box selection).
-    const spoilerPointerDown = this.spoilerButtonPointerDown;
-    this.spoilerButtonPointerDown = null;
-    const spoilerImage = this.getSpoilerButtonAtPosition(scenePointer);
-    if (
-      spoilerImage &&
-      spoilerPointerDown?.elementId === spoilerImage.id &&
-      pointDistance(
-        pointFrom(spoilerPointerDown.clientX, spoilerPointerDown.clientY),
-        pointFrom(event.clientX, event.clientY),
-      ) < DRAGGING_THRESHOLD
-    ) {
-      event.preventDefault();
-      event.stopPropagation();
-      this.lastSpoilerReveal = {
-        elementId: spoilerImage.id,
-        time: performance.now(),
-      };
-      this.setSpoileredFileVisibility(spoilerImage.fileId, "shown");
-      this.updateHoveredSpoilerButton(null);
+    // MyOC: the "Show spoiler" button of a hidden image
+    if (this.spoilers.handleClick(event, scenePointer)) {
       return;
     }
 
@@ -7744,89 +7710,6 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     return null;
-  };
-
-  /** MyOC: the hidden image whose "Show spoiler" button is at `scenePointer`
-      and is not covered there by another element. The top hit element at the
-      point must be the image itself. */
-  private getSpoilerButtonAtPosition = (scenePointer: {
-    x: number;
-    y: number;
-  }): InitializedExcalidrawImageElement | null => {
-    if (!this.spoileredFiles.size) {
-      return null;
-    }
-    const label = t("labels.showSpoiler");
-    const zoom = this.state.zoom.value;
-    const isHiddenImage = (
-      element: ExcalidrawElement | null,
-    ): element is InitializedExcalidrawImageElement =>
-      !!element &&
-      isInitializedImageElement(element) &&
-      this.spoileredFiles.get(element.fileId) === "hidden";
-
-    // cheap check first: the pointer is on a drawn button
-    if (
-      !this.visibleElements.some(
-        (element) =>
-          isHiddenImage(element) &&
-          isPointInSpoilerButton(element, scenePointer, zoom, label),
-      )
-    ) {
-      return null;
-    }
-
-    const topElement = this.getElementAtPosition(
-      scenePointer.x,
-      scenePointer.y,
-      { includeBoundTextElement: true, includeLockedElements: true },
-    );
-    return isHiddenImage(topElement) &&
-      isPointInSpoilerButton(topElement, scenePointer, zoom, label)
-      ? topElement
-      : null;
-  };
-
-  public getHoveredSpoilerElementId = () => this.hoveredSpoilerElementId;
-
-  /** MyOC: repaints only when the pointer enters or leaves a button. The
-      element canvas cache key holds the hover state, so only that element
-      draws again. */
-  private updateHoveredSpoilerButton = (
-    scenePointer: { x: number; y: number } | null,
-  ) => {
-    const hoveredId = scenePointer
-      ? this.getSpoilerButtonAtPosition(scenePointer)?.id ?? null
-      : null;
-    if (hoveredId === this.hoveredSpoilerElementId) {
-      return;
-    }
-    this.hoveredSpoilerElementId = hoveredId;
-    this.imagePlaceholderUpdateEmitter.trigger();
-  };
-
-  private isDoubleClickOfSpoilerReveal = (event: {
-    clientX: number;
-    clientY: number;
-  }) => {
-    const reveal = this.lastSpoilerReveal;
-    if (
-      !reveal ||
-      performance.now() - reveal.time > SPOILER_REVEAL_DOUBLE_CLICK_TIMEOUT
-    ) {
-      return false;
-    }
-    const { x, y } = viewportCoordsToSceneCoords(event, this.state);
-    return (
-      this.getElementAtPosition(x, y, {
-        includeBoundTextElement: true,
-        includeLockedElements: true,
-      })?.id === reveal.elementId
-    );
-  };
-
-  private onCanvasPointerLeave = () => {
-    this.updateHoveredSpoilerButton(null);
   };
 
   private isPointInsideImageStatusOverlay = (
@@ -8370,13 +8253,11 @@ class App extends React.Component<AppProps, AppState> {
       !this.state.selectionElement &&
       !this.state.selectedElementsAreBeingDragged &&
       !this.state.multiElement;
-    this.updateHoveredSpoilerButton(
-      isIdle && !isOverScrollBar ? scenePointer : null,
-    );
+    this.spoilers.updateHover(event, isIdle && !isOverScrollBar);
     if (isIdle) {
       if (isOverScrollBar) {
         this.cursor.set(CURSOR_TYPE.AUTO);
-      } else if (this.hoveredSpoilerElementId) {
+      } else if (this.spoilers.getHoveredElementId()) {
         this.cursor.set(CURSOR_TYPE.POINTER);
       } else if (this.getImageStatusActionAtPosition(scenePointer)) {
         this.cursor.set(CURSOR_TYPE.POINTER);
@@ -8871,7 +8752,7 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     // MyOC: the selection hover above sets the move or grab cursor
-    if (this.hoveredSpoilerElementId) {
+    if (this.spoilers.getHoveredElementId()) {
       this.cursor.set(CURSOR_TYPE.POINTER);
     }
 
@@ -9110,15 +8991,7 @@ class App extends React.Component<AppProps, AppState> {
 
     // MyOC: before every early return (pans in view mode, with the hand tool
     // or the space key), so that the click can check where the press started
-    const spoilerImageAtPointerDown =
-      this.getSpoilerButtonAtPosition(scenePointer);
-    this.spoilerButtonPointerDown = spoilerImageAtPointerDown
-      ? {
-          elementId: spoilerImageAtPointerDown.id,
-          clientX: event.clientX,
-          clientY: event.clientY,
-        }
-      : null;
+    this.spoilers.onPointerDown(event, scenePointer);
 
     // MyOC: Intercept pointer-down for the held-F target-zoom gesture.
     if (this.handleSmartZoomPointerDown(event, scenePointer)) {
@@ -9350,7 +9223,7 @@ class App extends React.Component<AppProps, AppState> {
     const pointerDownState = this.initialPointerDownState(event);
 
     // MyOC: a press on a "Show spoiler" button selects but never moves
-    if (this.spoilerButtonPointerDown) {
+    if (this.spoilers.isButtonPressed()) {
       pointerDownState.drag.blockDragging = true;
     }
 
@@ -13607,40 +13480,6 @@ class App extends React.Component<AppProps, AppState> {
     };
   };
 
-  public getSpoileredFiles = (): ReadonlyMap<FileId, SpoilerVisibility> =>
-    new Map(this.spoileredFiles);
-
-  /** a file with no shown entry left resets the default for new marks */
-  private resetSpoilerDefaultIfNoneShown = () => {
-    for (const visibility of this.spoileredFiles.values()) {
-      if (visibility === "shown") {
-        return;
-      }
-    }
-    this.spoilerDefaultVisibility = "hidden";
-  };
-
-  /** clears the render caches of the affected files only, repaints the static
-      canvas once and notifies the host. Never touches `setState`. */
-  private onSpoileredFilesChanged = (changedFileIds: ReadonlySet<FileId>) => {
-    for (const element of this.scene.getElementsIncludingDeleted()) {
-      if (
-        isInitializedImageElement(element) &&
-        changedFileIds.has(element.fileId)
-      ) {
-        ShapeCache.delete(element);
-      }
-    }
-    this.imagePlaceholderUpdateEmitter.trigger();
-    this.spoileredFilesEmitter.trigger();
-    this.props.onSpoileredFilesChange?.(this.getSpoileredFiles());
-
-    this.endCroppingOfHiddenImage();
-    this.gifPlayback.resetFrameTimers(changedFileIds);
-    // showing a file lets its GIF play again. A no-op when nothing plays.
-    this.ensureGifPlaybackLoop();
-  };
-
   /** Crop mode cannot be on for a hidden image. Called when a file is hidden
       and from `componentDidUpdate` (after its store commit), which also
       catches undo and redo that restore crop mode. Ends crop mode without a
@@ -13652,8 +13491,7 @@ class App extends React.Component<AppProps, AppState> {
       : null;
     if (
       croppingElement &&
-      isInitializedImageElement(croppingElement) &&
-      this.spoileredFiles.get(croppingElement.fileId) === "hidden"
+      this.spoilers.isImageSpoilerHidden(croppingElement)
     ) {
       // a micro action puts only this change in the store snapshot. A macro
       // `NEVER` would also put there any pending `EVENTUALLY` change, which
@@ -13664,66 +13502,6 @@ class App extends React.Component<AppProps, AppState> {
         appState: { ...this.state, croppingElementId: null },
       });
       this.setState({ croppingElementId: null });
-    }
-  };
-
-  public markFileSpoilered = (fileId: FileId, spoilered: boolean) => {
-    if (spoilered) {
-      if (this.spoileredFiles.has(fileId)) {
-        return;
-      }
-      this.spoileredFiles.set(fileId, this.spoilerDefaultVisibility);
-    } else {
-      if (!this.spoileredFiles.delete(fileId)) {
-        return;
-      }
-      this.resetSpoilerDefaultIfNoneShown();
-    }
-    this.onSpoileredFilesChanged(new Set([fileId]));
-  };
-
-  public setSpoileredFileVisibility = (
-    fileId: FileId,
-    visibility: SpoilerVisibility,
-  ) => {
-    this.setMarkedSpoileredFilesVisibility([fileId], visibility);
-  };
-
-  /** Sets many marked files at once. One repaint and one
-      `onSpoileredFilesChange` call, and none when nothing changes. Unmarked
-      files are skipped. */
-  private setMarkedSpoileredFilesVisibility = (
-    fileIds: Iterable<FileId>,
-    visibility: SpoilerVisibility,
-  ) => {
-    const changed = new Set<FileId>();
-    for (const fileId of fileIds) {
-      const current = this.spoileredFiles.get(fileId);
-      if (current !== undefined && current !== visibility) {
-        this.spoileredFiles.set(fileId, visibility);
-        changed.add(fileId);
-      }
-    }
-    if (!changed.size) {
-      return;
-    }
-    this.resetSpoilerDefaultIfNoneShown();
-    this.onSpoileredFilesChanged(changed);
-  };
-
-  /** Also sets the default when no file is marked. The reset rule does not
-      apply here. */
-  public setAllSpoileredFilesVisibility = (visibility: SpoilerVisibility) => {
-    this.spoilerDefaultVisibility = visibility;
-    const changed = new Set<FileId>();
-    for (const [fileId, current] of this.spoileredFiles) {
-      if (current !== visibility) {
-        this.spoileredFiles.set(fileId, visibility);
-        changed.add(fileId);
-      }
-    }
-    if (changed.size) {
-      this.onSpoileredFilesChanged(changed);
     }
   };
 
@@ -13768,6 +13546,11 @@ class App extends React.Component<AppProps, AppState> {
     for (const [fileId, placeholderImagePromise] of placeholderImages) {
       const cacheEntry = this.imageCache.get(fileId);
       if (!cacheEntry || !updatedFiles.has(fileId)) {
+        continue;
+      }
+      // MyOC: a file that loads while it is hidden starts no cross-fade
+      if (this.spoilers.isFileHidden(fileId)) {
+        this.spoilers.endCrossFade(fileId);
         continue;
       }
 
@@ -13924,7 +13707,7 @@ class App extends React.Component<AppProps, AppState> {
       this.interactiveCanvas.addEventListener(EVENT.TOUCH_END, this.onTouchEnd);
       this.interactiveCanvas.addEventListener(
         "pointerleave",
-        this.onCanvasPointerLeave,
+        this.spoilers.onPointerLeave,
       );
       // -----------------------------------------------------------------------
     } else {
@@ -13938,7 +13721,7 @@ class App extends React.Component<AppProps, AppState> {
       );
       this.interactiveCanvas?.removeEventListener(
         "pointerleave",
-        this.onCanvasPointerLeave,
+        this.spoilers.onPointerLeave,
       );
     }
   };
@@ -14676,48 +14459,6 @@ class App extends React.Component<AppProps, AppState> {
     return [];
   };
 
-  /** "Show spoiler" or "Hide spoiler" for the selected images with a marked
-      file. The label is "Hide spoiler" when any of them is shown. The item
-      sets all of them to the same target. */
-  private getSpoilerContextMenuItems = (
-    hitElement?: NonDeletedExcalidrawElement | null,
-  ): ContextMenuItems => {
-    if (!this.spoileredFiles.size) {
-      return [];
-    }
-
-    const selectedElements = this.scene.getSelectedElements(this.state);
-    const candidates =
-      hitElement && !this.state.selectedElementIds[hitElement.id]
-        ? [hitElement]
-        : selectedElements;
-
-    const fileIds = new Set<FileId>();
-    for (const element of candidates) {
-      if (
-        isInitializedImageElement(element) &&
-        this.spoileredFiles.has(element.fileId)
-      ) {
-        fileIds.add(element.fileId);
-      }
-    }
-    if (!fileIds.size) {
-      return [];
-    }
-
-    const anyShown = [...fileIds].some(
-      (fileId) => this.spoileredFiles.get(fileId) === "shown",
-    );
-    const target: SpoilerVisibility = anyShown ? "hidden" : "shown";
-    return [
-      {
-        key: "toggleSpoiler",
-        label: t(anyShown ? "labels.hideSpoiler" : "labels.showSpoiler"),
-        onSelect: () => this.setMarkedSpoileredFilesVisibility(fileIds, target),
-      },
-    ];
-  };
-
   private getImageActionContextMenuItems = (
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
@@ -14772,7 +14513,7 @@ class App extends React.Component<AppProps, AppState> {
   ): ContextMenuItems => {
     // the built-in spoiler item goes before the host items
     const imageContextMenuItems = [
-      ...this.getSpoilerContextMenuItems(hitElement),
+      ...this.spoilers.getContextMenuItems(hitElement),
       ...this.getImageContextMenuItems(hitElement),
     ];
     const imageActionContextMenuItems =
