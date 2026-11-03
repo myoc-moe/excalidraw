@@ -100,6 +100,7 @@ const renderImages = (
     zoom?: number;
     getHoveredSpoilerElementId?: () => string | null;
     spoilerButtonLabel?: string;
+    hasCenterStatus?: (fileId: FileId) => boolean;
   } = {},
 ) => {
   const theme = opts.theme ?? THEME.LIGHT;
@@ -116,6 +117,7 @@ const renderImages = (
       overlay: {
         label: opts.spoilerButtonLabel ?? LABEL,
         getHoveredElementId: opts.getHoveredSpoilerElementId ?? (() => null),
+        hasCenterStatus: opts.hasCenterStatus ?? (() => false),
       },
     },
     renderGrid: false,
@@ -298,6 +300,44 @@ describe("static render of a spoilered file", () => {
 
       expect(fillRect).toHaveBeenCalledWith(0, 0, 400, 300);
       expect(getIconDrawCount(drawImage)).toBe(0);
+    });
+
+    it("clips the cover of a rounded image like the shown image", () => {
+      const proto = CanvasRenderingContext2D.prototype as any;
+      const hadRoundRect = "roundRect" in proto;
+      // the canvas mock has no roundRect. Add it before the render makes a
+      // context, as the mock binds the prototype methods then.
+      proto.roundRect ??= function () {};
+      const roundRect = vi.spyOn(proto, "roundRect");
+      const clip = vi.spyOn(CanvasRenderingContext2D.prototype, "clip");
+      const element = {
+        ...createElement({ thumbHash: createThumbHash(64, 48, 21) }),
+        roundness: { type: 3 },
+      } as NonDeleted<ExcalidrawImageElement>;
+      const full = createImage(FULL_WIDTH, FULL_HEIGHT);
+
+      renderImage(element, createCache(full), {
+        spoileredFiles: new Map([[FILE_ID, "hidden"]]),
+        isExporting: true,
+      });
+      const hiddenCalls = roundRect.mock.calls.slice();
+      const hiddenClips = clip.mock.calls.length;
+      roundRect.mockClear();
+      clip.mockClear();
+      renderImage({ ...element }, createCache(full), {
+        spoileredFiles: new Map([[FILE_ID, "shown"]]),
+        isExporting: true,
+      });
+
+      expect(hiddenCalls).toHaveLength(1);
+      expect(hiddenCalls).toEqual(roundRect.mock.calls);
+      expect(hiddenClips).toBe(clip.mock.calls.length);
+      expect(hiddenClips).toBeGreaterThan(0);
+      roundRect.mockRestore();
+      clip.mockRestore();
+      if (!hadRoundRect) {
+        delete proto.roundRect;
+      }
     });
 
     it("keeps the glyph of the placeholder of a shown or unmarked file", () => {
@@ -1507,6 +1547,37 @@ describe("spoiler overlay draw", () => {
     });
     expect(labelCalls()).toHaveLength(1);
     expect(iconStrokes()).toHaveLength(1);
+  });
+
+  it("draws no icon and no button, only the cover, while a centre status owns the centre", () => {
+    const element = createSizedElement(400, 300, {
+      thumbHash: createThumbHash(64, 48, 12),
+    });
+    const blur = getThumbHashPlaceholder(element.thumbHash!)!;
+    const drawImage = vi.spyOn(CanvasRenderingContext2D.prototype, "drawImage");
+    renderImage(element, createCache(createImage(FULL_WIDTH, FULL_HEIGHT)), {
+      spoileredFiles: hidden(),
+      hasCenterStatus: (fileId) => fileId === FILE_ID,
+    });
+    expect(labelCalls()).toHaveLength(0);
+    expect(iconStrokes()).toHaveLength(0);
+    expect(getDrawCount(drawImage, blur)).toBe(1);
+    expect(elementWithCanvasCache.get(element)!.spoilerOverlayKey).toBe(null);
+    drawImage.mockRestore();
+  });
+
+  it("draws the icon and the button again when the centre status ends", () => {
+    const element = createSizedElement(400, 300);
+    let busy = true;
+    const opts = {
+      spoileredFiles: hidden(),
+      hasCenterStatus: () => busy,
+    };
+    renderImage(element, new Map(), opts);
+    expect(labelCalls()).toHaveLength(0);
+    busy = false;
+    renderImage(element, new Map(), opts);
+    expect(labelCalls()).toHaveLength(1);
   });
 
   it("draws the label at the button centre", () => {

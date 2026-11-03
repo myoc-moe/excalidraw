@@ -724,6 +724,7 @@ class App extends React.Component<AppProps, AppState> {
       // showing a file lets its GIF play again. A no-op when nothing plays.
       this.ensureGifPlaybackLoop();
     },
+    isHoverIdle: () => this.isHoverIdle(),
   });
   private zDragZoom: {
     origin: { clientX: number; clientY: number };
@@ -3961,9 +3962,11 @@ class App extends React.Component<AppProps, AppState> {
         this.state.scrollY,
         this.state.zoom,
       );
-      // MyOC: a wheel zoom or pan moves the buttons under a still pointer
-      this.spoilers.refreshHover({ repaint: true });
     }
+
+    // MyOC: a scroll, a zoom or a scene change can move a "Show spoiler"
+    // button under a still pointer. A no-op while a press runs.
+    this.spoilers.refreshHover({ repaint: true });
 
     if (
       Object.keys(this.state.selectedElementIds).length &&
@@ -7606,6 +7609,17 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  /** no element is created, dragged or selected by a box: the pointer can
+      hover (cursor, "Show spoiler" button) */
+  private isHoverIdle() {
+    return (
+      !this.state.newElement &&
+      !this.state.selectionElement &&
+      !this.state.selectedElementsAreBeingDragged &&
+      !this.state.multiElement
+    );
+  }
+
   private handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!this.isInteractionEnabled()) {
       return;
@@ -8248,12 +8262,8 @@ class App extends React.Component<AppProps, AppState> {
       event.clientY - this.state.offsetTop,
     );
     const isOverScrollBar = isPointerOverScrollBars.isOverEither;
-    const isIdle =
-      !this.state.newElement &&
-      !this.state.selectionElement &&
-      !this.state.selectedElementsAreBeingDragged &&
-      !this.state.multiElement;
-    this.spoilers.updateHover(event, isIdle && !isOverScrollBar);
+    const isIdle = this.isHoverIdle();
+    this.spoilers.updateHover(event, !isOverScrollBar);
     if (isIdle) {
       if (isOverScrollBar) {
         this.cursor.set(CURSOR_TYPE.AUTO);

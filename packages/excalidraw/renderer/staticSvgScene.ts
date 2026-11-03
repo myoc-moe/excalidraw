@@ -13,7 +13,7 @@ import {
 } from "@excalidraw/common";
 import { normalizeLink, toValidURL } from "@excalidraw/common";
 import {
-  getSpoilerCover,
+  getImageCover,
   hashString,
   isImageSpoilerHidden,
 } from "@excalidraw/element";
@@ -91,11 +91,11 @@ const maybeWrapNodesInFrameClipPath = (
 
 /** MyOC: the cover of a hidden image (the ThumbHash blur, or the grey box)
  * as a data URL. The canvas render draws the same cover. */
-const getSpoilerCoverDataURL = (
+const getImageCoverDataURL = (
   element: ExcalidrawImageElement,
   theme: SVGRenderConfig["theme"],
 ) => {
-  const cover = getSpoilerCover(element, theme);
+  const cover = getImageCover(element, theme);
   if (cover.type === "thumbHash") {
     return cover.canvas.toDataURL();
   }
@@ -471,7 +471,7 @@ const renderElementToSvg = (
       // MyOC: a spoilered file writes the placeholder, never the file data,
       // also when the file is not in `files`
       const spoilerDataURL = isImageSpoilerHidden(element, renderConfig.spoiler)
-        ? getSpoilerCoverDataURL(element, renderConfig.theme)
+        ? getImageCoverDataURL(element, renderConfig.theme)
         : null;
       const isSpoilered = spoilerDataURL !== null;
       if (isInitializedImageElement(element) && (isSpoilered || fileData)) {

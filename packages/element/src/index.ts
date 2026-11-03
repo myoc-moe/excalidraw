@@ -97,7 +97,7 @@ export * from "./shape";
 export * from "./shapes";
 export * from "./showSelectedShapeActions";
 export {
-  getSpoilerCover,
+  getImageCover,
   isImageSpoilerHidden,
   isPointInSpoilerButton,
 } from "./spoilerOverlay";

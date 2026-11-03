@@ -33,7 +33,9 @@ type ClientPoint = { clientX: number; clientY: number };
  * MyOC: the view state of spoilered files, and the "Show spoiler" button of a
  * hidden image (hit test, hover, press and click). The state lives outside
  * `appState`, so it never reaches the store, history, `onChange`, local
- * storage or exported JSON. No method calls `setState`.
+ * storage or exported JSON. No method of this class calls `setState`. The
+ * App `onChange` hook of the constructor can: it ends crop mode of an image
+ * whose file becomes hidden, with one `setState`.
  */
 export class AppSpoilers {
   /** mutated in place, so the identity stays stable for the static canvas */
@@ -47,7 +49,7 @@ export class AppSpoilers {
   private hoveredElementId: ExcalidrawElement["id"] | null = null;
   /** the last pointer position on the canvas while no button is pressed, so
       that the hover follows a zoom, a pan or a state change with no move.
-      `hoverable` is false over the scroll bars or during an edit. */
+      `hoverable` is false over the scroll bars. */
   private lastPointer: (ClientPoint & { hoverable: boolean }) | null = null;
   /** the button under the last pointer down. A click shows the file only
       when it ends on the same button with no drag. */
@@ -63,16 +65,28 @@ export class AppSpoilers {
     time: number;
   } | null = null;
 
-  private renderConfig: StaticCanvasSpoilerConfig | null = null;
+  private renderConfig: {
+    label: string;
+    interactive: boolean;
+    config: StaticCanvasSpoilerConfig;
+  } | null = null;
+  /** the hidden files with a centre status, as last drawn */
+  private centerStatusKey = "";
 
   constructor(
     private app: App,
     private opts: {
-      /** after each change of the map, for the App guards (crop mode, GIF
-          playback) */
+      /** after each change of the map, before the host callback, for the App
+          guards (crop mode, GIF playback) */
       onChange: (changedFileIds: ReadonlySet<FileId>) => void;
+      /** the App predicate: no element is created, dragged or selected by a
+          box, so the pointer can hover a button */
+      isHoverIdle: () => boolean;
     },
-  ) {}
+  ) {
+    app.imageStatusEmitter.on(this.onImageStatusChange);
+    app.imageLoadingProgressEmitter.on(this.onImageStatusChange);
+  }
 
   // ---------------------------------------------------------------------------
   // state
@@ -90,17 +104,64 @@ export class AppSpoilers {
   isImageSpoilerHidden = (element: ExcalidrawElement | null | undefined) =>
     isImageSpoilerHidden(element, this);
 
+  /** true while a centre status overlay (download progress or download
+      error) of the interactive canvas owns the centre of the images of this
+      file. Their icon and button are then not drawn and take no click. */
+  hasCenterStatus = (fileId: FileId) =>
+    !!this.app.imageStatus.get(fileId)?.downloadError ||
+    this.app.imageLoadingProgress.has(fileId);
+
+  /** true for a hidden image that draws its icon and button */
+  private hasButton = (
+    element: ExcalidrawElement | null,
+  ): element is InitializedExcalidrawImageElement =>
+    !!element &&
+    isInitializedImageElement(element) &&
+    this.isFileHidden(element.fileId) &&
+    !this.hasCenterStatus(element.fileId);
+
   /** The spoiler input of the static render config. The same object while
-      the label does not change, so the static canvas does not render again
-      on each App render. */
+      the label and the interaction state do not change, so the static canvas
+      does not render again on each App render. With no input, no button. */
   getRenderConfig = (label: string): StaticCanvasSpoilerConfig => {
-    if (this.renderConfig?.overlay?.label !== label) {
+    const interactive = this.app.isInteractionEnabled();
+    if (
+      this.renderConfig?.label !== label ||
+      this.renderConfig.interactive !== interactive
+    ) {
       this.renderConfig = {
-        isFileHidden: this.isFileHidden,
-        overlay: { label, getHoveredElementId: this.getHoveredElementId },
+        label,
+        interactive,
+        config: {
+          isFileHidden: this.isFileHidden,
+          overlay: interactive
+            ? {
+                label,
+                getHoveredElementId: this.getHoveredElementId,
+                hasCenterStatus: this.hasCenterStatus,
+              }
+            : null,
+        },
       };
     }
-    return this.renderConfig;
+    return this.renderConfig.config;
+  };
+
+  /** A centre status that comes or goes on a hidden file adds or removes its
+      button: repaint the static canvas then, and only then. */
+  private onImageStatusChange = () => {
+    let key = "";
+    for (const [fileId, visibility] of this.map) {
+      if (visibility === "hidden" && this.hasCenterStatus(fileId)) {
+        key += `${fileId}\n`;
+      }
+    }
+    if (key === this.centerStatusKey) {
+      return;
+    }
+    this.centerStatusKey = key;
+    this.refreshHover({ repaint: false });
+    this.app.imagePlaceholderUpdateEmitter.trigger();
   };
 
   // ---------------------------------------------------------------------------
@@ -197,9 +258,9 @@ export class AppSpoilers {
     this.refreshHover({ repaint: false });
     this.app.imagePlaceholderUpdateEmitter.trigger();
     this.emitter.trigger();
-    this.app.props.onSpoileredFilesChange?.(this.getFiles());
-
+    // the guards first, so that the host sees their result
     this.opts.onChange(changedFileIds);
+    this.app.props.onSpoileredFilesChange?.(this.getFiles());
   };
 
   /** A hidden file draws no cross-fade. Ending it here keeps the image cache
@@ -224,23 +285,17 @@ export class AppSpoilers {
     x: number;
     y: number;
   }): InitializedExcalidrawImageElement | null => {
-    if (!this.map.size) {
+    if (!this.map.size || !this.app.isInteractionEnabled()) {
       return null;
     }
     const label = t("labels.showSpoiler");
     const zoom = this.app.state.zoom.value;
-    const isHiddenImage = (
-      element: ExcalidrawElement | null,
-    ): element is InitializedExcalidrawImageElement =>
-      !!element &&
-      isInitializedImageElement(element) &&
-      this.isImageSpoilerHidden(element);
 
     // cheap check first: the pointer is on a drawn button
     if (
       !this.app.visibleElements.some(
         (element) =>
-          isHiddenImage(element) &&
+          this.hasButton(element) &&
           isPointInSpoilerButton(element, scenePointer, zoom, label),
       )
     ) {
@@ -252,7 +307,7 @@ export class AppSpoilers {
       scenePointer.y,
       { includeBoundTextElement: true, includeLockedElements: true },
     );
-    return isHiddenImage(topElement) &&
+    return this.hasButton(topElement) &&
       isPointInSpoilerButton(topElement, scenePointer, zoom, label)
       ? topElement
       : null;
@@ -260,8 +315,7 @@ export class AppSpoilers {
 
   getHoveredElementId = () => this.hoveredElementId;
 
-  /** From a pointer move. `hoverable` is false when the pointer cannot hover
-      a button (over a scroll bar, or while an element is edited). The move
+  /** From a pointer move. `hoverable` is false over a scroll bar. The move
       handler sets the cursor. */
   updateHover = (pointer: ClientPoint, hoverable: boolean) => {
     this.lastPointer = {
@@ -272,8 +326,9 @@ export class AppSpoilers {
     this.setHoveredElementId(this.getButtonAtLastPointer(), true);
   };
 
-  /** Computes the hover again from the last pointer position, after a zoom, a
-      pan or a state change with no pointer move, and sets the cursor when the
+  /** Computes the hover again from the last pointer position after each App
+      update (a scroll, a zoom or a scene change can move a button under a
+      still pointer) and each spoiler change, and sets the cursor when the
       hover changes. Repaints only when the pointer enters or leaves a button:
       the element canvas cache key holds the hover state, so only that
       element draws again. */
@@ -296,7 +351,7 @@ export class AppSpoilers {
 
   private getButtonAtLastPointer = () => {
     const pointer = this.lastPointer;
-    return pointer?.hoverable && this.isHoverIdle()
+    return pointer?.hoverable && this.opts.isHoverIdle()
       ? this.getButtonAtPosition(
           viewportCoordsToSceneCoords(pointer, this.app.state),
         )?.id ?? null
@@ -321,16 +376,6 @@ export class AppSpoilers {
       this.app.imagePlaceholderUpdateEmitter.trigger();
     }
     return true;
-  };
-
-  private isHoverIdle = () => {
-    const { state } = this.app;
-    return (
-      !state.newElement &&
-      !state.selectionElement &&
-      !state.selectedElementsAreBeingDragged &&
-      !state.multiElement
-    );
   };
 
   /** Called before every early return of the pointer down (pans in view

@@ -36,17 +36,18 @@ export const isImageSpoilerHidden = (
   isInitializedImageElement(element) &&
   spoiler.isFileHidden(element.fileId);
 
-export type SpoilerCover =
+export type ImageCover =
   | { type: "thumbHash"; thumbHash: string; canvas: HTMLCanvasElement }
   | { type: "color"; color: string };
 
-/** The cover of a hidden image: the ThumbHash blur, or the grey box of the
- * theme when the element is in error or has no usable ThumbHash. The canvas
- * and the SVG render both draw it. It has no glyph. */
-export const getSpoilerCover = (
+/** The cover fill of an image with no image drawn: the ThumbHash blur, or
+ * the grey box of the theme when the element is in error or has no usable
+ * ThumbHash. A hidden spoilered image draws only this (canvas and SVG); the
+ * normal placeholder draws it under its glyph. */
+export const getImageCover = (
   element: ExcalidrawImageElement,
   theme: AppState["theme"],
-): SpoilerCover => {
+): ImageCover => {
   if (element.status !== "error" && element.thumbHash) {
     const canvas = getThumbHashPlaceholder(element.thumbHash);
     if (canvas) {
@@ -290,7 +291,7 @@ export const drawSpoilerOverlay = (
     return;
   }
   // the colours follow the cover under the overlay
-  const cover = getSpoilerCover(element, theme);
+  const cover = getImageCover(element, theme);
   const colors = getSpoilerOverlayColors(
     cover.type === "thumbHash" ? cover.thumbHash : null,
     hovered,

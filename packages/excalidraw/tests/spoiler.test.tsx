@@ -7,6 +7,7 @@ import {
 import { ShapeCache } from "@excalidraw/element";
 import { getSpoilerOverlayLayout } from "@excalidraw/element/spoilerOverlay";
 import {
+  CODES,
   KEYS,
   MIME_TYPES,
   sceneCoordsToViewportCoords,
@@ -798,6 +799,30 @@ describe("crop mode guard", () => {
       expect(h.state.croppingElementId).toBe("img-a");
     });
 
+    it("ends crop mode before the host callback runs", async () => {
+      const { onSpoileredFilesChange } = await cropSetup("shown");
+      act(() => {
+        h.app.actionManager.executeAction(actionToggleCropEditor);
+      });
+      expect(h.state.croppingElementId).toBe("img-a");
+      const setState = vi.spyOn(h.app, "setState");
+      setOne(A, "hidden");
+      const cropEnd = setState.mock.calls.findIndex(
+        ([update]) =>
+          !!update &&
+          typeof update === "object" &&
+          "croppingElementId" in update &&
+          update.croppingElementId === null,
+      );
+      expect(cropEnd).toBeGreaterThanOrEqual(0);
+      expect(onSpoileredFilesChange).toHaveBeenCalledTimes(1);
+      expect(setState.mock.invocationCallOrder[cropEnd]).toBeLessThan(
+        onSpoileredFilesChange.mock.invocationCallOrder[0],
+      );
+      expect(h.state.croppingElementId).toBe(null);
+      setState.mockRestore();
+    });
+
     it("adds no history entry when a hide ends crop mode", async () => {
       await cropSetup("shown");
       Keyboard.keyPress(KEYS.ENTER);
@@ -1528,6 +1553,77 @@ describe("Show spoiler button", () => {
         );
       },
     );
+
+    describe("centre status", () => {
+      const overlayKey = () =>
+        elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey;
+
+      it("draws only the cover while the download progress shows, and the button again after", async () => {
+        await spoilerSetup();
+        await nextFrame();
+        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+        act(() => h.app.api.setDownloadProgress(A, 0.5));
+        await nextFrame();
+        expect(overlayKey()).toBe(null);
+        act(() => h.app.api.setDownloadProgress(A, null));
+        await nextFrame();
+        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+      });
+
+      it("draws only the cover while the download error shows", async () => {
+        await spoilerSetup();
+        await nextFrame();
+        act(() => h.app.api.setDownloadError(A, true));
+        await nextFrame();
+        expect(overlayKey()).toBe(null);
+      });
+
+      it("does not repaint for a progress step that keeps the status", async () => {
+        await spoilerSetup();
+        act(() => h.app.api.setDownloadProgress(A, 0.2));
+        const trigger = vi.spyOn(
+          h.app.imagePlaceholderUpdateEmitter,
+          "trigger",
+        );
+        act(() => h.app.api.setDownloadProgress(A, 0.6));
+        expect(trigger).not.toHaveBeenCalled();
+        trigger.mockRestore();
+      });
+
+      it("does not show the file on a click at the button during the download progress", async () => {
+        await spoilerSetup();
+        const point = buttonPoint("img-a");
+        act(() => h.app.api.setDownloadProgress(A, 0.5));
+        hoverAt(point);
+        expect(h.app.spoilers.getHoveredElementId()).toBe(null);
+        clickCanvasAt(point);
+        expect(visibility(A)).toBe("hidden");
+      });
+
+      it("runs the error action, not the spoiler click, on the error icon over the button", async () => {
+        await spoilerSetup();
+        const point = buttonPoint("img-a", 0.5, 0.2);
+        const onClick = vi.fn();
+        act(() => h.app.api.setDownloadError(A, { onClick }));
+        clickCanvasAt(point);
+        expect(onClick).toHaveBeenCalledWith(A);
+        expect(visibility(A)).toBe("hidden");
+      });
+    });
+
+    it("draws no button when the editor takes no input", async () => {
+      await spoilerSetup({ interaction: false });
+      await nextFrame();
+      expect(
+        elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey,
+      ).toBe(null);
+      // the render config keeps one identity
+      const label = LABEL;
+      expect(h.app.spoilers.getRenderConfig(label)).toBe(
+        h.app.spoilers.getRenderConfig(label),
+      );
+      expect(h.app.spoilers.getRenderConfig(label).overlay).toBe(null);
+    });
 
     it("draws no button for a shown file", async () => {
       await spoilerSetup();
@@ -2533,6 +2629,47 @@ describe("Show spoiler button", () => {
         expect(hoveredId()).toBe("img-a");
         expect(trigger).not.toHaveBeenCalled();
         trigger.mockRestore();
+      });
+
+      it("follows a keyboard zoom", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        expect(hoveredId()).toBe("img-a");
+        const zoom = h.state.zoom.value;
+        Keyboard.withModifierKeys({ ctrl: true }, () => {
+          Keyboard.codePress(CODES.EQUAL);
+        });
+        expect(h.state.zoom.value).not.toBe(zoom);
+        expect(hoveredId()).toBe(null);
+      });
+
+      it("follows a scroll by updateScene", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        act(() =>
+          h.app.api.updateScene({
+            appState: { scrollY: h.state.scrollY + 100 },
+          }),
+        );
+        expect(hoveredId()).toBe(null);
+        act(() =>
+          h.app.api.updateScene({
+            appState: { scrollY: h.state.scrollY - 100 },
+          }),
+        );
+        expect(hoveredId()).toBe("img-a");
+      });
+
+      it("follows a scene change that moves the image", async () => {
+        await spoilerSetup();
+        hoverAt(buttonPoint("img-a"));
+        const image = getLatest("img-a");
+        act(() =>
+          h.app.api.updateScene({
+            elements: [newElementWith(image, { y: image.y + 100 })],
+          }),
+        );
+        expect(hoveredId()).toBe(null);
       });
 
       it("follows an API change", async () => {

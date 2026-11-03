@@ -36,14 +36,18 @@ export type SpoilerRenderConfig = {
 };
 
 export type StaticCanvasSpoilerConfig = SpoilerRenderConfig & {
-  /** the "Show spoiler" button of the screen render. Null for an export,
-   which draws no button. */
+  /** the "Show spoiler" button of the screen render. Null for an export and
+   when the editor takes no input, which draw no button. */
   overlay: {
     /** the localized label of the button */
     label: string;
     /** the id of the image whose button is under the pointer. A getter, so
      that a hover change repaints with no App render. */
     getHoveredElementId: () => ExcalidrawElement["id"] | null;
+    /** true while a centre status (download progress or error) of the
+     interactive canvas owns the centre of the images of this file. Those
+     images draw no icon and no button, only the cover. */
+    hasCenterStatus: (fileId: FileId) => boolean;
   } | null;
 };
 
