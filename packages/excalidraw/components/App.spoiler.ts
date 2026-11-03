@@ -277,7 +277,7 @@ export class AppSpoilers {
     // the repaint below draws the buttons for this key, so a later status
     // change compares against what is drawn
     this.centerStatusKey = this.getCenterStatusKey();
-    // the button under a still pointer can come or go (not during a press).
+    // the button under a still pointer can come or go (not from a pointer down until the next move).
     // The repaint below draws the new hover state too.
     this.refreshHover({ repaint: false });
     this.app.imagePlaceholderUpdateEmitter.trigger();
