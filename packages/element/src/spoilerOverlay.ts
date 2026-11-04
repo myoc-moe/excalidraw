@@ -62,7 +62,7 @@ export const getImageCover = (
 
 // sizes in screen px. The draw divides them by the zoom, so the overlay keeps
 // one on-screen size at every zoom.
-const ICON_SIZE = 22;
+const ICON_SIZE = 36;
 const ICON_MIN_SIZE = 6;
 const GAP = 6;
 const FONT_SIZE = 12;
