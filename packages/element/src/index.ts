@@ -96,6 +96,11 @@ export * from "./selection";
 export * from "./shape";
 export * from "./shapes";
 export * from "./showSelectedShapeActions";
+export {
+  getImageCover,
+  isImageSpoilerHidden,
+  isPointInSpoilerButton,
+} from "./spoilerOverlay";
 export * from "./sizeHelpers";
 export * from "./sortElements";
 export * from "./store";

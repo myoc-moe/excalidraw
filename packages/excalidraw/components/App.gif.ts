@@ -33,6 +33,29 @@ export class AppGifPlayback {
     this.runtimeState.clear();
   };
 
+  /** the elements that can play: a hidden spoilered GIF does not. Its
+      metadata and runtime frame stay as they are, so it resumes where it was
+      when its file is shown. */
+  private getPlayableElements = () =>
+    this.app.scene
+      .getNonDeletedElements()
+      .filter((element) => !this.app.spoilers.isImageSpoilerHidden(element));
+
+  /** a shown file restarts the frame timer, so the first frame after the
+      pause does not jump */
+  resetFrameTimers = (fileIds: ReadonlySet<FileId>) => {
+    const now = performance.now();
+    for (const element of this.app.scene.getNonDeletedElements()) {
+      const state =
+        isInitializedImageElement(element) && fileIds.has(element.fileId)
+          ? this.runtimeState.get(element.id)
+          : undefined;
+      if (state) {
+        state.lastFrameTime = now;
+      }
+    }
+  };
+
   getFrameIndex = (element: ExcalidrawImageElement) =>
     element.gifPlayback?.playing
       ? this.runtimeState.get(element.id)?.frameIndex ??
@@ -51,12 +74,7 @@ export class AppGifPlayback {
       return;
     }
 
-    if (
-      !hasPlayableGif(
-        this.app.scene.getNonDeletedElements(),
-        this.app.imageCache,
-      )
-    ) {
+    if (!hasPlayableGif(this.getPlayableElements(), this.app.imageCache)) {
       return;
     }
 
@@ -132,7 +150,7 @@ export class AppGifPlayback {
     let didAdvanceFrame = false;
     let shouldContinue = false;
 
-    for (const element of this.app.scene.getNonDeletedElements()) {
+    for (const element of this.getPlayableElements()) {
       if (
         !isInitializedImageElement(element) ||
         !element.gifPlayback?.playing

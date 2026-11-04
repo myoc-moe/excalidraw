@@ -23,6 +23,11 @@ export const actionToggleCropEditor = register({
       includeBoundTextElement: true,
     })[0] as ExcalidrawImageElement;
 
+    // a hidden image has no visible pixels to crop
+    if (app.spoilers.isImageSpoilerHidden(selectedElement)) {
+      return false;
+    }
+
     return {
       appState: {
         ...appState,
@@ -37,7 +42,8 @@ export const actionToggleCropEditor = register({
     if (
       !appState.croppingElementId &&
       selectedElements.length === 1 &&
-      isImageElement(selectedElements[0])
+      isImageElement(selectedElements[0]) &&
+      !app.spoilers.isImageSpoilerHidden(selectedElements[0])
     ) {
       return true;
     }

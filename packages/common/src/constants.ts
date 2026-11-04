@@ -213,6 +213,13 @@ export const THEME = {
 
 export const DARK_THEME_FILTER = "invert(93%) hue-rotate(180deg)";
 
+/** MyOC: the grey box of an image with no image data (the placeholder and
+ * the spoiler cover), per theme */
+export const IMAGE_PLACEHOLDER_COLOR = {
+  [THEME.LIGHT]: "#E7E7E7",
+  [THEME.DARK]: "#2E2E2E",
+} as const;
+
 export const FRAME_STYLE = {
   strokeColor: "#bbb" as ExcalidrawElement["strokeColor"],
   strokeWidth: 2 as ExcalidrawElement["strokeWidth"],
@@ -311,6 +318,9 @@ export const getExportSource = () =>
 // time in milliseconds
 export const IMAGE_RENDER_TIMEOUT = 500;
 export const TAP_TWICE_TIMEOUT = 300;
+/** MyOC: a double-click this soon after a click that showed a spoilered file
+ * belongs to that click (browsers use about 500ms) */
+export const SPOILER_REVEAL_DOUBLE_CLICK_TIMEOUT = 500;
 export const TOUCH_CTX_MENU_TIMEOUT = 500;
 export const TITLE_TIMEOUT = 10000;
 export const VERSION_TIMEOUT = 30000;

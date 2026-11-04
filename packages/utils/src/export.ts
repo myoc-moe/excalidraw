@@ -19,6 +19,7 @@ import {
 
 import type {
   ExcalidrawFrameLikeElement,
+  FileId,
   NonDeleted,
   NonDeletedExcalidrawElement,
 } from "@excalidraw/element/types";
@@ -32,6 +33,11 @@ type ExportOpts = {
   files: BinaryFiles | null;
   maxWidthOrHeight?: number;
   exportingFrame?: NonDeleted<ExcalidrawFrameLikeElement> | null;
+  /** images of these files draw the ThumbHash blur (or a grey box) in place
+   * of the image. No button or icon. The option changes only the drawn
+   * image: the real image data stays in the embedded scene when
+   * `exportEmbedScene` is on. */
+  spoileredFileIds?: readonly FileId[];
   getDimensions?: (
     width: number,
     height: number,
@@ -46,6 +52,7 @@ export const exportToCanvas = ({
   getDimensions,
   exportPadding,
   exportingFrame,
+  spoileredFileIds,
 }: ExportOpts & {
   exportPadding?: number;
 }) => {
@@ -61,7 +68,13 @@ export const exportToCanvas = ({
     restoredElements,
     { ...restoredAppState, offsetTop: 0, offsetLeft: 0, width: 0, height: 0 },
     files || {},
-    { exportBackground, exportPadding, viewBackgroundColor, exportingFrame },
+    {
+      exportBackground,
+      exportPadding,
+      viewBackgroundColor,
+      exportingFrame,
+      spoileredFileIds,
+    },
     (width: number, height: number) => {
       const canvas = document.createElement("canvas");
 
@@ -175,6 +188,7 @@ export const exportToSvg = async ({
   exportingFrame,
   skipInliningFonts,
   reuseImages,
+  spoileredFileIds,
 }: Omit<ExportOpts, "getDimensions"> & {
   exportPadding?: number;
   renderEmbeddables?: boolean;
@@ -198,6 +212,7 @@ export const exportToSvg = async ({
     renderEmbeddables,
     skipInliningFonts,
     reuseImages,
+    spoileredFileIds,
   });
 };
 

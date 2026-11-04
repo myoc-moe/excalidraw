@@ -1003,7 +1003,7 @@ const ExcalidrawWrapper = () => {
   const getActionsForImageIds = (
     ids: readonly string[],
   ): ImageContextMenuItem[] => {
-    return [
+    const items: ImageContextMenuItem[] = [
       {
         label: "Alert ID",
         key: "alert-id",
@@ -1012,6 +1012,41 @@ const ExcalidrawWrapper = () => {
         },
       },
     ];
+
+    if (!excalidrawAPI) {
+      return items;
+    }
+
+    // Demo only: a host app owns the spoiler flag. This item marks or unmarks
+    // the files of the selected images in this tab.
+    const idSet = new Set(ids);
+    const fileIds = new Set(
+      excalidrawAPI
+        .getSceneElements()
+        .flatMap((element) =>
+          idSet.has(element.id) && isInitializedImageElement(element)
+            ? [element.fileId]
+            : [],
+        ),
+    );
+    if (fileIds.size === 0) {
+      return items;
+    }
+    const spoileredFiles = excalidrawAPI.getSpoileredFiles();
+    const allMarked = [...fileIds].every((fileId) =>
+      spoileredFiles.has(fileId),
+    );
+    items.push({
+      label: allMarked ? "Unmark spoiler" : "Mark as spoiler",
+      key: "toggle-spoiler-mark",
+      onSelect: () => {
+        for (const fileId of fileIds) {
+          excalidrawAPI.markFileSpoilered(fileId, !allMarked);
+        }
+      },
+    });
+
+    return items;
   };
 
   return (

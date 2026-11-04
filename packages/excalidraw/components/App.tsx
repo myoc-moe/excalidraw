@@ -436,6 +436,7 @@ import { AppCursor } from "./App.cursor";
 import { AppDrawShape } from "./App.drawshape";
 import { AppFlowchart } from "./App.flowchart";
 import { AppGifPlayback } from "./App.gif";
+import { AppSpoilers } from "./App.spoiler";
 import { AppViewport, RIGHT_SIDEBAR_WIDTH } from "./App.viewport";
 import BraveMeasureTextError from "./BraveMeasureTextError";
 import { ContextMenu, CONTEXT_MENU_SEPARATOR } from "./ContextMenu";
@@ -715,6 +716,17 @@ class App extends React.Component<AppProps, AppState> {
   public flowchart: AppFlowchart = new AppFlowchart(this);
   public cursor: AppCursor = new AppCursor(this);
   private gifPlayback: AppGifPlayback = new AppGifPlayback(this);
+  /** MyOC: the view state of spoilered files and the "Show spoiler" button */
+  public spoilers: AppSpoilers = new AppSpoilers(this, {
+    onChange: (changedFileIds) => {
+      this.endCroppingOfHiddenImage();
+      this.gifPlayback.resetFrameTimers(changedFileIds);
+      // showing a file lets its GIF play again. A no-op when nothing plays.
+      this.ensureGifPlaybackLoop();
+    },
+    isHoverIdle: () => this.isHoverIdle(),
+  });
+  private unsubscribeSpoilerImageStatus: (() => void) | null = null;
   private zDragZoom: {
     origin: { clientX: number; clientY: number };
     initialZoom: number;
@@ -946,6 +958,10 @@ class App extends React.Component<AppProps, AppState> {
       mutateElement: this.mutateElement,
       addFiles: this.addFiles,
       addImagePlaceholder: this.addImagePlaceholder,
+      markFileSpoilered: this.spoilers.markFile,
+      setSpoileredFileVisibility: this.spoilers.setFileVisibility,
+      setAllSpoileredFilesVisibility: this.spoilers.setAllFilesVisibility,
+      getSpoileredFiles: this.spoilers.getFiles,
       setDownloadProgress: this.setDownloadProgress,
       setDownloadError: this.setDownloadError,
       setUploadProgress: this.setUploadProgress,
@@ -2583,6 +2599,9 @@ class App extends React.Component<AppProps, AppState> {
                             renderConfig={{
                               imageCache: this.imageCache,
                               getGifFrameIndex: this.gifPlayback.getFrameIndex,
+                              spoiler: this.spoilers.getRenderConfig(
+                                t("labels.showSpoiler"),
+                              ),
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
                               renderLinks: this.isLinksEnabled(),
@@ -2612,6 +2631,9 @@ class App extends React.Component<AppProps, AppState> {
                                 imageCache: this.imageCache,
                                 getGifFrameIndex:
                                   this.gifPlayback.getFrameIndex,
+                                spoiler: this.spoilers.getRenderConfig(
+                                  t("labels.showSpoiler"),
+                                ),
                                 isExporting: false,
                                 imageTransitionDuration:
                                   this.props.imageOptions
@@ -3479,6 +3501,8 @@ class App extends React.Component<AppProps, AppState> {
 
   public async componentDidMount() {
     this.unmounted = false;
+    this.unsubscribeSpoilerImageStatus?.();
+    this.unsubscribeSpoilerImageStatus = this.spoilers.subscribeToImageStatus();
     // also set here as unmount resets it (StrictMode remounts skip the constructor)
     setGoogleFontCssSources(this.props.googleFonts?.fontCssUrls);
     this.api = this.createExcalidrawAPI();
@@ -3575,6 +3599,8 @@ class App extends React.Component<AppProps, AppState> {
   public componentWillUnmount() {
     setGoogleFontCssSources(undefined);
     this.gifPlayback.stop();
+    this.unsubscribeSpoilerImageStatus?.();
+    this.unsubscribeSpoilerImageStatus = null;
 
     // we're recreating the api object reference so that the
     // <ExcalidrawAPIContext.Provider/> picks up on it
@@ -3943,6 +3969,11 @@ class App extends React.Component<AppProps, AppState> {
       );
     }
 
+    // MyOC: a scroll, a zoom or a scene change can move a "Show spoiler"
+    // button under a still pointer. A no-op from the pointer down until the
+    // next pointer move (a pan moves no pointer the move handler sees).
+    this.spoilers.refreshHover({ repaint: true });
+
     if (
       Object.keys(this.state.selectedElementIds).length &&
       isEraserActive(this.state)
@@ -4071,6 +4102,9 @@ class App extends React.Component<AppProps, AppState> {
     }
 
     this.store.commit(elementsMap, this.state);
+
+    // after the commit, so that the guard's own update carries its store change
+    this.endCroppingOfHiddenImage();
 
     // Do not notify consumers if we're still loading the scene. Among other
     // potential issues, this fixes a case where the tab isn't focused during
@@ -5127,6 +5161,10 @@ class App extends React.Component<AppProps, AppState> {
         for (const fileId of placeholderFileIds) {
           if (this.imageCache.has(fileId) && updatedFiles.has(fileId)) {
             this.clearImageLoadingProgress(fileId);
+            // MyOC: a file that loads while it is hidden starts no cross-fade
+            if (this.spoilers.isFileHidden(fileId)) {
+              this.spoilers.endCrossFade(fileId);
+            }
           }
         }
 
@@ -7284,6 +7322,10 @@ class App extends React.Component<AppProps, AppState> {
   };
 
   private startImageCropping = (image: ExcalidrawImageElement) => {
+    // a hidden image has no visible pixels to crop
+    if (this.spoilers.isImageSpoilerHidden(image)) {
+      return;
+    }
     this.store.scheduleCapture();
     this.setState({
       croppingElementId: image.id,
@@ -7346,6 +7388,12 @@ class App extends React.Component<AppProps, AppState> {
     // case: double-clicking with arrow/line tool selected would both create
     // text and enter multiElement mode
     if (this.state.multiElement) {
+      return;
+    }
+
+    // MyOC: a click of this double-click showed the file. The double-click
+    // does nothing to that image (no smart zoom, no crop).
+    if (this.spoilers.isDoubleClickOfReveal(event)) {
       return;
     }
 
@@ -7567,6 +7615,17 @@ class App extends React.Component<AppProps, AppState> {
     }
   };
 
+  /** no element is created, dragged or selected by a box: the pointer can
+      hover (cursor, "Show spoiler" button) */
+  private isHoverIdle() {
+    return (
+      !this.state.newElement &&
+      !this.state.selectionElement &&
+      !this.state.selectedElementsAreBeingDragged &&
+      !this.state.multiElement
+    );
+  }
+
   private handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (!this.isInteractionEnabled()) {
       return;
@@ -7600,6 +7659,11 @@ class App extends React.Component<AppProps, AppState> {
         ]);
         return;
       }
+    }
+
+    // MyOC: the "Show spoiler" button of a hidden image
+    if (this.spoilers.handleClick(event, scenePointer)) {
+      return;
     }
 
     const imageStatusAction = this.getImageStatusActionAtPosition(scenePointer);
@@ -8204,14 +8268,13 @@ class App extends React.Component<AppProps, AppState> {
       event.clientY - this.state.offsetTop,
     );
     const isOverScrollBar = isPointerOverScrollBars.isOverEither;
-    if (
-      !this.state.newElement &&
-      !this.state.selectionElement &&
-      !this.state.selectedElementsAreBeingDragged &&
-      !this.state.multiElement
-    ) {
+    const isIdle = this.isHoverIdle();
+    this.spoilers.updateHover(event, !isOverScrollBar);
+    if (isIdle) {
       if (isOverScrollBar) {
         this.cursor.set(CURSOR_TYPE.AUTO);
+      } else if (this.spoilers.getHoveredElementId()) {
+        this.cursor.set(CURSOR_TYPE.POINTER);
       } else if (this.getImageStatusActionAtPosition(scenePointer)) {
         this.cursor.set(CURSOR_TYPE.POINTER);
       } else {
@@ -8704,6 +8767,11 @@ class App extends React.Component<AppProps, AppState> {
       }
     }
 
+    // MyOC: the selection hover above sets the move or grab cursor
+    if (this.spoilers.getHoveredElementId()) {
+      this.cursor.set(CURSOR_TYPE.POINTER);
+    }
+
     if (this.state.openDialog?.name === "elementLinkSelector" && hitElement) {
       this.setState((prevState) => {
         return {
@@ -8937,6 +9005,10 @@ class App extends React.Component<AppProps, AppState> {
       y: scenePointerY,
     };
 
+    // MyOC: before every early return (pans in view mode, with the hand tool
+    // or the space key), so that the click can check where the press started
+    this.spoilers.onPointerDown(event, scenePointer);
+
     // MyOC: Intercept pointer-down for the held-F target-zoom gesture.
     if (this.handleSmartZoomPointerDown(event, scenePointer)) {
       return;
@@ -9165,6 +9237,11 @@ class App extends React.Component<AppProps, AppState> {
     // State for the duration of a pointer interaction, which starts with a
     // pointerDown event, ends with a pointerUp event (or another pointerDown)
     const pointerDownState = this.initialPointerDownState(event);
+
+    // MyOC: a press on a "Show spoiler" button selects but never moves
+    if (this.spoilers.isButtonPressed()) {
+      pointerDownState.drag.blockDragging = true;
+    }
 
     this.setState({
       selectedElementsAreBeingDragged: false,
@@ -13419,6 +13496,31 @@ class App extends React.Component<AppProps, AppState> {
     };
   };
 
+  /** Crop mode cannot be on for a hidden image. Called when a file is hidden
+      and from `componentDidUpdate` (after its store commit), which also
+      catches undo and redo that restore crop mode. Ends crop mode without a
+      history capture. The only `setState` of the spoiler code, and only when
+      this state is reached. */
+  private endCroppingOfHiddenImage = () => {
+    const croppingElement = this.state.croppingElementId
+      ? this.scene.getNonDeletedElementsMap().get(this.state.croppingElementId)
+      : null;
+    if (
+      croppingElement &&
+      this.spoilers.isImageSpoilerHidden(croppingElement)
+    ) {
+      // a micro action puts only this change in the store snapshot. A macro
+      // `NEVER` would also put there any pending `EVENTUALLY` change, which
+      // would then be lost from history.
+      this.store.scheduleMicroAction({
+        action: CaptureUpdateAction.NEVER,
+        elements: undefined,
+        appState: { ...this.state, croppingElementId: null },
+      });
+      this.setState({ croppingElementId: null });
+    }
+  };
+
   /** updates image cache, refreshing updated elements and/or setting status
       to error for images that fail during <img> element creation */
   private handleImageCacheUpdate = (fileId: FileId) => {
@@ -13460,6 +13562,13 @@ class App extends React.Component<AppProps, AppState> {
     for (const [fileId, placeholderImagePromise] of placeholderImages) {
       const cacheEntry = this.imageCache.get(fileId);
       if (!cacheEntry || !updatedFiles.has(fileId)) {
+        continue;
+      }
+      // MyOC: a file that loads while it is hidden starts no cross-fade. The
+      // old image can be a load that failed, so its rejection is ignored.
+      if (this.spoilers.isFileHidden(fileId)) {
+        placeholderImagePromise.catch(() => {});
+        this.spoilers.endCrossFade(fileId);
         continue;
       }
 
@@ -13614,6 +13723,10 @@ class App extends React.Component<AppProps, AppState> {
         { passive: false },
       );
       this.interactiveCanvas.addEventListener(EVENT.TOUCH_END, this.onTouchEnd);
+      this.interactiveCanvas.addEventListener(
+        "pointerleave",
+        this.spoilers.onPointerLeave,
+      );
       // -----------------------------------------------------------------------
     } else {
       this.interactiveCanvas?.removeEventListener(
@@ -13623,6 +13736,10 @@ class App extends React.Component<AppProps, AppState> {
       this.interactiveCanvas?.removeEventListener(
         EVENT.TOUCH_END,
         this.onTouchEnd,
+      );
+      this.interactiveCanvas?.removeEventListener(
+        "pointerleave",
+        this.spoilers.onPointerLeave,
       );
     }
   };
@@ -14412,7 +14529,11 @@ class App extends React.Component<AppProps, AppState> {
     type: "canvas" | "element",
     hitElement?: NonDeletedExcalidrawElement | null,
   ): ContextMenuItems => {
-    const imageContextMenuItems = this.getImageContextMenuItems(hitElement);
+    // the built-in spoiler item goes before the host items
+    const imageContextMenuItems = [
+      ...this.spoilers.getContextMenuItems(hitElement),
+      ...this.getImageContextMenuItems(hitElement),
+    ];
     const imageActionContextMenuItems =
       this.getImageActionContextMenuItems(hitElement);
     const elementLinkContextMenuItems =

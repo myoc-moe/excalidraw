@@ -183,6 +183,9 @@ export type ImageUploadProgressStatus = ImageStatusStyle & {
   onClick?: (fileId: FileId) => void;
 };
 
+/** Whether a spoilered file is shown or covered in this editor. */
+export type SpoilerVisibility = "shown" | "hidden";
+
 export type ImageStatus = {
   downloadError?: ImageDownloadErrorStatus | null;
   uploadProgress?: ImageUploadProgressStatus | null;
@@ -1105,6 +1108,14 @@ export interface ExcalidrawProps {
       nativeEvent: MouseEvent | React.PointerEvent<HTMLCanvasElement>;
     }>,
   ) => void;
+  /**
+   * Called once per API call or user action that changes the spoilered files
+   * map (a file marked or unmarked, or a visibility changed). Not called for
+   * a no-op. The map is a copy.
+   */
+  onSpoileredFilesChange?: (
+    files: ReadonlyMap<FileId, SpoilerVisibility>,
+  ) => void;
   imageContextMenuItems?: (
     imageIds: readonly ExcalidrawElement["id"][],
   ) => readonly ImageContextMenuItem[];
@@ -1337,6 +1348,7 @@ export type AppClassProperties = {
   imageStatus: App["imageStatus"];
   imageStatusEmitter: App["imageStatusEmitter"];
   imagePlaceholderUpdateEmitter: App["imagePlaceholderUpdateEmitter"];
+  spoilers: App["spoilers"];
   files: BinaryFiles;
   editorInterface: App["editorInterface"];
   scene: App["scene"];
@@ -1525,6 +1537,25 @@ export interface ExcalidrawImperativeAPI {
   setToast: InstanceType<typeof App>["setToast"];
   addFiles: (data: BinaryFileData[]) => void;
   addImagePlaceholder: (fileId: FileId, file: File) => Promise<void>;
+  /**
+   * Marks (`true`) or unmarks (`false`) a file as a spoiler. A new mark takes
+   * the default visibility. Marking a marked file changes nothing. The file
+   * does not need to be in the scene yet.
+   */
+  markFileSpoilered: (fileId: FileId, spoilered: boolean) => void;
+  /** Changes one marked file. No effect on an unmarked file. */
+  setSpoileredFileVisibility: (
+    fileId: FileId,
+    visibility: SpoilerVisibility,
+  ) => void;
+  /**
+   * Changes every marked file and the default for new marks. The default
+   * changes also when no file is marked. The reset rule (no shown file sets
+   * the default to hidden) does not apply to this call.
+   */
+  setAllSpoileredFilesVisibility: (visibility: SpoilerVisibility) => void;
+  /** Returns a copy of the spoilered files map. */
+  getSpoileredFiles: () => ReadonlyMap<FileId, SpoilerVisibility>;
   setDownloadProgress: (fileId: FileId, progress: number | null) => void;
   setDownloadError: (
     fileId: FileId,

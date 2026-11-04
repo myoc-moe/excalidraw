@@ -26,6 +26,7 @@ import {
   isSafari,
 } from "@excalidraw/common";
 
+import type { ViewpointFlip } from "@excalidraw/common";
 import type {
   AppState,
   StaticCanvasAppState,
@@ -70,9 +71,13 @@ import { getContainingFrame } from "./frame";
 import { getCornerRadius } from "./utils";
 
 import { ShapeCache } from "./shape";
-import { getThumbHashPlaceholder } from "./image";
 import { getGifRenderFrame } from "./gif";
 import { drawGifDecodePlaceholder } from "./renderGif";
+import {
+  drawSpoilerOverlay,
+  getImageCover,
+  isImageSpoilerHidden,
+} from "./spoilerOverlay";
 
 import type {
   ExcalidrawElement,
@@ -148,7 +153,63 @@ export interface ExcalidrawElementWithCanvas {
   canvasOffsetY: number;
   imageCrop: ExcalidrawImageElement["crop"] | null;
   containingFrameOpacity: number;
+  /** MyOC: the spoiler overlay state baked into `canvas`, or null */
+  spoilerOverlayKey: string | null;
 }
+
+type SpoilerOverlay = {
+  element: ExcalidrawImageElement;
+  label: string;
+  hovered: boolean;
+  flipped: boolean;
+  viewpointFlip: ViewpointFlip;
+};
+
+/** MyOC: the "Show spoiler" overlay of `element`, or null when the element
+ * draws none: it is not a hidden image, the render config has no overlay (an
+ * export, or no input), or a centre status owns the element centre. */
+const getSpoilerOverlay = (
+  element: ExcalidrawElement,
+  renderConfig: StaticCanvasRenderConfig,
+): SpoilerOverlay | null => {
+  const overlay = renderConfig.spoiler?.overlay;
+  if (
+    !overlay ||
+    !isInitializedImageElement(element) ||
+    !isImageSpoilerHidden(element, renderConfig.spoiler) ||
+    overlay.hasCenterStatus(element.fileId)
+  ) {
+    return null;
+  }
+  return {
+    element,
+    label: overlay.label,
+    hovered: overlay.getHoveredElementId() === element.id,
+    // the element canvas of a pending image is drawn with no flip (see
+    // `drawElementFromCanvas`)
+    flipped: !isPendingImageElement(element, renderConfig),
+    viewpointFlip: overlay.viewpointFlip,
+  };
+};
+
+/** MyOC: the hover, label, angle, flip and viewport flip state of the
+ * spoiler overlay, or null when the element draws no overlay. Part of the
+ * element canvas cache key, so a hover change regenerates only that element.
+ * The overlay cancels the blit rotation and flip and the viewport flip, so
+ * the key has the angle, the applied flip and the viewport flip: a rotation
+ * or a flip mutates the element in place and keeps the cache entry. */
+const getSpoilerOverlayKey = (overlay: SpoilerOverlay | null): string | null =>
+  overlay
+    ? [
+        overlay.hovered ? 1 : 0,
+        overlay.flipped ? overlay.element.scale.join(",") : 0,
+        overlay.element.angle,
+        `${overlay.viewpointFlip.horizontal ? 1 : 0},${
+          overlay.viewpointFlip.vertical ? 1 : 0
+        }`,
+        overlay.label,
+      ].join("|")
+    : null;
 
 const cappedElementCanvasSize = (
   element: NonDeletedExcalidrawElement,
@@ -211,6 +272,8 @@ const generateElementCanvas = (
   zoom: Zoom,
   renderConfig: StaticCanvasRenderConfig,
   appState: StaticCanvasAppState | InteractiveCanvasAppState,
+  /** MyOC: the caller passes it when it has it already */
+  spoilerOverlay = getSpoilerOverlay(element, renderConfig),
 ): ExcalidrawElementWithCanvas | null => {
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d")!;
@@ -259,6 +322,18 @@ const generateElementCanvas = (
 
   drawElementOnCanvas(element, rc, context, renderConfig);
 
+  // MyOC: the icon and the button of a hidden image, in the element canvas so
+  // that they move with the element
+  if (spoilerOverlay) {
+    drawSpoilerOverlay(spoilerOverlay.element, context, {
+      zoom: zoom.value,
+      label: spoilerOverlay.label,
+      hovered: spoilerOverlay.hovered,
+      flipped: spoilerOverlay.flipped,
+      viewpointFlip: spoilerOverlay.viewpointFlip,
+    });
+  }
+
   context.restore();
 
   return {
@@ -272,6 +347,7 @@ const generateElementCanvas = (
     containingFrameOpacity:
       getContainingFrame(element, elementsMap)?.opacity || 100,
     imageCrop: isImageElement(element) ? element.crop : null,
+    spoilerOverlayKey: getSpoilerOverlayKey(spoilerOverlay),
   };
 };
 
@@ -329,21 +405,31 @@ const drawCroppedImage = (
   );
 };
 
+/** MyOC: the cover fill (the ThumbHash blur or the grey box) with no glyph.
+ * A hidden spoilered image draws only this. */
+const drawImageCover = (
+  element: ExcalidrawImageElement,
+  context: CanvasRenderingContext2D,
+  theme: StaticCanvasRenderConfig["theme"],
+) => {
+  const cover = getImageCover(element, theme);
+  if (cover.type === "thumbHash") {
+    drawCroppedImage(element, context, cover.canvas);
+  } else {
+    context.fillStyle = cover.color;
+    context.fillRect(0, 0, element.width, element.height);
+  }
+  return cover;
+};
+
 const drawImagePlaceholder = (
   element: ExcalidrawImageElement,
   context: CanvasRenderingContext2D,
   theme: StaticCanvasRenderConfig["theme"],
 ) => {
-  if (element.status !== "error" && element.thumbHash) {
-    const thumbHashPlaceholder = getThumbHashPlaceholder(element.thumbHash);
-    if (thumbHashPlaceholder) {
-      drawCroppedImage(element, context, thumbHashPlaceholder);
-      return;
-    }
+  if (drawImageCover(element, context, theme).type === "thumbHash") {
+    return;
   }
-
-  context.fillStyle = theme === THEME.DARK ? "#2E2E2E" : "#E7E7E7";
-  context.fillRect(0, 0, element.width, element.height);
 
   const imageMinWidthOrHeight = Math.min(element.width, element.height);
 
@@ -361,6 +447,23 @@ const drawImagePlaceholder = (
     size,
     size,
   );
+};
+
+const clipImageToRoundness = (
+  element: ExcalidrawImageElement,
+  context: CanvasRenderingContext2D,
+) => {
+  if (element.roundness && context.roundRect) {
+    context.beginPath();
+    context.roundRect(
+      0,
+      0,
+      element.width,
+      element.height,
+      getCornerRadius(Math.min(element.width, element.height), element),
+    );
+    context.clip();
+  }
 };
 
 const drawElementOnCanvas = (
@@ -424,7 +527,13 @@ const drawElementOnCanvas = (
         ? cacheEntry?.image
         : undefined;
 
-      if (
+      // MyOC: a hidden spoilered file never draws the image, the GIF frame or
+      // the cross-fade. Only the cover shows, with no glyph.
+      if (isImageSpoilerHidden(element, renderConfig.spoiler)) {
+        // the cover keeps the rounded corners of the shown image
+        clipImageToRoundness(element, context);
+        drawImageCover(element, context, renderConfig.theme);
+      } else if (
         cacheEntry?.gifDecodeStatus === "pending" &&
         !cacheEntry.gif?.frames.length
       ) {
@@ -435,17 +544,7 @@ const drawElementOnCanvas = (
           drawImagePlaceholder,
         );
       } else if (img != null && !(img instanceof Promise)) {
-        if (element.roundness && context.roundRect) {
-          context.beginPath();
-          context.roundRect(
-            0,
-            0,
-            element.width,
-            element.height,
-            getCornerRadius(Math.min(element.width, element.height), element),
-          );
-          context.clip();
-        }
+        clipImageToRoundness(element, context);
 
         const transitionDuration = renderConfig.imageTransitionDuration ?? 0;
         if (
@@ -647,12 +746,16 @@ const generateElementWithCanvas = (
     prevElementWithCanvas.zoomValue !== zoom.value &&
     !appState?.shouldCacheIgnoreZoom;
   const imageCrop = isImageElement(element) ? element.crop : null;
+  // MyOC: a hidden file draws no cross-fade, so it needs no new canvas
   const hasActiveImageTransition =
     isInitializedImageElement(element) &&
-    renderConfig.imageCache.get(element.fileId)?.transitionStart !== undefined;
+    renderConfig.imageCache.get(element.fileId)?.transitionStart !==
+      undefined &&
+    !isImageSpoilerHidden(element, renderConfig.spoiler);
 
   const containingFrameOpacity =
     getContainingFrame(element, elementsMap)?.opacity || 100;
+  const spoilerOverlay = getSpoilerOverlay(element, renderConfig);
 
   if (
     !prevElementWithCanvas ||
@@ -660,7 +763,9 @@ const generateElementWithCanvas = (
     prevElementWithCanvas.theme !== appState.theme ||
     prevElementWithCanvas.imageCrop !== imageCrop ||
     hasActiveImageTransition ||
-    prevElementWithCanvas.containingFrameOpacity !== containingFrameOpacity
+    prevElementWithCanvas.containingFrameOpacity !== containingFrameOpacity ||
+    prevElementWithCanvas.spoilerOverlayKey !==
+      getSpoilerOverlayKey(spoilerOverlay)
   ) {
     const elementWithCanvas = generateElementCanvas(
       element,
@@ -668,6 +773,7 @@ const generateElementWithCanvas = (
       zoom,
       renderConfig,
       appState,
+      spoilerOverlay,
     );
 
     if (!elementWithCanvas) {

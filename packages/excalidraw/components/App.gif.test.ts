@@ -54,6 +54,7 @@ describe("AppGifPlayback", () => {
     const triggerVisualRedraw = vi.fn();
     const app = {
       unmounted: false,
+      spoilers: { isImageSpoilerHidden: () => false },
       scene: {
         getNonDeletedElements: () => [element],
         triggerUpdate,
