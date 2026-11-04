@@ -22,8 +22,7 @@ import {
   getSpoilerOverlayLayout,
   getSpoilerOverlayColors,
   isPointInSpoilerButton,
-  SPOILER_FOREGROUND_DARK,
-  SPOILER_FOREGROUND_LIGHT,
+  SPOILER_FOREGROUND,
 } from "../src/spoilerOverlay";
 
 import type {
@@ -1349,146 +1348,58 @@ const createColorThumbHash = (r: number, g: number, b: number) => {
 const LIGHT_HASH = createColorThumbHash(235, 230, 220);
 const DARK_HASH = createColorThumbHash(30, 35, 50);
 
-/** sum of the r, g and b channels of an rgba() colour */
-const brightness = (color: string) =>
-  channels(color)
-    .slice(0, 3)
-    .reduce((sum, channel) => sum + channel, 0);
+/** WCAG relative luminance of an rgb colour with channels in 0..255 */
+const luminance = (rgb: number[]) => {
+  const [r, g, b] = rgb.map((channel) => {
+    const c = channel / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
 
 describe("spoiler overlay colours", () => {
-  describe("with no ThumbHash (the grey placeholder)", () => {
-    it("uses a dark icon and a light button in the light theme", () => {
-      const colors = getSpoilerOverlayColors(null, false, "light");
-      expect(colors.foreground).toBe(SPOILER_FOREGROUND_DARK);
-      expect(brightness(colors.button)).toBeGreaterThan(3 * 200);
-    });
-
-    it("uses a white icon and a dark scrim in the dark theme", () => {
-      const colors = getSpoilerOverlayColors(null, false, "dark");
-      expect(colors.foreground).toBe(SPOILER_FOREGROUND_LIGHT);
-      expect(brightness(colors.button)).toBeLessThan(3 * 40);
-      expect(channels(colors.button)[3]).toBeGreaterThan(0.5);
-    });
-
-    it('uses the light theme colours when "light" is given', () => {
-      // the theme is required: "light" gives the light grey cover colours,
-      // which differ from the dark ones
-      expect(getSpoilerOverlayColors(null, false, "light")).toEqual(
-        getSpoilerOverlayColors(null, false, "light"),
+  it("uses a white label and icon", () => {
+    for (const hovered of [false, true]) {
+      expect(getSpoilerOverlayColors(hovered).foreground).toBe(
+        SPOILER_FOREGROUND,
       );
-      expect(getSpoilerOverlayColors(null, false, "light")).not.toEqual(
-        getSpoilerOverlayColors(null, false, "dark"),
-      );
-    });
-
-    it("has a different hover colour in both themes", () => {
-      for (const theme of ["light", "dark"] as const) {
-        expect(getSpoilerOverlayColors(null, true, theme).button).not.toBe(
-          getSpoilerOverlayColors(null, false, theme).button,
-        );
-      }
-    });
-
-    it("uses the placeholder colours for a ThumbHash that does not decode", () => {
-      expect(
-        getSpoilerOverlayColors("not a thumbhash!", false, "dark"),
-      ).toEqual(getSpoilerOverlayColors(null, false, "dark"));
-      expect(
-        getSpoilerOverlayColors("not a thumbhash!", false, "light"),
-      ).toEqual(getSpoilerOverlayColors(null, false, "light"));
-    });
+    }
+    expect(SPOILER_FOREGROUND).toBe("#ffffff");
   });
 
-  describe("with a ThumbHash", () => {
-    it("uses a dark icon and a light button for a light average colour", () => {
-      const colors = getSpoilerOverlayColors(LIGHT_HASH, false, "dark");
-      expect(colors.foreground).toBe(SPOILER_FOREGROUND_DARK);
-      expect(brightness(colors.button)).toBeGreaterThan(3 * 200);
-    });
+  it("uses a dark, slightly see-through button", () => {
+    const button = getSpoilerOverlayColors(false).button;
+    const [r, g, b] = channels(button);
+    expect(Math.max(r, g, b)).toBeLessThan(70);
+    const alpha = parseFloat(button.match(/[\d.]+/g)![3]);
+    expect(alpha).toBeGreaterThan(0.5);
+    expect(alpha).toBeLessThan(1);
+  });
 
-    it("uses a white icon and a dark button for a dark average colour", () => {
-      const colors = getSpoilerOverlayColors(DARK_HASH, false, "light");
-      expect(colors.foreground).toBe(SPOILER_FOREGROUND_LIGHT);
-      expect(brightness(colors.button)).toBeLessThan(3 * 60);
-    });
+  it("uses the dark shadow of a white icon", () => {
+    expect(getSpoilerOverlayColors(false).shadow).toBe("rgba(0, 0, 0, 0.5)");
+  });
 
-    it("does not use the theme when the ThumbHash decodes", () => {
-      expect(getSpoilerOverlayColors(DARK_HASH, false, "light")).toEqual(
-        getSpoilerOverlayColors(DARK_HASH, false, "dark"),
-      );
-    });
+  it("has a different hover colour", () => {
+    expect(getSpoilerOverlayColors(true).button).not.toBe(
+      getSpoilerOverlayColors(false).button,
+    );
+  });
 
-    it("uses a white icon for pure black and a dark icon for pure white", () => {
-      expect(
-        getSpoilerOverlayColors(createColorThumbHash(0, 0, 0), false, "light")
-          .foreground,
-      ).toBe(SPOILER_FOREGROUND_LIGHT);
-      expect(
-        getSpoilerOverlayColors(
-          createColorThumbHash(255, 255, 255),
-          false,
-          "light",
-        ).foreground,
-      ).toBe(SPOILER_FOREGROUND_DARK);
-    });
+  it("keeps the hover button dark", () => {
+    const [r, g, b] = channels(getSpoilerOverlayColors(true).button);
+    expect(Math.max(r, g, b)).toBeLessThan(90);
+  });
 
-    it("takes the hue of the average colour", () => {
-      const red = channels(
-        getSpoilerOverlayColors(
-          createColorThumbHash(200, 20, 20),
-          false,
-          "light",
-        ).button,
-      );
-      const blue = channels(
-        getSpoilerOverlayColors(
-          createColorThumbHash(20, 20, 200),
-          false,
-          "light",
-        ).button,
-      );
-      expect(red[0]).toBeGreaterThan(red[2]);
-      expect(blue[2]).toBeGreaterThan(blue[0]);
-    });
-
-    it("keeps more of the average colour on hover (dark cover: lighter)", () => {
-      const normal = getSpoilerOverlayColors(DARK_HASH, false, "light").button;
-      const hovered = getSpoilerOverlayColors(DARK_HASH, true, "light").button;
-      expect(brightness(hovered)).toBeGreaterThan(brightness(normal));
-    });
-
-    it("keeps more of the average colour on hover (light cover: darker)", () => {
-      const normal = getSpoilerOverlayColors(LIGHT_HASH, false, "light").button;
-      const hovered = getSpoilerOverlayColors(LIGHT_HASH, true, "light").button;
-      expect(brightness(hovered)).toBeLessThan(brightness(normal));
-    });
-
-    // WCAG contrast of the label against the opaque part of the button
-    it.each([
-      ["light", LIGHT_HASH],
-      ["dark", DARK_HASH],
-      ["mid grey", createColorThumbHash(128, 128, 128)],
-      ["saturated", createColorThumbHash(40, 200, 90)],
-    ])("gives the label a 4.5:1 contrast on a %s cover", (_, hash) => {
-      const lum = (rgb: number[]) => {
-        const [r, g, b] = rgb.map((channel) => {
-          const c = channel / 255;
-          return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-        });
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-      };
-      for (const hovered of [false, true]) {
-        const colors = getSpoilerOverlayColors(hash, hovered, "light");
-        const button = lum(channels(colors.button).slice(0, 3));
-        const label =
-          colors.foreground === SPOILER_FOREGROUND_DARK
-            ? lum([0x1d, 0x1d, 0x1b])
-            : 1;
-        const contrast =
-          (Math.max(button, label) + 0.05) / (Math.min(button, label) + 0.05);
-        expect(contrast).toBeGreaterThan(4.5);
-      }
-    });
+  // WCAG contrast of the label against the opaque part of the button
+  it("gives the label a 4.5:1 contrast on the button", () => {
+    for (const hovered of [false, true]) {
+      const colors = getSpoilerOverlayColors(hovered);
+      const button = luminance(channels(colors.button).slice(0, 3));
+      const label = luminance(channels(colors.foreground));
+      const contrast = (label + 0.05) / (button + 0.05);
+      expect(contrast).toBeGreaterThan(4.5);
+    }
   });
 });
 
@@ -1614,7 +1525,7 @@ describe("spoiler overlay draw", () => {
     expect(labelCalls()).toHaveLength(1);
     expect(iconStrokes()).toHaveLength(1);
     expect(fillStyles.map(channels)).toContainEqual(
-      channels(getSpoilerOverlayColors(null, false, "light").button),
+      channels(getSpoilerOverlayColors(false).button),
     );
   });
 
@@ -1713,10 +1624,10 @@ describe("spoiler overlay draw", () => {
         getHoveredSpoilerElementId: () => element.id,
       });
       expect(fillStyles.map(channels)).toContainEqual(
-        channels(getSpoilerOverlayColors(null, true, "light").button),
+        channels(getSpoilerOverlayColors(true).button),
       );
       expect(fillStyles.map(channels)).not.toContainEqual(
-        channels(getSpoilerOverlayColors(null, false, "light").button),
+        channels(getSpoilerOverlayColors(false).button),
       );
     });
 
@@ -1726,27 +1637,11 @@ describe("spoiler overlay draw", () => {
         getHoveredSpoilerElementId: () => "other",
       });
       expect(fillStyles.map(channels)).toContainEqual(
-        channels(getSpoilerOverlayColors(null, false, "light").button),
+        channels(getSpoilerOverlayColors(false).button),
       );
       expect(fillStyles.map(channels)).not.toContainEqual(
-        channels(getSpoilerOverlayColors(null, true, "light").button),
+        channels(getSpoilerOverlayColors(true).button),
       );
-    });
-
-    it("draws the ThumbHash hover colour", () => {
-      const element = createSizedElement(400, 300, {
-        thumbHash: createThumbHash(64, 48, 16),
-      });
-      renderImage(element, new Map(), {
-        spoileredFiles: hidden(),
-        getHoveredSpoilerElementId: () => element.id,
-      });
-      const expected = getSpoilerOverlayColors(
-        element.thumbHash,
-        true,
-        "light",
-      ).button;
-      expect(fillStyles.map(channels)).toContainEqual(channels(expected));
     });
   });
 
@@ -1756,48 +1651,40 @@ describe("spoiler overlay draw", () => {
       expect(textStyles.map(channels)).toEqual([channels(color)]);
     };
 
-    it("is dark on a light ThumbHash", () => {
-      renderImage(
-        createSizedElement(400, 300, { thumbHash: LIGHT_HASH }),
-        new Map(),
-        { spoileredFiles: hidden() },
-      );
-      expectForeground(SPOILER_FOREGROUND_DARK);
-    });
-
-    it("is white on a dark ThumbHash", () => {
-      renderImage(
-        createSizedElement(400, 300, { thumbHash: DARK_HASH }),
-        new Map(),
-        { spoileredFiles: hidden() },
-      );
-      expectForeground(SPOILER_FOREGROUND_LIGHT);
-    });
-
-    it("is dark on the light-theme grey placeholder", () => {
-      renderImage(createSizedElement(400, 300), new Map(), {
+    it.each([
+      ["a light ThumbHash", { thumbHash: LIGHT_HASH }, THEME.LIGHT],
+      [
+        "a light ThumbHash in the dark theme",
+        { thumbHash: LIGHT_HASH },
+        THEME.DARK,
+      ],
+      ["a dark ThumbHash", { thumbHash: DARK_HASH }, THEME.LIGHT],
+      [
+        "a dark ThumbHash in the dark theme",
+        { thumbHash: DARK_HASH },
+        THEME.DARK,
+      ],
+      ["no ThumbHash in the light theme", {}, THEME.LIGHT],
+      ["no ThumbHash in the dark theme", {}, THEME.DARK],
+      [
+        "a file in error with a ThumbHash",
+        { thumbHash: DARK_HASH, status: "error" as const },
+        THEME.LIGHT,
+      ],
+      [
+        "a file in error in the dark theme",
+        { thumbHash: LIGHT_HASH, status: "error" as const },
+        THEME.DARK,
+      ],
+    ])("is white with a white label on %s", (_, props, theme) => {
+      renderImage(createSizedElement(400, 300, props), new Map(), {
         spoileredFiles: hidden(),
-        theme: THEME.LIGHT,
+        theme,
       });
-      expectForeground(SPOILER_FOREGROUND_DARK);
-    });
-
-    it("is white on the dark-theme grey placeholder", () => {
-      renderImage(createSizedElement(400, 300), new Map(), {
-        spoileredFiles: hidden(),
-        theme: THEME.DARK,
-      });
-      expectForeground(SPOILER_FOREGROUND_LIGHT);
-    });
-
-    it("follows the grey placeholder, not the ThumbHash, for a file in error", () => {
-      // the error placeholder is the grey box even with a ThumbHash
-      renderImage(
-        createSizedElement(400, 300, { thumbHash: DARK_HASH, status: "error" }),
-        new Map(),
-        { spoileredFiles: hidden(), theme: THEME.LIGHT },
+      expectForeground(SPOILER_FOREGROUND);
+      expect(fillStyles.map(channels)).toContainEqual(
+        channels(getSpoilerOverlayColors(false).button),
       );
-      expectForeground(SPOILER_FOREGROUND_DARK);
     });
 
     it("draws no grey placeholder glyph under the overlay", () => {

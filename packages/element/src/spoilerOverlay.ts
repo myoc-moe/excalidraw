@@ -5,7 +5,6 @@
 
 import { IMAGE_PLACEHOLDER_COLOR } from "@excalidraw/common";
 import { pointFrom, pointRotateRads, type Radians } from "@excalidraw/math";
-import { thumbHashToAverageRGBA } from "thumbhash";
 
 import type { GlobalPoint } from "@excalidraw/math";
 import type { SpoilerRenderConfig } from "@excalidraw/excalidraw/scene/types";
@@ -174,94 +173,17 @@ export const isPointInSpoilerButton = (
 // colours
 // -----------------------------------------------------------------------------
 
-/** the label and icon colours, one for a dark and one for a light cover */
-export const SPOILER_FOREGROUND_LIGHT = "#ffffff";
-export const SPOILER_FOREGROUND_DARK = "#1d1d1b";
+/** The label and icon colour. The same on every cover. */
+export const SPOILER_FOREGROUND = "#ffffff";
 
-/** the channels (0..1) of a `#rrggbb` colour */
-const hexToChannels = (hex: string) =>
-  [1, 3, 5].map((start) => parseInt(hex.slice(start, start + 2), 16) / 255);
-
-/** the grey box of the cover (no ThumbHash), as channels */
-const PLACEHOLDER_CHANNELS = {
-  light: hexToChannels(IMAGE_PLACEHOLDER_COLOR.light),
-  dark: hexToChannels(IMAGE_PLACEHOLDER_COLOR.dark),
-} as const;
-
-const averageColorCache = new Map<string, [number, number, number] | null>();
-
-const getThumbHashAverageColor = (thumbHash: string) => {
-  if (averageColorCache.has(thumbHash)) {
-    return averageColorCache.get(thumbHash)!;
-  }
-  let color: [number, number, number] | null = null;
-  try {
-    const binary = atob(thumbHash);
-    const bytes = new Uint8Array(binary.length);
-    for (let index = 0; index < binary.length; index++) {
-      bytes[index] = binary.charCodeAt(index);
-    }
-    const { r, g, b } = thumbHashToAverageRGBA(bytes);
-    if ([r, g, b].every(Number.isFinite)) {
-      color = [r, g, b];
-    }
-  } catch {
-    color = null;
-  }
-  averageColorCache.set(thumbHash, color);
-  return color;
-};
-
-const toLinear = (channel: number) =>
-  channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-
-/** WCAG relative luminance of an sRGB colour with channels in 0..1 */
-const getLuminance = ([r, g, b]: readonly number[]) =>
-  0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
-
-const getContrast = (a: number, b: number) =>
-  (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-
-const DARK_FOREGROUND_LUMINANCE = getLuminance(
-  hexToChannels(SPOILER_FOREGROUND_DARK),
-);
-
-/**
- * The colours come from the colour under the overlay: the ThumbHash average
- * colour, or the grey placeholder of the theme when there is no usable
- * ThumbHash. The label and icon colour is the one (white or dark) with the
- * better contrast against that colour. The button is that colour mixed with
- * black (white label) or with white (dark label), so the label contrasts with
- * the button too. The hover colour keeps more of the cover colour.
- */
-export const getSpoilerOverlayColors = (
-  thumbHash: string | null,
-  hovered: boolean,
-  theme: "light" | "dark",
-) => {
-  const base =
-    (thumbHash ? getThumbHashAverageColor(thumbHash) : null) ??
-    PLACEHOLDER_CHANNELS[theme];
-  const channels = base.map((channel) => Math.min(1, Math.max(0, channel)));
-  const luminance = getLuminance(channels);
-  const isLightCover =
-    getContrast(luminance, DARK_FOREGROUND_LUMINANCE) >
-    getContrast(luminance, 1);
-
-  // keep this much of the cover colour, the rest is black or white
-  const keep = hovered ? 0.45 : 0.3;
-  const mixWith = isLightCover ? 1 : 0;
-  const [r, g, b] = channels.map((channel) =>
-    Math.round((channel * keep + mixWith * (1 - keep)) * 255),
-  );
-  return {
-    button: `rgba(${r}, ${g}, ${b}, ${hovered ? 0.95 : 0.85})`,
-    foreground: isLightCover
-      ? SPOILER_FOREGROUND_DARK
-      : SPOILER_FOREGROUND_LIGHT,
-    shadow: isLightCover ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)",
-  };
-};
+/** The overlay colours are the same on every cover, in both themes: a white
+ * icon with a dark shadow, and a dark button with a white label. The hover
+ * button is lighter and more opaque. */
+export const getSpoilerOverlayColors = (hovered: boolean) => ({
+  button: hovered ? "rgba(58, 58, 54, 0.95)" : "rgba(29, 29, 27, 0.85)",
+  foreground: SPOILER_FOREGROUND,
+  shadow: "rgba(0, 0, 0, 0.5)",
+});
 
 // -----------------------------------------------------------------------------
 // draw
@@ -282,21 +204,14 @@ export const drawSpoilerOverlay = (
     label: string;
     hovered: boolean;
     flipped: boolean;
-    theme: "light" | "dark";
   },
 ) => {
-  const { zoom, label, hovered, flipped, theme } = opts;
+  const { zoom, label, hovered, flipped } = opts;
   const { icon, button } = getSpoilerOverlayLayout(element, zoom, label);
   if (!icon && !button) {
     return;
   }
-  // the colours follow the cover under the overlay
-  const cover = getImageCover(element, theme);
-  const colors = getSpoilerOverlayColors(
-    cover.type === "thumbHash" ? cover.thumbHash : null,
-    hovered,
-    theme,
-  );
+  const colors = getSpoilerOverlayColors(hovered);
 
   context.save();
   if (flipped) {

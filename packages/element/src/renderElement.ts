@@ -316,7 +316,6 @@ const generateElementCanvas = (
       label: spoilerOverlay.label,
       hovered: spoilerOverlay.hovered,
       flipped: spoilerOverlay.flipped,
-      theme: renderConfig.theme,
     });
   }
 
