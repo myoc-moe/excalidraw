@@ -26,6 +26,7 @@ import {
   isSafari,
 } from "@excalidraw/common";
 
+import type { ViewpointFlip } from "@excalidraw/common";
 import type {
   AppState,
   StaticCanvasAppState,
@@ -161,6 +162,7 @@ type SpoilerOverlay = {
   label: string;
   hovered: boolean;
   flipped: boolean;
+  viewpointFlip: ViewpointFlip;
 };
 
 /** MyOC: the "Show spoiler" overlay of `element`, or null when the element
@@ -186,21 +188,25 @@ const getSpoilerOverlay = (
     // the element canvas of a pending image is drawn with no flip (see
     // `drawElementFromCanvas`)
     flipped: !isPendingImageElement(element, renderConfig),
+    viewpointFlip: overlay.viewpointFlip,
   };
 };
 
-/** MyOC: the hover, label, angle and flip state of the spoiler overlay, or
- * null when the element draws no overlay. Part of the element canvas cache
- * key, so a hover change regenerates only that element. The overlay cancels
- * the blit rotation and flip, so the key has the angle and the applied flip:
- * a rotation or a flip mutates the element in place and keeps the cache
- * entry. */
+/** MyOC: the hover, label, angle, flip and viewport flip state of the
+ * spoiler overlay, or null when the element draws no overlay. Part of the
+ * element canvas cache key, so a hover change regenerates only that element.
+ * The overlay cancels the blit rotation and flip and the viewport flip, so
+ * the key has the angle, the applied flip and the viewport flip: a rotation
+ * or a flip mutates the element in place and keeps the cache entry. */
 const getSpoilerOverlayKey = (overlay: SpoilerOverlay | null): string | null =>
   overlay
     ? [
         overlay.hovered ? 1 : 0,
         overlay.flipped ? overlay.element.scale.join(",") : 0,
         overlay.element.angle,
+        `${overlay.viewpointFlip.horizontal ? 1 : 0},${
+          overlay.viewpointFlip.vertical ? 1 : 0
+        }`,
         overlay.label,
       ].join("|")
     : null;
@@ -324,6 +330,7 @@ const generateElementCanvas = (
       label: spoilerOverlay.label,
       hovered: spoilerOverlay.hovered,
       flipped: spoilerOverlay.flipped,
+      viewpointFlip: spoilerOverlay.viewpointFlip,
     });
   }
 

@@ -1,4 +1,8 @@
-import type { UserIdleState, EditorInterface } from "@excalidraw/common";
+import type {
+  UserIdleState,
+  EditorInterface,
+  ViewpointFlip,
+} from "@excalidraw/common";
 import type {
   ExcalidrawElement,
   ExcalidrawImageElement,
@@ -48,6 +52,9 @@ export type StaticCanvasSpoilerConfig = SpoilerRenderConfig & {
      interactive canvas owns the centre of the images of this file. Those
      images draw no icon and no button, only the cover. */
     hasCenterStatus: (fileId: FileId) => boolean;
+    /** the viewport flip of the screen canvas, which the overlay cancels so
+     that it stays unmirrored on screen */
+    viewpointFlip: ViewpointFlip;
   } | null;
 };
 

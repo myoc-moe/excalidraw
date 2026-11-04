@@ -62,23 +62,37 @@ const getClampedCenteredPopupLeft = (
   );
 };
 
+/** MyOC: the scene bounds of `element` on screen, in viewport coords. A
+ * viewport flip maps the scene bounds corners to other on-screen corners
+ * (with a vertical flip the scene bottom edge is the on-screen top edge), so
+ * take the on-screen min and max. */
+const getViewportBounds = (
+  element: NonDeletedExcalidrawElement,
+  appState: AppState,
+) => {
+  const [x1, y1, x2, y2] = getCommonBounds([element]);
+  const a = sceneCoordsToViewportCoords({ sceneX: x1, sceneY: y1 }, appState);
+  const b = sceneCoordsToViewportCoords({ sceneX: x2, sceneY: y2 }, appState);
+  return {
+    left: Math.min(a.x, b.x),
+    right: Math.max(a.x, b.x),
+    bottom: Math.max(a.y, b.y),
+  };
+};
+
 const getGifControlPosition = (
   element: NonDeletedExcalidrawElement,
   appState: AppState,
 ) => {
-  const [, , x2, y2] = getCommonBounds([element]);
-  const bottomRight = sceneCoordsToViewportCoords(
-    { sceneX: x2, sceneY: y2 },
-    appState,
-  );
+  const { right, bottom } = getViewportBounds(element, appState);
 
   return {
     left: Math.min(
-      Math.max(bottomRight.x - appState.offsetLeft, 8),
+      Math.max(right - appState.offsetLeft, 8),
       appState.width - 8,
     ),
     top: Math.min(
-      Math.max(bottomRight.y - appState.offsetTop, 8),
+      Math.max(bottom - appState.offsetTop, 8),
       appState.height - 8,
     ),
   };
@@ -166,6 +180,7 @@ export const GifPlaybackControls = ({
     liveAppState.scrollX,
     liveAppState.scrollY,
     liveAppState.zoom.value,
+    liveAppState.viewpointFlip,
   ]);
 
   // a spoiler change shows or hides the controls without an App render
@@ -241,22 +256,14 @@ export const GifPlaybackControls = ({
 
     const cacheEntry = app.imageCache.get(selectedElement.fileId);
     const gif = cacheEntry?.gif;
-    const [x1, , x2, y2] = getCommonBounds([selectedElement]);
-    const leftTop = sceneCoordsToViewportCoords(
-      { sceneX: x1, sceneY: y2 },
-      liveAppState,
-    );
-    const rightTop = sceneCoordsToViewportCoords(
-      { sceneX: x2, sceneY: y2 },
-      liveAppState,
-    );
-    const width = rightTop.x - leftTop.x;
-    const left = leftTop.x - liveAppState.offsetLeft + width / 2;
+    // under the on-screen bottom edge, at the on-screen centre
+    const bounds = getViewportBounds(selectedElement, liveAppState);
+    const left = (bounds.left + bounds.right) / 2 - liveAppState.offsetLeft;
     const top = Math.max(
       12,
       Math.min(
         liveAppState.height - 86,
-        leftTop.y - liveAppState.offsetTop + 16,
+        bounds.bottom - liveAppState.offsetTop + 16,
       ),
     );
 

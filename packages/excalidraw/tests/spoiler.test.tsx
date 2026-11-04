@@ -1525,7 +1525,7 @@ describe("Show spoiler button", () => {
       );
       expect(
         elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey,
-      ).toBe(`0|0|0|${LABEL}`);
+      ).toBe(`0|0|0|0,0|${LABEL}`);
       fillText.mockRestore();
     });
 
@@ -1553,13 +1553,13 @@ describe("Show spoiler button", () => {
       it("draws only the cover while the download progress shows, and the button again after", async () => {
         await spoilerSetup();
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|0,0|${LABEL}`);
         act(() => h.app.api.setDownloadProgress(A, 0.5));
         await nextFrame();
         expect(overlayKey()).toBe(null);
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|0,0|${LABEL}`);
       });
 
       it("draws the button after the progress ends for a file hidden during the progress", async () => {
@@ -1572,7 +1572,7 @@ describe("Show spoiler button", () => {
 
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|0,0|${LABEL}`);
       });
 
       it("draws no button after a file with a progress is hidden, then the button once the progress ends", async () => {
@@ -1584,7 +1584,7 @@ describe("Show spoiler button", () => {
         expect(overlayKey()).toBe(null);
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|0,0|${LABEL}`);
       });
 
       it("draws only the cover while the download error shows", async () => {
@@ -1868,6 +1868,112 @@ describe("Show spoiler button", () => {
         }
         clickCanvasAt(point);
         expect(visibility(A)).toBe("shown");
+      });
+    });
+
+    // the static canvas mirrors the scene for a viewport flip. The button
+    // stays upright on screen at the on-screen element centre, with the
+    // icon above it on screen.
+    describe.each([
+      ["horizontal", { horizontal: true, vertical: false }],
+      ["vertical", { horizontal: false, vertical: true }],
+      ["horizontal and vertical", { horizontal: true, vertical: true }],
+    ])("with the viewport flip %s", (_, viewpointFlip) => {
+      /** a point of the button as drawn on screen, in client coords.
+          `fx` and `fy` are fractions of the button width and height. */
+      const visibleButtonClient = (fx = 0.5, fy = 0.5) => {
+        const element = getLatest("img-a");
+        const zoom = h.state.zoom.value;
+        const { button } = getSpoilerOverlayLayout(element, zoom, LABEL);
+        expect(button).not.toBeNull();
+        const centre = toClient({
+          x: element.x + element.width / 2,
+          y: element.y + element.height / 2,
+        });
+        return {
+          x:
+            centre.x +
+            (button!.x + button!.width * fx - element.width / 2) * zoom,
+          y:
+            centre.y +
+            (button!.y + button!.height * fy - element.height / 2) * zoom,
+        };
+      };
+      /** the icon centre as drawn on screen, in client coords */
+      const visibleIconClient = () => {
+        const element = getLatest("img-a");
+        const zoom = h.state.zoom.value;
+        const { icon } = getSpoilerOverlayLayout(element, zoom, LABEL);
+        const centre = toClient({
+          x: element.x + element.width / 2,
+          y: element.y + element.height / 2,
+        });
+        return {
+          x: centre.x + (icon!.x - element.width / 2) * zoom,
+          y: centre.y + (icon!.y - element.height / 2) * zoom,
+        };
+      };
+
+      describe.each([0, 90, 33])("at %s degrees", (degrees) => {
+        it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+          [number, number],
+        ][])(
+          "shows the file on a click on the visible button for the flip %j",
+          async (scale) => {
+            await spoilerSetup({}, {
+              angle: (degrees * Math.PI) / 180,
+              scale,
+            } as any);
+            act(() => API.setAppState({ viewpointFlip }));
+            await nextFrame();
+
+            // the icon is above the button on screen, and takes no click
+            const icon = visibleIconClient();
+            const center = visibleButtonClient();
+            expect(icon.y).toBeLessThan(center.y);
+            clickClientAt(icon.x, icon.y);
+            expect(visibility(A)).toBe("hidden");
+            // just outside the left and the bottom edge on screen
+            const left = visibleButtonClient(0);
+            clickClientAt(left.x - 2, left.y);
+            expect(visibility(A)).toBe("hidden");
+            const bottom = visibleButtonClient(0.5, 1);
+            clickClientAt(bottom.x, bottom.y + 2);
+            expect(visibility(A)).toBe("hidden");
+            if (viewpointFlip.vertical) {
+              // the button point of the scene layout is mirrored on
+              // screen: on the blur
+              clickCanvasAt(buttonPoint("img-a"));
+              expect(visibility(A)).toBe("hidden");
+            }
+
+            clickClientAt(center.x, center.y);
+            expect(visibility(A)).toBe("shown");
+          },
+        );
+      });
+
+      it("hovers the visible button", async () => {
+        await spoilerSetup();
+        act(() => API.setAppState({ viewpointFlip }));
+        await nextFrame();
+        const center = visibleButtonClient();
+        mouse.moveTo(center.x, center.y);
+        expect(h.app.spoilers.getHoveredElementId()).toBe("img-a");
+        const icon = visibleIconClient();
+        mouse.moveTo(icon.x, icon.y);
+        expect(h.app.spoilers.getHoveredElementId()).toBe(null);
+      });
+
+      it("draws the overlay again when the viewport flip changes", async () => {
+        await spoilerSetup();
+        await nextFrame();
+        const before = elementWithCanvasCache.get(getLatest("img-a"));
+        act(() => API.setAppState({ viewpointFlip }));
+        await nextFrame();
+        const after = elementWithCanvasCache.get(getLatest("img-a"));
+        expect(after).not.toBe(before);
+        expect(after?.spoilerOverlayKey).not.toBe(before?.spoilerOverlayKey);
       });
     });
 
@@ -2504,7 +2610,7 @@ describe("Show spoiler button", () => {
       await nextFrame();
       const hovered = elementWithCanvasCache.get(getLatest("img-a"));
       expect(hovered).not.toBe(normal);
-      expect(hovered!.spoilerOverlayKey).toBe(`1|0|0|${LABEL}`);
+      expect(hovered!.spoilerOverlayKey).toBe(`1|0|0|0,0|${LABEL}`);
     });
 
     it("keeps the pointer cursor on a selected image", async () => {
@@ -2534,7 +2640,7 @@ describe("Show spoiler button", () => {
       await nextFrame();
       expect(
         elementWithCanvasCache.get(getLatest("img-a"))!.spoilerOverlayKey,
-      ).toBe(`0|0|0|${LABEL}`);
+      ).toBe(`0|0|0|0,0|${LABEL}`);
     });
 
     it("ends the hover when the pointer leaves the canvas", async () => {

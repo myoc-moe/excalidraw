@@ -1,10 +1,12 @@
 // MyOC: the cover of a hidden spoilered image, and the eye-closed icon and
 // the "Show spoiler" button that the screen render draws over it. The icon
 // and the button stay upright and unmirrored on screen at every element
-// angle and flip. The draw and the hit test use the same geometry, so the
-// click area is always the drawn button.
+// angle and flip and every viewport flip. The draw and the hit test use the
+// same geometry, so the click area is always the drawn button.
 
 import { IMAGE_PLACEHOLDER_COLOR } from "@excalidraw/common";
+
+import type { ViewpointFlip } from "@excalidraw/common";
 
 import type { SpoilerRenderConfig } from "@excalidraw/excalidraw/scene/types";
 import type { AppState } from "@excalidraw/excalidraw/types";
@@ -95,10 +97,12 @@ const getLabelWidth = (label: string) => {
   return width;
 };
 
-/** The icon and the button in an upright frame: axis-aligned in scene
- * space, origin at the top-left of the unrotated element box (the scene
- * point `element.x`, `element.y`). Centred on the element centre. The rect
- * of each part is upright on screen at every angle and flip. */
+/** The icon and the button in an upright frame: axis-aligned on screen,
+ * origin at the top-left of the unrotated element box, y down on screen.
+ * Centred on the element centre. With no viewport flip this frame is the
+ * scene space offset by `element.x`, `element.y`; a viewport flip mirrors it
+ * about the element centre in scene space (see `isPointInSpoilerButton`).
+ * The rect of each part is upright on screen at every angle and flip. */
 export const getSpoilerOverlayLayout = (
   element: Pick<ExcalidrawImageElement, "width" | "height" | "angle">,
   zoom: number,
@@ -150,19 +154,25 @@ export const getSpoilerOverlayLayout = (
 };
 
 /** `point` is in scene space. The draw cancels the element rotation and
- * flip, so the button is an upright rect and no transform is undone here. */
+ * flip, so no element transform is undone here. It also cancels the
+ * viewport flip, which mirrors the layout frame about the element centre in
+ * scene space: with a vertical viewport flip the button is above the icon in
+ * scene space and below it on screen. */
 export const isPointInSpoilerButton = (
   element: ExcalidrawImageElement,
   point: { x: number; y: number },
   zoom: number,
   label: string,
+  viewpointFlip?: ViewpointFlip,
 ) => {
   const { button } = getSpoilerOverlayLayout(element, zoom, label);
   if (!button) {
     return false;
   }
-  const localX = point.x - element.x;
-  const localY = point.y - element.y;
+  const sceneX = point.x - element.x;
+  const sceneY = point.y - element.y;
+  const localX = viewpointFlip?.horizontal ? element.width - sceneX : sceneX;
+  const localY = viewpointFlip?.vertical ? element.height - sceneY : sceneY;
   return (
     localX >= button.x &&
     localX <= button.x + button.width &&
@@ -197,9 +207,10 @@ const EYE_CLOSED_PATH =
 
 /** Draws on a context in element space: origin at the element top-left, and
  * the caller applies the element rotation (and the flip when `flipped`) to
- * it at blit time. The draw cancels that transform around the element
- * centre, so the icon and the button are upright and unmirrored on screen
- * (see `getSpoilerOverlayLayout`). */
+ * it at blit time, and the screen canvas applies the viewport flip. The draw
+ * cancels those transforms around the element centre, so the icon and the
+ * button are upright and unmirrored on screen (see
+ * `getSpoilerOverlayLayout`). */
 export const drawSpoilerOverlay = (
   element: ExcalidrawImageElement,
   context: CanvasRenderingContext2D,
@@ -208,9 +219,10 @@ export const drawSpoilerOverlay = (
     label: string;
     hovered: boolean;
     flipped: boolean;
+    viewpointFlip: ViewpointFlip;
   },
 ) => {
-  const { zoom, label, hovered, flipped } = opts;
+  const { zoom, label, hovered, flipped, viewpointFlip } = opts;
   const { icon, button } = getSpoilerOverlayLayout(element, zoom, label);
   if (!icon && !button) {
     return;
@@ -218,14 +230,21 @@ export const drawSpoilerOverlay = (
   const colors = getSpoilerOverlayColors(hovered);
 
   context.save();
-  // the inverse of the blit transform: the blit does rotate, then flip; a
-  // flip is its own inverse
+  // the inverse of the screen transform: the screen canvas does the
+  // viewport flip, then the blit does rotate, then flip; a flip is its own
+  // inverse
   context.translate(element.width / 2, element.height / 2);
   if (flipped) {
     context.scale(element.scale[0], element.scale[1]);
   }
   if (element.angle) {
     context.rotate(-element.angle);
+  }
+  if (viewpointFlip.horizontal || viewpointFlip.vertical) {
+    context.scale(
+      viewpointFlip.horizontal ? -1 : 1,
+      viewpointFlip.vertical ? -1 : 1,
+    );
   }
   context.translate(-element.width / 2, -element.height / 2);
 

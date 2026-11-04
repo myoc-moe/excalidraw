@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import { arrayToMap, MIME_TYPES, THEME } from "@excalidraw/common";
 import { pointFrom, pointRotateRads } from "@excalidraw/math";
 
+import type { ViewpointFlip } from "@excalidraw/common";
 import type { GlobalPoint } from "@excalidraw/math";
 
 import type {
@@ -91,6 +92,25 @@ const createElement = (
 
 type SpoilerMap = Map<FileId, SpoilerVisibility>;
 
+const NO_VIEWPOINT_FLIP: ViewpointFlip = { horizontal: false, vertical: false };
+const VIEWPORT_WIDTH = 1000;
+const VIEWPORT_HEIGHT = 800;
+/** every viewport flip that mirrors the screen */
+const VIEWPOINT_FLIPS: [string, ViewpointFlip][] = [
+  ["horizontal", { horizontal: true, vertical: false }],
+  ["vertical", { horizontal: false, vertical: true }],
+  ["horizontal and vertical", { horizontal: true, vertical: true }],
+];
+/** a scene point on screen (zoom 1, no scroll), and back: the viewport
+ * flip is its own inverse */
+const viewportFlipPoint = (
+  point: { x: number; y: number },
+  flip: ViewpointFlip,
+) => ({
+  x: flip.horizontal ? VIEWPORT_WIDTH - point.x : point.x,
+  y: flip.vertical ? VIEWPORT_HEIGHT - point.y : point.y,
+});
+
 const renderImages = (
   elements: NonDeleted<ExcalidrawImageElement>[],
   imageCache: AppClassProperties["imageCache"],
@@ -103,9 +123,11 @@ const renderImages = (
     getHoveredSpoilerElementId?: () => string | null;
     spoilerButtonLabel?: string;
     hasCenterStatus?: (fileId: FileId) => boolean;
+    viewpointFlip?: ViewpointFlip;
   } = {},
 ) => {
   const theme = opts.theme ?? THEME.LIGHT;
+  const viewpointFlip = opts.viewpointFlip ?? NO_VIEWPOINT_FLIP;
   const { spoileredFiles } = opts;
   const canvas = document.createElement("canvas");
   const context = canvas.getContext("2d")!;
@@ -120,6 +142,7 @@ const renderImages = (
         label: opts.spoilerButtonLabel ?? LABEL,
         getHoveredElementId: opts.getHoveredSpoilerElementId ?? (() => null),
         hasCenterStatus: opts.hasCenterStatus ?? (() => false),
+        viewpointFlip,
       },
     },
     renderGrid: false,
@@ -146,7 +169,22 @@ const renderImages = (
     shouldCacheIgnoreZoom: false,
     theme,
     viewBackgroundColor: "#ffffff",
+    width: VIEWPORT_WIDTH,
+    height: VIEWPORT_HEIGHT,
+    viewpointFlip,
   } as unknown as StaticCanvasAppState;
+  // the viewport flip part of `applyZoomAndViewpointFlip` (this helper
+  // applies no zoom to the screen context)
+  if (viewpointFlip.horizontal || viewpointFlip.vertical) {
+    context.translate(
+      viewpointFlip.horizontal ? VIEWPORT_WIDTH : 0,
+      viewpointFlip.vertical ? VIEWPORT_HEIGHT : 0,
+    );
+    context.scale(
+      viewpointFlip.horizontal ? -1 : 1,
+      viewpointFlip.vertical ? -1 : 1,
+    );
+  }
 
   for (const element of elements) {
     renderElement(
@@ -1355,6 +1393,62 @@ describe("spoiler overlay geometry", () => {
         }
       });
     });
+
+    // the draw cancels the viewport flip too, so the button is upright on
+    // screen at the on-screen element centre. Pointer scene coords undo the
+    // viewport flip.
+    describe.each(VIEWPOINT_FLIPS)("with the viewport flip %s", (_, flip) => {
+      describe.each([0, 90, 33])("at %s degrees", (degrees) => {
+        it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+          [number, number],
+        ][])("uses the button drawn on screen for the flip %j", (scale) => {
+          const element = createSizedElement(400, 300, {
+            x: 100,
+            y: 50,
+            angle: (degrees * Math.PI) / 180,
+            scale,
+          });
+          const { button, icon } = getSpoilerOverlayLayout(element, 1, LABEL);
+          const centreOnScreen = viewportFlipPoint({ x: 300, y: 200 }, flip);
+          /** a layout point drawn upright on screen, in scene space */
+          const sceneOfLayout = (x: number, y: number) =>
+            viewportFlipPoint(
+              { x: centreOnScreen.x + x - 200, y: centreOnScreen.y + y - 150 },
+              flip,
+            );
+          const hit = (point: { x: number; y: number }) =>
+            isPointInSpoilerButton(element, point, 1, LABEL, flip);
+          const c = center(button!);
+          const right = button!.x + button!.width;
+          const bottom = button!.y + button!.height;
+
+          expect(hit(sceneOfLayout(c.x, c.y))).toBe(true);
+          for (const [x, y] of [
+            [button!.x + 0.5, button!.y + 0.5],
+            [right - 0.5, button!.y + 0.5],
+            [button!.x + 0.5, bottom - 0.5],
+            [right - 0.5, bottom - 0.5],
+          ]) {
+            expect(hit(sceneOfLayout(x, y))).toBe(true);
+          }
+          for (const [x, y] of [
+            [button!.x - 1, c.y],
+            [right + 1, c.y],
+            [c.x, button!.y - 1],
+            [c.x, bottom + 1],
+          ]) {
+            expect(hit(sceneOfLayout(x, y))).toBe(false);
+          }
+          // the icon on screen is not the button
+          expect(hit(sceneOfLayout(icon!.x, icon!.y))).toBe(false);
+          if (flip.vertical) {
+            // the scene point of the layout (no viewport flip) is the
+            // vertical mirror of the drawn button: on the blur
+            expect(hit({ x: 100 + c.x, y: 50 + c.y })).toBe(false);
+          }
+        });
+      });
+    });
   });
 });
 
@@ -1868,6 +1962,29 @@ describe("spoiler overlay draw", () => {
       });
       expect(elementWithCanvasCache.get(element)).not.toBe(pending);
     });
+
+    it("makes the element canvas again when the viewport flip changes", () => {
+      const element = createSizedElement(400, 300);
+      renderImage(element, new Map(), { spoileredFiles: hidden() });
+      let previous = elementWithCanvasCache.get(element);
+      for (const [, flip] of VIEWPOINT_FLIPS) {
+        renderImage(element, new Map(), {
+          spoileredFiles: hidden(),
+          viewpointFlip: flip,
+        });
+        const current = elementWithCanvasCache.get(element);
+        expect(current).not.toBe(previous);
+        // a new object with the same values keeps the canvas
+        renderImage(element, new Map(), {
+          spoileredFiles: hidden(),
+          viewpointFlip: { ...flip },
+        });
+        expect(elementWithCanvasCache.get(element)).toBe(current);
+        previous = current;
+      }
+      renderImage(element, new Map(), { spoileredFiles: hidden() });
+      expect(elementWithCanvasCache.get(element)).not.toBe(previous);
+    });
   });
 
   describe("upright on screen", () => {
@@ -2016,6 +2133,86 @@ describe("spoiler overlay draw", () => {
         toScreenTransform(elementCanvas, textTransforms[labelIndex]),
         1,
       );
+    });
+
+    // the static canvas mirrors the whole scene for a viewport flip: the
+    // overlay cancels it too
+    describe.each(VIEWPOINT_FLIPS)("with the viewport flip %s", (_, flip) => {
+      describe.each([0, 90, 33])("at %s degrees", (degrees) => {
+        it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+          [number, number],
+        ][])(
+          "draws the label and the icon upright, icon above the button, for the flip %j",
+          (scale) => {
+            const element = createSizedElement(400, 300, {
+              x: 100,
+              y: 50,
+              angle: (degrees * Math.PI) / 180,
+              scale,
+            });
+            renderImage(
+              element,
+              createCache(createImage(FULL_WIDTH, FULL_HEIGHT)),
+              { spoileredFiles: hidden(), viewpointFlip: flip },
+            );
+            const elementCanvas = elementWithCanvasCache.get(element)!.canvas;
+            const { icon, button } = getSpoilerOverlayLayout(element, 1, LABEL);
+            // the element centre on screen
+            const centre = viewportFlipPoint({ x: 300, y: 200 }, flip);
+
+            const labelIndex = fillText.mock.calls.findIndex(
+              (args: unknown[]) => args[0] === LABEL,
+            );
+            expect(labelIndex).not.toBe(-1);
+            const label = toScreenTransform(
+              elementCanvas,
+              textTransforms[labelIndex],
+            );
+            expectUpright(label, 1);
+            const [, textX, textY] = fillText.mock.calls[
+              labelIndex
+            ] as number[];
+            const labelAt = apply(label, textX, textY);
+            expect(labelAt.x).toBeCloseTo(
+              centre.x + button!.x + button!.width / 2 - 200,
+            );
+            expect(labelAt.y).toBeCloseTo(
+              centre.y + button!.y + button!.height / 2 - 150,
+            );
+
+            expect(iconStrokes()).toHaveLength(1);
+            const iconMatrix = toScreenTransform(
+              elementCanvas,
+              iconTransforms[0],
+            );
+            expectUpright(iconMatrix, icon!.size / 24);
+            const iconAt = apply(iconMatrix, 12, 12);
+            expect(iconAt.x).toBeCloseTo(centre.x);
+            expect(iconAt.y).toBeCloseTo(centre.y + icon!.y - 150);
+            // the icon is above the button on screen
+            expect(iconAt.y).toBeLessThan(labelAt.y);
+          },
+        );
+      });
+
+      it("stays upright for a file that is not loaded", () => {
+        const element = createSizedElement(400, 300, {
+          angle: Math.PI / 2,
+          scale: [-1, 1],
+        });
+        renderImage(element, new Map(), {
+          spoileredFiles: hidden(),
+          viewpointFlip: flip,
+        });
+        const elementCanvas = elementWithCanvasCache.get(element)!.canvas;
+        const labelIndex = fillText.mock.calls.findIndex(
+          (args: unknown[]) => args[0] === LABEL,
+        );
+        expectUpright(
+          toScreenTransform(elementCanvas, textTransforms[labelIndex]),
+          1,
+        );
+      });
     });
   });
 

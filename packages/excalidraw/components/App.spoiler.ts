@@ -13,6 +13,7 @@ import {
 } from "@excalidraw/element";
 import { pointDistance, pointFrom } from "@excalidraw/math";
 
+import type { ViewpointFlip } from "@excalidraw/common";
 import type {
   ExcalidrawElement,
   FileId,
@@ -69,6 +70,7 @@ export class AppSpoilers {
   private renderConfig: {
     label: string;
     interactive: boolean;
+    viewpointFlip: ViewpointFlip;
     config: StaticCanvasSpoilerConfig;
   } | null = null;
   /** the hidden files with a centre status, as last drawn */
@@ -135,17 +137,22 @@ export class AppSpoilers {
     !this.hasCenterStatus(element.fileId);
 
   /** The spoiler input of the static render config. The same object while
-      the label and the interaction state do not change, so the static canvas
-      does not render again on each App render. With no input, no button. */
+      the label, the interaction state and the viewport flip values do not
+      change, so the static canvas does not render again on each App render.
+      With no input, no button. */
   getRenderConfig = (label: string): StaticCanvasSpoilerConfig => {
     const interactive = this.app.isInteractionEnabled();
+    const { viewpointFlip } = this.app.state;
     if (
       this.renderConfig?.label !== label ||
-      this.renderConfig.interactive !== interactive
+      this.renderConfig.interactive !== interactive ||
+      this.renderConfig.viewpointFlip.horizontal !== viewpointFlip.horizontal ||
+      this.renderConfig.viewpointFlip.vertical !== viewpointFlip.vertical
     ) {
       this.renderConfig = {
         label,
         interactive,
+        viewpointFlip,
         config: {
           isFileHidden: this.isFileHidden,
           overlay: interactive
@@ -153,6 +160,7 @@ export class AppSpoilers {
                 label,
                 getHoveredElementId: this.getHoveredElementId,
                 hasCenterStatus: this.hasCenterStatus,
+                viewpointFlip,
               }
             : null,
         },
@@ -313,14 +321,23 @@ export class AppSpoilers {
       return null;
     }
     const label = t("labels.showSpoiler");
-    const zoom = this.app.state.zoom.value;
+    const {
+      zoom: { value: zoom },
+      viewpointFlip,
+    } = this.app.state;
 
     // cheap check first: the pointer is on a drawn button
     if (
       !this.app.visibleElements.some(
         (element) =>
           this.hasButton(element) &&
-          isPointInSpoilerButton(element, scenePointer, zoom, label),
+          isPointInSpoilerButton(
+            element,
+            scenePointer,
+            zoom,
+            label,
+            viewpointFlip,
+          ),
       )
     ) {
       return null;
@@ -332,7 +349,13 @@ export class AppSpoilers {
       { includeBoundTextElement: true, includeLockedElements: true },
     );
     return this.hasButton(topElement) &&
-      isPointInSpoilerButton(topElement, scenePointer, zoom, label)
+      isPointInSpoilerButton(
+        topElement,
+        scenePointer,
+        zoom,
+        label,
+        viewpointFlip,
+      )
       ? topElement
       : null;
   };
