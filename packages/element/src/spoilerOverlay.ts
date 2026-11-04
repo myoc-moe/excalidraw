@@ -1,12 +1,11 @@
 // MyOC: the cover of a hidden spoilered image, and the eye-closed icon and
-// the "Show spoiler" button that the screen render draws over it. The draw
-// and the hit test use the same geometry, so the click area is always the
-// drawn button.
+// the "Show spoiler" button that the screen render draws over it. The icon
+// and the button stay upright and unmirrored on screen at every element
+// angle and flip. The draw and the hit test use the same geometry, so the
+// click area is always the drawn button.
 
 import { IMAGE_PLACEHOLDER_COLOR } from "@excalidraw/common";
-import { pointFrom, pointRotateRads, type Radians } from "@excalidraw/math";
 
-import type { GlobalPoint } from "@excalidraw/math";
 import type { SpoilerRenderConfig } from "@excalidraw/excalidraw/scene/types";
 import type { AppState } from "@excalidraw/excalidraw/types";
 
@@ -96,10 +95,12 @@ const getLabelWidth = (label: string) => {
   return width;
 };
 
-/** The icon and the button in element space: origin at the element top-left,
- * no rotation and no flip. Centred in the element. */
+/** The icon and the button in an upright frame: axis-aligned in scene
+ * space, origin at the top-left of the unrotated element box (the scene
+ * point `element.x`, `element.y`). Centred on the element centre. The rect
+ * of each part is upright on screen at every angle and flip. */
 export const getSpoilerOverlayLayout = (
-  element: Pick<ExcalidrawImageElement, "width" | "height">,
+  element: Pick<ExcalidrawImageElement, "width" | "height" | "angle">,
   zoom: number,
   label: string,
 ): SpoilerOverlayLayout => {
@@ -111,9 +112,18 @@ export const getSpoilerOverlayLayout = (
   const buttonWidth = getLabelWidth(label) + BUTTON_PADDING_X * 2;
   const contentHeight = ICON_SIZE + GAP + BUTTON_HEIGHT;
 
+  // the upright content box with its margins must fit in the rotated
+  // element: test its corners in the element frame
+  const halfWidth = buttonWidth / 2 + EDGE_MARGIN;
+  const halfHeight = contentHeight / 2 + EDGE_MARGIN;
+  const cos = Math.abs(Math.cos(element.angle));
+  const sin = Math.abs(Math.sin(element.angle));
+  // the tolerance absorbs the float noise of cos and sin at a quarter turn
+  const fits = (extent: number, limit: number) => extent <= limit / 2 + 1e-9;
+
   if (
-    screenWidth >= buttonWidth + EDGE_MARGIN * 2 &&
-    screenHeight >= contentHeight + EDGE_MARGIN * 2
+    fits(halfWidth * cos + halfHeight * sin, screenWidth) &&
+    fits(halfWidth * sin + halfHeight * cos, screenHeight)
   ) {
     const top = cy - contentHeight / 2 / zoom;
     return {
@@ -127,7 +137,8 @@ export const getSpoilerOverlayLayout = (
     };
   }
 
-  // too small for the button: the icon only, smaller if needed
+  // too small for the button: the icon only, smaller if needed. Half the
+  // short side fits in the element at every angle.
   const iconSize = Math.min(ICON_SIZE, Math.min(screenWidth, screenHeight) / 2);
   return {
     icon:
@@ -138,8 +149,8 @@ export const getSpoilerOverlayLayout = (
   };
 };
 
-/** `point` is in scene space. The overlay never flips (the draw cancels the
- * element flip), so only the rotation is undone here. */
+/** `point` is in scene space. The draw cancels the element rotation and
+ * flip, so the button is an upright rect and no transform is undone here. */
 export const isPointInSpoilerButton = (
   element: ExcalidrawImageElement,
   point: { x: number; y: number },
@@ -150,17 +161,8 @@ export const isPointInSpoilerButton = (
   if (!button) {
     return false;
   }
-  const center = pointFrom<GlobalPoint>(
-    element.x + element.width / 2,
-    element.y + element.height / 2,
-  );
-  const [x, y] = pointRotateRads(
-    pointFrom<GlobalPoint>(point.x, point.y),
-    center,
-    -element.angle as Radians,
-  );
-  const localX = x - element.x;
-  const localY = y - element.y;
+  const localX = point.x - element.x;
+  const localY = point.y - element.y;
   return (
     localX >= button.x &&
     localX <= button.x + button.width &&
@@ -193,9 +195,11 @@ export const getSpoilerOverlayColors = (hovered: boolean) => ({
 const EYE_CLOSED_PATH =
   "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z M15 12a3 3 0 1 1-6 0a3 3 0 1 1 6 0z M3 3l18 18";
 
-/** Draws in element space (see `getSpoilerOverlayLayout`). Set `flipped` when
- * the caller applies the element flip to this context, so the overlay text
- * and icon do not mirror. */
+/** Draws on a context in element space: origin at the element top-left, and
+ * the caller applies the element rotation (and the flip when `flipped`) to
+ * it at blit time. The draw cancels that transform around the element
+ * centre, so the icon and the button are upright and unmirrored on screen
+ * (see `getSpoilerOverlayLayout`). */
 export const drawSpoilerOverlay = (
   element: ExcalidrawImageElement,
   context: CanvasRenderingContext2D,
@@ -214,11 +218,16 @@ export const drawSpoilerOverlay = (
   const colors = getSpoilerOverlayColors(hovered);
 
   context.save();
+  // the inverse of the blit transform: the blit does rotate, then flip; a
+  // flip is its own inverse
+  context.translate(element.width / 2, element.height / 2);
   if (flipped) {
-    context.translate(element.width / 2, element.height / 2);
     context.scale(element.scale[0], element.scale[1]);
-    context.translate(-element.width / 2, -element.height / 2);
   }
+  if (element.angle) {
+    context.rotate(-element.angle);
+  }
+  context.translate(-element.width / 2, -element.height / 2);
 
   if (icon) {
     context.save();

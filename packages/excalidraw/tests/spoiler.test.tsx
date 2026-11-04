@@ -1399,7 +1399,8 @@ const getLatest = (id: string) =>
   h.app.scene.getElement(id) as ExcalidrawImageElement;
 
 /** a point of the button in scene space. `fx` and `fy` are fractions of the
-    button width and height (0.5 is the centre). */
+    button width and height (0.5 is the centre). The button is upright at
+    every element angle and flip. */
 const buttonPoint = (id: string, fx = 0.5, fy = 0.5) => {
   const element = getLatest(id);
   const { button } = getSpoilerOverlayLayout(
@@ -1408,19 +1409,10 @@ const buttonPoint = (id: string, fx = 0.5, fy = 0.5) => {
     LABEL,
   );
   expect(button).not.toBeNull();
-  const center = pointFrom<GlobalPoint>(
-    element.x + element.width / 2,
-    element.y + element.height / 2,
-  );
-  const [x, y] = pointRotateRads(
-    pointFrom<GlobalPoint>(
-      element.x + button!.x + button!.width * fx,
-      element.y + button!.y + button!.height * fy,
-    ),
-    center,
-    element.angle,
-  );
-  return { x, y };
+  return {
+    x: element.x + button!.x + button!.width * fx,
+    y: element.y + button!.y + button!.height * fy,
+  };
 };
 
 const toClient = (point: { x: number; y: number }) =>
@@ -1533,7 +1525,7 @@ describe("Show spoiler button", () => {
       );
       expect(
         elementWithCanvasCache.get(getLatest("img-a"))?.spoilerOverlayKey,
-      ).toBe(`0|0|${LABEL}`);
+      ).toBe(`0|0|0|${LABEL}`);
       fillText.mockRestore();
     });
 
@@ -1561,13 +1553,13 @@ describe("Show spoiler button", () => {
       it("draws only the cover while the download progress shows, and the button again after", async () => {
         await spoilerSetup();
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
         act(() => h.app.api.setDownloadProgress(A, 0.5));
         await nextFrame();
         expect(overlayKey()).toBe(null);
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
       });
 
       it("draws the button after the progress ends for a file hidden during the progress", async () => {
@@ -1580,7 +1572,7 @@ describe("Show spoiler button", () => {
 
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
       });
 
       it("draws no button after a file with a progress is hidden, then the button once the progress ends", async () => {
@@ -1592,7 +1584,7 @@ describe("Show spoiler button", () => {
         expect(overlayKey()).toBe(null);
         act(() => h.app.api.setDownloadProgress(A, null));
         await nextFrame();
-        expect(overlayKey()).toBe(`0|0|${LABEL}`);
+        expect(overlayKey()).toBe(`0|0|0|${LABEL}`);
       });
 
       it("draws only the cover while the download error shows", async () => {
@@ -1845,34 +1837,39 @@ describe("Show spoiler button", () => {
       expect(visibility(A)).toBe("hidden");
     });
 
-    // 1.3.5
-    it("follows a rotated element", async () => {
-      await spoilerSetup({}, { angle: Math.PI / 2 } as any);
-      const element = getLatest("img-a");
-      const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
-      // the unrotated button centre is outside the rotated button
-      clickCanvasAt({
-        x: element.x + button!.x + button!.width / 2,
-        y: element.y + button!.y + button!.height / 2,
-      });
-      expect(visibility(A)).toBe("hidden");
-      clickCanvasAt(buttonPoint("img-a"));
-      expect(visibility(A)).toBe("shown");
-    });
-
-    it.each([[[-1, 1]], [[1, -1]], [[-1, -1]]] as [[number, number]][])(
-      "keeps the button where it draws for the flip %j",
-      async (scale) => {
-        await spoilerSetup({}, { scale } as any);
+    // 1.3.5: the button stays upright at the element centre at every
+    // angle and flip
+    describe.each([0, 90, 180, 270, 33])("at %s degrees", (degrees) => {
+      it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+        [number, number],
+      ][])("uses the upright button for the flip %j", async (scale) => {
+        await spoilerSetup({}, {
+          angle: (degrees * Math.PI) / 180,
+          scale,
+        } as any);
         const element = getLatest("img-a");
         const point = buttonPoint("img-a");
         // the vertical mirror of the button centre is on the blur
         clickCanvasAt({ x: point.x, y: 2 * (element.y + 150) - point.y });
         expect(visibility(A)).toBe("hidden");
+        // just outside the left edge of the upright button
+        clickCanvasAt({ x: buttonPoint("img-a", 0).x - 1, y: point.y });
+        expect(visibility(A)).toBe("hidden");
+        // a point near the corner of a button that turned with the element
+        if (degrees !== 0) {
+          const corner = buttonPoint("img-a", 0.95, 0.9);
+          const [x, y] = pointRotateRads(
+            pointFrom<GlobalPoint>(corner.x, corner.y),
+            pointFrom<GlobalPoint>(element.x + 200, element.y + 150),
+            element.angle,
+          );
+          clickCanvasAt({ x, y });
+          expect(visibility(A)).toBe("hidden");
+        }
         clickCanvasAt(point);
         expect(visibility(A)).toBe("shown");
-      },
-    );
+      });
+    });
 
     // 1.3.6
     it("works in view mode", async () => {
@@ -2301,12 +2298,20 @@ describe("Show spoiler button", () => {
       expectButtonMoved(old);
     });
 
-    it("after a rotation", async () => {
+    it("after a rotation (the button stays upright at the centre)", async () => {
       await spoilerSetup();
+      await nextFrame();
       const old = buttonPoint("img-a");
+      const before = elementWithCanvasCache.get(getLatest("img-a"));
       API.updateElement(getLatest("img-a"), { angle: (Math.PI / 2) as any });
       await nextFrame();
-      expectButtonMoved(old);
+      // the overlay is drawn again for the new angle
+      const after = elementWithCanvasCache.get(getLatest("img-a"));
+      expect(after).not.toBe(before);
+      expect(after?.spoilerOverlayKey).not.toBe(null);
+      expect(buttonPoint("img-a")).toEqual(old);
+      clickCanvasAt(old);
+      expect(visibility(A)).toBe("shown");
     });
 
     it("after an undo", async () => {
@@ -2499,7 +2504,7 @@ describe("Show spoiler button", () => {
       await nextFrame();
       const hovered = elementWithCanvasCache.get(getLatest("img-a"));
       expect(hovered).not.toBe(normal);
-      expect(hovered!.spoilerOverlayKey).toBe(`1|0|${LABEL}`);
+      expect(hovered!.spoilerOverlayKey).toBe(`1|0|0|${LABEL}`);
     });
 
     it("keeps the pointer cursor on a selected image", async () => {
@@ -2529,7 +2534,7 @@ describe("Show spoiler button", () => {
       await nextFrame();
       expect(
         elementWithCanvasCache.get(getLatest("img-a"))!.spoilerOverlayKey,
-      ).toBe(`0|0|${LABEL}`);
+      ).toBe(`0|0|0|${LABEL}`);
     });
 
     it("ends the hover when the pointer leaves the canvas", async () => {

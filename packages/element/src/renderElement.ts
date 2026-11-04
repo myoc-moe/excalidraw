@@ -189,12 +189,20 @@ const getSpoilerOverlay = (
   };
 };
 
-/** MyOC: the hover, flip and label state of the spoiler overlay, or null when
- * the element draws no overlay. Part of the element canvas cache key, so a
- * hover change regenerates only that element. */
+/** MyOC: the hover, label, angle and flip state of the spoiler overlay, or
+ * null when the element draws no overlay. Part of the element canvas cache
+ * key, so a hover change regenerates only that element. The overlay cancels
+ * the blit rotation and flip, so the key has the angle and the applied flip:
+ * a rotation or a flip mutates the element in place and keeps the cache
+ * entry. */
 const getSpoilerOverlayKey = (overlay: SpoilerOverlay | null): string | null =>
   overlay
-    ? `${overlay.hovered ? 1 : 0}|${overlay.flipped ? 1 : 0}|${overlay.label}`
+    ? [
+        overlay.hovered ? 1 : 0,
+        overlay.flipped ? overlay.element.scale.join(",") : 0,
+        overlay.element.angle,
+        overlay.label,
+      ].join("|")
     : null;
 
 const cappedElementCanvasSize = (

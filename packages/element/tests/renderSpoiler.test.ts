@@ -3,6 +3,9 @@ import { rgbaToThumbHash } from "thumbhash";
 import { vi } from "vitest";
 
 import { arrayToMap, MIME_TYPES, THEME } from "@excalidraw/common";
+import { pointFrom, pointRotateRads } from "@excalidraw/math";
+
+import type { GlobalPoint } from "@excalidraw/math";
 
 import type {
   AppClassProperties,
@@ -1102,7 +1105,7 @@ describe("spoiler overlay geometry", () => {
         big.width / 2,
       );
       expect(layout.icon!.x).toBeCloseTo(big.width / 2);
-      expect(layout.icon!.size * zoom).toBeCloseTo(22);
+      expect(layout.icon!.size * zoom).toBeCloseTo(reference.icon!.size);
     },
   );
 
@@ -1154,10 +1157,12 @@ describe("spoiler overlay geometry", () => {
     });
 
     it("keeps the button at the exact limit and drops it 1px below", () => {
-      const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
-      // 8px free on each side
+      const { icon, button } = getSpoilerOverlayLayout(element, 1, LABEL);
+      // 8px free on each side of the icon, the gap and the button
+      const contentHeight =
+        button!.y + button!.height - (icon!.y - icon!.size / 2);
       const minWidth = button!.width + 16;
-      const minHeight = 22 + 6 + 24 + 16;
+      const minHeight = contentHeight + 16;
       expect(
         getSpoilerOverlayLayout(
           createSizedElement(minWidth, minHeight),
@@ -1185,6 +1190,29 @@ describe("spoiler overlay geometry", () => {
       const tiny = createSizedElement(20, 20);
       const { icon } = getSpoilerOverlayLayout(tiny, 1, LABEL);
       expect(icon!.size).toBe(10);
+    });
+
+    it("tests the fit of the upright button in the rotated element", () => {
+      // 300 by 90 is 90 px wide on screen at a quarter turn
+      const wide = createSizedElement(300, 90);
+      expect(getSpoilerOverlayLayout(wide, 1, LABEL).button).not.toBeNull();
+      expect(
+        getSpoilerOverlayLayout(
+          { ...wide, angle: (Math.PI / 2) as any },
+          1,
+          LABEL,
+        ).button,
+      ).toBeNull();
+      // and 90 by 300 is 300 px wide on screen at a quarter turn
+      const tall = createSizedElement(90, 300);
+      expect(getSpoilerOverlayLayout(tall, 1, LABEL).button).toBeNull();
+      expect(
+        getSpoilerOverlayLayout(
+          { ...tall, angle: (Math.PI / 2) as any },
+          1,
+          LABEL,
+        ).button,
+      ).not.toBeNull();
     });
 
     it("draws nothing when the icon would be smaller than 6px", () => {
@@ -1265,65 +1293,67 @@ describe("spoiler overlay geometry", () => {
       );
     });
 
-    it("follows the rotation", () => {
-      const rotated = createSizedElement(400, 300, {
-        angle: Math.PI / 2,
-      });
-      const { button } = getSpoilerOverlayLayout(rotated, 1, LABEL);
-      const c = center(button!);
-      // offset of the button centre from the element centre
-      const dx = c.x - 200;
-      const dy = c.y - 150;
-      // a quarter turn clockwise: (dx, dy) goes to (-dy, dx)
-      expect(
-        isPointInSpoilerButton(rotated, { x: 200 - dy, y: 150 + dx }, 1, LABEL),
-      ).toBe(true);
-      // the unrotated position is outside the rotated button
-      expect(
-        isPointInSpoilerButton(rotated, { x: 200 + dx, y: 150 + dy }, 1, LABEL),
-      ).toBe(false);
-    });
-
-    it("follows the element when it is rotated by a half turn", () => {
-      const rotated = createSizedElement(400, 300, { angle: Math.PI });
-      const { button } = getSpoilerOverlayLayout(rotated, 1, LABEL);
-      const c = center(button!);
-      expect(
-        isPointInSpoilerButton(
-          rotated,
-          { x: 400 - c.x, y: 300 - c.y },
-          1,
-          LABEL,
-        ),
-      ).toBe(true);
-      expect(isPointInSpoilerButton(rotated, c, 1, LABEL)).toBe(false);
-    });
-
-    it.each([[[-1, 1]], [[1, -1]], [[-1, -1]]] as [[number, number]][])(
-      "keeps the button where it draws for the flip %j",
-      (scale) => {
-        const flipped = createSizedElement(400, 300, { scale });
-        const { button } = getSpoilerOverlayLayout(flipped, 1, LABEL);
+    // the draw cancels the element rotation and flip, so the button is an
+    // upright rect at the element centre at every angle and flip
+    describe.each([0, 90, 180, 270, 33])("at %s degrees", (degrees) => {
+      it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+        [number, number],
+      ][])("uses the upright button for the flip %j", (flip) => {
+        const element = createSizedElement(400, 300, {
+          x: 100,
+          y: 50,
+          angle: (degrees * Math.PI) / 180,
+          scale: flip,
+        });
+        const { button } = getSpoilerOverlayLayout(element, 1, LABEL);
+        expect(button).not.toBeNull();
+        const scene = (x: number, y: number) => ({ x: 100 + x, y: 50 + y });
         const c = center(button!);
-        // the draw cancels the flip, so the button is not mirrored
-        expect(isPointInSpoilerButton(flipped, c, 1, LABEL)).toBe(true);
-        expect(
-          isPointInSpoilerButton(flipped, { x: c.x, y: 300 - c.y }, 1, LABEL),
-        ).toBe(false);
-      },
-    );
+        const right = button!.x + button!.width;
+        const bottom = button!.y + button!.height;
 
-    it("uses the flip and the rotation together", () => {
-      const element = createSizedElement(400, 300, {
-        angle: Math.PI / 2,
-        scale: [1, -1],
+        // the centre and the corners of the upright button
+        expect(isPointInSpoilerButton(element, scene(c.x, c.y), 1, LABEL)).toBe(
+          true,
+        );
+        for (const [x, y] of [
+          [button!.x, button!.y],
+          [right, button!.y],
+          [button!.x, bottom],
+          [right, bottom],
+        ]) {
+          expect(isPointInSpoilerButton(element, scene(x, y), 1, LABEL)).toBe(
+            true,
+          );
+        }
+        // 1px outside each edge
+        for (const [x, y] of [
+          [button!.x - 1, c.y],
+          [right + 1, c.y],
+          [c.x, button!.y - 1],
+          [c.x, bottom + 1],
+        ]) {
+          expect(isPointInSpoilerButton(element, scene(x, y), 1, LABEL)).toBe(
+            false,
+          );
+        }
+        // the vertical mirror of the button centre is on the blur
+        expect(
+          isPointInSpoilerButton(element, scene(c.x, 300 - c.y), 1, LABEL),
+        ).toBe(false);
+        // a point near the bottom-right corner of a button that turned with
+        // the element (the old draw) is outside the upright button
+        if (degrees !== 0) {
+          const [x, y] = pointRotateRads(
+            pointFrom<GlobalPoint>(right - 1, bottom - 1),
+            pointFrom<GlobalPoint>(200, 150),
+            element.angle,
+          );
+          expect(isPointInSpoilerButton(element, scene(x, y), 1, LABEL)).toBe(
+            false,
+          );
+        }
       });
-      const c = center(getSpoilerOverlayLayout(element, 1, LABEL).button!);
-      const dx = c.x - 200;
-      const dy = c.y - 150;
-      expect(
-        isPointInSpoilerButton(element, { x: 200 - dy, y: 150 + dx }, 1, LABEL),
-      ).toBe(true);
     });
   });
 });
@@ -1412,8 +1442,13 @@ describe("spoiler overlay draw", () => {
   let fonts: string[];
   let strokeStyles: string[];
   let textStyles: string[];
+  /** the context transform at each fillText and icon stroke */
+  let textTransforms: DOMMatrix[];
+  let iconTransforms: DOMMatrix[];
 
   beforeEach(() => {
+    textTransforms = [];
+    iconTransforms = [];
     fillStyles = [];
     fonts = [];
     strokeStyles = [];
@@ -1435,6 +1470,7 @@ describe("spoiler overlay draw", () => {
     fillText.mockImplementation(function (this: CanvasRenderingContext2D) {
       fonts.push(this.font);
       textStyles.push(String(this.fillStyle));
+      textTransforms.push(this.getTransform());
     });
     stroke.mockImplementation(function (
       this: CanvasRenderingContext2D,
@@ -1442,6 +1478,7 @@ describe("spoiler overlay draw", () => {
     ) {
       if (args[0] instanceof Path2D) {
         strokeStyles.push(String(this.strokeStyle));
+        iconTransforms.push(this.getTransform());
       }
       return (originalStroke as any).apply(this, args);
     });
@@ -1798,6 +1835,30 @@ describe("spoiler overlay draw", () => {
       expect(elementWithCanvasCache.get(element)).not.toBe(english);
     });
 
+    it("makes the element canvas again when the angle changes", () => {
+      const element = createSizedElement(400, 300);
+      renderImage(element, new Map(), { spoileredFiles: hidden() });
+      const before = elementWithCanvasCache.get(element);
+      // a rotation mutates the element in place
+      (element as { angle: number }).angle = Math.PI / 2;
+      renderImage(element, new Map(), { spoileredFiles: hidden() });
+      const after = elementWithCanvasCache.get(element);
+      expect(after).not.toBe(before);
+      renderImage(element, new Map(), { spoileredFiles: hidden() });
+      expect(elementWithCanvasCache.get(element)).toBe(after);
+    });
+
+    it("makes the element canvas again when the flip of a loaded file changes", () => {
+      const element = createSizedElement(400, 300);
+      const imageCache = createCache(createImage(FULL_WIDTH, FULL_HEIGHT));
+      renderImage(element, imageCache, { spoileredFiles: hidden() });
+      const before = elementWithCanvasCache.get(element);
+      // a flip mutates the element in place
+      (element as { scale: [number, number] }).scale = [-1, 1];
+      renderImage(element, imageCache, { spoileredFiles: hidden() });
+      expect(elementWithCanvasCache.get(element)).not.toBe(before);
+    });
+
     it("makes the element canvas again when the file loads (the flip starts)", () => {
       const element = createSizedElement(400, 300, { scale: [-1, 1] });
       renderImage(element, new Map(), { spoileredFiles: hidden() });
@@ -1806,6 +1867,155 @@ describe("spoiler overlay draw", () => {
         spoileredFiles: hidden(),
       });
       expect(elementWithCanvasCache.get(element)).not.toBe(pending);
+    });
+  });
+
+  describe("upright on screen", () => {
+    type Affine = Pick<DOMMatrix, "a" | "b" | "c" | "d" | "e" | "f">;
+    /** `m` then `n`: the matrix of `m · n` */
+    const multiply = (m: Affine, n: Affine): Affine => ({
+      a: m.a * n.a + m.c * n.b,
+      b: m.b * n.a + m.d * n.b,
+      c: m.a * n.c + m.c * n.d,
+      d: m.b * n.c + m.d * n.d,
+      e: m.a * n.e + m.c * n.f + m.e,
+      f: m.b * n.e + m.d * n.f + m.f,
+    });
+    const apply = (m: Affine, x: number, y: number) => ({
+      x: m.a * x + m.c * y + m.e,
+      y: m.b * x + m.d * y + m.f,
+    });
+
+    let drawImage: ReturnType<typeof vi.spyOn>;
+    let blitTransforms: DOMMatrix[];
+
+    beforeEach(() => {
+      blitTransforms = [];
+      const originalDrawImage = CanvasRenderingContext2D.prototype.drawImage;
+      drawImage = vi
+        .spyOn(CanvasRenderingContext2D.prototype, "drawImage")
+        .mockImplementation(function (
+          this: CanvasRenderingContext2D,
+          ...args: any[]
+        ) {
+          blitTransforms.push(this.getTransform());
+          return (originalDrawImage as any).apply(this, args);
+        });
+    });
+
+    afterEach(() => {
+      drawImage.mockRestore();
+    });
+
+    /** the screen transform of a draw on the element canvas: the element
+     * canvas transform at the draw, then the blit of the element canvas to
+     * the screen canvas */
+    const toScreenTransform = (
+      elementCanvas: HTMLCanvasElement,
+      atDraw: DOMMatrix,
+    ) => {
+      const index = drawImage.mock.calls.findIndex(
+        (args: unknown[]) => args[0] === elementCanvas,
+      );
+      expect(index).not.toBe(-1);
+      const [, dx, dy, dw, dh] = drawImage.mock.calls[index] as number[];
+      const blit: Affine = {
+        a: dw / elementCanvas.width,
+        b: 0,
+        c: 0,
+        d: dh / elementCanvas.height,
+        e: dx,
+        f: dy,
+      };
+      return multiply(multiply(blitTransforms[index], blit), atDraw);
+    };
+
+    const expectUpright = (m: Affine, scale: number) => {
+      // no rotation, no mirror, one size on both axes
+      expect(m.b).toBeCloseTo(0);
+      expect(m.c).toBeCloseTo(0);
+      expect(m.a).toBeCloseTo(scale);
+      expect(m.d).toBeCloseTo(scale);
+    };
+
+    describe.each([
+      ["a loaded file", true, null],
+      ["a file that is not loaded", false, null],
+      ["a cropped loaded file", true, CROP],
+    ] as const)("for %s", (_, loaded, crop) => {
+      describe.each([0, 90, 180, 270, 33])("at %s degrees", (degrees) => {
+        it.each([[[1, 1]], [[-1, 1]], [[1, -1]], [[-1, -1]]] as [
+          [number, number],
+        ][])("draws the label and the icon upright for the flip %j", (flip) => {
+          const element = createSizedElement(400, 300, {
+            x: 100,
+            y: 50,
+            angle: (degrees * Math.PI) / 180,
+            scale: flip,
+            crop,
+          });
+          renderImage(
+            element,
+            loaded
+              ? createCache(createImage(FULL_WIDTH, FULL_HEIGHT))
+              : new Map(),
+            { spoileredFiles: hidden() },
+          );
+          const elementCanvas = elementWithCanvasCache.get(element)!.canvas;
+          const { icon, button } = getSpoilerOverlayLayout(element, 1, LABEL);
+
+          // the label: upright, at the button centre on screen
+          const labelIndex = fillText.mock.calls.findIndex(
+            (args: unknown[]) => args[0] === LABEL,
+          );
+          expect(labelIndex).not.toBe(-1);
+          expect(contextsOf(fillText)[labelIndex].canvas).toBe(elementCanvas);
+          const label = toScreenTransform(
+            elementCanvas,
+            textTransforms[labelIndex],
+          );
+          expectUpright(label, 1);
+          const [, textX, textY] = fillText.mock.calls[labelIndex] as number[];
+          const labelAt = apply(label, textX, textY);
+          expect(labelAt.x).toBeCloseTo(100 + button!.x + button!.width / 2);
+          expect(labelAt.y).toBeCloseTo(50 + button!.y + button!.height / 2);
+
+          // the icon: upright, at its layout centre on screen
+          const iconIndex = iconStrokes().length - 1;
+          expect(iconIndex).toBe(0);
+          const iconMatrix = toScreenTransform(
+            elementCanvas,
+            iconTransforms[iconIndex],
+          );
+          expectUpright(iconMatrix, icon!.size / 24);
+          const iconAt = apply(iconMatrix, 12, 12);
+          expect(iconAt.x).toBeCloseTo(100 + icon!.x);
+          expect(iconAt.y).toBeCloseTo(50 + icon!.y);
+          // the element centre
+          expect(iconAt.x).toBeCloseTo(300);
+        });
+      });
+    });
+
+    it("stays upright at zoom 2", () => {
+      const element = createSizedElement(400, 300, {
+        angle: Math.PI / 2,
+        scale: [-1, 1],
+      });
+      renderImage(element, createCache(createImage(FULL_WIDTH, FULL_HEIGHT)), {
+        spoileredFiles: hidden(),
+        zoom: 2,
+      });
+      const elementCanvas = elementWithCanvasCache.get(element)!.canvas;
+      const labelIndex = fillText.mock.calls.findIndex(
+        (args: unknown[]) => args[0] === LABEL,
+      );
+      // the font is 1 / zoom (see "scales the font by 1 / zoom"), so the
+      // transform has no zoom part
+      expectUpright(
+        toScreenTransform(elementCanvas, textTransforms[labelIndex]),
+        1,
+      );
     });
   });
 
