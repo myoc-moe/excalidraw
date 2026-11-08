@@ -22,6 +22,7 @@ import {
   shouldResizeFromCenter,
   shouldMaintainAspectRatio,
   shouldRotateWithDiscreteAngle,
+  getLayoutIndependentKey,
   isArrowKey,
   KEYS,
   APP_NAME,
@@ -641,6 +642,51 @@ const gesture: Gesture = {
   lastCenter: null,
   initialDistance: null,
   initialScale: null,
+};
+
+/**
+ * Returns the event with the `event.key` that shortcuts compare against:
+ * - non-Latin layouts and input methods (e.g. macOS Zhuyin "ㄐ" on `KeyR`)
+ *   get the US QWERTY key of the physical key (see `getLayoutIndependentKey`)
+ * - CapsLock is inverted back based on Shift #2372
+ *
+ * Returns the same event when the key does not change, and while an input
+ * method composes text.
+ */
+const normalizeShortcutKeyEvent = <
+  T extends KeyboardEvent | React.KeyboardEvent,
+>(
+  event: T,
+): T => {
+  // while an input method composes text, the keys belong to it
+  const keyEvent: KeyboardEvent | React.KeyboardEvent = event;
+  const nativeEvent =
+    "nativeEvent" in keyEvent ? keyEvent.nativeEvent : keyEvent;
+  if (nativeEvent.isComposing) {
+    return event;
+  }
+  let key = getLayoutIndependentKey(event);
+  if (
+    typeof key === "string" &&
+    ((!event.shiftKey && /^[A-Z]$/.test(key)) ||
+      (event.shiftKey && /^[a-z]$/.test(key)))
+  ) {
+    // CapsLock inverts capitalization based on ShiftKey, so invert it back
+    key = event.shiftKey ? key.toUpperCase() : key.toLowerCase();
+  }
+  if (key === event.key || !("Proxy" in window)) {
+    return event;
+  }
+  return new Proxy(event, {
+    get(ev: any, prop) {
+      const value = ev[prop];
+      if (typeof value === "function") {
+        // fix for Proxies hijacking `this`
+        return value.bind(ev);
+      }
+      return prop === "key" ? key : value;
+    },
+  });
 };
 
 class App extends React.Component<AppProps, AppState> {
@@ -2953,6 +2999,7 @@ class App extends React.Component<AppProps, AppState> {
   // `ActionManager.handleKeyDown` gates); the rest of the keyboard handling
   // stays disabled while non-interactive
   private handleNavigationModeKeyDown = (event: KeyboardEvent) => {
+    event = normalizeShortcutKeyEvent(event);
     if (this.maybeHandlePageScrollKeyDown(event)) {
       // the editor consumes the input — the page must not scroll along
       event.preventDefault();
@@ -5676,30 +5723,13 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      // normalize `event.key` when CapsLock is pressed #2372
-
-      if (
-        "Proxy" in window &&
-        ((!event.shiftKey && /^[A-Z]$/.test(event.key)) ||
-          (event.shiftKey && /^[a-z]$/.test(event.key)))
-      ) {
-        event = new Proxy(event, {
-          get(ev: any, prop) {
-            const value = ev[prop];
-            if (typeof value === "function") {
-              // fix for Proxies hijacking `this`
-              return value.bind(ev);
-            }
-            return prop === "key"
-              ? // CapsLock inverts capitalization based on ShiftKey, so invert
-                // it back
-                event.shiftKey
-                ? ev.key.toUpperCase()
-                : ev.key.toLowerCase()
-              : value;
-          },
-        });
+      // an input method is composing text: the keys belong to it
+      const nativeEvent = "nativeEvent" in event ? event.nativeEvent : event;
+      if (nativeEvent.isComposing && !isInputLike(event.target)) {
+        return;
       }
+
+      event = normalizeShortcutKeyEvent(event);
 
       if (!isInputLike(event.target)) {
         if (
@@ -6206,6 +6236,7 @@ class App extends React.Component<AppProps, AppState> {
     if (!this.isInteractionEnabled()) {
       return;
     }
+    event = normalizeShortcutKeyEvent(event);
     // MyOC: Resolve the held-F gesture before ordinary key-up handling.
     if (this.handleSmartZoomKeyUp(event)) {
       return;
