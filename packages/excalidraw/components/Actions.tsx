@@ -768,8 +768,13 @@ export const MobileShapeActions = ({
   const { container } = useExcalidrawContainer();
   const mobileActionsRef = useRef<HTMLDivElement>(null);
 
+  // The panel is as wide as its buttons, so the room for the duplicate and
+  // delete buttons is the width of the region that holds the panel.
   const ACTIONS_WIDTH =
-    mobileActionsRef.current?.getBoundingClientRect()?.width ?? 0;
+    (
+      mobileActionsRef.current?.closest(".ui-layout__region") ??
+      mobileActionsRef.current
+    )?.getBoundingClientRect()?.width ?? 0;
 
   // 7 actions plus the optional history controls
   const MIN_ACTIONS = 7 + Number(showUndo) + Number(showRedo);

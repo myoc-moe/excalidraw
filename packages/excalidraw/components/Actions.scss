@@ -189,7 +189,8 @@
   flex-direction: row;
   justify-content: flex-start;
   gap: 6px;
-  width: 100%;
+  width: fit-content;
+  max-width: 100%;
   background: transparent;
   border-radius: var(--border-radius-lg);
   box-shadow: none;
@@ -200,7 +201,7 @@
 
 .mobile-shape-actions__primary {
   display: flex;
-  flex: 1;
+  flex: 0 1 auto;
   flex-direction: row;
   gap: 6px;
 }
