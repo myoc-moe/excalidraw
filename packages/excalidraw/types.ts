@@ -88,6 +88,23 @@ export type Collaborator = Readonly<{
     background: string;
     stroke: string;
   };
+  // Solid color of the collaborator's cursor and name label. The host app sets
+  // it so it can show the same color elsewhere. Without it the cursor has a
+  // generated fill and an outline in the host's `--mui-palette-divider`, then
+  // white.
+  borderColor?: string;
+  // How a collaborator with a `borderColor` is drawn: "filled" (default) is a
+  // solid cursor and name label, "outlined" is a surface-colored one with an
+  // outline in `borderColor`.
+  cursorStyle?: "filled" | "outlined";
+  // Stroke width of the cursor and the name label border, in px (default 1.5).
+  cursorThickness?: number;
+  // The other color of the cursor: the name text when filled, the fill when
+  // outlined. A color, or `var(--name)` to read a CSS variable of the host.
+  // Defaults to the host's `--mui-palette-background-paper`, then white.
+  cursorSecondaryColor?: string;
+  // Opacity of the cursor and the name label, 0 to 1 (default 1).
+  cursorOpacity?: number;
   // The url of the collaborator's avatar, defaults to username initials
   // if not present
   avatarUrl?: string;
