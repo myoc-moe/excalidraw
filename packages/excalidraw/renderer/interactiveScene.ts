@@ -1908,46 +1908,55 @@ export const renderImageErrorIcon = (
   // dark halo so the icon and label read on any image, also a red one
   context.shadowColor = "rgba(0, 0, 0, 0.85)";
   // shadowBlur is in device pixels and ignores the zoom transform
-  context.shadowBlur = 4 * (window.devicePixelRatio || 1);
+  context.shadowBlur = 8 * (window.devicePixelRatio || 1);
   context.shadowOffsetX = 0;
   context.shadowOffsetY = 0;
 
-  if (style?.backgroundColor) {
-    context.fillStyle = style.backgroundColor;
+  // two passes stack the shadow into a stronger halo
+  for (let pass = 0; pass < 2; pass++) {
+    if (pass === 0 && style?.backgroundColor) {
+      context.fillStyle = style.backgroundColor;
+      context.beginPath();
+      context.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+
+    context.strokeStyle = color;
+    context.lineWidth = lineWidth;
     context.beginPath();
     context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-    context.fill();
-  }
+    context.stroke();
 
-  context.strokeStyle = color;
-  context.lineWidth = lineWidth;
-  context.beginPath();
-  context.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  context.stroke();
-
-  context.strokeStyle = color;
-  context.fillStyle = color;
-  context.lineCap = "round";
-  context.beginPath();
-  context.moveTo(centerX, centerY - radius * 0.45);
-  context.lineTo(centerX, centerY + radius * 0.12);
-  context.stroke();
-  context.beginPath();
-  context.arc(centerX, centerY + radius * 0.48, radius * 0.11, 0, Math.PI * 2);
-  context.fill();
-
-  if (style?.text) {
-    context.font = `600 ${Math.max(
-      11 / appState.zoom.value,
-      radius * 0.65,
-    )}px Assistant, system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif`;
-    context.textAlign = "center";
-    context.textBaseline = "top";
-    context.fillText(
-      style.text,
+    context.strokeStyle = color;
+    context.fillStyle = color;
+    context.lineCap = "round";
+    context.beginPath();
+    context.moveTo(centerX, centerY - radius * 0.45);
+    context.lineTo(centerX, centerY + radius * 0.12);
+    context.stroke();
+    context.beginPath();
+    context.arc(
       centerX,
-      centerY + radius + 6 / appState.zoom.value,
+      centerY + radius * 0.48,
+      radius * 0.11,
+      0,
+      Math.PI * 2,
     );
+    context.fill();
+
+    if (style?.text) {
+      context.font = `600 ${Math.max(
+        11 / appState.zoom.value,
+        radius * 0.65,
+      )}px Assistant, system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "top";
+      context.fillText(
+        style.text,
+        centerX,
+        centerY + radius + 6 / appState.zoom.value,
+      );
+    }
   }
 
   context.restore();
