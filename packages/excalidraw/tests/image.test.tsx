@@ -15,6 +15,7 @@ import type {
 import * as blobModule from "../data/blob";
 import * as filesystemModule from "../data/filesystem";
 import { Excalidraw } from "../index";
+import { renderImageErrorIcon } from "../renderer/interactiveScene";
 
 import { createPasteEvent } from "../clipboard";
 
@@ -1455,5 +1456,73 @@ describe("image insertion", () => {
         "File is too big. Maximum allowed size is 1MB.",
       );
     });
+  });
+});
+
+describe("renderImageErrorIcon", () => {
+  const draw = (zoom: number, style: Record<string, string>) => {
+    const draws: Array<{ call: string; shadowColor: string }> = [];
+    const context = {
+      shadowColor: "",
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0,
+      strokeStyle: "",
+      fillStyle: "",
+      lineWidth: 0,
+      lineCap: "",
+      font: "",
+      textAlign: "",
+      textBaseline: "",
+      save: vi.fn(),
+      restore: vi.fn(),
+      beginPath: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      arc: vi.fn(),
+    } as Record<string, any>;
+    for (const call of ["stroke", "fill", "fillText"]) {
+      context[call] = vi.fn(() => {
+        draws.push({ call, shadowColor: context.shadowColor });
+      });
+    }
+    renderImageErrorIcon(
+      context as unknown as CanvasRenderingContext2D,
+      50,
+      50,
+      20,
+      { zoom: { value: zoom } } as any,
+      style,
+    );
+    const count = (call: string) => draws.filter((d) => d.call === call).length;
+    return { context, draws, count };
+  };
+
+  it.each([0.1, 1, 5.6])(
+    "MyOC: draws a dark halo with a screen-pixel blur at zoom %s",
+    (zoom) => {
+      const { context, draws } = draw(zoom, { text: "Image not found" });
+
+      for (const d of draws) {
+        expect(d.shadowColor).toMatch(/^rgba\(0, 0, 0,/);
+      }
+      expect(context.shadowBlur).toBe(8 * (window.devicePixelRatio || 1));
+      expect(context.strokeStyle).toBe("#e03131");
+    },
+  );
+
+  it("MyOC: draws the icon and text in two passes to stack the halo", () => {
+    const { count } = draw(1, { text: "Image not found" });
+
+    expect(count("stroke")).toBe(4);
+    expect(count("fillText")).toBe(2);
+    expect(count("fill")).toBe(2);
+  });
+
+  it("MyOC: fills the background once when it is set", () => {
+    const { count } = draw(1, { backgroundColor: "#fff" });
+
+    expect(count("fill")).toBe(3);
+    expect(count("fillText")).toBe(0);
   });
 });
