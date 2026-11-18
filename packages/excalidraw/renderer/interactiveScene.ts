@@ -1889,7 +1889,7 @@ const renderImageUploadStatusIcon = (
   }
 };
 
-const renderImageErrorIcon = (
+export const renderImageErrorIcon = (
   context: CanvasRenderingContext2D,
   centerX: number,
   centerY: number,
@@ -1904,6 +1904,13 @@ const renderImageErrorIcon = (
   context.save();
   const color = style?.color ?? "#e03131";
   const lineWidth = Math.max(radius * 0.16, 1.5 / appState.zoom.value);
+
+  // dark halo so the icon and label read on any image, also a red one
+  context.shadowColor = "rgba(0, 0, 0, 0.85)";
+  // shadowBlur is in device pixels and ignores the zoom transform
+  context.shadowBlur = 4 * (window.devicePixelRatio || 1);
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 0;
 
   if (style?.backgroundColor) {
     context.fillStyle = style.backgroundColor;

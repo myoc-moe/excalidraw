@@ -15,6 +15,7 @@ import type {
 import * as blobModule from "../data/blob";
 import * as filesystemModule from "../data/filesystem";
 import { Excalidraw } from "../index";
+import { renderImageErrorIcon } from "../renderer/interactiveScene";
 
 import { createPasteEvent } from "../clipboard";
 
@@ -1456,4 +1457,54 @@ describe("image insertion", () => {
       );
     });
   });
+});
+
+describe("renderImageErrorIcon", () => {
+  it.each([0.1, 1, 5.6])(
+    "MyOC: draws a dark halo with a screen-pixel blur at zoom %s",
+    (zoom) => {
+      const shadowAtDraw: Array<{ call: string; shadowColor: string }> = [];
+      const context = {
+        shadowColor: "",
+        shadowBlur: 0,
+        shadowOffsetX: 0,
+        shadowOffsetY: 0,
+        strokeStyle: "",
+        fillStyle: "",
+        lineWidth: 0,
+        lineCap: "",
+        font: "",
+        textAlign: "",
+        textBaseline: "",
+        save: vi.fn(),
+        restore: vi.fn(),
+        beginPath: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        arc: vi.fn(),
+      } as Record<string, any>;
+      for (const call of ["stroke", "fill", "fillText"]) {
+        context[call] = vi.fn(() => {
+          shadowAtDraw.push({ call, shadowColor: context.shadowColor });
+        });
+      }
+
+      renderImageErrorIcon(
+        context as unknown as CanvasRenderingContext2D,
+        50,
+        50,
+        20,
+        { zoom: { value: zoom } } as any,
+        { text: "Image not found" },
+      );
+
+      expect(shadowAtDraw.some((d) => d.call === "stroke")).toBe(true);
+      expect(shadowAtDraw.some((d) => d.call === "fillText")).toBe(true);
+      for (const draw of shadowAtDraw) {
+        expect(draw.shadowColor).toMatch(/^rgba\(0, 0, 0,/);
+      }
+      expect(context.shadowBlur).toBe(4 * (window.devicePixelRatio || 1));
+      expect(context.strokeStyle).toBe("#e03131");
+    },
+  );
 });
