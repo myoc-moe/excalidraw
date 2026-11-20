@@ -13,7 +13,7 @@ import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionSmartZoom } from "../actions/actionSmartZoom";
 import { activeEyeDropperAtom } from "../components/EyeDropper";
 import { editorJotaiStore } from "../editor-jotai";
-import { matchesBinding } from "../keymap";
+import { getKeymapEntries, matchesBinding } from "../keymap";
 
 import { API } from "./helpers/api";
 import { Keyboard, Pointer, UI } from "./helpers/ui";
@@ -586,5 +586,60 @@ describe("keymap: local key handlers", () => {
     // `fireEvent` returns `false` when the handler prevents the default
     expect(fireEvent.keyDown(input, { key: "k", ctrlKey: true })).toBe(true);
     expect(fireEvent.keyDown(input, { key: "j", altKey: true })).toBe(false);
+  });
+});
+
+describe("keymap: help dialog link", () => {
+  const openHelpDialog = () => {
+    act(() => {
+      window.h.setState({ openDialog: { name: "help" } });
+    });
+  };
+
+  const getChangeButton = () =>
+    [
+      ...document.querySelectorAll<HTMLButtonElement>(".HelpDialog button"),
+    ].find((button) => button.textContent === "Change shortcuts…");
+
+  it("shows the footer link only with onOpenKeyboardShortcuts", async () => {
+    await renderWithKeymap();
+    openHelpDialog();
+    expect(document.querySelector(".HelpDialog__footer")).toBe(null);
+    expect(getChangeButton()).toBeUndefined();
+  });
+
+  it("shows the footer note and link with onOpenKeyboardShortcuts", async () => {
+    await renderWithKeymap(undefined, {
+      onOpenKeyboardShortcuts: vi.fn(),
+    });
+    openHelpDialog();
+    expect(
+      document.querySelector(".HelpDialog__footer")?.textContent,
+    ).toContain("Showing your shortcuts. Changed keys are in this list too.");
+    expect(getChangeButton()).toBeDefined();
+  });
+
+  it("closes the help dialog and calls the prop once on click", async () => {
+    const onOpenKeyboardShortcuts = vi.fn();
+    await renderWithKeymap(undefined, { onOpenKeyboardShortcuts });
+    openHelpDialog();
+
+    fireEvent.click(getChangeButton()!);
+
+    expect(onOpenKeyboardShortcuts).toHaveBeenCalledTimes(1);
+    expect(h.state.openDialog).toBe(null);
+  });
+});
+
+describe("keymap: eyedropper labels", () => {
+  it("gives the stroke and background eyedroppers different labels", () => {
+    const entries = getKeymapEntries(false);
+    const stroke = entries.find((e) => e.id === "editor:eyeDropperStroke");
+    const background = entries.find(
+      (e) => e.id === "editor:eyeDropperBackground",
+    );
+
+    expect(stroke?.label).toBe("Pick stroke color from canvas");
+    expect(background?.label).toBe("Pick background color from canvas");
   });
 });

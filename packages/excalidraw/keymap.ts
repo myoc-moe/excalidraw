@@ -357,12 +357,12 @@ export const DEFAULT_BINDINGS = defineBindings({
   // pickers and eye droppers
   "editor:eyeDropperStroke": {
     keys: ["I", "Shift+S"],
-    labelKey: "labels.eyeDropper",
+    labelKey: "labels.eyeDropperStroke",
     group: "edit",
   },
   "editor:eyeDropperBackground": {
     keys: ["Shift+I"],
-    labelKey: "labels.eyeDropper",
+    labelKey: "labels.eyeDropperBackground",
     group: "edit",
   },
   "editor:strokePicker": {

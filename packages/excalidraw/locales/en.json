@@ -173,6 +173,8 @@
     "selectAllElementsInFrame": "Select all elements in frame",
     "removeAllElementsFromFrame": "Remove all elements from frame",
     "eyeDropper": "Pick color from canvas",
+    "eyeDropperStroke": "Pick stroke color from canvas",
+    "eyeDropperBackground": "Pick background color from canvas",
     "followUs": "Follow us",
     "discordChat": "Discord chat",
     "zoomToFitViewport": "Zoom to fit in viewport",
@@ -421,7 +423,9 @@
   "helpDialog": {
     "myoc": {
       "showingAll": "Showing all controls",
-      "showingBasic": "Showing basic controls"
+      "showingBasic": "Showing basic controls",
+      "shortcutsNote": "Showing your shortcuts. Changed keys are in this list too.",
+      "changeShortcuts": "Change shortcuts…"
     },
     "blog": "Read our blog",
     "click": "click",

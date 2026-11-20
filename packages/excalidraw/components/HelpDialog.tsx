@@ -9,7 +9,7 @@ import { t } from "../i18n";
 import { DEFAULT_BINDINGS } from "../keymap";
 import { getShortcutKey } from "../shortcut";
 
-import { useKeymap } from "./App";
+import { useAppProps, useKeymap } from "./App";
 import { Dialog } from "./Dialog";
 
 import "./HelpDialog.scss";
@@ -134,8 +134,19 @@ const TOOL_BINDING_IDS = (
   Object.keys(DEFAULT_BINDINGS) as (keyof typeof DEFAULT_BINDINGS)[]
 ).filter((id) => id.startsWith("tool:"));
 
+const footerLinkStyle: React.CSSProperties = {
+  padding: 0,
+  border: "none",
+  background: "none",
+  color: "var(--color-primary)",
+  textDecoration: "underline",
+  cursor: "pointer",
+  font: "inherit",
+};
+
 export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
   const keymap = useKeymap();
+  const onOpenKeyboardShortcuts = useAppProps()?.onOpenKeyboardShortcuts;
   const keysOf = (id: keyof typeof DEFAULT_BINDINGS) =>
     getBindingLabels(id, keymap);
   const [isShowAll, setIsShowAll] = React.useState(false);
@@ -145,6 +156,11 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
       onClose();
     }
   }, [onClose]);
+
+  const handleOpenKeyboardShortcuts = React.useCallback(() => {
+    handleClose();
+    onOpenKeyboardShortcuts?.();
+  }, [handleClose, onOpenKeyboardShortcuts]);
 
   const showAllButton = useMemo(
     () =>
@@ -487,6 +503,18 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
           </Section>
         ) : (
           <BasicHelpDialog />
+        )}
+        {onOpenKeyboardShortcuts && (
+          <div className="HelpDialog__footer">
+            <span>{t("helpDialog.myoc.shortcutsNote")}</span>{" "}
+            <button
+              type="button"
+              style={footerLinkStyle}
+              onClick={handleOpenKeyboardShortcuts}
+            >
+              {t("helpDialog.myoc.changeShortcuts")}
+            </button>
+          </div>
         )}
       </Dialog>
     </>
