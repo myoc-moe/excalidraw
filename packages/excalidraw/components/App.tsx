@@ -337,7 +337,7 @@ import {
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionTextAutoResize } from "../actions/actionTextAutoResize";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
-import { ActionManager } from "../actions/manager";
+import { ActionManager, matchesKeyBinding } from "../actions/manager";
 import { actions } from "../actions/register";
 import { trackEvent } from "../analytics";
 import {
@@ -368,7 +368,6 @@ import {
   getElementsWithinSelection,
   getNormalizedZoom,
   getSelectedElements,
-  hasBackground,
   isSomeElementSelected,
 } from "../scene";
 import {
@@ -420,6 +419,12 @@ import { isOverScrollBars } from "../scene/scrollbars";
 import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
+import {
+  matchesBinding,
+  matchesCombo,
+  parseCombo,
+  resolveKeys,
+} from "../keymap";
 import { tryParseSpreadsheet } from "../charts";
 import { getActionShortcut } from "../actions/shortcuts";
 
@@ -504,6 +509,7 @@ import type {
   ExcalidrawCommandCatalogEntry,
 } from "../types";
 import type { ToolbarToolType } from "./Tools";
+import type { BindingId } from "../keymap";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 
@@ -5604,19 +5610,26 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
-  // MyOC Smart Zoom input handling: F is a hold gesture that can target the
-  // item under the pointer, or zoom the complete scene on a quick release.
-  private isPlainSmartZoomKey = (
-    event: Pick<
-      KeyboardEvent,
-      "key" | "shiftKey" | "altKey" | "ctrlKey" | "metaKey"
-    >,
-  ) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    !event.altKey &&
-    event.key.toLocaleLowerCase() === KEYS.F;
+  /** whether the key event matches the resolved keys of the binding */
+  private matchesKeymap = (
+    event: React.KeyboardEvent | KeyboardEvent,
+    id: BindingId,
+  ) => matchesBinding(event, id, this.props.keymap);
 
+  /**
+   * Whether the released key is the key of a combo of the binding. The
+   * modifiers are not compared: the user can release them first.
+   */
+  private isKeymapKeyRelease = (event: KeyboardEvent, id: BindingId) => {
+    const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
+    return resolveKeys(id, this.props.keymap).some(
+      (combo) => parseCombo(combo)?.key === key,
+    );
+  };
+
+  // MyOC Smart Zoom input handling: F (by default) is a hold gesture that can
+  // target the item under the pointer, or zoom the complete scene on a quick
+  // release.
   private updateSmartZoomCursor = (
     scenePointer: { x: number; y: number } | null,
   ) => {
@@ -5646,7 +5659,7 @@ class App extends React.Component<AppProps, AppState> {
   private handleSmartZoomKeyDown = (
     event: React.KeyboardEvent | KeyboardEvent,
   ): boolean => {
-    if (!this.isPlainSmartZoomKey(event)) {
+    if (!this.matchesKeymap(event, "editor:smartZoom")) {
       return false;
     }
 
@@ -5664,8 +5677,8 @@ class App extends React.Component<AppProps, AppState> {
 
   private handleSmartZoomKeyUp = (event: KeyboardEvent): boolean => {
     if (
-      event.key.toLocaleLowerCase() !== KEYS.F ||
-      this.smartZoomKeyDownAt === null
+      this.smartZoomKeyDownAt === null ||
+      !this.isKeymapKeyRelease(event, "editor:smartZoom")
     ) {
       return false;
     }
@@ -5850,7 +5863,7 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (event.key === KEYS.QUESTION_MARK) {
+      if (this.matchesKeymap(event, "action:toggleShortcuts")) {
         this.setState({
           openDialog: { name: "help" },
         });
@@ -5858,7 +5871,8 @@ class App extends React.Component<AppProps, AppState> {
       } else if (
         event.key.toLowerCase() === KEYS.E &&
         event.shiftKey &&
-        event[KEYS.CTRL_OR_CMD]
+        event[KEYS.CTRL_OR_CMD] &&
+        this.props.UIOptions.canvasActions.saveAsImage
       ) {
         event.preventDefault();
         this.setState({ openDialog: { name: "imageExport" } });
@@ -5902,10 +5916,7 @@ class App extends React.Component<AppProps, AppState> {
       // return early below.
       if (
         this.state.viewModeEnabled &&
-        event.key.toLowerCase() === KEYS.Z &&
-        !event[KEYS.CTRL_OR_CMD] &&
-        !event.altKey &&
-        !event.shiftKey
+        this.matchesKeymap(event, "editor:holdZoom")
       ) {
         isHoldingZ = true;
         this.cursor.set("zoom-in");
@@ -5925,16 +5936,19 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      // tool keys and the tool lock key match the exact combo, modifiers
+      // included
       if (
         !shouldPreventToolSwitching &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
         !this.state.newElement &&
         !this.state.selectionElement &&
         !this.state.selectedElementsAreBeingDragged
       ) {
-        const shape = findShapeByKey(event.key, this, event.shiftKey);
+        const shape = findShapeByKey(event, this);
+        // a user key with Ctrl, Cmd or Alt must not also run the browser
+        // shortcut
+        const hasCommandModifier =
+          event.ctrlKey || event.metaKey || event.altKey;
 
         if (this.state.viewModeEnabled && !oneOf(shape, ["laser", "hand"])) {
           return;
@@ -5984,11 +5998,17 @@ class App extends React.Component<AppProps, AppState> {
             this.setActiveTool({ type: shape }, { toggle: true });
           }
 
+          if (hasCommandModifier) {
+            event.preventDefault();
+          }
           event.stopPropagation();
 
           return;
-        } else if (event.key === KEYS.Q) {
+        } else if (this.matchesKeymap(event, "editor:toolLock")) {
           this.toggleLock("keyboard");
+          if (hasCommandModifier) {
+            event.preventDefault();
+          }
           event.stopPropagation();
           return;
         }
@@ -6143,89 +6163,48 @@ class App extends React.Component<AppProps, AppState> {
         event.preventDefault();
       }
 
-      if (
-        event.key.toLowerCase() === KEYS.Z &&
-        !event[KEYS.CTRL_OR_CMD] &&
-        !event.altKey &&
-        !event.shiftKey
-      ) {
+      if (this.matchesKeymap(event, "editor:holdZoom")) {
         isHoldingZ = true;
         this.cursor.set("zoom-in");
         event.preventDefault();
       }
 
-      if (
-        (event.key === KEYS.G || event.key === KEYS.S) &&
-        !event.altKey &&
-        !event[KEYS.CTRL_OR_CMD]
-      ) {
-        const selectedElements = this.scene.getSelectedElements(this.state);
-        if (
-          this.state.activeTool.type === "selection" &&
-          !selectedElements.length
-        ) {
-          return;
-        }
+      const pickerElements = this.scene.getNonDeletedElements();
+      const matchesPickerKey = (id: BindingId) =>
+        matchesKeyBinding(event, id, this.state, pickerElements, this);
 
-        if (
-          event.key === KEYS.G &&
-          (hasBackground(this.state.activeTool.type) ||
-            selectedElements.some((element) => hasBackground(element.type)))
-        ) {
-          this.setState({ openPopup: "elementBackground" });
-          event.stopPropagation();
-        }
-        if (event.key === KEYS.S) {
-          this.setState({ openPopup: "elementStroke" });
-          event.stopPropagation();
-        }
+      if (matchesPickerKey("editor:backgroundPicker")) {
+        this.setState({ openPopup: "elementBackground" });
+        event.stopPropagation();
+      }
+      if (matchesPickerKey("editor:strokePicker")) {
+        this.setState({ openPopup: "elementStroke" });
+        event.stopPropagation();
       }
 
-      if (
-        !event[KEYS.CTRL_OR_CMD] &&
-        event.shiftKey &&
-        event.key.toLowerCase() === KEYS.F
-      ) {
-        const selectedElements = this.scene.getSelectedElements(this.state);
-
-        if (
-          this.state.activeTool.type === "selection" &&
-          !selectedElements.length
-        ) {
-          return;
-        }
-
-        if (
-          this.state.activeTool.type === "text" ||
-          selectedElements.find(
-            (element) =>
-              isTextElement(element) ||
-              getBoundTextElement(
-                element,
-                this.scene.getNonDeletedElementsMap(),
-              ),
-          )
-        ) {
-          event.preventDefault();
-          this.setState({ openPopup: "fontFamily" });
-        }
+      if (matchesPickerKey("editor:fontPicker")) {
+        event.preventDefault();
+        this.setState({ openPopup: "fontFamily" });
       }
 
       // eye dropper
       // -----------------------------------------------------------------------
-      const lowerCased = event.key.toLocaleLowerCase();
-      const isPlainStrokeEyeDropper =
-        lowerCased === KEYS.I && !event.shiftKey && !event[KEYS.CTRL_OR_CMD];
-      const isPickingStroke =
-        (lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD]) ||
-        isPlainStrokeEyeDropper;
-      const isPickingBackground =
-        lowerCased === KEYS.I && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
+      // the eye dropper bindings have no physical-key codes, so the combo that
+      // matches by character is the combo that triggered the binding
+      const findEyeDropperCombo = (id: BindingId) =>
+        resolveKeys(id, this.props.keymap).find((combo) =>
+          matchesCombo(event, combo),
+        );
+      const strokeCombo = findEyeDropperCombo("editor:eyeDropperStroke");
+      const eyeDropperCombo =
+        strokeCombo ?? findEyeDropperCombo("editor:eyeDropperBackground");
 
-      if (isPickingStroke || isPickingBackground) {
+      if (eyeDropperCombo) {
         this.openEyeDropper({
-          type: isPickingStroke ? "stroke" : "background",
-          swapPreviewOnAlt: !isPlainStrokeEyeDropper,
+          type: strokeCombo ? "stroke" : "background",
+          // as with the default keys: Alt swaps the picked color to the other
+          // property only for the combos with Shift (Shift+S, Shift+I), not I
+          swapPreviewOnAlt: Boolean(parseCombo(eyeDropperCombo)?.shift),
         });
       }
       // -----------------------------------------------------------------------
@@ -6262,7 +6241,7 @@ class App extends React.Component<AppProps, AppState> {
       isHoldingSpace = false;
     }
 
-    if (event.key.toLowerCase() === KEYS.Z) {
+    if (this.isKeymapKeyRelease(event, "editor:holdZoom")) {
       isHoldingZ = false;
       this.cursor.reset();
     }

@@ -94,6 +94,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderCustomStats,
     editorPreferences,
     onEditorPreferencesChange,
+    keymap,
+    onOpenKeyboardShortcuts,
     onPaste,
     viewModeImageInsertBehavior,
     onViewModeImageInsertRejected,
@@ -252,6 +254,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           renderCustomStats={renderCustomStats}
           editorPreferences={editorPreferences}
           onEditorPreferencesChange={onEditorPreferencesChange}
+          keymap={keymap}
+          onOpenKeyboardShortcuts={onOpenKeyboardShortcuts}
           UIOptions={UIOptions}
           onPaste={onPaste}
           viewModeImageInsertBehavior={viewModeImageInsertBehavior}

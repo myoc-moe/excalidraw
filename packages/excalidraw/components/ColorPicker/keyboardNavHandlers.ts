@@ -8,10 +8,14 @@ import type {
 
 import type { ValueOf } from "@excalidraw/common/utility-types";
 
+import { matchesBinding } from "../../keymap";
+
 import {
   colorPickerHotkeyBindings,
   getColorNameAndShadeFromColor,
 } from "./colorPickerUtils";
+
+import type { Keymap } from "../../keymap";
 
 import type { ActiveColorPickerSectionAtomType } from "./colorPickerUtils";
 
@@ -130,6 +134,8 @@ interface ColorPickerKeyNavHandlerProps {
   onEyeDropperToggle: (force?: boolean) => void;
   onEscape: (event: React.KeyboardEvent | KeyboardEvent) => void;
   excludedColors?: readonly string[];
+  /** the user keys of the editor; the eye dropper key reads them */
+  keymap?: Keymap;
 }
 
 /**
@@ -148,7 +154,14 @@ export const colorPickerKeyNavHandler = ({
   onEyeDropperToggle,
   onEscape,
   excludedColors,
+  keymap,
 }: ColorPickerKeyNavHandlerProps): boolean => {
+  // before the Ctrl/Cmd check: a user eye dropper key can have a modifier
+  if (matchesBinding(event, "editor:eyeDropperStroke", keymap)) {
+    onEyeDropperToggle();
+    return true;
+  }
+
   if (event[KEYS.CTRL_OR_CMD]) {
     return false;
   }
@@ -161,11 +174,6 @@ export const colorPickerKeyNavHandler = ({
   // checkt using `key` to ignore combos with Alt modifier
   if (event.key === KEYS.ALT) {
     onEyeDropperToggle(true);
-    return true;
-  }
-
-  if (event.key === KEYS.I) {
-    onEyeDropperToggle();
     return true;
   }
 

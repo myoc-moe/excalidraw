@@ -7,6 +7,7 @@ import type { PointerType } from "@excalidraw/element/types";
 
 import { trackEvent } from "../analytics";
 import { t } from "../i18n";
+import { matchesBinding } from "../keymap";
 import { getShortcutKey } from "../shortcut";
 
 import { IconButton } from "./IconButton";
@@ -40,7 +41,10 @@ import type {
 
 export type ToolConfig = {
   icon: React.ReactNode;
-  /** letter shortcut(s) — the first one is shown in tooltips */
+  /**
+   * letter shortcut(s) — the first one is shown in tooltips. Key handling
+   * reads the `tool:<type>` keymap binding instead (`findShapeByKey`).
+   */
   letterKey?: string | readonly string[];
   /** whether `letterKey` requires Shift to be held */
   shiftKey?: boolean;
@@ -59,8 +63,8 @@ const defineTools = <T extends Record<string, ToolConfig>>(tools: T) =>
   tools as { [K in keyof T]: ToolConfig };
 
 /**
- * Tool data — the single source of truth for tool buttons, keyboard
- * shortcuts (`findShapeByKey`), and the command palette. Toolbar placement
+ * Tool data — the single source of truth for tool buttons and the command
+ * palette (keyboard shortcuts come from the keymap, see `findShapeByKey`). Toolbar placement
  * is not defined here: toolbars compose the `*ToolButton` components below
  * manually, so entries without a toolbar slot (e.g. laser) are data-only.
  */
@@ -188,28 +192,39 @@ const getToolKeyBindingLabel = (type: ToolbarToolType) => {
   return shortcut?.length === 1 ? shortcut : undefined;
 };
 
+type ToolKeyEvent = Pick<
+  KeyboardEvent,
+  "key" | "code" | "ctrlKey" | "metaKey" | "altKey" | "shiftKey"
+>;
+
+/**
+ * The tool whose resolved keys (the user `keymap`, else the defaults) match
+ * the key event, or `null`. A bare key with `shiftKey` stands for a key event
+ * with no other modifier.
+ */
 export const findShapeByKey = (
-  key: string,
+  keyOrEvent: string | ToolKeyEvent,
   app: AppClassProperties,
   shiftKey: boolean = false,
 ) => {
-  // CapsLock-insensitive: the caller excludes every modifier but shift, and
-  // shift is matched explicitly below, so a capital letter on its own means
-  // CapsLock
-  const lowerKey = key.toLowerCase();
+  // CapsLock-insensitive: the matcher compares letters upper-case, and Shift
+  // is compared on its own
+  const event: ToolKeyEvent =
+    typeof keyOrEvent === "string"
+      ? {
+          key: keyOrEvent,
+          code: "",
+          ctrlKey: false,
+          metaKey: false,
+          altKey: false,
+          shiftKey,
+        }
+      : keyOrEvent;
+  // `props` is absent on the partial app of some unit tests
+  const keymap = app.props?.keymap;
 
   for (const type of Object.keys(TOOLS) as ToolbarToolType[]) {
-    const { letterKey, shiftKey: requiresShift } = TOOLS[type];
-    // shift-bound tools require shift; plain-bound ones require its absence
-    if (shiftKey !== Boolean(requiresShift)) {
-      continue;
-    }
-    if (
-      letterKey &&
-      (typeof letterKey === "string"
-        ? letterKey === lowerKey
-        : letterKey.includes(lowerKey))
-    ) {
+    if (matchesBinding(event, `tool:${type}`, keymap)) {
       // the selection shortcut activates whichever selection tool the user
       // prefers (selection or lasso)
       return type === "selection"

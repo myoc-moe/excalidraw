@@ -40,6 +40,7 @@ import { trackEvent } from "../../analytics";
 import { getTooltipDiv, updateTooltipPosition } from "../../components/Tooltip";
 
 import { t } from "../../i18n";
+import { matchesBinding } from "../../keymap";
 
 import { useAppProps, useEditorInterface, useExcalidrawAppState } from "../App";
 import { IconButton } from "../IconButton";
@@ -268,8 +269,9 @@ export const Hyperlink = ({
           autoFocus
           onKeyDown={(event) => {
             event.stopPropagation();
-            // prevent cmd/ctrl+k shortcut when editing link
-            if (event[KEYS.CTRL_OR_CMD] && event.key === KEYS.K) {
+            // prevent the hyperlink shortcut (cmd/ctrl+k by default) when
+            // editing link
+            if (matchesBinding(event, "action:hyperlink", appProps.keymap)) {
               event.preventDefault();
             }
             if (event.key === KEYS.ENTER || event.key === KEYS.ESCAPE) {

@@ -8,7 +8,9 @@ import type {
 } from "@excalidraw/element/types";
 
 import { trackEvent } from "../analytics";
+import { DEFAULT_BINDINGS, isBindingId, matchesBinding } from "../keymap";
 
+import type { BindingId } from "../keymap";
 import type { AppClassProperties, AppState } from "../types";
 import type {
   Action,
@@ -47,6 +49,31 @@ const trackAction = (
       console.error("error while logging action:", error);
     }
   }
+};
+
+/**
+ * Whether the key event triggers the binding: its resolved keys (the user
+ * `keymap` of the editor, else the defaults) match, and its state guard, if
+ * any, passes.
+ */
+export const matchesKeyBinding = (
+  event: React.KeyboardEvent | KeyboardEvent,
+  id: BindingId,
+  appState: Readonly<AppState>,
+  elements: readonly ExcalidrawElement[],
+  app: AppClassProperties,
+) => {
+  if (!matchesBinding(event, id, app.props.keymap)) {
+    return false;
+  }
+  const { guard } = DEFAULT_BINDINGS[id] as {
+    guard?: (
+      appState: Readonly<AppState>,
+      elements: readonly ExcalidrawElement[],
+      app: AppClassProperties,
+    ) => boolean;
+  };
+  return !guard || guard(appState, elements, app);
 };
 
 export class ActionManager {
@@ -107,6 +134,36 @@ export class ActionManager {
       : true;
   };
 
+  /**
+   * A bindable action matches by its resolved keys (the user `keymap`, else
+   * the defaults) and its state guard, also when it has no `keyTest` (a user
+   * key on a command with no default key); any other action by its
+   * `keyTest`.
+   */
+  private matchesActionKey(
+    action: Action,
+    event: React.KeyboardEvent | KeyboardEvent,
+  ) {
+    const id = `action:${action.name}`;
+    if (!isBindingId(id)) {
+      return Boolean(
+        action.keyTest?.(
+          event,
+          this.getAppState(),
+          this.getElementsIncludingDeleted(),
+          this.app,
+        ),
+      );
+    }
+    return matchesKeyBinding(
+      event,
+      id,
+      this.getAppState(),
+      this.getElementsIncludingDeleted(),
+      this.app,
+    );
+  }
+
   handleKeyDown(event: React.KeyboardEvent | KeyboardEvent) {
     if (!this.app.isInteractionEnabled() && !this.app.isNavigationEnabled()) {
       return false;
@@ -119,14 +176,7 @@ export class ActionManager {
         (action) =>
           (action.name in canvasActions
             ? canvasActions[action.name as keyof typeof canvasActions]
-            : true) &&
-          action.keyTest &&
-          action.keyTest(
-            event,
-            this.getAppState(),
-            this.getElementsIncludingDeleted(),
-            this.app,
-          ),
+            : true) && this.matchesActionKey(action, event),
       );
 
     if (data.length !== 1) {
