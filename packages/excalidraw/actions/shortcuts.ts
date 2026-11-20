@@ -1,9 +1,17 @@
-import { isDarwin } from "@excalidraw/common";
+import { isWindows } from "@excalidraw/common";
 
 import type { SubtypeOf } from "@excalidraw/common/utility-types";
 
 import { t } from "../i18n";
+import {
+  getDefaultKeys,
+  isBindingId,
+  parseCombo,
+  resolveKeys,
+} from "../keymap";
 import { getShortcutKey } from "../shortcut";
+
+import type { BindingId, Keymap } from "../keymap";
 
 import type { ActionName } from "./types";
 
@@ -55,75 +63,188 @@ export type ShortcutName =
   | "searchMenu"
   | "toolLock";
 
-const shortcutMap: Record<ShortcutName, string[]> = {
-  toggleTheme: [getShortcutKey("Shift+Alt+D")],
+const KEY_NAMES: Readonly<Record<string, string>> = {
+  ArrowUp: "Up",
+  ArrowDown: "Down",
+  ArrowLeft: "Left",
+  ArrowRight: "Right",
+};
+
+/**
+ * The label of a combo, e.g. `Ctrl+Shift+Z` (`Cmd` for `Mod` on macOS).
+ * Returns `""` for an invalid combo.
+ */
+export const formatComboLabel = (combo: string): string => {
+  const parsed = parseCombo(combo);
+  if (!parsed) {
+    return "";
+  }
+  const parts: string[] = [];
+  if (parsed.ctrl) {
+    parts.push(t("keys.ctrl"));
+  }
+  if (parsed.meta) {
+    parts.push(t("keys.cmd"));
+  }
+  // Shift before Alt, as the labels of the editor always were
+  if (parsed.shift) {
+    parts.push(getShortcutKey("Shift"));
+  }
+  if (parsed.alt) {
+    parts.push(getShortcutKey("Alt"));
+  }
+  parts.push(KEY_NAMES[parsed.key] ?? getShortcutKey(parsed.key));
+  return parts.join("+");
+};
+
+/**
+ * Default combos that labels show when the user did not change the binding.
+ * Other bindings show their first default combo only.
+ */
+const DEFAULT_SHOWN_KEYS: Partial<Record<BindingId, () => string[]>> = {
+  "action:redo": () => (isWindows ? ["Mod+Y", "Mod+Shift+Z"] : ["Mod+Shift+Z"]),
+  "editor:eyeDropperStroke": () => getDefaultKeys("editor:eyeDropperStroke"),
+};
+
+/**
+ * The labels of a binding, one per key: all keys of a user binding, else the
+ * default keys that labels show.
+ */
+export const getBindingLabels = (
+  id: BindingId,
+  keymap?: Keymap | null,
+): string[] => {
+  const combos =
+    keymap && Object.prototype.hasOwnProperty.call(keymap, id)
+      ? resolveKeys(id, keymap)
+      : DEFAULT_SHOWN_KEYS[id]?.() ?? getDefaultKeys(id).slice(0, 1);
+  return combos.map(formatComboLabel).filter(Boolean);
+};
+
+/** the labels as one text: several keys show joined with "or" */
+export const joinLabels = (labels: readonly string[]) =>
+  labels.join(` ${t("helpDialog.or")} `);
+
+/** commands that have a fixed key, which the user cannot change */
+const FIXED_SHORTCUTS: Partial<Record<ShortcutName, string[]>> = {
   saveScene: [getShortcutKey("CtrlOrCmd+S")],
-  loadScene: [getShortcutKey("CtrlOrCmd+O")],
   imageExport: [getShortcutKey("CtrlOrCmd+Shift+E")],
-  cut: [getShortcutKey("CtrlOrCmd+X")],
-  copy: [getShortcutKey("CtrlOrCmd+C")],
   paste: [getShortcutKey("CtrlOrCmd+V")],
   copyStyles: [getShortcutKey("CtrlOrCmd+Alt+C")],
   pasteStyles: [getShortcutKey("CtrlOrCmd+Alt+V")],
-  selectAll: [getShortcutKey("CtrlOrCmd+A")],
   deleteSelectedElements: [getShortcutKey("Delete")],
-  duplicateSelection: [
-    getShortcutKey("CtrlOrCmd+D"),
-    getShortcutKey(`Alt+${t("helpDialog.drag")}`),
-  ],
-  sendBackward: [getShortcutKey("CtrlOrCmd+[")],
-  bringForward: [getShortcutKey("CtrlOrCmd+]")],
-  sendToBack: [
-    isDarwin
-      ? getShortcutKey("CtrlOrCmd+Alt+[")
-      : getShortcutKey("CtrlOrCmd+Shift+["),
-  ],
-  bringToFront: [
-    isDarwin
-      ? getShortcutKey("CtrlOrCmd+Alt+]")
-      : getShortcutKey("CtrlOrCmd+Shift+]"),
-  ],
-  copyAsPng: [getShortcutKey("Shift+Alt+C")],
-  group: [getShortcutKey("CtrlOrCmd+G")],
-  ungroup: [getShortcutKey("CtrlOrCmd+Shift+G")],
-  gridMode: [getShortcutKey("CtrlOrCmd+'")],
-  objectsSnapMode: [getShortcutKey("Alt+S")],
-  stats: [getShortcutKey("Alt+/")],
-  flipHorizontal: [getShortcutKey("Shift+H")],
-  flipVertical: [getShortcutKey("Shift+V")],
   flipViewpointHorizontal: [getShortcutKey("Shift+R")],
   flipViewpointVertical: [getShortcutKey("Alt+Shift+R")],
-  viewMode: [getShortcutKey("Alt+R")],
-  hyperlink: [getShortcutKey("CtrlOrCmd+K")],
-  toggleElementLock: [getShortcutKey("CtrlOrCmd+Shift+L")],
-  resetZoom: [getShortcutKey("CtrlOrCmd+0")],
-  zoomOut: [getShortcutKey("CtrlOrCmd+-")],
-  zoomIn: [getShortcutKey("CtrlOrCmd++")],
-  zoomToFitSelection: [],
-  zoomToFit: [],
-  zoomToFitSelectionInViewport: [],
-  smartZoom: [getShortcutKey("F")],
-  saveFileToDisk: [getShortcutKey("CtrlOrCmd+S")],
   saveToActiveFile: [getShortcutKey("CtrlOrCmd+S")],
-  toggleShortcuts: [getShortcutKey("?")],
-  searchMenu: [getShortcutKey("CtrlOrCmd+F")],
-  wrapSelectionInFrame: [],
-  arrangeElements: [getShortcutKey("Shift+A")],
-  toolLock: [getShortcutKey("Q")],
 };
 
-export const getShortcutFromShortcutName = (name: ShortcutName, idx = 0) => {
-  const shortcuts = shortcutMap[name];
-  // if multiple shortcuts available, take the first one
-  return shortcuts && shortcuts.length > 0
-    ? shortcuts[idx] || shortcuts[0]
-    : "";
+const SHORTCUT_NAMES: Record<ShortcutName, true> = {
+  toggleTheme: true,
+  loadScene: true,
+  cut: true,
+  copy: true,
+  paste: true,
+  copyStyles: true,
+  pasteStyles: true,
+  selectAll: true,
+  deleteSelectedElements: true,
+  duplicateSelection: true,
+  sendBackward: true,
+  bringForward: true,
+  sendToBack: true,
+  bringToFront: true,
+  copyAsPng: true,
+  group: true,
+  ungroup: true,
+  gridMode: true,
+  objectsSnapMode: true,
+  stats: true,
+  viewMode: true,
+  flipHorizontal: true,
+  flipVertical: true,
+  flipViewpointHorizontal: true,
+  flipViewpointVertical: true,
+  hyperlink: true,
+  toggleElementLock: true,
+  resetZoom: true,
+  zoomOut: true,
+  zoomIn: true,
+  zoomToFit: true,
+  zoomToFitSelectionInViewport: true,
+  zoomToFitSelection: true,
+  smartZoom: true,
+  saveFileToDisk: true,
+  saveToActiveFile: true,
+  toggleShortcuts: true,
+  wrapSelectionInFrame: true,
+  arrangeElements: true,
+  saveScene: true,
+  imageExport: true,
+  searchMenu: true,
+  toolLock: true,
 };
 
-export const getActionShortcut = (name: string): string | undefined => {
-  if (!Object.prototype.hasOwnProperty.call(shortcutMap, name)) {
-    return undefined;
+const getShortcutBindingId = (name: string): BindingId | null => {
+  const id =
+    name === "toolLock" || name === "smartZoom"
+      ? `editor:${name}`
+      : `action:${name}`;
+  return isBindingId(id) ? id : null;
+};
+
+/**
+ * The legacy shortcut names show their default keys; any other bindable action
+ * shows a key only when the user bound it.
+ */
+const getShortcutLabels = (name: string, keymap?: Keymap | null) => {
+  const id = getShortcutBindingId(name);
+  if (!id) {
+    return FIXED_SHORTCUTS[name as ShortcutName] ?? [];
   }
+  const isBoundByUser =
+    keymap && Object.prototype.hasOwnProperty.call(keymap, id);
+  if (
+    !isBoundByUser &&
+    !Object.prototype.hasOwnProperty.call(SHORTCUT_NAMES, name)
+  ) {
+    return [];
+  }
+  return getBindingLabels(id, keymap);
+};
 
-  return getShortcutFromShortcutName(name as ShortcutName) || undefined;
+/**
+ * The label of a command: several keys show joined with "or". `idx` picks one
+ * shortcut of the command instead.
+ */
+export const getShortcutFromShortcutName = (
+  name: ShortcutName,
+  idx?: number,
+  keymap?: Keymap | null,
+) => {
+  const labels = getShortcutLabels(name, keymap);
+  if (idx === undefined) {
+    return joinLabels(labels);
+  }
+  if (name === "duplicateSelection" && idx === 1) {
+    // the second shortcut is the drag, which is not a key
+    return getShortcutKey(`Alt+${t("helpDialog.drag")}`);
+  }
+  return labels[idx] || labels[0] || "";
+};
+
+/** The label of an action for the command catalog. */
+export const getActionShortcut = (
+  name: string,
+  keymap?: Keymap | null,
+): string | undefined =>
+  joinLabels(getShortcutLabels(name, keymap)) || undefined;
+
+/** a tooltip: the name and, when the binding has keys, its keys */
+export const getTitleWithShortcut = (
+  label: string,
+  id: BindingId,
+  keymap?: Keymap | null,
+) => {
+  const shortcut = joinLabels(getBindingLabels(id, keymap));
+  return shortcut ? `${label} — ${shortcut}` : label;
 };

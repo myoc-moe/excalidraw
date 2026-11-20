@@ -1,16 +1,19 @@
 import clsx from "clsx";
 import { useState } from "react";
 
-import { CANVAS_SEARCH_TAB, DEFAULT_SIDEBAR, KEYS } from "@excalidraw/common";
+import { CANVAS_SEARCH_TAB, DEFAULT_SIDEBAR } from "@excalidraw/common";
 
 import {
   actionToggleObjectsSnapMode,
   actionToggleSearchMenu,
 } from "../actions";
-import { getShortcutFromShortcutName } from "../actions/shortcuts";
+import {
+  getBindingLabels,
+  getShortcutFromShortcutName,
+} from "../actions/shortcuts";
 import { t } from "../i18n";
 
-import { useEditorInterface, useStylesPanelMode } from "./App";
+import { useEditorInterface, useKeymap, useStylesPanelMode } from "./App";
 import { HintViewer } from "./HintViewer";
 import { Island } from "./Island";
 import { LockButton } from "./LockButton";
@@ -82,30 +85,36 @@ const ExtraToolsDropdownItem = ({
   activeTool: UIAppState["activeTool"];
   type: ToolbarToolType;
   shortcut?: string;
-}) => (
-  <DropdownMenu.Item
-    onSelect={() => app.setActiveTool({ type })}
-    icon={TOOLS[type].icon as React.ReactElement}
-    data-testid={`toolbar-${type}`}
-    selected={activeTool.type === type}
-    shortcut={shortcut ?? getToolShortcut(type)}
-    disabled={isToolButtonDisabled(app, type)}
-  >
-    {t(`toolBar.${type}`)}
-  </DropdownMenu.Item>
-);
+}) => {
+  const keymap = app.props.keymap;
+  return (
+    <DropdownMenu.Item
+      onSelect={() => app.setActiveTool({ type })}
+      icon={TOOLS[type].icon as React.ReactElement}
+      data-testid={`toolbar-${type}`}
+      selected={activeTool.type === type}
+      shortcut={shortcut ?? getToolShortcut(type, keymap)}
+      disabled={isToolButtonDisabled(app, type)}
+    >
+      {t(`toolBar.${type}`)}
+    </DropdownMenu.Item>
+  );
+};
 
-const LockActiveToolDropdownItem = ({ app }: { app: AppClassProperties }) => (
-  <DropdownMenu.Item
-    onSelect={() => app.toggleLock()}
-    icon={app.state.activeTool.locked ? LockedIcon : UnlockedIcon}
-    data-testid="toolbar-lock"
-    selected={app.state.activeTool.locked}
-    shortcut={KEYS.Q.toLocaleUpperCase()}
-  >
-    {t("toolBar.lock-short")}
-  </DropdownMenu.Item>
-);
+const LockActiveToolDropdownItem = ({ app }: { app: AppClassProperties }) => {
+  const keymap = app.props.keymap;
+  return (
+    <DropdownMenu.Item
+      onSelect={() => app.toggleLock()}
+      icon={app.state.activeTool.locked ? LockedIcon : UnlockedIcon}
+      data-testid="toolbar-lock"
+      selected={app.state.activeTool.locked}
+      shortcut={getShortcutFromShortcutName("toolLock", undefined, keymap)}
+    >
+      {t("toolBar.lock-short")}
+    </DropdownMenu.Item>
+  );
+};
 
 const ObjectsSnapModeDropdownItem = ({
   actionManager,
@@ -114,11 +123,16 @@ const ObjectsSnapModeDropdownItem = ({
   actionManager: ActionManager;
   app: AppClassProperties;
 }) => {
+  const keymap = app.props.keymap;
   if (!actionManager.isActionEnabled(actionToggleObjectsSnapMode)) {
     return null;
   }
 
-  const shortcut = getShortcutFromShortcutName("objectsSnapMode");
+  const shortcut = getShortcutFromShortcutName(
+    "objectsSnapMode",
+    undefined,
+    keymap,
+  );
 
   return (
     <DropdownMenu.Item
@@ -142,12 +156,17 @@ export const ObjectsSnapModeButton = ({
   actionManager: ActionManager;
   app: AppClassProperties;
 }) => {
+  const keymap = app.props.keymap;
   if (!actionManager.isActionEnabled(actionToggleObjectsSnapMode)) {
     return null;
   }
 
   const label = t("buttons.objectsSnapMode");
-  const shortcut = getShortcutFromShortcutName("objectsSnapMode");
+  const shortcut = getShortcutFromShortcutName(
+    "objectsSnapMode",
+    undefined,
+    keymap,
+  );
 
   return (
     <IconButton
@@ -173,7 +192,8 @@ const SearchMenuDropdownItem = ({
   appState: UIAppState;
 }) => {
   const label = t("search.title");
-  const shortcut = getShortcutFromShortcutName("searchMenu");
+  const keymap = useKeymap();
+  const shortcut = getShortcutFromShortcutName("searchMenu", undefined, keymap);
 
   return (
     <DropdownMenu.Item
@@ -195,20 +215,28 @@ export const StrokeEyeDropperButton = ({
   app,
 }: {
   app: AppClassProperties;
-}) => (
-  <IconButton
-    type="button"
-    icon={eyeDropperIcon}
-    title={`${t("labels.eyeDropper")} - ${KEYS.I.toLocaleUpperCase()}`}
-    aria-label={t("labels.eyeDropper")}
-    aria-keyshortcuts={KEYS.I.toLocaleUpperCase()}
-    keyBindingLabel={KEYS.I.toLocaleUpperCase()}
-    data-testid="toolbar-eyedropper"
-    onClick={() =>
-      app.openEyeDropper({ type: "stroke", swapPreviewOnAlt: false })
-    }
-  />
-);
+}) => {
+  const keymap = app.props.keymap;
+  const shortcut = getBindingLabels("editor:eyeDropperStroke", keymap)[0];
+  return (
+    <IconButton
+      type="button"
+      icon={eyeDropperIcon}
+      title={
+        shortcut
+          ? `${t("labels.eyeDropper")} - ${shortcut}`
+          : t("labels.eyeDropper")
+      }
+      aria-label={t("labels.eyeDropper")}
+      aria-keyshortcuts={shortcut}
+      keyBindingLabel={shortcut?.length === 1 ? shortcut : undefined}
+      data-testid="toolbar-eyedropper"
+      onClick={() =>
+        app.openEyeDropper({ type: "stroke", swapPreviewOnAlt: false })
+      }
+    />
+  );
+};
 
 export const ExtraToolsDropdown = ({
   app,
@@ -227,6 +255,7 @@ export const ExtraToolsDropdown = ({
   actionManager: ActionManager;
   overflowItems?: readonly ExcalidrawToolbarOverflowItemName[];
 }) => {
+  const keymap = app.props.keymap;
   const [isExtraToolsMenuOpen, setIsExtraToolsMenuOpen] = useState(false);
   const isFullStylesPanel = useStylesPanelMode() === "full";
   const frameToolSelected = activeTool.type === "frame";
@@ -270,7 +299,7 @@ export const ExtraToolsDropdown = ({
             }
             icon={eyeDropperIcon}
             data-testid="toolbar-eyedropper"
-            shortcut={KEYS.I.toLocaleUpperCase()}
+            shortcut={getBindingLabels("editor:eyeDropperStroke", keymap)[0]}
           >
             {t("labels.eyeDropper")}
           </DropdownMenu.Item>
@@ -376,7 +405,7 @@ export const ExtraToolsDropdown = ({
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "frame" })}
               icon={frameToolIcon}
-              shortcut={KEYS.F.toLocaleUpperCase()}
+              shortcut={getToolShortcut("frame", keymap)}
               data-testid="toolbar-frame"
               selected={frameToolSelected}
               disabled={isToolButtonDisabled(app, "frame")}
@@ -395,7 +424,7 @@ export const ExtraToolsDropdown = ({
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "autoshape" })}
               icon={drawShapeToolIcon}
-              shortcut={getToolShortcut("autoshape")}
+              shortcut={getToolShortcut("autoshape", keymap)}
               data-testid="toolbar-autoshape"
               selected={drawShapeToolSelected}
               disabled={isToolButtonDisabled(app, "autoshape")}

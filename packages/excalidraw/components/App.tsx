@@ -580,6 +580,8 @@ ExcalidrawAPISetContext.displayName = "ExcalidrawAPISetContext";
 
 export const useApp = () => useContext(AppContext);
 export const useAppProps = () => useContext(AppPropsContext);
+/** the user keymap of the editor; `undefined` shows the default keys */
+export const useKeymap = () => useAppProps()?.keymap;
 export const useEditorInterface = () =>
   useContext<EditorInterface>(EditorInterfaceContext);
 export const useStylesPanelMode = () =>
@@ -916,7 +918,7 @@ class App extends React.Component<AppProps, AppState> {
       typeof action.icon === "function"
         ? action.icon(this.state, elements)
         : action.icon;
-    const shortcut = getActionShortcut(action.name);
+    const shortcut = getActionShortcut(action.name, this.props.keymap);
 
     return {
       id: `action:${action.name}`,
@@ -943,7 +945,7 @@ class App extends React.Component<AppProps, AppState> {
         return [];
       }
 
-      const shortcut = getToolShortcut(type);
+      const shortcut = getToolShortcut(type, this.props.keymap);
       return [
         {
           id: `tool:${type}` as const,

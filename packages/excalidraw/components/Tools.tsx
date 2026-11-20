@@ -5,10 +5,10 @@ import { KEYS, capitalizeString } from "@excalidraw/common";
 
 import type { PointerType } from "@excalidraw/element/types";
 
+import { getBindingLabels, joinLabels } from "../actions/shortcuts";
 import { trackEvent } from "../analytics";
 import { t } from "../i18n";
 import { matchesBinding } from "../keymap";
-import { getShortcutKey } from "../shortcut";
 
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
@@ -32,6 +32,7 @@ import {
   EmbedIcon,
 } from "./icons";
 
+import type { Keymap } from "../keymap";
 import type {
   AppClassProperties,
   AppState,
@@ -171,24 +172,24 @@ export const TOGGLE_TOOLS: readonly (ToolType | "custom")[] = (
   Object.keys(TOOLS) as ToolbarToolType[]
 ).filter((type) => TOOLS[type].toggle);
 
-export const getToolLetter = (type: ToolbarToolType) => {
-  const { letterKey, shiftKey } = TOOLS[type];
-  if (!letterKey) {
-    return letterKey;
-  }
-  const letter = capitalizeString(
-    typeof letterKey === "string" ? letterKey : letterKey[0],
-  );
-  return shiftKey ? getShortcutKey(`Shift+${letter}`) : letter;
-};
+/** the first shown key of the tool (user keymap, else defaults), e.g. "R" */
+export const getToolLetter = (type: ToolbarToolType, keymap?: Keymap | null) =>
+  getBindingLabels(`tool:${type}`, keymap)[0] as string | undefined;
 
 /** human-readable shortcut hint, e.g. "R", used in tooltips & aria */
-export const getToolShortcut = (type: ToolbarToolType) => {
-  return getToolLetter(type);
+export const getToolShortcut = (
+  type: ToolbarToolType,
+  keymap?: Keymap | null,
+) => {
+  const labels = getBindingLabels(`tool:${type}`, keymap);
+  return labels.length > 0 ? joinLabels(labels) : undefined;
 };
 
-const getToolKeyBindingLabel = (type: ToolbarToolType) => {
-  const shortcut = getToolLetter(type);
+const getToolKeyBindingLabel = (
+  type: ToolbarToolType,
+  keymap?: Keymap | null,
+) => {
+  const shortcut = getToolLetter(type, keymap);
   return shortcut?.length === 1 ? shortcut : undefined;
 };
 
@@ -290,8 +291,14 @@ export const createToolButton = (
     hideKeyBinding,
     hideShortcut,
   }: ToolButtonComponentProps) => {
+    const keymap = app.props.keymap;
     const label = capitalizeString(t(`toolBar.${type}`));
-    const shortcut = hideShortcut ? null : getToolShortcut(shortcutType);
+    const ariaShortcut = hideShortcut
+      ? undefined
+      : getToolLetter(shortcutType, keymap);
+    const shortcut = hideShortcut
+      ? null
+      : getToolShortcut(shortcutType, keymap);
 
     return (
       <IconButton
@@ -304,10 +311,10 @@ export const createToolButton = (
         keyBindingLabel={
           hideKeyBinding || hideShortcut
             ? undefined
-            : getToolKeyBindingLabel(shortcutType)
+            : getToolKeyBindingLabel(shortcutType, keymap)
         }
         aria-label={label}
-        aria-keyshortcuts={shortcut ?? undefined}
+        aria-keyshortcuts={ariaShortcut}
         data-testid={`toolbar-${type}`}
         onSelect={({ pointerType }) => {
           if (!app.state.penDetected && pointerType === "pen") {
@@ -389,6 +396,7 @@ export const SelectionToolPopover = ({
   setAppState: React.Component<any, AppState>["setState"];
   hideShortcut?: boolean;
 }) => {
+  const keymap = app.props.keymap;
   const SELECTION_TOOLS = [
     {
       type: "selection",
@@ -416,7 +424,7 @@ export const SelectionToolPopover = ({
       activeTool={activeTool}
       defaultOption={app.state.preferredSelectionTool.type}
       data-testid="toolbar-selection"
-      shortcut={hideShortcut ? undefined : getToolShortcut("selection")}
+      shortcut={hideShortcut ? undefined : getToolShortcut("selection", keymap)}
       onToolChange={(type: string) => {
         if (type === "selection" || type === "lasso") {
           app.setActiveTool({ type });

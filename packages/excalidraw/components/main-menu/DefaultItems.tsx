@@ -27,6 +27,7 @@ import {
   useAppProps,
   useApp,
   useEditorInterface,
+  useKeymap,
 } from "../App";
 import { openConfirmModal } from "../OverwriteConfirm/OverwriteConfirmState";
 import Trans from "../Trans";
@@ -61,6 +62,7 @@ export const LoadScene = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
   const elements = useExcalidrawElements();
+  const keymap = useKeymap();
 
   if (!actionManager.isActionEnabled(actionLoadScene)) {
     return null;
@@ -91,7 +93,7 @@ export const LoadScene = () => {
       icon={LoadIcon}
       onSelect={handleSelect}
       data-testid="load-button"
-      shortcut={getShortcutFromShortcutName("loadScene")}
+      shortcut={getShortcutFromShortcutName("loadScene", undefined, keymap)}
       aria-label={t("buttons.load")}
     >
       {t("buttons.load")}
@@ -141,6 +143,8 @@ export const SearchMenu = (opts?: { className?: string }) => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
 
+  const keymap = useKeymap();
+
   return (
     <DropdownMenuItem
       icon={searchIcon}
@@ -148,7 +152,7 @@ export const SearchMenu = (opts?: { className?: string }) => {
       onSelect={() => {
         actionManager.executeAction(actionToggleSearchMenu);
       }}
-      shortcut={getShortcutFromShortcutName("searchMenu")}
+      shortcut={getShortcutFromShortcutName("searchMenu", undefined, keymap)}
       aria-label={t("search.title")}
       className={opts?.className}
     >
@@ -162,13 +166,18 @@ export const Help = () => {
   const { t } = useI18n();
 
   const actionManager = useExcalidrawActionManager();
+  const keymap = useKeymap();
 
   return (
     <DropdownMenuItem
       data-testid="help-menu-item"
       icon={HelpIcon}
       onSelect={() => actionManager.executeAction(actionShortcuts)}
-      shortcut="?"
+      shortcut={getShortcutFromShortcutName(
+        "toggleShortcuts",
+        undefined,
+        keymap,
+      )}
       aria-label={t("helpDialog.title")}
     >
       {t("helpDialog.title")}
@@ -195,7 +204,12 @@ export const ToggleTheme = (
   const { t } = useI18n();
   const appState = useUIAppState();
   const actionManager = useExcalidrawActionManager();
-  const shortcut = getShortcutFromShortcutName("toggleTheme");
+  const keymap = useKeymap();
+  const shortcut = getShortcutFromShortcutName(
+    "toggleTheme",
+    undefined,
+    keymap,
+  );
   const appProps = useAppProps();
 
   if (!actionManager.isActionEnabled(actionToggleTheme)) {
@@ -375,10 +389,12 @@ const PreferencesToggleToolLockItem = () => {
   const app = useApp();
   const appState = useUIAppState();
 
+  const keymap = useKeymap();
+
   return (
     <DropdownMenuItemCheckbox
       checked={appState.activeTool.locked}
-      shortcut={getShortcutFromShortcutName("toolLock")}
+      shortcut={getShortcutFromShortcutName("toolLock", undefined, keymap)}
       onSelect={(event) => {
         app.toggleLock();
         event.preventDefault();
@@ -426,10 +442,16 @@ const PreferencesToggleSnapModeItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
   const appState = useUIAppState();
+  const keymap = useKeymap();
+
   return (
     <DropdownMenuItemCheckbox
       checked={appState.objectsSnapModeEnabled}
-      shortcut={getShortcutFromShortcutName("objectsSnapMode")}
+      shortcut={getShortcutFromShortcutName(
+        "objectsSnapMode",
+        undefined,
+        keymap,
+      )}
       onSelect={(event) => {
         actionManager.executeAction(actionToggleObjectsSnapMode);
         event.preventDefault();
@@ -479,10 +501,12 @@ export const PreferencesToggleGridModeItem = () => {
   const actionManager = useExcalidrawActionManager();
   const appState = useUIAppState();
 
+  const keymap = useKeymap();
+
   return (
     <DropdownMenuItemCheckbox
       checked={appState.gridModeEnabled}
-      shortcut={getShortcutFromShortcutName("gridMode")}
+      shortcut={getShortcutFromShortcutName("gridMode", undefined, keymap)}
       onSelect={(event) => {
         actionManager.executeAction(actionToggleGridMode);
         event.preventDefault();
@@ -497,6 +521,7 @@ const PreferencesToggleViewModeItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
   const appState = useUIAppState();
+  const keymap = useKeymap();
   if (appState.viewModeOnly) {
     return null;
   }
@@ -504,7 +529,7 @@ const PreferencesToggleViewModeItem = () => {
   return (
     <DropdownMenuItemCheckbox
       checked={appState.viewModeEnabled}
-      shortcut={getShortcutFromShortcutName("viewMode")}
+      shortcut={getShortcutFromShortcutName("viewMode", undefined, keymap)}
       onSelect={(event) => {
         actionManager.executeAction(actionToggleViewMode);
         event.preventDefault();
@@ -559,10 +584,12 @@ const PreferencesToggleElementPropertiesItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
   const appState = useUIAppState();
+  const keymap = useKeymap();
+
   return (
     <DropdownMenuItemCheckbox
       checked={appState.stats.open}
-      shortcut={getShortcutFromShortcutName("stats")}
+      shortcut={getShortcutFromShortcutName("stats", undefined, keymap)}
       onSelect={(event) => {
         actionManager.executeAction(actionToggleStats);
         event.preventDefault();

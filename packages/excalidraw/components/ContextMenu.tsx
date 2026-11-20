@@ -4,7 +4,7 @@ import React from "react";
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { t } from "../i18n";
 
-import { useExcalidrawAppState, useExcalidrawElements } from "./App";
+import { useExcalidrawAppState, useExcalidrawElements, useKeymap } from "./App";
 
 import { Popover } from "./Popover";
 
@@ -47,6 +47,7 @@ export const ContextMenu = React.memo(
   ({ actionManager, items, top, left, onClose }: ContextMenuProps) => {
     const appState = useExcalidrawAppState();
     const elements = useExcalidrawElements();
+    const keymap = useKeymap();
 
     const filteredItems = items.reduce((acc: ContextMenuItem[], item) => {
       if (!item) {
@@ -162,7 +163,11 @@ export const ContextMenu = React.memo(
                   <div className="context-menu-item__label">{label}</div>
                   <kbd className="context-menu-item__shortcut">
                     {actionName
-                      ? getShortcutFromShortcutName(actionName as ShortcutName)
+                      ? getShortcutFromShortcutName(
+                          actionName as ShortcutName,
+                          undefined,
+                          keymap,
+                        )
                       : ""}
                   </kbd>
                 </button>
