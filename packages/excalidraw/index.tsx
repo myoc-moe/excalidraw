@@ -548,6 +548,9 @@ export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
 export type { EditorInterface } from "@excalidraw/common";
 
+export { getKeymapEntries, formatCombo } from "./keymap";
+export type { BindingId, Keymap, KeymapEntry, KeymapGroup } from "./keymap";
+
 export type {
   AlignPreferences,
   ArrangePreferences,

@@ -64,6 +64,7 @@ import type {
   ContextMenuCustomItem,
   ContextMenuItems,
 } from "./components/ContextMenu";
+import type { Keymap } from "./keymap";
 import type { SnapLine } from "./snapping";
 import type { ImportedDataState } from "./data/types";
 import type { SetViewportOptions } from "./viewport";
@@ -1108,6 +1109,18 @@ export interface ExcalidrawProps {
   ) => JSX.Element;
   editorPreferences?: EditorPreferences;
   onEditorPreferencesChange?: (next: EditorPreferences) => void;
+  /**
+   * User keyboard shortcuts by binding id. A present id replaces all default
+   * keys of that binding, `[]` removes them, an absent id keeps the defaults.
+   * Combos are modifiers then key, joined by `+`, e.g. `Mod+Shift+Z`. See
+   * `getKeymapEntries()` for the bindable ids.
+   */
+  keymap?: Keymap;
+  /**
+   * When set, the help dialog shows a "Change shortcuts…" link that closes the
+   * dialog and calls this.
+   */
+  onOpenKeyboardShortcuts?: () => void;
   UIOptions?: Partial<UIOptions>;
   /**
    * dimensions and size constraints for inserted images
