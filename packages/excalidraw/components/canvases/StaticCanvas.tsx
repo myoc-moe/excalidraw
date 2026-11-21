@@ -58,6 +58,10 @@ const StaticCanvas = (props: StaticCanvasProps) => {
       .getPropertyValue("--color-grid-regular")
       .trim();
 
+    const dotGridColor = getComputedStyle(wrapper)
+      .getPropertyValue("--color-dot-grid")
+      .trim();
+
     renderStaticScene(
       {
         canvas: currentProps.canvas,
@@ -71,6 +75,7 @@ const StaticCanvas = (props: StaticCanvasProps) => {
           ...currentProps.renderConfig,
           gridColorBold,
           gridColorRegular,
+          dotGridColor,
         },
       },
       isRenderThrottlingEnabled(),

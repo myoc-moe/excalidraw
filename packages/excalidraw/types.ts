@@ -1098,6 +1098,17 @@ export interface ExcalidrawProps {
     | { type: Exclude<ToolType, "image"> }
     | { type: "custom"; customType: string };
   gridModeEnabled?: boolean;
+  /**
+   * MyOC: dots on the canvas, hidden while the line grid shows and never in
+   * exports. Dots are on by default.
+   * @default { enabled: true, strength: 0.5 }
+   */
+  dotGrid?: {
+    /** @default true */
+    enabled?: boolean;
+    /** dot opacity, clamped to 0.1-1. @default 0.5 */
+    strength?: number;
+  };
   objectsSnapModeEnabled?: boolean;
   theme?: Theme;
   renderCustomizations?: RenderCustomizations;

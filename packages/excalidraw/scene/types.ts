@@ -69,6 +69,12 @@ export type StaticCanvasRenderConfig = {
    files (the App always sets it). */
   spoiler?: StaticCanvasSpoilerConfig;
   renderGrid: boolean;
+  /** MyOC: canvas dots. @default false */
+  renderDotGrid?: boolean;
+  /** MyOC: dot opacity, 0.1-1. @default 0.5 */
+  dotGridStrength?: number;
+  /** MyOC: dot color (CSS color) */
+  dotGridColor?: string;
   /** whether to render link icons on elements with links (never rendered
    when exporting). @default true */
   renderLinks?: boolean;

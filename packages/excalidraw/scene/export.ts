@@ -292,6 +292,7 @@ export const exportToCanvas = async (
       canvasBackgroundColor: viewBackgroundColor,
       imageCache,
       renderGrid: false,
+      renderDotGrid: false,
       isExporting: true,
       // an export draws no "Show spoiler" button
       spoiler: spoiler && { ...spoiler, overlay: null },
