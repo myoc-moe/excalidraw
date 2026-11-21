@@ -88,6 +88,7 @@ describe("findShapeByKey()", () => {
     preferredSelectionTool: "selection" | "lasso",
   ) =>
     ({
+      props: {},
       state: {
         preferredSelectionTool: {
           type: preferredSelectionTool,
@@ -95,62 +96,72 @@ describe("findShapeByKey()", () => {
       },
     } as AppClassProperties);
 
+  /** a key event with no modifier but Shift */
+  const keyEvent = (key: string, shiftKey: boolean = false) => ({
+    key,
+    code: "",
+    ctrlKey: false,
+    metaKey: false,
+    altKey: false,
+    shiftKey,
+  });
+
   it("selection shortcuts activate selection when it's preferred", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("v", app)).toBe("selection");
+    expect(findShapeByKey(keyEvent("v"), app)).toBe("selection");
   });
 
   it("selection shortcuts activate lasso when it's preferred", () => {
     const app = appWithPreferredTool("lasso");
 
-    expect(findShapeByKey("v", app)).toBe("lasso");
+    expect(findShapeByKey(keyEvent("v"), app)).toBe("lasso");
   });
 
   it("MyOC regression: does not reserve number keys for drawing tools", () => {
     const app = appWithPreferredTool("selection");
 
     for (const key of ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]) {
-      expect(findShapeByKey(key, app)).toBeNull();
+      expect(findShapeByKey(keyEvent(key), app)).toBeNull();
     }
   });
 
   it("letter shortcuts are CapsLock-insensitive", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("V", app)).toBe("selection");
-    expect(findShapeByKey("R", app)).toBe("rectangle");
-    expect(findShapeByKey("P", app)).toBe("freedraw");
-    expect(findShapeByKey("X", app)).toBe("autoshape");
+    expect(findShapeByKey(keyEvent("V"), app)).toBe("selection");
+    expect(findShapeByKey(keyEvent("R"), app)).toBe("rectangle");
+    expect(findShapeByKey(keyEvent("P"), app)).toBe("freedraw");
+    expect(findShapeByKey(keyEvent("X"), app)).toBe("autoshape");
   });
 
   it("MyOC regression: does not expose bucket fill on B", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("B", app)).toBeNull();
-    expect(findShapeByKey("b", app)).toBeNull();
+    expect(findShapeByKey(keyEvent("B"), app)).toBeNull();
+    expect(findShapeByKey(keyEvent("b"), app)).toBeNull();
   });
 
   it("MyOC regression: does not expose laser on K", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("K", app)).toBeNull();
-    expect(findShapeByKey("k", app)).toBeNull();
+    expect(findShapeByKey(keyEvent("K"), app)).toBeNull();
+    expect(findShapeByKey(keyEvent("k"), app)).toBeNull();
   });
 
   it("MyOC regression: does not require shift for draw to shape", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("X", app)).toBe("autoshape");
-    expect(findShapeByKey("x", app)).toBe("autoshape");
-    expect(findShapeByKey("X", app, true)).toBeNull();
+    expect(findShapeByKey(keyEvent("X"), app)).toBe("autoshape");
+    expect(findShapeByKey(keyEvent("x"), app)).toBe("autoshape");
+    expect(findShapeByKey(keyEvent("X", true), app)).toBeNull();
   });
 
   it("does not match plain-bound tools when shift is held", () => {
     const app = appWithPreferredTool("selection");
 
-    expect(findShapeByKey("R", app, true)).toBeNull();
-    expect(findShapeByKey("V", app, true)).toBeNull();
+    expect(findShapeByKey(keyEvent("R", true), app)).toBeNull();
+    expect(findShapeByKey(keyEvent("V", true), app)).toBeNull();
   });
 });
 

@@ -13,6 +13,7 @@ import type { ExcalidrawElement, Theme } from "@excalidraw/element/types";
 import type { ColorPaletteCustom } from "@excalidraw/common";
 
 import { useAtom } from "../../editor-jotai";
+import { useKeymap } from "../App";
 import { t } from "../../i18n";
 
 import { CustomColorList } from "./CustomColorList";
@@ -84,6 +85,8 @@ export const Picker = React.forwardRef(
       activeColorPickerSectionAtom,
     );
     const dnd = useColorPickerDnD();
+    // the user keys of the editor (the eye dropper key)
+    const keymap = useKeymap();
 
     const colorObj = getColorNameAndShadeFromColor({
       color,
@@ -162,6 +165,7 @@ export const Picker = React.forwardRef(
               activeShade,
               onEscape,
               excludedColors,
+              keymap,
             });
 
             if (handled) {

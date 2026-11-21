@@ -1,4 +1,4 @@
-import { arrayToMap, KEYS, matchKey } from "@excalidraw/common";
+import { arrayToMap } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -11,11 +11,11 @@ import type { ExcalidrawElement } from "@excalidraw/element/types";
 import { TableCellsIcon } from "../components/icons";
 import { getEffectiveEditorPreferences } from "../editorPreferences";
 
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 
-import { getShortcutKey } from "../shortcut";
-
 import { register } from "./register";
+import { getTitleWithShortcut } from "./shortcuts";
 
 import { alignActionsPredicate } from "./actionAlign";
 
@@ -74,15 +74,21 @@ export const actionArrangeElements = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) => event.shiftKey && matchKey(event, KEYS.A),
-  PanelComponent: ({ updateData }) => (
-    <button
-      type="button"
-      className="arrangeButton"
-      onClick={() => updateData(null)}
-      title={`${t("labels.arrangeElements")} — ${getShortcutKey("Shift+A")}`}
-    >
-      {TableCellsIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="arrangeButton"
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.arrangeElements"),
+          "action:arrangeElements",
+          keymap,
+        )}
+      >
+        {TableCellsIcon}
+      </button>
+    );
+  },
 });

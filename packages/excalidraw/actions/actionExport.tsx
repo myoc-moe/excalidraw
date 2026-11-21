@@ -1,4 +1,4 @@
-import { KEYS, THEME } from "@excalidraw/common";
+import { THEME } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -371,10 +371,6 @@ export const actionSaveFileToDisk = register({
       onExportInProgress = false;
     }
   },
-  keyTest: (event) =>
-    event.key.toLowerCase() === KEYS.S &&
-    event.shiftKey &&
-    event[KEYS.CTRL_OR_CMD],
   PanelComponent: ({ updateData }) => (
     <IconButton
       type="button"
@@ -424,7 +420,6 @@ export const actionLoadScene = register({
       };
     }
   },
-  keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.O,
 });
 
 export const actionExportWithDarkMode = register<

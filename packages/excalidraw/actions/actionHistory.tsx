@@ -1,9 +1,4 @@
-import {
-  KEYS,
-  matchKey,
-  arrayToMap,
-  MOBILE_ACTION_BUTTON_BG,
-} from "@excalidraw/common";
+import { arrayToMap, MOBILE_ACTION_BUTTON_BG } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -76,8 +71,6 @@ export const createUndoAction: ActionCreator = (history) => ({
     executeHistoryAction(app, appState, () =>
       history.undo(arrayToMap(elements) as SceneElementsMap, appState),
     ),
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && matchKey(event, KEYS.Z) && !event.shiftKey,
   PanelComponent: ({ appState, updateData, data, app }) => {
     const { isUndoStackEmpty } = useEmitter<HistoryChangedEvent>(
       history.onHistoryChangedEmitter,
@@ -115,9 +108,6 @@ export const createRedoAction: ActionCreator = (history) => ({
     executeHistoryAction(app, appState, () =>
       history.redo(arrayToMap(elements) as SceneElementsMap, appState),
     ),
-  keyTest: (event) =>
-    (event[KEYS.CTRL_OR_CMD] && event.shiftKey && matchKey(event, KEYS.Z)) ||
-    (event[KEYS.CTRL_OR_CMD] && !event.shiftKey && matchKey(event, KEYS.Y)),
   PanelComponent: ({ appState, updateData, data, app }) => {
     const { isRedoStackEmpty } = useEmitter(
       history.onHistoryChangedEmitter,

@@ -4,8 +4,6 @@ import {
   MIN_ZOOM,
   THEME,
   ZOOM_STEP,
-  CODES,
-  KEYS,
 } from "@excalidraw/common";
 
 import { getNonDeletedElements } from "@excalidraw/element";
@@ -15,6 +13,7 @@ import { CaptureUpdateAction } from "@excalidraw/element";
 
 import type { Bounds } from "@excalidraw/common";
 
+import { useKeymap } from "../components/App";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
 import { IconButton } from "../components/IconButton";
 import { Tooltip } from "../components/Tooltip";
@@ -35,9 +34,9 @@ import {
   getViewportForZoomWithScrollConstraints,
   zoomToFitBounds,
 } from "../viewport";
-import { getShortcutKey } from "../shortcut";
 
 import { register } from "./register";
+import { getTitleWithShortcut } from "./shortcuts";
 
 import type { AppState } from "../types";
 
@@ -105,13 +104,18 @@ export const actionZoomIn = register({
     };
   },
   PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
         type="button"
         className="zoom-in-button zoom-button"
         icon={ZoomInIcon}
-        title={`${t("buttons.zoomIn")} — ${getShortcutKey("CtrlOrCmd++")}`}
+        title={getTitleWithShortcut(
+          t("buttons.zoomIn"),
+          "action:zoomIn",
+          keymap,
+        )}
         aria-label={t("buttons.zoomIn")}
         disabled={zoomValue >= MAX_ZOOM}
         onClick={() => {
@@ -120,9 +124,6 @@ export const actionZoomIn = register({
       />
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.EQUAL || event.code === CODES.NUM_ADD) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 export const actionZoomOut = register({
@@ -152,13 +153,18 @@ export const actionZoomOut = register({
     };
   },
   PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
         type="button"
         className="zoom-out-button zoom-button"
         icon={ZoomOutIcon}
-        title={`${t("buttons.zoomOut")} — ${getShortcutKey("CtrlOrCmd+-")}`}
+        title={getTitleWithShortcut(
+          t("buttons.zoomOut"),
+          "action:zoomOut",
+          keymap,
+        )}
         aria-label={t("buttons.zoomOut")}
         disabled={zoomValue <= MIN_ZOOM}
         onClick={() => {
@@ -167,9 +173,6 @@ export const actionZoomOut = register({
       />
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.MINUS || event.code === CODES.NUM_SUBTRACT) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 export const actionResetZoom = register({
@@ -221,9 +224,6 @@ export const actionResetZoom = register({
       </Tooltip>
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.ZERO || event.code === CODES.NUM_ZERO) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 // under a viewport lock, zoom-to-fit targets the locked box rather than the
@@ -276,7 +276,6 @@ export const actionZoomToFitSelectionInViewport = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionZoomToFitSelection = register({
@@ -313,7 +312,6 @@ export const actionZoomToFitSelection = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionZoomToFit = register({
@@ -345,7 +343,6 @@ export const actionZoomToFit = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionToggleTheme = register<AppState["theme"]>({
@@ -377,11 +374,6 @@ export const actionToggleTheme = register<AppState["theme"]>({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    event.altKey &&
-    event.shiftKey &&
-    event.code === CODES.D,
   predicate: (elements, appState, props, app) => {
     return !!app.props.UIOptions.canvasActions.toggleTheme;
   },

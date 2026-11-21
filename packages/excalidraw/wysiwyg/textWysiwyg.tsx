@@ -56,6 +56,7 @@ import type {
 } from "@excalidraw/element/types";
 
 import { actionSaveToActiveFile } from "../actions";
+import { matchesBinding } from "../keymap";
 
 import {
   parseClipboard,
@@ -73,6 +74,7 @@ import {
 } from "../actions/actionCanvas";
 
 import type { ParsedDataTranferList } from "../clipboard";
+import type { BindingId } from "../keymap";
 
 import type App from "../components/App";
 import type { AppState } from "../types";
@@ -638,21 +640,33 @@ export const textWysiwyg = ({
   }
 
   editable.onkeydown = (event) => {
-    if (!event.shiftKey && actionZoomIn.keyTest(event)) {
+    // the user keys of the editor, else the defaults. Only combos with
+    // Ctrl or Cmd act here: any other key types its character
+    const { keymap } = app.props;
+    const hasCommandModifier = event.ctrlKey || event.metaKey;
+    const matchesKeymap = (id: BindingId) =>
+      hasCommandModifier && matchesBinding(event, id, keymap);
+    // the default zoom combos with Shift (`Shift++`, `Mod+Shift++`) do not
+    // zoom while text is edited; a user combo replaces them, Shift included
+    const matchesZoomKey = (id: BindingId) =>
+      (!event.shiftKey ||
+        Boolean(keymap && Object.prototype.hasOwnProperty.call(keymap, id))) &&
+      matchesKeymap(id);
+    if (matchesZoomKey("action:zoomIn")) {
       event.preventDefault();
       app.actionManager.executeAction(actionZoomIn);
       updateWysiwygStyle();
-    } else if (!event.shiftKey && actionZoomOut.keyTest(event)) {
+    } else if (matchesZoomKey("action:zoomOut")) {
       event.preventDefault();
       app.actionManager.executeAction(actionZoomOut);
       updateWysiwygStyle();
-    } else if (!event.shiftKey && actionResetZoom.keyTest(event)) {
+    } else if (matchesZoomKey("action:resetZoom")) {
       event.preventDefault();
       app.actionManager.executeAction(actionResetZoom);
       updateWysiwygStyle();
-    } else if (actionDecreaseFontSize.keyTest(event)) {
+    } else if (matchesKeymap("action:decreaseFontSize")) {
       app.actionManager.executeAction(actionDecreaseFontSize);
-    } else if (actionIncreaseFontSize.keyTest(event)) {
+    } else if (matchesKeymap("action:increaseFontSize")) {
       app.actionManager.executeAction(actionIncreaseFontSize);
     } else if (event.key === KEYS.ESCAPE) {
       event.preventDefault();

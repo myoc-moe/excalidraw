@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import clsx from "clsx";
 
-import { KEYS, capitalizeString } from "@excalidraw/common";
+import { capitalizeString } from "@excalidraw/common";
 
 import { actionToggleObjectsSnapMode } from "../actions";
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { t } from "../i18n";
 
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
+import { useKeymap } from "./App";
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
 import {
@@ -15,7 +16,6 @@ import {
   FrameToolButton,
   FreedrawToolButton,
   FreedrawToolPopover,
-  getToolLetter,
   getToolShortcut,
   HandToolButton,
   ImageToolButton,
@@ -99,6 +99,7 @@ export const MobileToolbar = ({
   actionManager,
   setAppState,
 }: MobileToolbarProps) => {
+  const keymap = useKeymap();
   const activeTool = app.state.activeTool;
   const isMyocSimplifiedMode = app.state.myocSimplifiedMode;
   const imageToolEnabled = app.props.UIOptions.tools?.image !== false;
@@ -367,7 +368,7 @@ export const MobileToolbar = ({
                 icon={TOOLS[type].icon as React.ReactElement}
                 data-testid={`toolbar-${type}`}
                 selected={activeTool.type === type}
-                shortcut={getToolLetter(type)}
+                shortcut={getToolShortcut(type, keymap)}
                 disabled={isToolButtonDisabled(app, type)}
               >
                 {t(`toolBar.${type}`)}
@@ -385,7 +386,11 @@ export const MobileToolbar = ({
                 icon={magnetIcon}
                 data-testid="toolbar-objects-snap-mode"
                 selected={app.state.objectsSnapModeEnabled}
-                shortcut={getShortcutFromShortcutName("objectsSnapMode")}
+                shortcut={getShortcutFromShortcutName(
+                  "objectsSnapMode",
+                  undefined,
+                  keymap,
+                )}
               >
                 {t("buttons.objectsSnapMode")}
               </DropdownMenu.Item>
@@ -400,7 +405,11 @@ export const MobileToolbar = ({
                 icon={app.state.activeTool.locked ? LockedIcon : UnlockedIcon}
                 data-testid="toolbar-lock"
                 selected={app.state.activeTool.locked}
-                shortcut={KEYS.Q.toLocaleUpperCase()}
+                shortcut={getShortcutFromShortcutName(
+                  "toolLock",
+                  undefined,
+                  keymap,
+                )}
               >
                 {t("toolBar.lock-short")}
               </DropdownMenu.Item>
@@ -410,7 +419,7 @@ export const MobileToolbar = ({
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "text" })}
               icon={TextIcon}
-              shortcut={KEYS.T.toLocaleUpperCase()}
+              shortcut={getToolShortcut("text", keymap)}
               data-testid="toolbar-text"
               selected={activeTool.type === "text"}
               disabled={isToolButtonDisabled(app, "text")}
@@ -434,7 +443,7 @@ export const MobileToolbar = ({
             <DropdownMenu.Item
               onSelect={() => app.setActiveTool({ type: "frame" })}
               icon={frameToolIcon}
-              shortcut={KEYS.F.toLocaleUpperCase()}
+              shortcut={getToolShortcut("frame", keymap)}
               data-testid="toolbar-frame"
               selected={frameToolSelected}
               disabled={isToolButtonDisabled(app, "frame")}
@@ -456,7 +465,7 @@ export const MobileToolbar = ({
               <DropdownMenu.Item
                 onSelect={() => app.setActiveTool({ type: "autoshape" })}
                 icon={drawShapeToolIcon}
-                shortcut={getToolShortcut("autoshape")}
+                shortcut={getToolShortcut("autoshape", keymap)}
                 data-testid="toolbar-autoshape"
                 selected={drawShapeToolSelected}
                 disabled={isToolButtonDisabled(app, "autoshape")}

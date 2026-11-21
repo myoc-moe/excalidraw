@@ -9,12 +9,18 @@ const handlerArgs = (
   palette: ColorPaletteCustom,
   onChange: (color: string) => void,
   excludedColors?: readonly string[],
+  eventInit: Partial<
+    Record<"code" | "ctrlKey" | "altKey" | "shiftKey", string | boolean>
+  > = {},
 ) => ({
   event: {
     key,
+    code: "",
     ctrlKey: false,
     metaKey: false,
+    altKey: false,
     shiftKey: false,
+    ...eventInit,
     preventDefault: () => {},
     stopPropagation: () => {},
   } as unknown as React.KeyboardEvent,
@@ -78,5 +84,60 @@ describe("color picker hotkeys", () => {
 
     expect(handled).toBe(true);
     expect(onChange).toHaveBeenCalledWith("#ff0000");
+  });
+
+  it("toggles the eye dropper on Shift+S", () => {
+    const onChange = vi.fn();
+    const onEyeDropperToggle = vi.fn();
+    const palette = { red: "#ff0000" } as ColorPaletteCustom;
+
+    const handled = colorPickerKeyNavHandler({
+      ...handlerArgs("S", palette, onChange, undefined, {
+        code: "KeyS",
+        shiftKey: true,
+      }),
+      onEyeDropperToggle,
+    });
+
+    expect(handled).toBe(true);
+    expect(onEyeDropperToggle).toHaveBeenCalledTimes(1);
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it("keeps a palette hotkey that is also the user eye dropper key", () => {
+    const onChange = vi.fn();
+    const onEyeDropperToggle = vi.fn();
+    const palette = {
+      transparent: COLOR_PALETTE.transparent,
+      red: "#ff0000",
+    } as ColorPaletteCustom;
+
+    const handled = colorPickerKeyNavHandler({
+      ...handlerArgs("w", palette, onChange, undefined, { code: "KeyW" }),
+      onEyeDropperToggle,
+      keymap: { "editor:eyeDropperStroke": ["W"] },
+    });
+
+    expect(handled).toBe(true);
+    expect(onChange).toHaveBeenCalledWith("#ff0000");
+    expect(onEyeDropperToggle).not.toHaveBeenCalled();
+  });
+
+  it("toggles the eye dropper on a user key with Ctrl", () => {
+    const onChange = vi.fn();
+    const onEyeDropperToggle = vi.fn();
+    const palette = { red: "#ff0000" } as ColorPaletteCustom;
+
+    const handled = colorPickerKeyNavHandler({
+      ...handlerArgs("j", palette, onChange, undefined, {
+        code: "KeyJ",
+        ctrlKey: true,
+      }),
+      onEyeDropperToggle,
+      keymap: { "editor:eyeDropperStroke": ["Mod+J"] },
+    });
+
+    expect(handled).toBe(true);
+    expect(onEyeDropperToggle).toHaveBeenCalledTimes(1);
   });
 });

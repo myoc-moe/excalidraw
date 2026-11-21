@@ -55,7 +55,7 @@ const plainWheelZoomIn = () => {
   });
 };
 
-// zoom shortcuts' keyTest matches on `event.code` (CODES.EQUAL/MINUS/ZERO)
+// the default zoom keys match on `event.code` (CODES.EQUAL/MINUS/ZERO)
 const pressZoomShortcut = (code: string) => {
   Keyboard.withModifierKeys({ ctrl: true }, () => {
     Keyboard.codePress(code);

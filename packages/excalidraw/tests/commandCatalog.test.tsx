@@ -3,6 +3,7 @@ import { vi } from "vitest";
 import { THEME, capitalizeString, resolvablePromise } from "@excalidraw/common";
 
 import { getShortcutFromShortcutName } from "../actions/shortcuts";
+import { getShortcutKey } from "../shortcut";
 import { t } from "../i18n";
 import { Excalidraw } from "../index";
 import {
@@ -12,9 +13,10 @@ import {
   TOOLS,
 } from "../components/Tools";
 
-import { act, render } from "./test-utils";
+import { act, fireEvent, GlobalTestState, render } from "./test-utils";
 
 import type { Action } from "../actions/types";
+import type { Keymap } from "../keymap";
 import type { ExcalidrawImperativeAPI, ExcalidrawProps } from "../types";
 
 const renderEditor = async (props: Partial<ExcalidrawProps> = {}) => {
@@ -74,6 +76,12 @@ describe("Excalidraw command catalog API", () => {
       keywords: ["search", "find"],
       shortcut: getShortcutFromShortcutName("searchMenu"),
     });
+    // a bindable action has no `keyTest`; the default keys list it
+    expect(getCatalogEntry(api, "action:selectAll")).toMatchObject({
+      shortcut: expect.any(String),
+    });
+    // a bindable action without a default key is not listed
+    expect(getCatalogEntry(api, "action:zoomToFit")).toBeUndefined();
 
     const dynamicAction = createAction("hostOnlyCommand", {
       label: "buttons.zoomIn",
@@ -248,5 +256,190 @@ describe("Excalidraw command catalog API", () => {
 
     window.h.app.props.UIOptions.canvasActions.export.saveFileToDisk = true;
     expect(getCatalogEntry(api, "action:saveFileToDisk")).toBeDefined();
+  });
+});
+
+describe("labels read the keymap", () => {
+  const ctrl = (key: string) => getShortcutKey(`CtrlOrCmd+${key}`);
+
+  const openHelpDialog = (showAll: boolean) => {
+    act(() => {
+      window.h.setState({ openDialog: { name: "help" } });
+    });
+    if (showAll) {
+      fireEvent.click(
+        document.querySelector<HTMLButtonElement>(
+          ".HelpDialog .toggle-button",
+        )!,
+      );
+    }
+  };
+
+  /** the key caps of the help dialog row with the label */
+  const getHelpRowKeys = (label: string) => {
+    const row = [
+      ...document.querySelectorAll<HTMLElement>(".HelpDialog__shortcut"),
+    ].find((element) => element.firstElementChild?.textContent === label);
+    return row
+      ? [...row.querySelectorAll("kbd")].map((kbd) => kbd.textContent)
+      : null;
+  };
+
+  it("keeps the default labels without a keymap", async () => {
+    const api = await renderEditor();
+
+    expect(getCatalogEntry(api, "action:selectAll")?.shortcut).toBe(ctrl("A"));
+    expect(getCatalogEntry(api, "tool:rectangle")?.shortcut).toBe("R");
+    // not in the legacy labels: no label without a user key
+    expect(getCatalogEntry(api, "action:undo")?.shortcut).toBeUndefined();
+    expect(getCatalogEntry(api, "action:saveFileToDisk")?.shortcut).toBe(
+      getShortcutKey("CtrlOrCmd+Shift+S"),
+    );
+    expect(
+      document
+        .querySelector('[data-testid="toolbar-freedraw"]')
+        ?.getAttribute("title"),
+    ).toBe(`${capitalizeString(t("toolBar.freedraw"))} — P`);
+  });
+
+  it("shows the user keys in the command catalog", async () => {
+    const keymap: Keymap = {
+      "action:selectAll": ["Mod+Shift+K"],
+      "action:toggleTheme": [],
+      "action:undo": ["Mod+Alt+U"],
+      "tool:rectangle": ["W", "Shift+W"],
+      "tool:text": ["Alt+F"],
+    };
+    const api = await renderEditor({
+      keymap,
+      UIOptions: { canvasActions: { toggleTheme: true } },
+    });
+
+    expect(getCatalogEntry(api, "action:selectAll")?.shortcut).toBe(
+      ctrl("Shift+K"),
+    );
+    // several keys show joined with "or"
+    expect(getCatalogEntry(api, "tool:rectangle")?.shortcut).toBe(
+      `W ${t("helpDialog.or")} ${getShortcutKey("Shift+W")}`,
+    );
+    expect(getCatalogEntry(api, "tool:text")?.shortcut).toBe(
+      getShortcutKey("Alt+F"),
+    );
+    expect(getCatalogEntry(api, "action:undo")?.shortcut).toBe(
+      getShortcutKey("CtrlOrCmd+Alt+U"),
+    );
+    // a removed key shows no label
+    expect(
+      getCatalogEntry(api, "action:toggleTheme")?.shortcut,
+    ).toBeUndefined();
+    // a binding the keymap does not name keeps its default
+    expect(getCatalogEntry(api, "tool:ellipse")?.shortcut).toBe("O");
+  });
+
+  it("shows the user keys in the tool tooltip", async () => {
+    await renderEditor({ keymap: { "tool:freedraw": ["W"] } });
+
+    expect(
+      document
+        .querySelector('[data-testid="toolbar-freedraw"]')
+        ?.getAttribute("title"),
+    ).toBe(`${capitalizeString(t("toolBar.freedraw"))} — W`);
+    expect(
+      document
+        .querySelector('[data-testid="toolbar-eraser"]')
+        ?.getAttribute("title"),
+    ).toBe(`${capitalizeString(t("toolBar.eraser"))} — E`);
+  });
+
+  it("shows the user keys in the context menu", async () => {
+    await renderEditor({ keymap: { "action:selectAll": ["Mod+Shift+K"] } });
+
+    fireEvent.contextMenu(GlobalTestState.interactiveCanvas, {
+      button: 2,
+      clientX: 1,
+      clientY: 1,
+    });
+
+    const item = document.querySelector(
+      '.context-menu [data-testid="selectAll"]',
+    );
+    expect(item?.querySelector("kbd")?.textContent).toBe(ctrl("Shift+K"));
+    expect(
+      document.querySelector('.context-menu [data-testid="gridMode"] kbd')
+        ?.textContent,
+    ).toBe(getShortcutKey("CtrlOrCmd+'"));
+  });
+
+  it("shows the user keys in the help dialog", async () => {
+    await renderEditor({
+      keymap: {
+        "tool:rectangle": ["W"],
+        "tool:frame": ["Alt+F"],
+        "action:redo": ["Mod+Shift+K", "Mod+Alt+K"],
+        "action:selectAll": [],
+        "action:zoomIn": ["Mod+Shift+="],
+        "editor:smartZoom": ["J"],
+        "editor:holdZoom": ["K"],
+      },
+    });
+    openHelpDialog(true);
+
+    expect(getHelpRowKeys(t("toolBar.rectangle"))).toEqual(["W"]);
+    expect(getHelpRowKeys(t("toolBar.frame"))).toEqual([
+      getShortcutKey("Alt"),
+      "F",
+    ]);
+    // the "or" between two keys is text, not a key cap
+    expect(getHelpRowKeys(t("buttons.redo"))).toEqual([
+      getShortcutKey("Ctrl"),
+      getShortcutKey("Shift"),
+      "K",
+      getShortcutKey("Ctrl"),
+      getShortcutKey("Alt"),
+      "K",
+    ]);
+    // a removed key hides the row
+    expect(getHelpRowKeys(t("labels.selectAll"))).toBeNull();
+    expect(getHelpRowKeys(t("buttons.zoomIn"))).toEqual([
+      getShortcutKey("Ctrl"),
+      getShortcutKey("Shift"),
+      "=",
+    ]);
+    expect(getHelpRowKeys(t("helpDialog.smartZoom"))).toEqual(["J"]);
+    expect(getHelpRowKeys(t("helpDialog.dragToZoom"))).toEqual([
+      "K",
+      t("helpDialog.drag"),
+    ]);
+    // a fixed key (copy) shows as before
+    expect(getHelpRowKeys(t("labels.copy"))).toEqual([
+      getShortcutKey("Ctrl"),
+      "C",
+    ]);
+  });
+
+  it("shows the user keys in the basic help dialog", async () => {
+    await renderEditor({
+      keymap: { "tool:freedraw": ["W"], "tool:image": ["Alt+I"] },
+    });
+    openHelpDialog(false);
+
+    expect(getHelpRowKeys(t("toolBar.freedraw"))).toEqual(["W"]);
+    expect(getHelpRowKeys(t("toolBar.image"))).toEqual([
+      getShortcutKey("Alt"),
+      "I",
+    ]);
+    expect(getHelpRowKeys(t("toolBar.eraser"))).toEqual(["E"]);
+  });
+
+  it("builds the help dialog tool rows from the default keys", async () => {
+    await renderEditor();
+    openHelpDialog(true);
+
+    expect(getHelpRowKeys(t("toolBar.hand"))).toEqual(["H"]);
+    expect(getHelpRowKeys(t("toolBar.freedraw"))).toEqual(["P"]);
+    expect(getHelpRowKeys(t("toolBar.autoshape"))).toEqual(["X"]);
+    // F is smart zoom and I is the eye dropper
+    expect(getHelpRowKeys(t("toolBar.frame"))).toBeNull();
+    expect(getHelpRowKeys(t("toolBar.image"))).toBeNull();
   });
 });

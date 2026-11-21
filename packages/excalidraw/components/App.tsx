@@ -22,7 +22,6 @@ import {
   shouldResizeFromCenter,
   shouldMaintainAspectRatio,
   shouldRotateWithDiscreteAngle,
-  getLayoutIndependentKey,
   isArrowKey,
   KEYS,
   APP_NAME,
@@ -337,7 +336,7 @@ import {
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionTextAutoResize } from "../actions/actionTextAutoResize";
 import { actionToggleViewMode } from "../actions/actionToggleViewMode";
-import { ActionManager } from "../actions/manager";
+import { ActionManager, matchesKeyBinding } from "../actions/manager";
 import { actions } from "../actions/register";
 import { trackEvent } from "../analytics";
 import {
@@ -368,7 +367,6 @@ import {
   getElementsWithinSelection,
   getNormalizedZoom,
   getSelectedElements,
-  hasBackground,
   isSomeElementSelected,
 } from "../scene";
 import {
@@ -420,6 +418,15 @@ import { isOverScrollBars } from "../scene/scrollbars";
 import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
+import {
+  getDefaultKeys,
+  getShortcutEventKey,
+  isBindingId,
+  matchesBinding,
+  matchesCombo,
+  parseCombo,
+  resolveKeys,
+} from "../keymap";
 import { tryParseSpreadsheet } from "../charts";
 import { getActionShortcut } from "../actions/shortcuts";
 
@@ -504,6 +511,7 @@ import type {
   ExcalidrawCommandCatalogEntry,
 } from "../types";
 import type { ToolbarToolType } from "./Tools";
+import type { BindingId } from "../keymap";
 import type { RoughCanvas } from "roughjs/bin/canvas";
 import type { Action, ActionResult } from "../actions/types";
 
@@ -574,6 +582,8 @@ ExcalidrawAPISetContext.displayName = "ExcalidrawAPISetContext";
 
 export const useApp = () => useContext(AppContext);
 export const useAppProps = () => useContext(AppPropsContext);
+/** the user keymap of the editor; `undefined` shows the default keys */
+export const useKeymap = () => useAppProps()?.keymap;
 export const useEditorInterface = () =>
   useContext<EditorInterface>(EditorInterfaceContext);
 export const useStylesPanelMode = () =>
@@ -593,11 +603,31 @@ export const useExcalidrawActionManager = () =>
  */
 export const useExcalidrawAPI = () => useContext(ExcalidrawAPIContext);
 
+/**
+ * The key that started a hold binding (smart zoom, hold zoom). Its release
+ * matches by `code`, so a shifted symbol (`?` with Shift released first) or a
+ * macOS Option character releases it too. `key` is for events with no code.
+ */
+type HeldKey = { code: string; key: string };
+
+const getHeldKey = (event: KeyboardEvent | React.KeyboardEvent): HeldKey => ({
+  code: event.code,
+  key: event.key.length === 1 ? event.key.toUpperCase() : event.key,
+});
+
+const isHeldKeyRelease = (event: KeyboardEvent, heldKey: HeldKey | null) =>
+  heldKey !== null &&
+  (heldKey.code
+    ? event.code === heldKey.code
+    : getHeldKey(event).key === heldKey.key);
+
 let didTapTwice: boolean = false;
 let tappedTwiceTimer = 0;
 let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
 let isHoldingZ: boolean = false;
+/** the key that holds the hold zoom (`editor:holdZoom`), see `getHeldKey` */
+let holdZoomKey: HeldKey | null = null;
 let isPanning: boolean = false;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
@@ -645,35 +675,16 @@ const gesture: Gesture = {
 };
 
 /**
- * Returns the event with the `event.key` that shortcuts compare against:
- * - non-Latin layouts and input methods (e.g. macOS Zhuyin "ㄐ" on `KeyR`)
- *   get the US QWERTY key of the physical key (see `getLayoutIndependentKey`)
- * - CapsLock is inverted back based on Shift #2372
- *
- * Returns the same event when the key does not change, and while an input
- * method composes text.
+ * Returns the event with the `event.key` that shortcuts compare against (see
+ * `getShortcutEventKey`). Returns the same event when the key does not
+ * change, and while an input method composes text.
  */
 const normalizeShortcutKeyEvent = <
   T extends KeyboardEvent | React.KeyboardEvent,
 >(
   event: T,
 ): T => {
-  // while an input method composes text, the keys belong to it
-  const keyEvent: KeyboardEvent | React.KeyboardEvent = event;
-  const nativeEvent =
-    "nativeEvent" in keyEvent ? keyEvent.nativeEvent : keyEvent;
-  if (nativeEvent.isComposing) {
-    return event;
-  }
-  let key = getLayoutIndependentKey(event);
-  if (
-    typeof key === "string" &&
-    ((!event.shiftKey && /^[A-Z]$/.test(key)) ||
-      (event.shiftKey && /^[a-z]$/.test(key)))
-  ) {
-    // CapsLock inverts capitalization based on ShiftKey, so invert it back
-    key = event.shiftKey ? key.toUpperCase() : key.toLowerCase();
-  }
+  const key = getShortcutEventKey(event);
   if (key === event.key || !("Proxy" in window)) {
     return event;
   }
@@ -809,6 +820,7 @@ class App extends React.Component<AppProps, AppState> {
   private lastKeyboardSmartZoomImageId: ExcalidrawElement["id"] | null = null;
   // MyOC: State for the press-and-hold Smart Zoom interaction.
   private smartZoomKeyDownAt: number | null = null;
+  private smartZoomKey: HeldKey | null = null;
   private smartZoomKeyHitElement = false;
   /** previous frame pointer coords */
   previousPointerMoveCoords: { x: number; y: number } | null = null;
@@ -892,9 +904,16 @@ class App extends React.Component<AppProps, AppState> {
     elements: ReturnType<ActionManager["getElementsIncludingDeleted"]>,
   ): ExcalidrawCommandCatalogEntry | null => {
     // The host command bar can only execute editor commands without form data.
-    // `keyTest` is the action registry's marker for keyboard command entries;
-    // it is not used to derive the display shortcut.
-    if (!action.keyTest || !this.actionManager.isActionAvailableForUI(action)) {
+    // A keyboard command entry is a bindable action with default keys or an
+    // action with a `keyTest`; neither derives the display shortcut.
+    const bindingId = `action:${action.name}`;
+    const isKeyboardCommand = isBindingId(bindingId)
+      ? getDefaultKeys(bindingId).length > 0
+      : Boolean(action.keyTest);
+    if (
+      !isKeyboardCommand ||
+      !this.actionManager.isActionAvailableForUI(action)
+    ) {
       return null;
     }
 
@@ -910,7 +929,7 @@ class App extends React.Component<AppProps, AppState> {
       typeof action.icon === "function"
         ? action.icon(this.state, elements)
         : action.icon;
-    const shortcut = getActionShortcut(action.name);
+    const shortcut = getActionShortcut(action.name, this.props.keymap);
 
     return {
       id: `action:${action.name}`,
@@ -937,7 +956,7 @@ class App extends React.Component<AppProps, AppState> {
         return [];
       }
 
-      const shortcut = getToolShortcut(type);
+      const shortcut = getToolShortcut(type, this.props.keymap);
       return [
         {
           id: `tool:${type}` as const,
@@ -3060,6 +3079,7 @@ class App extends React.Component<AppProps, AppState> {
 
     isHoldingSpace = false;
     isHoldingZ = false;
+    holdZoomKey = null;
     this.resetSmartZoomKey();
     isPanning = false;
     isDraggingScrollBar = false;
@@ -5604,19 +5624,15 @@ class App extends React.Component<AppProps, AppState> {
     },
   );
 
-  // MyOC Smart Zoom input handling: F is a hold gesture that can target the
-  // item under the pointer, or zoom the complete scene on a quick release.
-  private isPlainSmartZoomKey = (
-    event: Pick<
-      KeyboardEvent,
-      "key" | "shiftKey" | "altKey" | "ctrlKey" | "metaKey"
-    >,
-  ) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    !event.altKey &&
-    event.key.toLocaleLowerCase() === KEYS.F;
+  /** whether the key event matches the resolved keys of the binding */
+  private matchesKeymap = (
+    event: React.KeyboardEvent | KeyboardEvent,
+    id: BindingId,
+  ) => matchesBinding(event, id, this.props.keymap);
 
+  // MyOC Smart Zoom input handling: F (by default) is a hold gesture that can
+  // target the item under the pointer, or zoom the complete scene on a quick
+  // release.
   private updateSmartZoomCursor = (
     scenePointer: { x: number; y: number } | null,
   ) => {
@@ -5636,6 +5652,7 @@ class App extends React.Component<AppProps, AppState> {
   private resetSmartZoomKey = () => {
     const wasHeld = this.smartZoomKeyDownAt !== null;
     this.smartZoomKeyDownAt = null;
+    this.smartZoomKey = null;
     this.smartZoomKeyHitElement = false;
     if (wasHeld) {
       this.cursor.reset();
@@ -5646,12 +5663,13 @@ class App extends React.Component<AppProps, AppState> {
   private handleSmartZoomKeyDown = (
     event: React.KeyboardEvent | KeyboardEvent,
   ): boolean => {
-    if (!this.isPlainSmartZoomKey(event)) {
+    if (!this.matchesKeymap(event, "editor:smartZoom")) {
       return false;
     }
 
     if (!event.repeat && this.smartZoomKeyDownAt === null) {
       this.smartZoomKeyDownAt = Date.now();
+      this.smartZoomKey = getHeldKey(event);
       this.smartZoomKeyHitElement = false;
       this.updateEditorAtom(smartZoomKeyHeldAtom, true);
       this.updateSmartZoomCursor(this.lastPointerMoveCoords);
@@ -5664,8 +5682,9 @@ class App extends React.Component<AppProps, AppState> {
 
   private handleSmartZoomKeyUp = (event: KeyboardEvent): boolean => {
     if (
-      event.key.toLocaleLowerCase() !== KEYS.F ||
-      this.smartZoomKeyDownAt === null
+      this.smartZoomKeyDownAt === null ||
+      // the modifiers are not compared: the user can release them first
+      !isHeldKeyRelease(event, this.smartZoomKey)
     ) {
       return false;
     }
@@ -5850,7 +5869,7 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
-      if (event.key === KEYS.QUESTION_MARK) {
+      if (this.matchesKeymap(event, "action:toggleShortcuts")) {
         this.setState({
           openDialog: { name: "help" },
         });
@@ -5858,7 +5877,8 @@ class App extends React.Component<AppProps, AppState> {
       } else if (
         event.key.toLowerCase() === KEYS.E &&
         event.shiftKey &&
-        event[KEYS.CTRL_OR_CMD]
+        event[KEYS.CTRL_OR_CMD] &&
+        this.props.UIOptions.canvasActions.saveAsImage
       ) {
         event.preventDefault();
         this.setState({ openDialog: { name: "imageExport" } });
@@ -5902,12 +5922,10 @@ class App extends React.Component<AppProps, AppState> {
       // return early below.
       if (
         this.state.viewModeEnabled &&
-        event.key.toLowerCase() === KEYS.Z &&
-        !event[KEYS.CTRL_OR_CMD] &&
-        !event.altKey &&
-        !event.shiftKey
+        this.matchesKeymap(event, "editor:holdZoom")
       ) {
         isHoldingZ = true;
+        holdZoomKey = getHeldKey(event);
         this.cursor.set("zoom-in");
         event.preventDefault();
         return;
@@ -5925,16 +5943,19 @@ class App extends React.Component<AppProps, AppState> {
         return;
       }
 
+      // tool keys and the tool lock key match the exact combo, modifiers
+      // included
       if (
         !shouldPreventToolSwitching &&
-        !event.ctrlKey &&
-        !event.altKey &&
-        !event.metaKey &&
         !this.state.newElement &&
         !this.state.selectionElement &&
         !this.state.selectedElementsAreBeingDragged
       ) {
-        const shape = findShapeByKey(event.key, this, event.shiftKey);
+        const shape = findShapeByKey(event, this);
+        // a user key with Ctrl, Cmd or Alt must not also run the browser
+        // shortcut
+        const hasCommandModifier =
+          event.ctrlKey || event.metaKey || event.altKey;
 
         if (this.state.viewModeEnabled && !oneOf(shape, ["laser", "hand"])) {
           return;
@@ -5984,11 +6005,17 @@ class App extends React.Component<AppProps, AppState> {
             this.setActiveTool({ type: shape }, { toggle: true });
           }
 
+          if (hasCommandModifier) {
+            event.preventDefault();
+          }
           event.stopPropagation();
 
           return;
-        } else if (event.key === KEYS.Q) {
+        } else if (this.matchesKeymap(event, "editor:toolLock")) {
           this.toggleLock("keyboard");
+          if (hasCommandModifier) {
+            event.preventDefault();
+          }
           event.stopPropagation();
           return;
         }
@@ -6143,89 +6170,49 @@ class App extends React.Component<AppProps, AppState> {
         event.preventDefault();
       }
 
-      if (
-        event.key.toLowerCase() === KEYS.Z &&
-        !event[KEYS.CTRL_OR_CMD] &&
-        !event.altKey &&
-        !event.shiftKey
-      ) {
+      if (this.matchesKeymap(event, "editor:holdZoom")) {
         isHoldingZ = true;
+        holdZoomKey = getHeldKey(event);
         this.cursor.set("zoom-in");
         event.preventDefault();
       }
 
-      if (
-        (event.key === KEYS.G || event.key === KEYS.S) &&
-        !event.altKey &&
-        !event[KEYS.CTRL_OR_CMD]
-      ) {
-        const selectedElements = this.scene.getSelectedElements(this.state);
-        if (
-          this.state.activeTool.type === "selection" &&
-          !selectedElements.length
-        ) {
-          return;
-        }
+      const pickerElements = this.scene.getNonDeletedElements();
+      const matchesPickerKey = (id: BindingId) =>
+        matchesKeyBinding(event, id, this.state, pickerElements, this);
 
-        if (
-          event.key === KEYS.G &&
-          (hasBackground(this.state.activeTool.type) ||
-            selectedElements.some((element) => hasBackground(element.type)))
-        ) {
-          this.setState({ openPopup: "elementBackground" });
-          event.stopPropagation();
-        }
-        if (event.key === KEYS.S) {
-          this.setState({ openPopup: "elementStroke" });
-          event.stopPropagation();
-        }
+      if (matchesPickerKey("editor:backgroundPicker")) {
+        this.setState({ openPopup: "elementBackground" });
+        event.stopPropagation();
+      }
+      if (matchesPickerKey("editor:strokePicker")) {
+        this.setState({ openPopup: "elementStroke" });
+        event.stopPropagation();
       }
 
-      if (
-        !event[KEYS.CTRL_OR_CMD] &&
-        event.shiftKey &&
-        event.key.toLowerCase() === KEYS.F
-      ) {
-        const selectedElements = this.scene.getSelectedElements(this.state);
-
-        if (
-          this.state.activeTool.type === "selection" &&
-          !selectedElements.length
-        ) {
-          return;
-        }
-
-        if (
-          this.state.activeTool.type === "text" ||
-          selectedElements.find(
-            (element) =>
-              isTextElement(element) ||
-              getBoundTextElement(
-                element,
-                this.scene.getNonDeletedElementsMap(),
-              ),
-          )
-        ) {
-          event.preventDefault();
-          this.setState({ openPopup: "fontFamily" });
-        }
+      if (matchesPickerKey("editor:fontPicker")) {
+        event.preventDefault();
+        this.setState({ openPopup: "fontFamily" });
       }
 
       // eye dropper
       // -----------------------------------------------------------------------
-      const lowerCased = event.key.toLocaleLowerCase();
-      const isPlainStrokeEyeDropper =
-        lowerCased === KEYS.I && !event.shiftKey && !event[KEYS.CTRL_OR_CMD];
-      const isPickingStroke =
-        (lowerCased === KEYS.S && event.shiftKey && !event[KEYS.CTRL_OR_CMD]) ||
-        isPlainStrokeEyeDropper;
-      const isPickingBackground =
-        lowerCased === KEYS.I && event.shiftKey && !event[KEYS.CTRL_OR_CMD];
+      // the eye dropper bindings have no physical-key codes, so the combo that
+      // matches by character is the combo that triggered the binding
+      const findEyeDropperCombo = (id: BindingId) =>
+        resolveKeys(id, this.props.keymap).find((combo) =>
+          matchesCombo(event, combo),
+        );
+      const strokeCombo = findEyeDropperCombo("editor:eyeDropperStroke");
+      const eyeDropperCombo =
+        strokeCombo ?? findEyeDropperCombo("editor:eyeDropperBackground");
 
-      if (isPickingStroke || isPickingBackground) {
+      if (eyeDropperCombo) {
         this.openEyeDropper({
-          type: isPickingStroke ? "stroke" : "background",
-          swapPreviewOnAlt: !isPlainStrokeEyeDropper,
+          type: strokeCombo ? "stroke" : "background",
+          // as with the default keys: Alt swaps the picked color to the other
+          // property only for the combos with Shift (Shift+S, Shift+I), not I
+          swapPreviewOnAlt: Boolean(parseCombo(eyeDropperCombo)?.shift),
         });
       }
       // -----------------------------------------------------------------------
@@ -6262,8 +6249,10 @@ class App extends React.Component<AppProps, AppState> {
       isHoldingSpace = false;
     }
 
-    if (event.key.toLowerCase() === KEYS.Z) {
+    // the modifiers are not compared: the user can release them first
+    if (isHeldKeyRelease(event, holdZoomKey)) {
       isHoldingZ = false;
+      holdZoomKey = null;
       this.cursor.reset();
     }
 

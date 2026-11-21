@@ -176,6 +176,11 @@ export interface Action<TData = any> {
   PanelComponent?: React.FC<PanelComponentProps>;
   perform: ActionFn<TData>;
   keyPriority?: number;
+  /**
+   * The key test of an action that is not bindable. An action with a binding
+   * in `DEFAULT_BINDINGS` (`action:<name>`) has no key test: the key handler
+   * matches the resolved keys of the binding.
+   */
   keyTest?: (
     event: React.KeyboardEvent | KeyboardEvent,
     appState: AppState,

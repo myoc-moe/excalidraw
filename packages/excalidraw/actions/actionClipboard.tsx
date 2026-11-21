@@ -1,7 +1,7 @@
 import { isTextElement } from "@excalidraw/element";
 import { getTextFromElements } from "@excalidraw/element";
 
-import { CODES, KEYS, isFirefox } from "@excalidraw/common";
+import { KEYS, isFirefox } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -248,7 +248,6 @@ export const actionCopyAsPng = register({
   predicate: (elements) => {
     return probablySupportsClipboardBlob && elements.length > 0;
   },
-  keyTest: (event) => event.code === CODES.C && event.altKey && event.shiftKey,
   keywords: ["png", "clipboard", "copy"],
 });
 
