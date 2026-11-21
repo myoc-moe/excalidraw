@@ -4,9 +4,9 @@ import type { SubtypeOf } from "@excalidraw/common/utility-types";
 
 import { t } from "../i18n";
 import {
+  formatCombo,
   getDefaultKeys,
   isBindingId,
-  parseCombo,
   resolveKeys,
 } from "../keymap";
 import { getShortcutKey } from "../shortcut";
@@ -63,39 +63,12 @@ export type ShortcutName =
   | "searchMenu"
   | "toolLock";
 
-const KEY_NAMES: Readonly<Record<string, string>> = {
-  ArrowUp: "Up",
-  ArrowDown: "Down",
-  ArrowLeft: "Left",
-  ArrowRight: "Right",
-};
-
 /**
  * The label of a combo, e.g. `Ctrl+Shift+Z` (`Cmd` for `Mod` on macOS).
  * Returns `""` for an invalid combo.
  */
-export const formatComboLabel = (combo: string): string => {
-  const parsed = parseCombo(combo);
-  if (!parsed) {
-    return "";
-  }
-  const parts: string[] = [];
-  if (parsed.ctrl) {
-    parts.push(t("keys.ctrl"));
-  }
-  if (parsed.meta) {
-    parts.push(t("keys.cmd"));
-  }
-  // Shift before Alt, as the labels of the editor always were
-  if (parsed.shift) {
-    parts.push(getShortcutKey("Shift"));
-  }
-  if (parsed.alt) {
-    parts.push(getShortcutKey("Alt"));
-  }
-  parts.push(KEY_NAMES[parsed.key] ?? getShortcutKey(parsed.key));
-  return parts.join("+");
-};
+export const formatComboLabel = (combo: string): string =>
+  formatCombo(combo).join("+");
 
 /**
  * Default combos that labels show when the user did not change the binding.

@@ -8,7 +8,7 @@ import {
   KEYS,
 } from "@excalidraw/common";
 
-import { Excalidraw } from "../index";
+import { Excalidraw, WelcomeScreen } from "../index";
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionSmartZoom } from "../actions/actionSmartZoom";
 import { activeEyeDropperAtom } from "../components/EyeDropper";
@@ -641,5 +641,84 @@ describe("keymap: eyedropper labels", () => {
 
     expect(stroke?.label).toBe("Pick stroke color from canvas");
     expect(background?.label).toBe("Pick background color from canvas");
+  });
+});
+
+describe("keymap: live key labels", () => {
+  const getByTestId = (testId: string) =>
+    document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+
+  const renderWithWelcome = async (keymap?: Keymap) => {
+    await render(
+      <Excalidraw
+        keymap={keymap}
+        handleKeyboardGlobally
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+      >
+        <WelcomeScreen />
+      </Excalidraw>,
+    );
+  };
+
+  const getWelcomeShortcuts = () =>
+    [...document.querySelectorAll(".welcome-screen-menu-item__shortcut")].map(
+      (el) => el.textContent,
+    );
+
+  it("keeps the default texts without a keymap", async () => {
+    await renderWithWelcome();
+    expect(
+      document.querySelector(".zoom-in-button")?.getAttribute("title"),
+    ).toBe("Zoom in — Ctrl++");
+    expect(
+      document.querySelector(".zoom-out-button")?.getAttribute("title"),
+    ).toBe("Zoom out — Ctrl+-");
+    expect(getByTestId("toolbar-lock")?.getAttribute("title")).toBe(
+      "Keep selected tool active after drawing — Q",
+    );
+    expect(getByTestId("button-smart-zoom")?.getAttribute("title")).toBe(
+      "Smart Zoom - F",
+    );
+    expect(getWelcomeShortcuts()).toEqual(["Ctrl+O", "?"]);
+  });
+
+  it("shows the user keys", async () => {
+    await renderWithWelcome({
+      "action:zoomIn": ["Alt+J"],
+      "editor:toolLock": ["Shift+K"],
+      "editor:smartZoom": ["M"],
+      "action:toggleShortcuts": ["Mod+H"],
+      "action:loadScene": ["Mod+L"],
+    });
+    expect(
+      document.querySelector(".zoom-in-button")?.getAttribute("title"),
+    ).toBe("Zoom in — Alt+J");
+    expect(getByTestId("toolbar-lock")?.getAttribute("title")).toBe(
+      "Keep selected tool active after drawing — Shift+K",
+    );
+    expect(getByTestId("button-smart-zoom")?.getAttribute("title")).toBe(
+      "Smart Zoom - M",
+    );
+    expect(getWelcomeShortcuts()).toEqual(["Ctrl+L", "Ctrl+H"]);
+  });
+
+  it("shows no key for an unbound command", async () => {
+    await renderWithWelcome({
+      "action:zoomIn": [],
+      "editor:toolLock": [],
+      "editor:smartZoom": [],
+      "action:toggleShortcuts": [],
+      "action:loadScene": [],
+    });
+    expect(
+      document.querySelector(".zoom-in-button")?.getAttribute("title"),
+    ).toBe("Zoom in");
+    expect(getByTestId("toolbar-lock")?.getAttribute("title")).toBe(
+      "Keep selected tool active after drawing",
+    );
+    expect(getByTestId("button-smart-zoom")?.getAttribute("title")).toBe(
+      "Smart Zoom",
+    );
+    expect(getWelcomeShortcuts()).toEqual([]);
   });
 });

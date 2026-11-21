@@ -19,6 +19,7 @@ import {
   smartZoomKeyHeldAtom,
 } from "../actions/actionSmartZoom";
 import { useAtomValue } from "../editor-jotai";
+import { formatCombo, resolveKeys } from "../keymap";
 import { t } from "../i18n";
 import { getShortcutKey } from "../shortcut";
 import { isEraserActive } from "../appState";
@@ -26,6 +27,7 @@ import { isGridModeEnabled } from "../snapping";
 
 import "./HintViewer.scss";
 
+import type { BindingId, Keymap } from "../keymap";
 import type { AppClassProperties, UIAppState } from "../types";
 
 interface HintViewerProps {
@@ -39,6 +41,16 @@ const getTaggedShortcutKey = (key: string | string[]) =>
   Array.isArray(key)
     ? `<kbd>${key.map(getShortcutKey).join(" + ")}</kbd>`
     : `<kbd>${getShortcutKey(key)}</kbd>`;
+
+/** the keys of a binding as one tag; `null` when the binding has no key */
+const getBindingTaggedKey = (id: BindingId, keymap?: Keymap) => {
+  const keys = resolveKeys(id, keymap)
+    .map((combo) => formatCombo(combo).join(" + "))
+    .filter(Boolean);
+  return keys.length
+    ? `<kbd>${keys.join(` ${t("helpDialog.or")} `)}</kbd>`
+    : null;
+};
 
 const getHints = ({
   appState,
@@ -90,9 +102,10 @@ const getHints = ({
       });
     }
     if (activeTool.type === "arrow") {
-      return t("hints.arrowTool", {
-        shortcut: getTaggedShortcutKey("A"),
-      });
+      const arrowKey = getBindingTaggedKey("tool:arrow", app.props.keymap);
+      return arrowKey
+        ? t("hints.arrowTool", { shortcut: arrowKey })
+        : t("hints.linearElement");
     }
     return t("hints.linearElement");
   }
@@ -209,10 +222,15 @@ const getHints = ({
           return t("hints.toggleArrowhead");
         }
         if (appState.selectedLinearElement?.isEditing) {
-          return appState.selectedLinearElement.selectedPointsIndices
+          const duplicateKey = getBindingTaggedKey(
+            "action:duplicateSelection",
+            app.props.keymap,
+          );
+          return appState.selectedLinearElement.selectedPointsIndices &&
+            duplicateKey
             ? t("hints.lineEditor_pointSelected", {
                 shortcut_1: getTaggedShortcutKey("Delete"),
-                shortcut_2: getTaggedShortcutKey(["CtrlOrCmd", "D"]),
+                shortcut_2: duplicateKey,
               })
             : t("hints.lineEditor_nothingSelected", {
                 shortcut_1: getTaggedShortcutKey("Shift"),

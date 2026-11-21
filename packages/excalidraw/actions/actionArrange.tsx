@@ -13,9 +13,8 @@ import { getEffectiveEditorPreferences } from "../editorPreferences";
 
 import { t } from "../i18n";
 
-import { getShortcutKey } from "../shortcut";
-
 import { register } from "./register";
+import { getTitleWithShortcut } from "./shortcuts";
 
 import { alignActionsPredicate } from "./actionAlign";
 
@@ -75,12 +74,16 @@ export const actionArrangeElements = register({
     };
   },
   keyTest: (event) => event.shiftKey && matchKey(event, KEYS.A),
-  PanelComponent: ({ updateData }) => (
+  PanelComponent: ({ updateData, appProps }) => (
     <button
       type="button"
       className="arrangeButton"
       onClick={() => updateData(null)}
-      title={`${t("labels.arrangeElements")} — ${getShortcutKey("Shift+A")}`}
+      title={getTitleWithShortcut(
+        t("labels.arrangeElements"),
+        "action:arrangeElements",
+        appProps.keymap,
+      )}
     >
       {TableCellsIcon}
     </button>

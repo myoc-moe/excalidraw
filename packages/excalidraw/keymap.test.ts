@@ -205,7 +205,8 @@ describe("resolveKeys", () => {
 describe("formatCombo", () => {
   it("returns the display parts", () => {
     expect(formatCombo("Shift+R")).toEqual(["Shift", "R"]);
-    expect(formatCombo("Mod+Shift+ArrowUp").slice(-1)).toEqual(["↑"]);
+    expect(formatCombo("Mod+Shift+ArrowUp").slice(-1)).toEqual(["Up"]);
+    expect(formatCombo("Alt+Shift+R")).toEqual(["Shift", "Alt", "R"]);
     expect(formatCombo("bad+R")).toEqual([]);
   });
 });

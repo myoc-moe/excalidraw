@@ -1,7 +1,5 @@
 import clsx from "clsx";
 
-import { KEYS } from "@excalidraw/common";
-
 import { CaptureUpdateAction } from "@excalidraw/element/store";
 
 import { getElementBounds } from "@excalidraw/element";
@@ -22,6 +20,7 @@ import { atom, useAtomValue } from "../editor-jotai";
 import { t } from "../i18n";
 
 import { register } from "./register";
+import { getBindingLabels, joinLabels } from "./shortcuts";
 
 import type { PanelComponentProps } from "./types";
 
@@ -64,19 +63,30 @@ export const getNextSmartZoomImage = (
 };
 
 // MyOC: Reflect the held-F interaction on the persistent Smart Zoom control.
-const SmartZoomButton = ({ data, updateData }: PanelComponentProps) => {
+const SmartZoomButton = ({
+  data,
+  updateData,
+  appProps,
+}: PanelComponentProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+  const shortcut = joinLabels(
+    getBindingLabels("editor:smartZoom", appProps.keymap),
+  );
 
   return (
     <IconButton
       type="button"
       icon={arrowsToEyeIcon}
       aria-label={t("labels.smartZoom")}
-      title={`${t("labels.smartZoom")} - ${KEYS.F.toLocaleUpperCase()}`}
+      title={
+        shortcut
+          ? `${t("labels.smartZoom")} - ${shortcut}`
+          : t("labels.smartZoom")
+      }
       onClick={() => updateData(null)}
       size={data?.size || "medium"}
       data-testid="button-smart-zoom"
-      keyBindingLabel={KEYS.F.toLocaleUpperCase()}
+      keyBindingLabel={shortcut.length === 1 ? shortcut : null}
       className={clsx({
         "smart-zoom-button--key-held": smartZoomKeyHeld,
       })}

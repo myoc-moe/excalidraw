@@ -609,11 +609,11 @@ export const matchesBinding = (
   });
 };
 
-const ARROW_SYMBOLS: Readonly<Record<string, string>> = {
-  ArrowUp: "↑",
-  ArrowDown: "↓",
-  ArrowLeft: "←",
-  ArrowRight: "→",
+const KEY_NAMES: Readonly<Record<string, string>> = {
+  ArrowUp: "Up",
+  ArrowDown: "Down",
+  ArrowLeft: "Left",
+  ArrowRight: "Right",
 };
 
 /**
@@ -631,15 +631,16 @@ export const formatCombo = (combo: string): string[] => {
     parts.push(t("keys.ctrl"));
   }
   if (parsed.meta) {
-    parts.push(getShortcutKey("Cmd"));
+    parts.push(t("keys.cmd"));
+  }
+  // Shift before Alt, as the labels of the editor always were
+  if (parsed.shift) {
+    parts.push(getShortcutKey("Shift"));
   }
   if (parsed.alt) {
     parts.push(getShortcutKey("Alt"));
   }
-  if (parsed.shift) {
-    parts.push(getShortcutKey("Shift"));
-  }
-  parts.push(ARROW_SYMBOLS[parsed.key] ?? getShortcutKey(parsed.key));
+  parts.push(KEY_NAMES[parsed.key] ?? getShortcutKey(parsed.key));
   return parts;
 };
 

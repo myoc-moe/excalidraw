@@ -3,10 +3,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { KEYS, normalizeInputColor } from "@excalidraw/common";
 
-import { getShortcutKey } from "../..//shortcut";
+import { getBindingLabels } from "../../actions/shortcuts";
+import { getShortcutKey } from "../../shortcut";
 import { useAtom } from "../../editor-jotai";
 import { t } from "../../i18n";
-import { useEditorInterface } from "../App";
+import { useEditorInterface, useKeymap } from "../App";
 import { activeEyeDropperAtom } from "../EyeDropper";
 import { eyeDropperIcon } from "../icons";
 
@@ -28,6 +29,7 @@ export const ColorInput = ({
   placeholder?: string;
 }) => {
   const editorInterface = useEditorInterface();
+  const keymap = useKeymap();
   const [innerValue, setInnerValue] = useState(color);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeSection, setActiveColorPickerSection] = useAtom(
@@ -74,6 +76,14 @@ export const ColorInput = ({
       setEyeDropperState(null);
     };
   }, [setEyeDropperState]);
+
+  // the tooltip shows the first default key; user keys show in full
+  const eyeDropperLabels = getBindingLabels("editor:eyeDropperStroke", keymap);
+  const eyeDropperKeys =
+    keymap &&
+    Object.prototype.hasOwnProperty.call(keymap, "editor:eyeDropperStroke")
+      ? eyeDropperLabels
+      : eyeDropperLabels.slice(0, 1);
 
   return (
     <div className="color-picker__input-label-container">
@@ -136,9 +146,10 @@ export const ColorInput = ({
                       },
                 )
               }
-              title={`${t(
-                "labels.eyeDropper",
-              )} — ${KEYS.I.toLocaleUpperCase()} or ${getShortcutKey("Alt")} `}
+              title={`${t("labels.eyeDropper")} — ${[
+                ...eyeDropperKeys,
+                getShortcutKey("Alt"),
+              ].join(` ${t("helpDialog.or")} `)} `}
             >
               {eyeDropperIcon}
             </div>

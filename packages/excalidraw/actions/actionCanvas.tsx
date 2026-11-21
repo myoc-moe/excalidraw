@@ -35,9 +35,9 @@ import {
   getViewportForZoomWithScrollConstraints,
   zoomToFitBounds,
 } from "../viewport";
-import { getShortcutKey } from "../shortcut";
 
 import { register } from "./register";
+import { getTitleWithShortcut } from "./shortcuts";
 
 import type { AppState } from "../types";
 
@@ -104,14 +104,18 @@ export const actionZoomIn = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ updateData }) => {
+  PanelComponent: ({ updateData, appProps }) => {
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
         type="button"
         className="zoom-in-button zoom-button"
         icon={ZoomInIcon}
-        title={`${t("buttons.zoomIn")} — ${getShortcutKey("CtrlOrCmd++")}`}
+        title={getTitleWithShortcut(
+          t("buttons.zoomIn"),
+          "action:zoomIn",
+          appProps.keymap,
+        )}
         aria-label={t("buttons.zoomIn")}
         disabled={zoomValue >= MAX_ZOOM}
         onClick={() => {
@@ -151,14 +155,18 @@ export const actionZoomOut = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ updateData }) => {
+  PanelComponent: ({ updateData, appProps }) => {
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
         type="button"
         className="zoom-out-button zoom-button"
         icon={ZoomOutIcon}
-        title={`${t("buttons.zoomOut")} — ${getShortcutKey("CtrlOrCmd+-")}`}
+        title={getTitleWithShortcut(
+          t("buttons.zoomOut"),
+          "action:zoomOut",
+          appProps.keymap,
+        )}
         aria-label={t("buttons.zoomOut")}
         disabled={zoomValue <= MIN_ZOOM}
         onClick={() => {

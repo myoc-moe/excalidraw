@@ -25,11 +25,11 @@ import { DuplicateIcon } from "../components/icons";
 
 import { t } from "../i18n";
 import { isSomeElementSelected } from "../scene";
-import { getShortcutKey } from "../shortcut";
 
 import { useStylesPanelMode } from "../components/App";
 
 import { register } from "./register";
+import { getTitleWithShortcut } from "./shortcuts";
 
 export const actionDuplicateSelection = register({
   name: "duplicateSelection",
@@ -109,16 +109,18 @@ export const actionDuplicateSelection = register({
     };
   },
   keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.D,
-  PanelComponent: ({ elements, appState, updateData, app }) => {
+  PanelComponent: ({ elements, appState, updateData, app, appProps }) => {
     const isMobile = useStylesPanelMode() === "mobile";
 
     return (
       <IconButton
         type="button"
         icon={DuplicateIcon}
-        title={`${t("labels.duplicateSelection")} — ${getShortcutKey(
-          "CtrlOrCmd+D",
-        )}`}
+        title={getTitleWithShortcut(
+          t("labels.duplicateSelection"),
+          "action:duplicateSelection",
+          appProps.keymap,
+        )}
         aria-label={t("labels.duplicateSelection")}
         onClick={() => updateData(null)}
         disabled={

@@ -12,9 +12,9 @@ import { getContextMenuLabel } from "../components/hyperlink/Hyperlink";
 import { LinkIcon } from "../components/icons";
 import { t } from "../i18n";
 import { getSelectedElements } from "../scene";
-import { getShortcutKey } from "../shortcut";
 
 import { register } from "./register";
+import { getBindingLabels, joinLabels } from "./shortcuts";
 
 export const actionLink = register({
   name: "hyperlink",
@@ -42,8 +42,14 @@ export const actionLink = register({
     const selectedElements = getSelectedElements(elements, appState);
     return selectedElements.length === 1;
   },
-  PanelComponent: ({ elements, appState, updateData }) => {
+  PanelComponent: ({ elements, appState, updateData, appProps }) => {
     const selectedElements = getSelectedElements(elements, appState);
+    const shortcut = joinLabels(
+      getBindingLabels("action:hyperlink", appProps.keymap),
+    );
+    const label = isEmbeddableElement(elements[0])
+      ? t("labels.link.labelEmbed")
+      : t("labels.link.label");
 
     return (
       <IconButton
@@ -52,11 +58,7 @@ export const actionLink = register({
         aria-label={t(
           getContextMenuLabel(getNonDeletedElements(elements), appState),
         )}
-        title={`${
-          isEmbeddableElement(elements[0])
-            ? t("labels.link.labelEmbed")
-            : t("labels.link.label")
-        } - ${getShortcutKey("CtrlOrCmd+K")}`}
+        title={shortcut ? `${label} - ${shortcut}` : label}
         onSelect={() => updateData(null)}
         checked={selectedElements.length === 1 && !!selectedElements[0].link}
       />
