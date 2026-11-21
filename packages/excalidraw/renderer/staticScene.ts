@@ -151,6 +151,9 @@ export const clampDotGridStrength = (strength: number | undefined) =>
     : DEFAULT_DOT_GRID_STRENGTH;
 
 const DOT_TILE_CACHE_LIMIT = 8;
+/** above this tile size (device px) the dots are drawn as arcs: few dots
+ * show at that zoom, and a large tile for each zoom frame costs more */
+const DOT_TILE_MAX_SIZE = 256;
 const dotTileCache = new Map<string, HTMLCanvasElement>();
 
 /** one dot, centered, on a square tile of whole device pixels */
@@ -185,9 +188,10 @@ const getDotTile = (tileSize: number, color: string, scale: number) => {
 /**
  * MyOC: dots every `DOT_GRID_SPACING` scene units, aligned to scene 0,0, so
  * they move and scale with pan and zoom. One `CanvasPattern` of a tile with
- * one dot fills the viewport once. The context is already scaled by zoom and
- * `scale` (and flipped); `width` and `height` are the viewport in zoomed
- * units.
+ * one dot fills the viewport once. At a high zoom (a tile larger than
+ * `DOT_TILE_MAX_SIZE`) one path of arcs draws the few visible dots. The
+ * context is already scaled by zoom and `scale` (and flipped); `width` and
+ * `height` are the viewport in zoomed units.
  */
 const strokeDotGrid = (
   context: CanvasRenderingContext2D,
@@ -210,33 +214,50 @@ const strokeDotGrid = (
     1,
     Math.round(DOT_GRID_SPACING * zoom.value * scale),
   );
-  const pattern = context.createPattern(
-    getDotTile(tileSize, color, scale),
-    "repeat",
-  );
-  if (!pattern) {
-    return;
-  }
-  // a plain matrix object is a valid `DOMMatrix2DInit`: this needs no
-  // `DOMMatrix`, which jsdom lacks. Without `setTransform` the dots are only
-  // not aligned.
-  if (typeof pattern.setTransform === "function") {
-    const unitsPerPixel = DOT_GRID_SPACING / tileSize;
-    pattern.setTransform({
-      a: unitsPerPixel,
-      b: 0,
-      c: 0,
-      d: unitsPerPixel,
-      // the dot is at the center of the tile
-      e: (scrollX % DOT_GRID_SPACING) - DOT_GRID_SPACING / 2,
-      f: (scrollY % DOT_GRID_SPACING) - DOT_GRID_SPACING / 2,
-    });
-  }
+  // a dot is at x = scrollX % 12 + 12k (and the same for y), in zoomed units
+  const offsetX = scrollX % DOT_GRID_SPACING;
+  const offsetY = scrollY % DOT_GRID_SPACING;
 
   context.save();
   context.globalAlpha = clampDotGridStrength(strength);
-  context.fillStyle = pattern;
-  context.fillRect(0, 0, width, height);
+  if (tileSize > DOT_TILE_MAX_SIZE) {
+    const radius = DOT_GRID_RADIUS / zoom.value;
+    // the first dot at or left of 0 (and at or above 0)
+    const startX =
+      offsetX - DOT_GRID_SPACING * Math.ceil(offsetX / DOT_GRID_SPACING);
+    const startY =
+      offsetY - DOT_GRID_SPACING * Math.ceil(offsetY / DOT_GRID_SPACING);
+    context.fillStyle = color;
+    context.beginPath();
+    for (let y = startY; y <= height + radius; y += DOT_GRID_SPACING) {
+      for (let x = startX; x <= width + radius; x += DOT_GRID_SPACING) {
+        context.moveTo(x + radius, y);
+        context.arc(x, y, radius, 0, Math.PI * 2);
+      }
+    }
+    context.fill();
+  } else {
+    const pattern = context.createPattern(
+      getDotTile(tileSize, color, scale),
+      "repeat",
+    );
+    if (pattern) {
+      // a plain matrix object is a valid `DOMMatrix2DInit`: this needs no
+      // `DOMMatrix`, which jsdom lacks
+      const unitsPerPixel = DOT_GRID_SPACING / tileSize;
+      pattern.setTransform({
+        a: unitsPerPixel,
+        b: 0,
+        c: 0,
+        d: unitsPerPixel,
+        // the dot is at the center of the tile
+        e: offsetX - DOT_GRID_SPACING / 2,
+        f: offsetY - DOT_GRID_SPACING / 2,
+      });
+      context.fillStyle = pattern;
+      context.fillRect(0, 0, width, height);
+    }
+  }
   context.restore();
 };
 

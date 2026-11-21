@@ -199,6 +199,35 @@ describe("canvas dot grid", () => {
     expect(render2d({ renderDotGrid: true }).arc).not.toHaveBeenCalled();
   });
 
+  it("draws one path of arcs, not a large tile, at a high zoom", () => {
+    // 12 x 30 = 360 device px is above the 256 px tile limit. The viewport is
+    // 8x4 zoomed units, so only the dot at 0,0 is in it
+    const { createPattern, arc } = render2d({
+      renderDotGrid: true,
+      zoom: 30,
+    });
+    expect(createPattern).not.toHaveBeenCalled();
+    expect(arc).toHaveBeenCalledTimes(1);
+    // the radius is 0.9 screen px
+    expect(arc.mock.calls[0]).toEqual([0, 0, 0.9 / 30, 0, Math.PI * 2]);
+  });
+
+  it("aligns the arcs to scene 0,0 at a high zoom with a scroll", () => {
+    const { arc } = render2d({
+      renderDotGrid: true,
+      zoom: 30,
+      scrollX: 5,
+      scrollY: -7,
+    });
+    // a dot is at x = 5 + 12k and y = -7 + 12k. The viewport is 8x4 zoomed
+    // units: x = -7 and 5, y = -7 only (5 is below the viewport)
+    const centers = arc.mock.calls.map(([x, y]) => [x, y]);
+    expect(centers).toEqual([
+      [-7, -7],
+      [5, -7],
+    ]);
+  });
+
   it("fills the viewport in zoomed units at zoom 1 and 2", () => {
     // the canvas is 240x120 at every zoom: the viewport in zoomed units is
     // 240x120 at zoom 1 and 120x60 at zoom 2
@@ -318,6 +347,33 @@ describe("<Excalidraw dotGrid />", () => {
     await render(<Excalidraw dotGrid={{ enabled: false }} />);
     await waitFor(() => expect(renderStaticScene).toHaveBeenCalled());
     expect(lastRenderConfig().renderDotGrid).toBe(false);
+  });
+
+  it("updates the render config when the dotGrid prop changes", async () => {
+    const { rerender } = await render(
+      <Excalidraw dotGrid={{ strength: 0.3 }} />,
+    );
+    await waitFor(() => expect(lastRenderConfig().dotGridStrength).toBe(0.3));
+
+    rerender(<Excalidraw dotGrid={{ strength: 0.8 }} />);
+    await waitFor(() => expect(lastRenderConfig().dotGridStrength).toBe(0.8));
+
+    rerender(<Excalidraw dotGrid={{ enabled: false, strength: 0.8 }} />);
+    await waitFor(() => expect(lastRenderConfig().renderDotGrid).toBe(false));
+  });
+
+  it("does not render again for a new dotGrid object with the same values", async () => {
+    const { rerender } = await render(
+      <Excalidraw dotGrid={{ strength: 0.3 }} />,
+    );
+    await waitFor(() => expect(renderStaticScene).toHaveBeenCalled());
+    // let the mount renders settle
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const callsBefore = vi.mocked(renderStaticScene).mock.calls.length;
+
+    rerender(<Excalidraw dotGrid={{ strength: 0.3 }} />);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(vi.mocked(renderStaticScene).mock.calls.length).toBe(callsBefore);
   });
 
   it("sets renderDotGrid off while the line grid shows", async () => {
