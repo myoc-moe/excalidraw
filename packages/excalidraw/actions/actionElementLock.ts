@@ -1,4 +1,4 @@
-import { KEYS, arrayToMap, randomId } from "@excalidraw/common";
+import { arrayToMap, randomId } from "@excalidraw/common";
 
 import {
   elementsAreInSameGroup,
@@ -143,17 +143,6 @@ export const actionToggleElementLock = register({
       },
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
-  },
-  keyTest: (event, appState, elements, app) => {
-    return (
-      event.key.toLocaleLowerCase() === KEYS.L &&
-      event[KEYS.CTRL_OR_CMD] &&
-      event.shiftKey &&
-      app.scene.getSelectedElements({
-        selectedElementIds: appState.selectedElementIds,
-        includeBoundTextElement: false,
-      }).length > 0
-    );
   },
 });
 

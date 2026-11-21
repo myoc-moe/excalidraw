@@ -1,9 +1,17 @@
 import { actionLoadScene, actionShortcuts } from "../../actions";
-import { getShortcutFromShortcutName } from "../../actions/shortcuts";
+import {
+  getBindingLabels,
+  getShortcutFromShortcutName,
+  joinLabels,
+} from "../../actions/shortcuts";
 import { useTunnels } from "../../context/tunnels";
 import { useUIAppState } from "../../context/ui-appState";
 import { t, useI18n } from "../../i18n";
-import { useEditorInterface, useExcalidrawActionManager } from "../App";
+import {
+  useEditorInterface,
+  useExcalidrawActionManager,
+  useKeymap,
+} from "../App";
 import { ExcalidrawLogo } from "../ExcalidrawLogo";
 import { HelpIcon, LoadIcon, usersIcon } from "../icons";
 
@@ -134,11 +142,12 @@ Menu.displayName = "Menu";
 
 const MenuItemHelp = () => {
   const actionManager = useExcalidrawActionManager();
+  const keymap = useKeymap();
 
   return (
     <WelcomeScreenMenuItem
       onSelect={() => actionManager.executeAction(actionShortcuts)}
-      shortcut="?"
+      shortcut={joinLabels(getBindingLabels("action:toggleShortcuts", keymap))}
       icon={HelpIcon}
     >
       {t("helpDialog.title")}
@@ -150,6 +159,7 @@ MenuItemHelp.displayName = "MenuItemHelp";
 const MenuItemLoadScene = () => {
   const appState = useUIAppState();
   const actionManager = useExcalidrawActionManager();
+  const keymap = useKeymap();
 
   if (appState.viewModeEnabled) {
     return null;
@@ -158,7 +168,7 @@ const MenuItemLoadScene = () => {
   return (
     <WelcomeScreenMenuItem
       onSelect={() => actionManager.executeAction(actionLoadScene)}
-      shortcut={getShortcutFromShortcutName("loadScene")}
+      shortcut={getShortcutFromShortcutName("loadScene", undefined, keymap)}
       icon={LoadIcon}
     >
       {t("buttons.load")}

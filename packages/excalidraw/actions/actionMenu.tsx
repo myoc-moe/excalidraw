@@ -1,5 +1,3 @@
-import { KEYS } from "@excalidraw/common";
-
 import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { HelpIconThin } from "../components/icons";
@@ -31,5 +29,4 @@ export const actionShortcuts = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  keyTest: (event) => event.key === KEYS.QUESTION_MARK,
 });

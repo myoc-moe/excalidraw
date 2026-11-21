@@ -16,7 +16,6 @@ import {
   ROUNDNESS,
   STROKE_WIDTH_KEYS,
   VERTICAL_ALIGN,
-  KEYS,
   randomInteger,
   arrayToMap,
   getFontFamilyString,
@@ -1050,14 +1049,6 @@ export const actionDecreaseFontSize = register({
       ),
     );
   },
-  keyTest: (event) => {
-    return (
-      event[KEYS.CTRL_OR_CMD] &&
-      event.shiftKey &&
-      // KEYS.COMMA needed for MacOS
-      (event.key === KEYS.CHEVRON_LEFT || event.key === KEYS.COMMA)
-    );
-  },
 });
 
 export const actionIncreaseFontSize = register({
@@ -1068,14 +1059,6 @@ export const actionIncreaseFontSize = register({
   perform: (elements, appState, value, app) => {
     return changeFontSize(elements, appState, app, (element) =>
       Math.round(element.fontSize * (1 + FONT_SIZE_RELATIVE_INCREASE_STEP)),
-    );
-  },
-  keyTest: (event) => {
-    return (
-      event[KEYS.CTRL_OR_CMD] &&
-      event.shiftKey &&
-      // KEYS.PERIOD needed for MacOS
-      (event.key === KEYS.CHEVRON_RIGHT || event.key === KEYS.PERIOD)
     );
   },
 });

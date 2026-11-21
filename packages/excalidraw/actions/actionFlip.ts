@@ -6,7 +6,7 @@ import { deepCopyElement } from "@excalidraw/element";
 import { resizeMultipleElements } from "@excalidraw/element";
 import { isArrowElement, isElbowArrow } from "@excalidraw/element";
 import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element";
-import { CODES, KEYS, arrayToMap } from "@excalidraw/common";
+import { arrayToMap } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -48,7 +48,6 @@ export const actionFlipHorizontal = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) => event.shiftKey && event.code === CODES.H,
 });
 
 export const actionFlipVertical = register({
@@ -73,8 +72,6 @@ export const actionFlipVertical = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event.shiftKey && event.code === CODES.V && !event[KEYS.CTRL_OR_CMD],
 });
 
 const flipSelectedElements = (

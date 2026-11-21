@@ -19,13 +19,17 @@ import {
   smartZoomKeyHeldAtom,
 } from "../actions/actionSmartZoom";
 import { useAtomValue } from "../editor-jotai";
+import { formatCombo, resolveKeys } from "../keymap";
 import { t } from "../i18n";
 import { getShortcutKey } from "../shortcut";
 import { isEraserActive } from "../appState";
 import { isGridModeEnabled } from "../snapping";
 
+import { useKeymap } from "./App";
+
 import "./HintViewer.scss";
 
+import type { BindingId, Keymap } from "../keymap";
 import type { AppClassProperties, UIAppState } from "../types";
 
 interface HintViewerProps {
@@ -40,12 +44,26 @@ const getTaggedShortcutKey = (key: string | string[]) =>
     ? `<kbd>${key.map(getShortcutKey).join(" + ")}</kbd>`
     : `<kbd>${getShortcutKey(key)}</kbd>`;
 
+/** the keys of a binding as one tag; `null` when the binding has no key */
+const getBindingTaggedKey = (id: BindingId, keymap?: Keymap) => {
+  const keys = resolveKeys(id, keymap)
+    .map((combo) => formatCombo(combo).join(" + "))
+    .filter(Boolean);
+  return keys.length
+    ? `<kbd>${keys.join(` ${t("helpDialog.or")} `)}</kbd>`
+    : null;
+};
+
 const getHints = ({
   appState,
   isMobile,
   editorInterface,
   app,
-}: HintViewerProps): null | string | string[] => {
+  keymap,
+}: HintViewerProps & { keymap: Keymap | undefined }):
+  | null
+  | string
+  | string[] => {
   const { activeTool, isResizing, isRotating, lastPointerDownWith } = appState;
   const multiMode = appState.multiElement !== null;
 
@@ -90,9 +108,10 @@ const getHints = ({
       });
     }
     if (activeTool.type === "arrow") {
-      return t("hints.arrowTool", {
-        shortcut: getTaggedShortcutKey("A"),
-      });
+      const arrowKey = getBindingTaggedKey("tool:arrow", keymap);
+      return arrowKey
+        ? t("hints.arrowTool", { shortcut: arrowKey })
+        : t("hints.linearElement");
     }
     return t("hints.linearElement");
   }
@@ -209,10 +228,15 @@ const getHints = ({
           return t("hints.toggleArrowhead");
         }
         if (appState.selectedLinearElement?.isEditing) {
-          return appState.selectedLinearElement.selectedPointsIndices
+          const duplicateKey = getBindingTaggedKey(
+            "action:duplicateSelection",
+            keymap,
+          );
+          return appState.selectedLinearElement.selectedPointsIndices &&
+            duplicateKey
             ? t("hints.lineEditor_pointSelected", {
                 shortcut_1: getTaggedShortcutKey("Delete"),
-                shortcut_2: getTaggedShortcutKey(["CtrlOrCmd", "D"]),
+                shortcut_2: duplicateKey,
               })
             : t("hints.lineEditor_nothingSelected", {
                 shortcut_1: getTaggedShortcutKey("Shift"),
@@ -267,6 +291,7 @@ export const HintViewer = ({
   app,
 }: HintViewerProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+  const keymap = useKeymap();
   // MyOC: Held-F guidance must remain available in view mode as well as edit
   // mode, where the regular contextual hints are intentionally hidden.
   const hints = smartZoomKeyHeld
@@ -278,6 +303,7 @@ export const HintViewer = ({
         isMobile,
         editorInterface,
         app,
+        keymap,
       });
 
   if (!hints) {

@@ -14,7 +14,7 @@ import {
   replaceAllElementsInFrame,
 } from "@excalidraw/element";
 
-import { KEYS, randomId, arrayToMap } from "@excalidraw/common";
+import { randomId, arrayToMap } from "@excalidraw/common";
 
 import {
   getSelectedGroupIds,
@@ -39,11 +39,12 @@ import type {
 import { IconButton } from "../components/IconButton";
 import { UngroupIcon, GroupIcon } from "../components/icons";
 
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 
 import { isSomeElementSelected } from "../scene";
 
-import { getShortcutKey } from "../shortcut";
+import { getTitleWithShortcut } from "./shortcuts";
 
 import { register } from "./register";
 
@@ -199,19 +200,23 @@ export const actionGroup = register({
     };
   },
   predicate: (elements, appState, _, app) => enableActionGroup(appState, app),
-  keyTest: (event) =>
-    !event.shiftKey && event[KEYS.CTRL_OR_CMD] && event.key === KEYS.G,
-  PanelComponent: ({ elements, appState, updateData, app }) => (
-    <IconButton
-      hidden={!enableActionGroup(appState, app)}
-      type="button"
-      icon={<GroupIcon theme={appState.theme} />}
-      onClick={() => updateData(null)}
-      title={`${t("labels.group")} — ${getShortcutKey("CtrlOrCmd+G")}`}
-      aria-label={t("labels.group")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    ></IconButton>
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!enableActionGroup(appState, app)}
+        type="button"
+        icon={<GroupIcon theme={appState.theme} />}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(t("labels.group"), "action:group", keymap)}
+        aria-label={t("labels.group")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      ></IconButton>
+    );
+  },
 });
 
 export const actionUngroup = register({
@@ -303,21 +308,27 @@ export const actionUngroup = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event.shiftKey &&
-    event[KEYS.CTRL_OR_CMD] &&
-    event.key === KEYS.G.toUpperCase(),
   predicate: (elements, appState) => getSelectedGroupIds(appState).length > 0,
 
-  PanelComponent: ({ elements, appState, updateData }) => (
-    <IconButton
-      type="button"
-      hidden={getSelectedGroupIds(appState).length === 0}
-      icon={<UngroupIcon theme={appState.theme} />}
-      onClick={() => updateData(null)}
-      title={`${t("labels.ungroup")} — ${getShortcutKey("CtrlOrCmd+Shift+G")}`}
-      aria-label={t("labels.ungroup")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    ></IconButton>
-  ),
+  PanelComponent: ({ elements, appState, updateData }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        type="button"
+        hidden={getSelectedGroupIds(appState).length === 0}
+        icon={<UngroupIcon theme={appState.theme} />}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.ungroup"),
+          "action:ungroup",
+          keymap,
+        )}
+        aria-label={t("labels.ungroup")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      ></IconButton>
+    );
+  },
 });

@@ -1,5 +1,3 @@
-import { CODES, KEYS } from "@excalidraw/common";
-
 import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { magnetIcon } from "../components/icons";
@@ -29,6 +27,4 @@ export const actionToggleObjectsSnapMode = register({
   predicate: (elements, appState, appProps) => {
     return typeof appProps.objectsSnapModeEnabled === "undefined";
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.S,
 });

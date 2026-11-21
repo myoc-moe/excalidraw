@@ -8,6 +8,7 @@ import {
   FONT_FAMILY,
   FRAME_STYLE,
   getLineHeight,
+  isWritableElement,
 } from "@excalidraw/common";
 
 import {
@@ -38,6 +39,7 @@ import { atom, useAtom } from "../editor-jotai";
 
 import { useStable } from "../hooks/useStable";
 import { t } from "../i18n";
+import { matchesBinding } from "../keymap";
 
 import { useApp, useExcalidrawSetAppState } from "./App";
 import { Button } from "./Button";
@@ -287,7 +289,15 @@ export const SearchMenu = () => {
         return;
       }
 
-      if (event[KEYS.CTRL_OR_CMD] && event.key === KEYS.F) {
+      if (
+        // a user key with no Ctrl or Cmd types its character in an input
+        !(
+          isWritableElement(event.target) &&
+          !event.ctrlKey &&
+          !event.metaKey
+        ) &&
+        matchesBinding(event, "action:searchMenu", app.props.keymap)
+      ) {
         event.preventDefault();
         event.stopPropagation();
 

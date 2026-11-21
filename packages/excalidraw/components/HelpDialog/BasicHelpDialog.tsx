@@ -1,9 +1,12 @@
-import { isFirefox, KEYS } from "@excalidraw/common";
-import { SHAPES } from "@excalidraw/element/shapes";
+import { isFirefox } from "@excalidraw/common";
 
+import { getBindingLabels } from "../../actions/shortcuts";
 import { probablySupportsClipboardBlob } from "../../clipboard";
 import { t } from "../../i18n";
+import { DEFAULT_BINDINGS } from "../../keymap";
 import { getShortcutKey } from "../../shortcut";
+
+import { useKeymap } from "../App";
 
 import type { JSX } from "react";
 
@@ -49,6 +52,11 @@ const Shortcut = ({
   shortcuts: string[];
   isOr?: boolean;
 }) => {
+  if (shortcuts.length === 0) {
+    // every key of the binding was removed
+    return null;
+  }
+
   const splitShortcutKeys = shortcuts.map((shortcut) => {
     const keys = shortcut.endsWith("++")
       ? [...shortcut.slice(0, -2).split("+"), "+"]
@@ -72,23 +80,33 @@ const Shortcut = ({
 const ShortcutKey = (props: { children: React.ReactNode }) => (
   <kbd className="HelpDialog__key" {...props} />
 );
+const BASIC_TOOL_IDS = [
+  "tool:hand",
+  "tool:selection",
+  "tool:freedraw",
+  "tool:text",
+  "tool:image",
+  "tool:eraser",
+] as const;
+
 export default function BasicHelpDialog() {
+  const keymap = useKeymap();
+  const keysOf = (id: keyof typeof DEFAULT_BINDINGS) =>
+    getBindingLabels(id, keymap);
+
   return (
     <Section title={t("helpDialog.shortcuts")}>
       <ShortcutIsland
         className="HelpDialog__island--tools"
         caption={t("helpDialog.tools")}
       >
-        <Shortcut label={t("toolBar.hand")} shortcuts={[KEYS.H]} />
-        {SHAPES.filter(({ myocSimplifiedMode }) => myocSimplifiedMode).map(
-          ({ value, key }) => (
-            <Shortcut
-              key={value}
-              label={t(`toolBar.${value}`)}
-              shortcuts={[...key]}
-            />
-          ),
-        )}
+        {BASIC_TOOL_IDS.map((id) => (
+          <Shortcut
+            key={id}
+            label={t(DEFAULT_BINDINGS[id].labelKey)}
+            shortcuts={keysOf(id)}
+          />
+        ))}
         <Shortcut
           label={t("helpDialog.cropStart")}
           shortcuts={[t("helpDialog.doubleClick"), getShortcutKey("Enter")]}
@@ -104,7 +122,10 @@ export default function BasicHelpDialog() {
         className="HelpDialog__island--view"
         caption={t("helpDialog.view")}
       >
-        <Shortcut label={t("helpDialog.smartZoom")} shortcuts={[KEYS.F]} />
+        <Shortcut
+          label={t("helpDialog.smartZoom")}
+          shortcuts={keysOf("editor:smartZoom")}
+        />
         <Shortcut
           label={t("labels.flipViewpointHorizontal")}
           shortcuts={[getShortcutKey("Shift+R")]}
@@ -115,11 +136,13 @@ export default function BasicHelpDialog() {
         />
         <Shortcut
           label={t("helpDialog.dragToZoom")}
-          shortcuts={[`${KEYS.Z}+${t("helpDialog.drag")}`]}
+          shortcuts={keysOf("editor:holdZoom").map(
+            (key) => `${key}+${t("helpDialog.drag")}`,
+          )}
         />
         <Shortcut
           label={t("buttons.objectsSnapMode")}
-          shortcuts={[getShortcutKey("Alt+S")]}
+          shortcuts={keysOf("action:objectsSnapMode")}
         />
       </ShortcutIsland>
       <ShortcutIsland
@@ -147,28 +170,28 @@ export default function BasicHelpDialog() {
         {(probablySupportsClipboardBlob || isFirefox) && (
           <Shortcut
             label={t("labels.copyAsPng")}
-            shortcuts={[getShortcutKey("Shift+Alt+C")]}
+            shortcuts={keysOf("action:copyAsPng")}
           />
         )}
         <Shortcut
           label={t("helpDialog.toggleElementLock")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+Shift+L")]}
+          shortcuts={keysOf("action:toggleElementLock")}
         />
         <Shortcut
           label={t("labels.group")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+G")]}
+          shortcuts={keysOf("action:group")}
         />
         <Shortcut
           label={t("labels.ungroup")}
-          shortcuts={[getShortcutKey("CtrlOrCmd+Shift+G")]}
+          shortcuts={keysOf("action:ungroup")}
         />
         <Shortcut
           label={t("labels.flipHorizontal")}
-          shortcuts={[getShortcutKey("Shift+H")]}
+          shortcuts={keysOf("action:flipHorizontal")}
         />
         <Shortcut
           label={t("labels.flipVertical")}
-          shortcuts={[getShortcutKey("Shift+V")]}
+          shortcuts={keysOf("action:flipVertical")}
         />
       </ShortcutIsland>
     </Section>

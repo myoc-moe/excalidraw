@@ -94,6 +94,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderCustomStats,
     editorPreferences,
     onEditorPreferencesChange,
+    keymap,
+    onOpenKeyboardShortcuts,
     onPaste,
     viewModeImageInsertBehavior,
     onViewModeImageInsertRejected,
@@ -252,6 +254,8 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           renderCustomStats={renderCustomStats}
           editorPreferences={editorPreferences}
           onEditorPreferencesChange={onEditorPreferencesChange}
+          keymap={keymap}
+          onOpenKeyboardShortcuts={onOpenKeyboardShortcuts}
           UIOptions={UIOptions}
           onPaste={onPaste}
           viewModeImageInsertBehavior={viewModeImageInsertBehavior}
@@ -547,6 +551,9 @@ export {
 export { setCustomTextMetricsProvider } from "@excalidraw/element";
 
 export type { EditorInterface } from "@excalidraw/common";
+
+export { getKeymapEntries, formatCombo } from "./keymap";
+export type { BindingId, Keymap, KeymapEntry, KeymapGroup } from "./keymap";
 
 export type {
   AlignPreferences,
