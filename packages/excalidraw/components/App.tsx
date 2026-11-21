@@ -2669,6 +2669,10 @@ class App extends React.Component<AppProps, AppState> {
                               ),
                               isExporting: false,
                               renderGrid: isGridModeEnabled(this),
+                              renderDotGrid:
+                                (this.props.dotGrid?.enabled ?? true) &&
+                                !isGridModeEnabled(this),
+                              dotGridStrength: this.props.dotGrid?.strength,
                               renderLinks: this.isLinksEnabled(),
                               imageTransitionDuration:
                                 this.props.imageOptions
@@ -2704,6 +2708,7 @@ class App extends React.Component<AppProps, AppState> {
                                   this.props.imageOptions
                                     .placeholderTransitionDuration,
                                 renderGrid: false,
+                                renderDotGrid: false,
                                 canvasBackgroundColor:
                                   this.state.viewBackgroundColor,
                                 embedsValidationStatus:
