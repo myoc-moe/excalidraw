@@ -146,10 +146,11 @@ describe("matchesCombo", () => {
     ).toBe(false);
   });
 
-  it("matches Alt defaults by the physical key, user combos by character", () => {
+  it("matches Alt defaults by the physical key, other user combos by character", () => {
     const option = ev("®", { altKey: true, code: "KeyR" });
     expect(matchesBinding(option, "action:viewMode", null, true)).toBe(true);
     expect(matchesCombo(option, "Alt+R", true)).toBe(false);
+    // a user combo equal to a default combo matches as that default
     expect(
       matchesBinding(
         option,
@@ -157,7 +158,76 @@ describe("matchesCombo", () => {
         { "action:viewMode": ["Alt+R"] },
         true,
       ),
+    ).toBe(true);
+    // a user combo that is not a default combo matches by character
+    expect(
+      matchesBinding(
+        ev("†", { altKey: true, code: "KeyT" }),
+        "action:viewMode",
+        { "action:viewMode": ["Alt+T"] },
+        true,
+      ),
     ).toBe(false);
+    expect(
+      matchesBinding(
+        ev("t", { altKey: true, code: "KeyT" }),
+        "action:viewMode",
+        { "action:viewMode": ["Alt+T"] },
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  it("matches a user combo equal to a default combo by the default codes", () => {
+    const keymap = { "action:zoomIn": ["Mod++"] };
+    // Ctrl and the `=` key, as the default
+    expect(
+      matchesBinding(
+        ev("=", { ctrlKey: true, code: "Equal" }),
+        "action:zoomIn",
+        keymap,
+        false,
+      ),
+    ).toBe(true);
+    expect(
+      matchesBinding(
+        ev("+", { ctrlKey: true, code: "NumpadAdd" }),
+        "action:zoomIn",
+        keymap,
+        false,
+      ),
+    ).toBe(true);
+    // the other default combos are removed
+    expect(
+      matchesBinding(
+        ev("+", { shiftKey: true, code: "Equal" }),
+        "action:zoomIn",
+        keymap,
+        false,
+      ),
+    ).toBe(false);
+  });
+
+  it("normalizes the event key of a non-Latin layout", () => {
+    // Cyrillic layout: "о" on the J key
+    const event = ev("о", { ctrlKey: true, code: "KeyJ" });
+    expect(
+      matchesBinding(
+        event,
+        "action:searchMenu",
+        { "action:searchMenu": ["Mod+J"] },
+        false,
+      ),
+    ).toBe(true);
+    // CapsLock: "J" with no Shift is "j"
+    expect(
+      matchesBinding(
+        ev("J", { code: "KeyJ" }),
+        "tool:rectangle",
+        { "tool:rectangle": ["J"] },
+        false,
+      ),
+    ).toBe(true);
   });
 
   it("does not match with a letter and Shift on another physical key", () => {
@@ -246,18 +316,33 @@ describe("parity with the tools", () => {
     );
   });
 
-  it("has the keys of the tools", () => {
-    for (const [type, config] of Object.entries(TOOLS)) {
-      const letterKeys = [config.letterKey ?? []].flat();
-      const expected = letterKeys.map(
-        (key) => `${config.shiftKey ? "Shift+" : ""}${key.toUpperCase()}`,
-      );
-      // the frame tool has no default key: smart zoom takes F first
-      const exception = type === "frame";
-      expect(getDefaultKeys(`tool:${type}` as BindingId, false)).toEqual(
-        exception ? [] : expected,
-      );
-    }
+  it("has the default keys of the tools", () => {
+    const keys = Object.fromEntries(
+      Object.keys(TOOLS).map((type) => [
+        type,
+        getDefaultKeys(`tool:${type}` as BindingId, false),
+      ]),
+    );
+    expect(keys).toEqual({
+      hand: ["H"],
+      selection: ["V"],
+      rectangle: ["R"],
+      diamond: ["D"],
+      ellipse: ["O"],
+      arrow: ["A"],
+      line: ["L"],
+      freedraw: ["P"],
+      text: ["T"],
+      image: [],
+      eraser: ["E"],
+      // smart zoom takes F first
+      frame: [],
+      autoshape: ["X"],
+      embeddable: [],
+      laser: [],
+      bucketfill: [],
+      lasso: [],
+    });
   });
 });
 
@@ -272,6 +357,9 @@ const NOT_BINDABLE_ACTIONS: Record<string, string> = {
   // viewpoint keys stay fixed
   flipViewpointHorizontal: "viewpoint key",
   flipViewpointVertical: "viewpoint key",
+  // the browser fires its copy and cut events on these keys (D6)
+  copy: "fixed: native copy event",
+  cut: "fixed: native cut event",
 };
 
 // US QWERTY: unshifted symbol -> [code, shifted symbol]

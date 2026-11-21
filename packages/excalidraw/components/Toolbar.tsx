@@ -86,7 +86,7 @@ const ExtraToolsDropdownItem = ({
   type: ToolbarToolType;
   shortcut?: string;
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   return (
     <DropdownMenu.Item
       onSelect={() => app.setActiveTool({ type })}
@@ -102,7 +102,7 @@ const ExtraToolsDropdownItem = ({
 };
 
 const LockActiveToolDropdownItem = ({ app }: { app: AppClassProperties }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   return (
     <DropdownMenu.Item
       onSelect={() => app.toggleLock()}
@@ -123,7 +123,7 @@ const ObjectsSnapModeDropdownItem = ({
   actionManager: ActionManager;
   app: AppClassProperties;
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   if (!actionManager.isActionEnabled(actionToggleObjectsSnapMode)) {
     return null;
   }
@@ -156,7 +156,7 @@ export const ObjectsSnapModeButton = ({
   actionManager: ActionManager;
   app: AppClassProperties;
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   if (!actionManager.isActionEnabled(actionToggleObjectsSnapMode)) {
     return null;
   }
@@ -216,7 +216,7 @@ export const StrokeEyeDropperButton = ({
 }: {
   app: AppClassProperties;
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   const shortcut = getBindingLabels("editor:eyeDropperStroke", keymap)[0];
   return (
     <IconButton
@@ -255,7 +255,7 @@ export const ExtraToolsDropdown = ({
   actionManager: ActionManager;
   overflowItems?: readonly ExcalidrawToolbarOverflowItemName[];
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   const [isExtraToolsMenuOpen, setIsExtraToolsMenuOpen] = useState(false);
   const isFullStylesPanel = useStylesPanelMode() === "full";
   const frameToolSelected = activeTool.type === "frame";

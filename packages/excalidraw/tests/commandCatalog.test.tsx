@@ -370,7 +370,7 @@ describe("labels read the keymap", () => {
         "tool:rectangle": ["W"],
         "tool:frame": ["Alt+F"],
         "action:redo": ["Mod+Shift+K", "Mod+Alt+K"],
-        "action:cut": [],
+        "action:selectAll": [],
         "action:zoomIn": ["Mod+Shift+="],
         "editor:smartZoom": ["J"],
         "editor:holdZoom": ["K"],
@@ -393,7 +393,7 @@ describe("labels read the keymap", () => {
       "K",
     ]);
     // a removed key hides the row
-    expect(getHelpRowKeys(t("labels.cut"))).toBeNull();
+    expect(getHelpRowKeys(t("labels.selectAll"))).toBeNull();
     expect(getHelpRowKeys(t("buttons.zoomIn"))).toEqual([
       getShortcutKey("Ctrl"),
       getShortcutKey("Shift"),
@@ -404,7 +404,7 @@ describe("labels read the keymap", () => {
       "K",
       t("helpDialog.drag"),
     ]);
-    // a binding the keymap does not name keeps its default
+    // a fixed key (copy) shows as before
     expect(getHelpRowKeys(t("labels.copy"))).toEqual([
       getShortcutKey("Ctrl"),
       "C",

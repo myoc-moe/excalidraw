@@ -11,6 +11,7 @@ import type {
   NonDeletedSceneElementsMap,
 } from "@excalidraw/element/types";
 
+import { useKeymap } from "../components/App";
 import { arrowsToEyeIcon } from "../components/icons";
 import { getSelectedElements } from "../scene";
 import { IconButton } from "../components/IconButton";
@@ -63,15 +64,10 @@ export const getNextSmartZoomImage = (
 };
 
 // MyOC: Reflect the held-F interaction on the persistent Smart Zoom control.
-const SmartZoomButton = ({
-  data,
-  updateData,
-  appProps,
-}: PanelComponentProps) => {
+const SmartZoomButton = ({ data, updateData }: PanelComponentProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
-  const shortcut = joinLabels(
-    getBindingLabels("editor:smartZoom", appProps.keymap),
-  );
+  const keymap = useKeymap();
+  const shortcut = joinLabels(getBindingLabels("editor:smartZoom", keymap));
 
   return (
     <IconButton

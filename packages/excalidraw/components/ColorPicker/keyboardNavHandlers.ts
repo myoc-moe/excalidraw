@@ -156,13 +156,18 @@ export const colorPickerKeyNavHandler = ({
   excludedColors,
   keymap,
 }: ColorPickerKeyNavHandlerProps): boolean => {
-  // before the Ctrl/Cmd check: a user eye dropper key can have a modifier
-  if (matchesBinding(event, "editor:eyeDropperStroke", keymap)) {
-    onEyeDropperToggle();
-    return true;
-  }
+  const isEyeDropperKey = matchesBinding(
+    event,
+    "editor:eyeDropperStroke",
+    keymap,
+  );
 
   if (event[KEYS.CTRL_OR_CMD]) {
+    // a user eye dropper key with Ctrl or Cmd
+    if (isEyeDropperKey) {
+      onEyeDropperToggle();
+      return true;
+    }
     return false;
   }
 
@@ -249,6 +254,13 @@ export const colorPickerKeyNavHandler = ({
       excludedColors,
     })
   ) {
+    return true;
+  }
+
+  // after the palette hotkeys: a user eye dropper key on a palette letter
+  // keeps that palette color
+  if (isEyeDropperKey) {
+    onEyeDropperToggle();
     return true;
   }
 

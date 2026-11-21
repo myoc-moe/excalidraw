@@ -8,6 +8,7 @@ import { getShortcutFromShortcutName } from "../actions/shortcuts";
 import { t } from "../i18n";
 
 import DropdownMenu from "./dropdownMenu/DropdownMenu";
+import { useKeymap } from "./App";
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
 import {
@@ -98,7 +99,7 @@ export const MobileToolbar = ({
   actionManager,
   setAppState,
 }: MobileToolbarProps) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   const activeTool = app.state.activeTool;
   const isMyocSimplifiedMode = app.state.myocSimplifiedMode;
   const imageToolEnabled = app.props.UIOptions.tools?.image !== false;

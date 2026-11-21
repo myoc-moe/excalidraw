@@ -10,6 +10,7 @@ import {
 
 import { Excalidraw, WelcomeScreen } from "../index";
 import { createRedoAction, createUndoAction } from "../actions/actionHistory";
+import { actionCopy } from "../actions/actionClipboard";
 import { actionSmartZoom } from "../actions/actionSmartZoom";
 import { activeEyeDropperAtom } from "../components/EyeDropper";
 import { editorJotaiStore } from "../editor-jotai";
@@ -161,6 +162,32 @@ describe("keymap: actions", () => {
   });
 });
 
+describe("keymap: copy, cut and paste keys are fixed", () => {
+  it("ignores a keymap entry for action:copy", async () => {
+    // no real clipboard write
+    const perform = vi.spyOn(actionCopy, "perform").mockReturnValue(false);
+    // not a binding id: the app cannot pass it, but a stored keymap could
+    await renderWithKeymap({ "action:copy": ["Mod+J"] } as unknown as Keymap);
+    const rectangle = API.createElement({ type: "rectangle" });
+    API.setElements([rectangle]);
+    API.setSelectedElements([rectangle]);
+
+    keyDown("j", { code: "KeyJ", ctrlKey: true });
+    expect(perform).not.toHaveBeenCalled();
+
+    keyDown("c", { code: "KeyC", ctrlKey: true });
+    expect(perform).toHaveBeenCalledTimes(1);
+    perform.mockRestore();
+  });
+
+  it("does not list copy, cut and paste", () => {
+    const ids = getKeymapEntries(false).map((entry) => entry.id as string);
+    expect(ids).not.toContain("action:copy");
+    expect(ids).not.toContain("action:cut");
+    expect(ids).not.toContain("action:paste");
+  });
+});
+
 describe("keymap: undo and redo match their key tests", () => {
   // `createUndoAction` and `createRedoAction` need the history, so they are
   // not in the action registry of the parity tests in `keymap.test.ts`
@@ -283,6 +310,33 @@ describe("keymap: hold keys", () => {
       "keyboard",
       expect.anything(),
     );
+  });
+
+  it("releases a held shifted symbol when Shift goes up first", async () => {
+    await renderWithKeymap({ "editor:smartZoom": ["!"] });
+    const executeAction = vi.spyOn(h.app.actionManager, "executeAction");
+
+    keyDown("!", { code: "Digit1", shiftKey: true });
+    expect(GlobalTestState.interactiveCanvas.style.cursor).toBe("zoom-in");
+
+    // Shift is up already: the same physical key sends "1"
+    keyUp("1", { code: "Digit1" });
+    expect(executeAction).toHaveBeenCalledWith(
+      actionSmartZoom,
+      "keyboard",
+      expect.anything(),
+    );
+    expect(GlobalTestState.interactiveCanvas.style.cursor).not.toBe("zoom-in");
+  });
+
+  it("releases a held zoom symbol when Shift goes up first", async () => {
+    await renderWithKeymap({ "editor:holdZoom": ["!"] });
+
+    keyDown("!", { code: "Digit1", shiftKey: true });
+    expect(GlobalTestState.interactiveCanvas.style.cursor).toBe("zoom-in");
+
+    keyUp("1", { code: "Digit1" });
+    expect(GlobalTestState.interactiveCanvas.style.cursor).not.toBe("zoom-in");
   });
 
   it("holds zoom on a new key in view mode, including the release", async () => {
@@ -552,6 +606,28 @@ describe("keymap: local key handlers", () => {
     expect(input.matches(":focus")).toBe(true);
   });
 
+  it("refocuses the open search on a user key of a non-Latin layout", async () => {
+    await renderWithKeymap({ "action:searchMenu": ["Mod+J"] });
+
+    // Cyrillic layout: "о" on the J key
+    keyDown("о", { code: "KeyJ", ctrlKey: true });
+    expect(h.state.openSidebar?.tab).toBe(CANVAS_SEARCH_TAB);
+    const input =
+      h.app.excalidrawContainerValue.container?.querySelector<HTMLInputElement>(
+        `.${CLASSES.SEARCH_MENU_INPUT_WRAPPER} input`,
+      )!;
+    await waitFor(() => expect(input.matches(":focus")).toBe(true));
+
+    act(() => {
+      input.blur();
+    });
+    expect(input.matches(":focus")).toBe(false);
+
+    // the search menu handles the raw event: it normalizes the key too
+    keyDown("о", { code: "KeyJ", ctrlKey: true });
+    expect(input.matches(":focus")).toBe(true);
+  });
+
   it("types a plain user search key in an input of the open search", async () => {
     await renderWithKeymap({ "action:searchMenu": ["/"] });
 
@@ -700,6 +776,34 @@ describe("keymap: live key labels", () => {
       "Smart Zoom - M",
     );
     expect(getWelcomeShortcuts()).toEqual(["Ctrl+L", "Ctrl+H"]);
+  });
+
+  it("updates the labels when the keymap prop changes", async () => {
+    await renderWithWelcome();
+    expect(getByTestId("toolbar-rectangle")?.getAttribute("title")).toBe(
+      "Rectangle — R",
+    );
+    expect(
+      document.querySelector(".zoom-in-button")?.getAttribute("title"),
+    ).toBe("Zoom in — Ctrl++");
+
+    // no other state changes
+    GlobalTestState.renderResult.rerender(
+      <Excalidraw
+        keymap={{ "tool:rectangle": ["J"], "action:zoomIn": ["Alt+J"] }}
+        handleKeyboardGlobally
+        initialData={{ appState: { myocSimplifiedMode: false } }}
+      >
+        <WelcomeScreen />
+      </Excalidraw>,
+    );
+
+    expect(getByTestId("toolbar-rectangle")?.getAttribute("title")).toBe(
+      "Rectangle — J",
+    );
+    expect(
+      document.querySelector(".zoom-in-button")?.getAttribute("title"),
+    ).toBe("Zoom in — Alt+J");
   });
 
   it("shows no key for an unbound command", async () => {

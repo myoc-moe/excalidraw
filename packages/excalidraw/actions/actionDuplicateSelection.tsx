@@ -26,7 +26,7 @@ import { DuplicateIcon } from "../components/icons";
 import { t } from "../i18n";
 import { isSomeElementSelected } from "../scene";
 
-import { useStylesPanelMode } from "../components/App";
+import { useKeymap, useStylesPanelMode } from "../components/App";
 
 import { register } from "./register";
 import { getTitleWithShortcut } from "./shortcuts";
@@ -109,7 +109,8 @@ export const actionDuplicateSelection = register({
     };
   },
   keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.D,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => {
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
     const isMobile = useStylesPanelMode() === "mobile";
 
     return (
@@ -119,7 +120,7 @@ export const actionDuplicateSelection = register({
         title={getTitleWithShortcut(
           t("labels.duplicateSelection"),
           "action:duplicateSelection",
-          appProps.keymap,
+          keymap,
         )}
         aria-label={t("labels.duplicateSelection")}
         onClick={() => updateData(null)}

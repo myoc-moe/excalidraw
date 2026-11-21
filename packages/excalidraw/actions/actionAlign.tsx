@@ -27,6 +27,7 @@ import {
   CenterVerticallyIcon,
 } from "../components/icons";
 
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 import { getEffectiveEditorPreferences } from "../editorPreferences";
 
@@ -148,21 +149,27 @@ export const actionAlignTop = register({
   },
   keyTest: (event) =>
     event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_UP,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!alignActionsPredicate(appState, app)}
-      type="button"
-      icon={AlignTopIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.alignTop"),
-        "action:alignTop",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.alignTop")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!alignActionsPredicate(appState, app)}
+        type="button"
+        icon={AlignTopIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.alignTop"),
+          "action:alignTop",
+          keymap,
+        )}
+        aria-label={t("labels.alignTop")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });
 
 export const actionAlignBottom = register({
@@ -184,21 +191,27 @@ export const actionAlignBottom = register({
   },
   keyTest: (event) =>
     event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_DOWN,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!alignActionsPredicate(appState, app)}
-      type="button"
-      icon={AlignBottomIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.alignBottom"),
-        "action:alignBottom",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.alignBottom")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!alignActionsPredicate(appState, app)}
+        type="button"
+        icon={AlignBottomIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.alignBottom"),
+          "action:alignBottom",
+          keymap,
+        )}
+        aria-label={t("labels.alignBottom")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });
 
 export const actionAlignLeft = register({
@@ -220,21 +233,27 @@ export const actionAlignLeft = register({
   },
   keyTest: (event) =>
     event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_LEFT,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!alignActionsPredicate(appState, app)}
-      type="button"
-      icon={AlignLeftIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.alignLeft"),
-        "action:alignLeft",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.alignLeft")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!alignActionsPredicate(appState, app)}
+        type="button"
+        icon={AlignLeftIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.alignLeft"),
+          "action:alignLeft",
+          keymap,
+        )}
+        aria-label={t("labels.alignLeft")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });
 
 export const actionAlignRight = register({
@@ -256,21 +275,27 @@ export const actionAlignRight = register({
   },
   keyTest: (event) =>
     event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_RIGHT,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!alignActionsPredicate(appState, app)}
-      type="button"
-      icon={AlignRightIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.alignRight"),
-        "action:alignRight",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.alignRight")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!alignActionsPredicate(appState, app)}
+        type="button"
+        icon={AlignRightIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.alignRight"),
+          "action:alignRight",
+          keymap,
+        )}
+        aria-label={t("labels.alignRight")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });
 
 export const actionAlignVerticallyCentered = register({

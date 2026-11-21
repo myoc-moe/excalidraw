@@ -15,6 +15,7 @@ import {
   SendBackwardIcon,
   SendToBackIcon,
 } from "../components/icons";
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 
 import { getTitleWithShortcut } from "./shortcuts";
@@ -39,20 +40,23 @@ export const actionSendBackward = register({
     event[KEYS.CTRL_OR_CMD] &&
     !event.shiftKey &&
     event.code === CODES.BRACKET_LEFT,
-  PanelComponent: ({ updateData, appState, appProps }) => (
-    <button
-      type="button"
-      className="zIndexButton"
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.sendBackward"),
-        "action:sendBackward",
-        appProps.keymap,
-      )}
-    >
-      {SendBackwardIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData, appState }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="zIndexButton"
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.sendBackward"),
+          "action:sendBackward",
+          keymap,
+        )}
+      >
+        {SendBackwardIcon}
+      </button>
+    );
+  },
 });
 
 export const actionBringForward = register({
@@ -73,20 +77,23 @@ export const actionBringForward = register({
     event[KEYS.CTRL_OR_CMD] &&
     !event.shiftKey &&
     event.code === CODES.BRACKET_RIGHT,
-  PanelComponent: ({ updateData, appState, appProps }) => (
-    <button
-      type="button"
-      className="zIndexButton"
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.bringForward"),
-        "action:bringForward",
-        appProps.keymap,
-      )}
-    >
-      {BringForwardIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData, appState }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="zIndexButton"
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.bringForward"),
+          "action:bringForward",
+          keymap,
+        )}
+      >
+        {BringForwardIcon}
+      </button>
+    );
+  },
 });
 
 export const actionSendToBack = register({
@@ -110,20 +117,23 @@ export const actionSendToBack = register({
       : event[KEYS.CTRL_OR_CMD] &&
         event.shiftKey &&
         event.code === CODES.BRACKET_LEFT,
-  PanelComponent: ({ updateData, appState, appProps }) => (
-    <button
-      type="button"
-      className="zIndexButton"
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.sendToBack"),
-        "action:sendToBack",
-        appProps.keymap,
-      )}
-    >
-      {SendToBackIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData, appState }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="zIndexButton"
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.sendToBack"),
+          "action:sendToBack",
+          keymap,
+        )}
+      >
+        {SendToBackIcon}
+      </button>
+    );
+  },
 });
 
 export const actionBringToFront = register({
@@ -148,18 +158,21 @@ export const actionBringToFront = register({
       : event[KEYS.CTRL_OR_CMD] &&
         event.shiftKey &&
         event.code === CODES.BRACKET_RIGHT,
-  PanelComponent: ({ updateData, appState, appProps }) => (
-    <button
-      type="button"
-      className="zIndexButton"
-      onClick={(event) => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.bringToFront"),
-        "action:bringToFront",
-        appProps.keymap,
-      )}
-    >
-      {BringToFrontIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData, appState }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="zIndexButton"
+        onClick={(event) => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.bringToFront"),
+          "action:bringToFront",
+          keymap,
+        )}
+      >
+        {BringToFrontIcon}
+      </button>
+    );
+  },
 });

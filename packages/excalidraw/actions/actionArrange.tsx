@@ -11,6 +11,7 @@ import type { ExcalidrawElement } from "@excalidraw/element/types";
 import { TableCellsIcon } from "../components/icons";
 import { getEffectiveEditorPreferences } from "../editorPreferences";
 
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 
 import { register } from "./register";
@@ -74,18 +75,21 @@ export const actionArrangeElements = register({
     };
   },
   keyTest: (event) => event.shiftKey && matchKey(event, KEYS.A),
-  PanelComponent: ({ updateData, appProps }) => (
-    <button
-      type="button"
-      className="arrangeButton"
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.arrangeElements"),
-        "action:arrangeElements",
-        appProps.keymap,
-      )}
-    >
-      {TableCellsIcon}
-    </button>
-  ),
+  PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
+    return (
+      <button
+        type="button"
+        className="arrangeButton"
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.arrangeElements"),
+          "action:arrangeElements",
+          keymap,
+        )}
+      >
+        {TableCellsIcon}
+      </button>
+    );
+  },
 });

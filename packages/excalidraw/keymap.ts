@@ -1,4 +1,4 @@
-import { isDarwin } from "@excalidraw/common";
+import { getLayoutIndependentKey, isDarwin } from "@excalidraw/common";
 
 import {
   getBoundTextElement,
@@ -124,8 +124,6 @@ export const DEFAULT_BINDINGS = defineBindings({
     labelKey: "buttons.redo",
     group: "edit",
   },
-  "action:cut": { keys: ["Mod+X"], labelKey: "labels.cut", group: "edit" },
-  "action:copy": { keys: ["Mod+C"], labelKey: "labels.copy", group: "edit" },
   "action:copyAsPng": {
     keys: ["Shift+Alt+C"],
     codes: { "Shift+Alt+C": ["KeyC"] },
@@ -577,9 +575,43 @@ export const resolveKeys = (
 };
 
 /**
- * Whether the event matches the binding. A default combo with `codes` matches
- * by the physical key only, as its `keyTest` does today; every other combo,
- * and every combo of the user `keymap`, matches by character only.
+ * The `event.key` that shortcuts compare against:
+ * - non-Latin layouts and input methods (e.g. Cyrillic "о" on `KeyJ`) get the
+ *   US QWERTY key of the physical key (see `getLayoutIndependentKey`)
+ * - CapsLock is inverted back based on Shift #2372
+ *
+ * While an input method composes text, the key stays as it is.
+ */
+export const getShortcutEventKey = (
+  event: KeyEventLike & {
+    isComposing?: boolean;
+    nativeEvent?: { isComposing?: boolean };
+  },
+): string => {
+  // while an input method composes text, the keys belong to it
+  if (event.isComposing || event.nativeEvent?.isComposing) {
+    return event.key;
+  }
+  const key = getLayoutIndependentKey(event);
+  if (
+    typeof key === "string" &&
+    ((!event.shiftKey && /^[A-Z]$/.test(key)) ||
+      (event.shiftKey && /^[a-z]$/.test(key)))
+  ) {
+    // CapsLock inverts capitalization based on ShiftKey, so invert it back
+    return event.shiftKey ? key.toUpperCase() : key.toLowerCase();
+  }
+  return key;
+};
+
+/**
+ * Whether the event matches the binding. A combo that is one of the default
+ * combos of the binding and has `codes` matches by the physical key only, as
+ * its `keyTest` does today, also when the user `keymap` names it. Every other
+ * combo matches by character only.
+ *
+ * The event key is normalized as the editor does (`getShortcutEventKey`), so
+ * a raw event of a local key handler matches the same way.
  */
 export const matchesBinding = (
   event: KeyEventLike,
@@ -587,15 +619,21 @@ export const matchesBinding = (
   keymap?: Keymap | null,
   isMac: boolean = isDarwin,
 ): boolean => {
-  const isUserBinding = Boolean(
-    keymap && Object.prototype.hasOwnProperty.call(keymap, id),
-  );
+  const defaultKeys = getDefaultKeys(id, isMac);
   const codes: Readonly<Record<string, readonly string[]>> =
-    (!isUserBinding && BINDINGS[id].codes) || {};
+    BINDINGS[id].codes ?? {};
+  const normalizedEvent: KeyEventLike = {
+    key: getShortcutEventKey(event),
+    code: event.code,
+    ctrlKey: event.ctrlKey,
+    metaKey: event.metaKey,
+    altKey: event.altKey,
+    shiftKey: event.shiftKey,
+  };
   return resolveKeys(id, keymap, isMac).some((combo) => {
-    const comboCodes = codes[combo];
+    const comboCodes = defaultKeys.includes(combo) ? codes[combo] : undefined;
     if (!comboCodes) {
-      return matchesCombo(event, combo, isMac);
+      return matchesCombo(normalizedEvent, combo, isMac);
     }
     const parsed = parseCombo(combo, isMac);
     return (

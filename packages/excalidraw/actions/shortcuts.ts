@@ -102,6 +102,9 @@ export const joinLabels = (labels: readonly string[]) =>
 const FIXED_SHORTCUTS: Partial<Record<ShortcutName, string[]>> = {
   saveScene: [getShortcutKey("CtrlOrCmd+S")],
   imageExport: [getShortcutKey("CtrlOrCmd+Shift+E")],
+  // the browser fires its copy, cut and paste events on these keys
+  cut: [getShortcutKey("CtrlOrCmd+X")],
+  copy: [getShortcutKey("CtrlOrCmd+C")],
   paste: [getShortcutKey("CtrlOrCmd+V")],
   copyStyles: [getShortcutKey("CtrlOrCmd+Alt+C")],
   pasteStyles: [getShortcutKey("CtrlOrCmd+Alt+V")],

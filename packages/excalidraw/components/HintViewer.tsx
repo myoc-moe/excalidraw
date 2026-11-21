@@ -25,6 +25,8 @@ import { getShortcutKey } from "../shortcut";
 import { isEraserActive } from "../appState";
 import { isGridModeEnabled } from "../snapping";
 
+import { useKeymap } from "./App";
+
 import "./HintViewer.scss";
 
 import type { BindingId, Keymap } from "../keymap";
@@ -57,7 +59,11 @@ const getHints = ({
   isMobile,
   editorInterface,
   app,
-}: HintViewerProps): null | string | string[] => {
+  keymap,
+}: HintViewerProps & { keymap: Keymap | undefined }):
+  | null
+  | string
+  | string[] => {
   const { activeTool, isResizing, isRotating, lastPointerDownWith } = appState;
   const multiMode = appState.multiElement !== null;
 
@@ -102,7 +108,7 @@ const getHints = ({
       });
     }
     if (activeTool.type === "arrow") {
-      const arrowKey = getBindingTaggedKey("tool:arrow", app.props.keymap);
+      const arrowKey = getBindingTaggedKey("tool:arrow", keymap);
       return arrowKey
         ? t("hints.arrowTool", { shortcut: arrowKey })
         : t("hints.linearElement");
@@ -224,7 +230,7 @@ const getHints = ({
         if (appState.selectedLinearElement?.isEditing) {
           const duplicateKey = getBindingTaggedKey(
             "action:duplicateSelection",
-            app.props.keymap,
+            keymap,
           );
           return appState.selectedLinearElement.selectedPointsIndices &&
             duplicateKey
@@ -285,6 +291,7 @@ export const HintViewer = ({
   app,
 }: HintViewerProps) => {
   const smartZoomKeyHeld = useAtomValue(smartZoomKeyHeldAtom);
+  const keymap = useKeymap();
   // MyOC: Held-F guidance must remain available in view mode as well as edit
   // mode, where the regular contextual hints are intentionally hidden.
   const hints = smartZoomKeyHeld
@@ -296,6 +303,7 @@ export const HintViewer = ({
         isMobile,
         editorInterface,
         app,
+        keymap,
       });
 
   if (!hints) {

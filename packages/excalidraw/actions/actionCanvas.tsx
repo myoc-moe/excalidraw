@@ -15,6 +15,7 @@ import { CaptureUpdateAction } from "@excalidraw/element";
 
 import type { Bounds } from "@excalidraw/common";
 
+import { useKeymap } from "../components/App";
 import { ColorPicker } from "../components/ColorPicker/ColorPicker";
 import { IconButton } from "../components/IconButton";
 import { Tooltip } from "../components/Tooltip";
@@ -104,7 +105,8 @@ export const actionZoomIn = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ updateData, appProps }) => {
+  PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
@@ -114,7 +116,7 @@ export const actionZoomIn = register({
         title={getTitleWithShortcut(
           t("buttons.zoomIn"),
           "action:zoomIn",
-          appProps.keymap,
+          keymap,
         )}
         aria-label={t("buttons.zoomIn")}
         disabled={zoomValue >= MAX_ZOOM}
@@ -155,7 +157,8 @@ export const actionZoomOut = register({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ updateData, appProps }) => {
+  PanelComponent: ({ updateData }) => {
+    const keymap = useKeymap();
     const zoomValue = useAppStateValue((appState) => appState.zoom.value);
     return (
       <IconButton
@@ -165,7 +168,7 @@ export const actionZoomOut = register({
         title={getTitleWithShortcut(
           t("buttons.zoomOut"),
           "action:zoomOut",
-          appProps.keymap,
+          keymap,
         )}
         aria-label={t("buttons.zoomOut")}
         disabled={zoomValue <= MIN_ZOOM}

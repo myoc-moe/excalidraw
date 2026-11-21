@@ -366,11 +366,11 @@ export const HelpDialog = ({ onClose }: { onClose?: () => void }) => {
               />
               <Shortcut
                 label={t("labels.cut")}
-                shortcuts={keysOf("action:cut")}
+                shortcuts={[getShortcutKey("CtrlOrCmd+X")]}
               />
               <Shortcut
                 label={t("labels.copy")}
-                shortcuts={keysOf("action:copy")}
+                shortcuts={[getShortcutKey("CtrlOrCmd+C")]}
               />
               <Shortcut
                 label={t("labels.paste")}

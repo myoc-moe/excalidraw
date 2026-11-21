@@ -22,7 +22,6 @@ import {
   shouldResizeFromCenter,
   shouldMaintainAspectRatio,
   shouldRotateWithDiscreteAngle,
-  getLayoutIndependentKey,
   isArrowKey,
   KEYS,
   APP_NAME,
@@ -420,6 +419,7 @@ import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import {
+  getShortcutEventKey,
   matchesBinding,
   matchesCombo,
   parseCombo,
@@ -601,11 +601,31 @@ export const useExcalidrawActionManager = () =>
  */
 export const useExcalidrawAPI = () => useContext(ExcalidrawAPIContext);
 
+/**
+ * The key that started a hold binding (smart zoom, hold zoom). Its release
+ * matches by `code`, so a shifted symbol (`?` with Shift released first) or a
+ * macOS Option character releases it too. `key` is for events with no code.
+ */
+type HeldKey = { code: string; key: string };
+
+const getHeldKey = (event: KeyboardEvent | React.KeyboardEvent): HeldKey => ({
+  code: event.code,
+  key: event.key.length === 1 ? event.key.toUpperCase() : event.key,
+});
+
+const isHeldKeyRelease = (event: KeyboardEvent, heldKey: HeldKey | null) =>
+  heldKey !== null &&
+  (heldKey.code
+    ? event.code === heldKey.code
+    : getHeldKey(event).key === heldKey.key);
+
 let didTapTwice: boolean = false;
 let tappedTwiceTimer = 0;
 let firstTapPosition: { x: number; y: number } | null = null;
 let isHoldingSpace: boolean = false;
 let isHoldingZ: boolean = false;
+/** the key that holds the hold zoom (`editor:holdZoom`), see `getHeldKey` */
+let holdZoomKey: HeldKey | null = null;
 let isPanning: boolean = false;
 let isDraggingScrollBar: boolean = false;
 let currentScrollBars: ScrollBars = { horizontal: null, vertical: null };
@@ -653,35 +673,16 @@ const gesture: Gesture = {
 };
 
 /**
- * Returns the event with the `event.key` that shortcuts compare against:
- * - non-Latin layouts and input methods (e.g. macOS Zhuyin "ㄐ" on `KeyR`)
- *   get the US QWERTY key of the physical key (see `getLayoutIndependentKey`)
- * - CapsLock is inverted back based on Shift #2372
- *
- * Returns the same event when the key does not change, and while an input
- * method composes text.
+ * Returns the event with the `event.key` that shortcuts compare against (see
+ * `getShortcutEventKey`). Returns the same event when the key does not
+ * change, and while an input method composes text.
  */
 const normalizeShortcutKeyEvent = <
   T extends KeyboardEvent | React.KeyboardEvent,
 >(
   event: T,
 ): T => {
-  // while an input method composes text, the keys belong to it
-  const keyEvent: KeyboardEvent | React.KeyboardEvent = event;
-  const nativeEvent =
-    "nativeEvent" in keyEvent ? keyEvent.nativeEvent : keyEvent;
-  if (nativeEvent.isComposing) {
-    return event;
-  }
-  let key = getLayoutIndependentKey(event);
-  if (
-    typeof key === "string" &&
-    ((!event.shiftKey && /^[A-Z]$/.test(key)) ||
-      (event.shiftKey && /^[a-z]$/.test(key)))
-  ) {
-    // CapsLock inverts capitalization based on ShiftKey, so invert it back
-    key = event.shiftKey ? key.toUpperCase() : key.toLowerCase();
-  }
+  const key = getShortcutEventKey(event);
   if (key === event.key || !("Proxy" in window)) {
     return event;
   }
@@ -817,6 +818,7 @@ class App extends React.Component<AppProps, AppState> {
   private lastKeyboardSmartZoomImageId: ExcalidrawElement["id"] | null = null;
   // MyOC: State for the press-and-hold Smart Zoom interaction.
   private smartZoomKeyDownAt: number | null = null;
+  private smartZoomKey: HeldKey | null = null;
   private smartZoomKeyHitElement = false;
   /** previous frame pointer coords */
   previousPointerMoveCoords: { x: number; y: number } | null = null;
@@ -3068,6 +3070,7 @@ class App extends React.Component<AppProps, AppState> {
 
     isHoldingSpace = false;
     isHoldingZ = false;
+    holdZoomKey = null;
     this.resetSmartZoomKey();
     isPanning = false;
     isDraggingScrollBar = false;
@@ -5618,17 +5621,6 @@ class App extends React.Component<AppProps, AppState> {
     id: BindingId,
   ) => matchesBinding(event, id, this.props.keymap);
 
-  /**
-   * Whether the released key is the key of a combo of the binding. The
-   * modifiers are not compared: the user can release them first.
-   */
-  private isKeymapKeyRelease = (event: KeyboardEvent, id: BindingId) => {
-    const key = event.key.length === 1 ? event.key.toUpperCase() : event.key;
-    return resolveKeys(id, this.props.keymap).some(
-      (combo) => parseCombo(combo)?.key === key,
-    );
-  };
-
   // MyOC Smart Zoom input handling: F (by default) is a hold gesture that can
   // target the item under the pointer, or zoom the complete scene on a quick
   // release.
@@ -5651,6 +5643,7 @@ class App extends React.Component<AppProps, AppState> {
   private resetSmartZoomKey = () => {
     const wasHeld = this.smartZoomKeyDownAt !== null;
     this.smartZoomKeyDownAt = null;
+    this.smartZoomKey = null;
     this.smartZoomKeyHitElement = false;
     if (wasHeld) {
       this.cursor.reset();
@@ -5667,6 +5660,7 @@ class App extends React.Component<AppProps, AppState> {
 
     if (!event.repeat && this.smartZoomKeyDownAt === null) {
       this.smartZoomKeyDownAt = Date.now();
+      this.smartZoomKey = getHeldKey(event);
       this.smartZoomKeyHitElement = false;
       this.updateEditorAtom(smartZoomKeyHeldAtom, true);
       this.updateSmartZoomCursor(this.lastPointerMoveCoords);
@@ -5680,7 +5674,8 @@ class App extends React.Component<AppProps, AppState> {
   private handleSmartZoomKeyUp = (event: KeyboardEvent): boolean => {
     if (
       this.smartZoomKeyDownAt === null ||
-      !this.isKeymapKeyRelease(event, "editor:smartZoom")
+      // the modifiers are not compared: the user can release them first
+      !isHeldKeyRelease(event, this.smartZoomKey)
     ) {
       return false;
     }
@@ -5921,6 +5916,7 @@ class App extends React.Component<AppProps, AppState> {
         this.matchesKeymap(event, "editor:holdZoom")
       ) {
         isHoldingZ = true;
+        holdZoomKey = getHeldKey(event);
         this.cursor.set("zoom-in");
         event.preventDefault();
         return;
@@ -6167,6 +6163,7 @@ class App extends React.Component<AppProps, AppState> {
 
       if (this.matchesKeymap(event, "editor:holdZoom")) {
         isHoldingZ = true;
+        holdZoomKey = getHeldKey(event);
         this.cursor.set("zoom-in");
         event.preventDefault();
       }
@@ -6243,8 +6240,10 @@ class App extends React.Component<AppProps, AppState> {
       isHoldingSpace = false;
     }
 
-    if (this.isKeymapKeyRelease(event, "editor:holdZoom")) {
+    // the modifiers are not compared: the user can release them first
+    if (isHeldKeyRelease(event, holdZoomKey)) {
       isHoldingZ = false;
+      holdZoomKey = null;
       this.cursor.reset();
     }
 

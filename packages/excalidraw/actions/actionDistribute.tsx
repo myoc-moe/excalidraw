@@ -22,6 +22,7 @@ import {
   DistributeVerticallyIcon,
 } from "../components/icons";
 
+import { useKeymap } from "../components/App";
 import { t } from "../i18n";
 
 import { isSomeElementSelected } from "../scene";
@@ -86,21 +87,27 @@ export const distributeHorizontally = register({
   },
   keyTest: (event) =>
     !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.H,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!enableActionGroup(appState, app)}
-      type="button"
-      icon={DistributeHorizontallyIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.distributeHorizontally"),
-        "action:distributeHorizontally",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.distributeHorizontally")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!enableActionGroup(appState, app)}
+        type="button"
+        icon={DistributeHorizontallyIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.distributeHorizontally"),
+          "action:distributeHorizontally",
+          keymap,
+        )}
+        aria-label={t("labels.distributeHorizontally")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });
 
 export const distributeVertically = register({
@@ -119,19 +126,25 @@ export const distributeVertically = register({
   },
   keyTest: (event) =>
     !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.V,
-  PanelComponent: ({ elements, appState, updateData, app, appProps }) => (
-    <IconButton
-      hidden={!enableActionGroup(appState, app)}
-      type="button"
-      icon={DistributeVerticallyIcon}
-      onClick={() => updateData(null)}
-      title={getTitleWithShortcut(
-        t("labels.distributeVertically"),
-        "action:distributeVertically",
-        appProps.keymap,
-      )}
-      aria-label={t("labels.distributeVertically")}
-      visible={isSomeElementSelected(getNonDeletedElements(elements), appState)}
-    />
-  ),
+  PanelComponent: ({ elements, appState, updateData, app }) => {
+    const keymap = useKeymap();
+    return (
+      <IconButton
+        hidden={!enableActionGroup(appState, app)}
+        type="button"
+        icon={DistributeVerticallyIcon}
+        onClick={() => updateData(null)}
+        title={getTitleWithShortcut(
+          t("labels.distributeVertically"),
+          "action:distributeVertically",
+          keymap,
+        )}
+        aria-label={t("labels.distributeVertically")}
+        visible={isSomeElementSelected(
+          getNonDeletedElements(elements),
+          appState,
+        )}
+      />
+    );
+  },
 });

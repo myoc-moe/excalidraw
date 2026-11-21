@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useEffect, useState } from "react";
 
-import { KEYS, capitalizeString } from "@excalidraw/common";
+import { capitalizeString } from "@excalidraw/common";
 
 import type { PointerType } from "@excalidraw/element/types";
 
@@ -10,6 +10,7 @@ import { trackEvent } from "../analytics";
 import { t } from "../i18n";
 import { matchesBinding } from "../keymap";
 
+import { useKeymap } from "./App";
 import { IconButton } from "./IconButton";
 import { ToolPopover } from "./ToolPopover";
 import {
@@ -42,13 +43,6 @@ import type {
 
 export type ToolConfig = {
   icon: React.ReactNode;
-  /**
-   * letter shortcut(s) — the first one is shown in tooltips. Key handling
-   * reads the `tool:<type>` keymap binding instead (`findShapeByKey`).
-   */
-  letterKey?: string | readonly string[];
-  /** whether `letterKey` requires Shift to be held */
-  shiftKey?: boolean;
   /** whether the tool's shapes can be filled — fills the icon when active */
   fillable?: boolean;
   /**
@@ -65,69 +59,57 @@ const defineTools = <T extends Record<string, ToolConfig>>(tools: T) =>
 
 /**
  * Tool data — the single source of truth for tool buttons and the command
- * palette (keyboard shortcuts come from the keymap, see `findShapeByKey`). Toolbar placement
- * is not defined here: toolbars compose the `*ToolButton` components below
+ * palette. Keyboard shortcuts come from the keymap (`tool:<type>` bindings,
+ * see `findShapeByKey`). Toolbar placement is not defined here: toolbars compose the `*ToolButton` components below
  * manually, so entries without a toolbar slot (e.g. laser) are data-only.
  */
 export const TOOLS = defineTools({
   hand: {
     icon: handIcon,
-    letterKey: KEYS.H,
     toggle: true,
   },
   selection: {
     icon: SelectionIcon,
-    letterKey: KEYS.V,
     fillable: true,
   },
   rectangle: {
     icon: RectangleIcon,
-    letterKey: KEYS.R,
     fillable: true,
   },
   diamond: {
     icon: DiamondIcon,
-    letterKey: KEYS.D,
     fillable: true,
   },
   ellipse: {
     icon: EllipseIcon,
-    letterKey: KEYS.O,
     fillable: true,
   },
   arrow: {
     icon: ArrowIcon,
-    letterKey: KEYS.A,
     fillable: true,
   },
   line: {
     icon: LineIcon,
-    letterKey: KEYS.L,
     fillable: true,
   },
   freedraw: {
     icon: FreedrawIcon,
-    letterKey: KEYS.P,
   },
   text: {
     icon: TextIcon,
-    letterKey: KEYS.T,
   },
   image: {
     icon: ImageIcon,
   },
   eraser: {
     icon: EraserIcon,
-    letterKey: KEYS.E,
     toggle: true,
   },
   frame: {
     icon: frameToolIcon,
-    letterKey: KEYS.F,
   },
   autoshape: {
     icon: drawShapeToolIcon,
-    letterKey: KEYS.X,
     fillable: false,
   },
   embeddable: {
@@ -200,32 +182,15 @@ type ToolKeyEvent = Pick<
 
 /**
  * The tool whose resolved keys (the user `keymap`, else the defaults) match
- * the key event, or `null`. A bare key with `shiftKey` stands for a key event
- * with no other modifier.
+ * the key event, or `null`. CapsLock-insensitive: the matcher compares
+ * letters upper-case, and Shift on its own.
  */
 export const findShapeByKey = (
-  keyOrEvent: string | ToolKeyEvent,
+  event: ToolKeyEvent,
   app: AppClassProperties,
-  shiftKey: boolean = false,
 ) => {
-  // CapsLock-insensitive: the matcher compares letters upper-case, and Shift
-  // is compared on its own
-  const event: ToolKeyEvent =
-    typeof keyOrEvent === "string"
-      ? {
-          key: keyOrEvent,
-          code: "",
-          ctrlKey: false,
-          metaKey: false,
-          altKey: false,
-          shiftKey,
-        }
-      : keyOrEvent;
-  // `props` is absent on the partial app of some unit tests
-  const keymap = app.props?.keymap;
-
   for (const type of Object.keys(TOOLS) as ToolbarToolType[]) {
-    if (matchesBinding(event, `tool:${type}`, keymap)) {
+    if (matchesBinding(event, `tool:${type}`, app.props.keymap)) {
       // the selection shortcut activates whichever selection tool the user
       // prefers (selection or lasso)
       return type === "selection"
@@ -291,7 +256,7 @@ export const createToolButton = (
     hideKeyBinding,
     hideShortcut,
   }: ToolButtonComponentProps) => {
-    const keymap = app.props.keymap;
+    const keymap = useKeymap();
     const label = capitalizeString(t(`toolBar.${type}`));
     const ariaShortcut = hideShortcut
       ? undefined
@@ -396,7 +361,7 @@ export const SelectionToolPopover = ({
   setAppState: React.Component<any, AppState>["setState"];
   hideShortcut?: boolean;
 }) => {
-  const keymap = app.props.keymap;
+  const keymap = useKeymap();
   const SELECTION_TOOLS = [
     {
       type: "selection",
