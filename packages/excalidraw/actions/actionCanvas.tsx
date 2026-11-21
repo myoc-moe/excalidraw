@@ -4,8 +4,6 @@ import {
   MIN_ZOOM,
   THEME,
   ZOOM_STEP,
-  CODES,
-  KEYS,
 } from "@excalidraw/common";
 
 import { getNonDeletedElements } from "@excalidraw/element";
@@ -126,9 +124,6 @@ export const actionZoomIn = register({
       />
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.EQUAL || event.code === CODES.NUM_ADD) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 export const actionZoomOut = register({
@@ -178,9 +173,6 @@ export const actionZoomOut = register({
       />
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.MINUS || event.code === CODES.NUM_SUBTRACT) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 export const actionResetZoom = register({
@@ -232,9 +224,6 @@ export const actionResetZoom = register({
       </Tooltip>
     );
   },
-  keyTest: (event) =>
-    (event.code === CODES.ZERO || event.code === CODES.NUM_ZERO) &&
-    (event[KEYS.CTRL_OR_CMD] || event.shiftKey),
 });
 
 // under a viewport lock, zoom-to-fit targets the locked box rather than the
@@ -287,7 +276,6 @@ export const actionZoomToFitSelectionInViewport = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionZoomToFitSelection = register({
@@ -324,7 +312,6 @@ export const actionZoomToFitSelection = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionZoomToFit = register({
@@ -356,7 +343,6 @@ export const actionZoomToFit = register({
       },
     };
   },
-  keyTest: undefined,
 });
 
 export const actionToggleTheme = register<AppState["theme"]>({
@@ -388,11 +374,6 @@ export const actionToggleTheme = register<AppState["theme"]>({
       captureUpdate: CaptureUpdateAction.EVENTUALLY,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    event.altKey &&
-    event.shiftKey &&
-    event.code === CODES.D,
   predicate: (elements, appState, props, app) => {
     return !!app.props.UIOptions.canvasActions.toggleTheme;
   },

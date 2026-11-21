@@ -1,5 +1,3 @@
-import { CODES, KEYS } from "@excalidraw/common";
-
 import clsx from "clsx";
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -41,11 +39,6 @@ export const actionToggleViewMode = register({
       app.isInteractionEnabled()
     );
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] &&
-    event.altKey &&
-    !event.shiftKey &&
-    event.code === CODES.R,
   PanelComponent: ({ data, updateData, appState, appProps }) => {
     if (appState.viewModeOnly || appProps.viewModeOnly) {
       return null;

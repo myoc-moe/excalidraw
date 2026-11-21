@@ -9,7 +9,6 @@ import {
 } from "@excalidraw/common";
 
 import { Excalidraw, WelcomeScreen } from "../index";
-import { createRedoAction, createUndoAction } from "../actions/actionHistory";
 import { actionCopy } from "../actions/actionClipboard";
 import { actionSmartZoom } from "../actions/actionSmartZoom";
 import { activeEyeDropperAtom } from "../components/EyeDropper";
@@ -188,12 +187,7 @@ describe("keymap: copy, cut and paste keys are fixed", () => {
   });
 });
 
-describe("keymap: undo and redo match their key tests", () => {
-  // `createUndoAction` and `createRedoAction` need the history, so they are
-  // not in the action registry of the parity tests in `keymap.test.ts`
-  const undo = createUndoAction({} as any);
-  const redo = createRedoAction({} as any);
-
+describe("keymap: undo and redo", () => {
   const event = (key: string, shiftKey = false) => ({
     key,
     code: `Key${key.toUpperCase()}`,
@@ -212,12 +206,9 @@ describe("keymap: undo and redo match their key tests", () => {
   ] as const)(
     "%s on Ctrl+%s (Shift: %s) is %s",
     (id, key, shiftKey, expected) => {
-      const action = id === "action:undo" ? undo : redo;
-      const keyEvent = event(key, shiftKey);
-      expect(action.keyTest!(keyEvent as any, h.state, [], h.app as any)).toBe(
+      expect(matchesBinding(event(key, shiftKey), id, null, false)).toBe(
         expected,
       );
-      expect(matchesBinding(keyEvent, id, null, false)).toBe(expected);
     },
   );
 });

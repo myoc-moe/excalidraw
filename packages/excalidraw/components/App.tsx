@@ -419,7 +419,9 @@ import { LassoTrail } from "../lasso";
 import { EraserTrail } from "../eraser";
 import { getShortcutKey } from "../shortcut";
 import {
+  getDefaultKeys,
   getShortcutEventKey,
+  isBindingId,
   matchesBinding,
   matchesCombo,
   parseCombo,
@@ -902,9 +904,16 @@ class App extends React.Component<AppProps, AppState> {
     elements: ReturnType<ActionManager["getElementsIncludingDeleted"]>,
   ): ExcalidrawCommandCatalogEntry | null => {
     // The host command bar can only execute editor commands without form data.
-    // `keyTest` is the action registry's marker for keyboard command entries;
-    // it is not used to derive the display shortcut.
-    if (!action.keyTest || !this.actionManager.isActionAvailableForUI(action)) {
+    // A keyboard command entry is a bindable action with default keys or an
+    // action with a `keyTest`; neither derives the display shortcut.
+    const bindingId = `action:${action.name}`;
+    const isKeyboardCommand = isBindingId(bindingId)
+      ? getDefaultKeys(bindingId).length > 0
+      : Boolean(action.keyTest);
+    if (
+      !isKeyboardCommand ||
+      !this.actionManager.isActionAvailableForUI(action)
+    ) {
       return null;
     }
 

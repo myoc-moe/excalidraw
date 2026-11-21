@@ -3,8 +3,6 @@ import {
   isEmbeddableElement,
 } from "@excalidraw/element";
 
-import { KEYS } from "@excalidraw/common";
-
 import { CaptureUpdateAction } from "@excalidraw/element";
 
 import { IconButton } from "../components/IconButton";
@@ -38,7 +36,6 @@ export const actionLink = register({
     };
   },
   trackEvent: { category: "hyperlink", action: "click" },
-  keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.K,
   predicate: (elements, appState) => {
     const selectedElements = getSelectedElements(elements, appState);
     return selectedElements.length === 1;

@@ -411,10 +411,78 @@ const synthesizeEvent = (combo: string, isMac: boolean) => {
   };
 };
 
+// the default keys of every action binding on [Windows, Mac]; the table is
+// fixed here so a change of a default key shows in the diff of this file
+const ACTION_DEFAULT_KEYS: readonly (readonly [
+  BindingId,
+  readonly string[],
+  readonly string[],
+])[] = [
+  ["action:undo", ["Mod+Z"], ["Mod+Z"]],
+  ["action:redo", ["Mod+Shift+Z", "Mod+Y"], ["Mod+Shift+Z", "Mod+Y"]],
+  ["action:copyAsPng", ["Shift+Alt+C"], ["Shift+Alt+C"]],
+  ["action:selectAll", ["Mod+A"], ["Mod+A"]],
+  ["action:duplicateSelection", ["Mod+D"], ["Mod+D"]],
+  ["action:group", ["Mod+G"], ["Mod+G"]],
+  ["action:ungroup", ["Mod+Shift+G"], ["Mod+Shift+G"]],
+  ["action:hyperlink", ["Mod+K"], ["Mod+K"]],
+  ["action:toggleElementLock", ["Mod+Shift+L"], ["Mod+Shift+L"]],
+  ["action:flipHorizontal", ["Shift+H"], ["Shift+H"]],
+  ["action:flipVertical", ["Shift+V"], ["Shift+V"]],
+  [
+    "action:decreaseFontSize",
+    ["Mod+Shift+<", "Mod+Shift+,"],
+    ["Mod+Shift+<", "Mod+Shift+,"],
+  ],
+  [
+    "action:increaseFontSize",
+    ["Mod+Shift+>", "Mod+Shift+."],
+    ["Mod+Shift+>", "Mod+Shift+."],
+  ],
+  ["action:loadScene", ["Mod+O"], ["Mod+O"]],
+  ["action:saveFileToDisk", ["Mod+Shift+S"], ["Mod+Shift+S"]],
+  ["action:arrangeElements", ["Shift+A"], ["Shift+A"]],
+  ["action:alignTop", ["Mod+Shift+ArrowUp"], ["Mod+Shift+ArrowUp"]],
+  ["action:alignBottom", ["Mod+Shift+ArrowDown"], ["Mod+Shift+ArrowDown"]],
+  ["action:alignLeft", ["Mod+Shift+ArrowLeft"], ["Mod+Shift+ArrowLeft"]],
+  ["action:alignRight", ["Mod+Shift+ArrowRight"], ["Mod+Shift+ArrowRight"]],
+  ["action:distributeHorizontally", ["Alt+H"], ["Alt+H"]],
+  ["action:distributeVertically", ["Alt+V"], ["Alt+V"]],
+  ["action:sendBackward", ["Mod+["], ["Mod+["]],
+  ["action:bringForward", ["Mod+]"], ["Mod+]"]],
+  ["action:sendToBack", ["Mod+Shift+["], ["Mod+Alt+["]],
+  ["action:bringToFront", ["Mod+Shift+]"], ["Mod+Alt+]"]],
+  [
+    "action:zoomIn",
+    ["Mod++", "Mod+Shift++", "Shift++"],
+    ["Mod++", "Mod+Shift++", "Shift++"],
+  ],
+  [
+    "action:zoomOut",
+    ["Mod+-", "Mod+Shift+-", "Shift+-"],
+    ["Mod+-", "Mod+Shift+-", "Shift+-"],
+  ],
+  [
+    "action:resetZoom",
+    ["Mod+0", "Mod+Shift+0", "Shift+0"],
+    ["Mod+0", "Mod+Shift+0", "Shift+0"],
+  ],
+  ["action:zoomToFit", [], []],
+  ["action:zoomToFitSelection", [], []],
+  ["action:zoomToFitSelectionInViewport", [], []],
+  ["action:gridMode", ["Mod+'"], ["Mod+'"]],
+  ["action:objectsSnapMode", ["Alt+S"], ["Alt+S"]],
+  ["action:stats", ["Alt+/"], ["Alt+/"]],
+  ["action:viewMode", ["Alt+R"], ["Alt+R"]],
+  ["action:toggleTheme", ["Shift+Alt+D"], ["Shift+Alt+D"]],
+  ["action:searchMenu", ["Mod+F"], ["Mod+F"]],
+  ["action:toggleShortcuts", ["?"], ["?"]],
+];
+
 describe.each([
   ["Mac", true],
   ["Windows", false],
-])("parity with the action key tests on %s", (_name, isMac) => {
+])("action default keys on %s", (_name, isMac) => {
   beforeAll(() => {
     platform.isMac = isMac;
     expect(KEYS.CTRL_OR_CMD).toBe(isMac ? "metaKey" : "ctrlKey");
@@ -449,30 +517,23 @@ describe.each([
     expect(missing).toEqual([]);
   });
 
-  const getKeyTest = (id: BindingId) =>
-    actions.find((a) => `action:${a.name}` === id)?.keyTest;
+  const cases = ACTION_DEFAULT_KEYS.flatMap(([id, windowsKeys, macKeys]) =>
+    (isMac ? macKeys : windowsKeys).map((combo) => [id, combo] as const),
+  );
 
-  const callKeyTest = (id: BindingId, event: ReturnType<typeof ev>) =>
-    getKeyTest(id)?.(
-      event as any,
-      { selectedElementIds: { a: true } } as any,
-      [],
-      { scene: { getSelectedElements: () => [{}] } } as any,
+  it("has the fixed default keys of every action binding", () => {
+    const ids = Object.keys(DEFAULT_BINDINGS).filter((id) =>
+      id.startsWith("action:"),
     );
-
-  const cases = (Object.keys(DEFAULT_BINDINGS) as BindingId[])
-    .filter((id) => id.startsWith("action:") && getKeyTest(id) !== undefined)
-    .flatMap((id) =>
-      getDefaultKeys(id, isMac).map((combo) => [id, combo] as const),
-    );
-
-  it("has default combos to compare", () => {
+    expect(ACTION_DEFAULT_KEYS.map(([id]) => id)).toEqual(ids);
+    for (const [id, windowsKeys, macKeys] of ACTION_DEFAULT_KEYS) {
+      expect(getDefaultKeys(id, isMac)).toEqual(isMac ? macKeys : windowsKeys);
+    }
     expect(cases.length).toBeGreaterThan(30);
   });
 
-  it.each(cases)("%s %s passes the real key test and matches", (id, combo) => {
+  it.each(cases)("%s %s matches", (id, combo) => {
     const event = synthesizeEvent(combo, isMac);
-    expect(callKeyTest(id, event)).toBe(true);
     expect(matchesBinding(event, id, null, isMac)).toBe(true);
     // a user combo matches by character only, so only for combos with none
     // of the physical-key codes
@@ -519,7 +580,6 @@ describe.each([
       metaKey: isMac,
     });
     expect(matchesBinding(event, "action:resetZoom", null, isMac)).toBe(false);
-    expect(callKeyTest("action:resetZoom", event)).toBe(false);
   });
 
   it("matches AZERTY Mod+0 (key à, code Digit0) as reset zoom", () => {
@@ -528,7 +588,6 @@ describe.each([
       ctrlKey: !isMac,
       metaKey: isMac,
     });
-    expect(callKeyTest("action:resetZoom", event)).toBe(true);
     expect(matchesBinding(event, "action:resetZoom", null, isMac)).toBe(true);
   });
 
@@ -543,15 +602,6 @@ describe.each([
       (id) => matchesBinding(event, id, null, isMac),
     );
     expect(matching).toEqual(["action:resetZoom"]);
-    // the same action as the real key tests reach today
-    const reached = actions
-      .filter(
-        (action) =>
-          action.keyTest &&
-          callKeyTest(`action:${action.name}` as BindingId, event),
-      )
-      .map((action) => action.name);
-    expect(reached).toEqual(["resetZoom"]);
   });
 
   it("matches a user combo by character only", () => {

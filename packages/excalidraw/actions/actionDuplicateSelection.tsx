@@ -1,6 +1,5 @@
 import {
   DEFAULT_GRID_SIZE,
-  KEYS,
   MOBILE_ACTION_BUTTON_BG,
   arrayToMap,
 } from "@excalidraw/common";
@@ -108,7 +107,6 @@ export const actionDuplicateSelection = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) => event[KEYS.CTRL_OR_CMD] && event.key === KEYS.D,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     const isMobile = useStylesPanelMode() === "mobile";

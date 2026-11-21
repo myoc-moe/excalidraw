@@ -24,7 +24,7 @@ type DefaultBinding = {
   macKeys?: readonly string[];
   /**
    * `event.code` values by default combo, for the combos that match the
-   * physical key today (their `keyTest` reads `event.code`). A default combo
+   * physical key (`event.code`). A default combo
    * with codes matches only by those codes, never by character; the modifiers
    * of the combo must still match. Combos of the user `keymap` match by
    * character only.
@@ -34,8 +34,8 @@ type DefaultBinding = {
   labelKey: LabelKey;
   group: KeymapGroup;
   /**
-   * State condition the command needs besides the key match (the state guard
-   * of its action `keyTest`). The key handler must AND it with the match.
+   * State condition the command needs besides the key match. The key
+   * handler must AND it with the match.
    */
   guard?: (
     appState: Readonly<AppState>,
@@ -155,7 +155,7 @@ export const DEFAULT_BINDINGS = defineBindings({
     keys: ["Mod+Shift+L"],
     labelKey: "helpDialog.toggleElementLock",
     group: "edit",
-    // as the `keyTest` of the action: needs a selection
+    // needs a selection
     guard: (appState, _elements, app) =>
       app.scene.getSelectedElements({
         selectedElementIds: appState.selectedElementIds,
@@ -607,8 +607,8 @@ export const getShortcutEventKey = (
 /**
  * Whether the event matches the binding. A combo that is one of the default
  * combos of the binding and has `codes` matches by the physical key only, as
- * its `keyTest` does today, also when the user `keymap` names it. Every other
- * combo matches by character only.
+ * before, also when the user `keymap` names it. Every other combo matches by
+ * character only.
  *
  * The event key is normalized as the editor does (`getShortcutEventKey`), so
  * a raw event of a local key handler matches the same way.

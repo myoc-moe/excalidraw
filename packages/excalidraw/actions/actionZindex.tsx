@@ -1,5 +1,3 @@
-import { KEYS, CODES, isDarwin } from "@excalidraw/common";
-
 import {
   moveOneLeft,
   moveOneRight,
@@ -36,10 +34,6 @@ export const actionSendBackward = register({
     };
   },
   keyPriority: 40,
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    event.code === CODES.BRACKET_LEFT,
   PanelComponent: ({ updateData, appState }) => {
     const keymap = useKeymap();
     return (
@@ -73,10 +67,6 @@ export const actionBringForward = register({
     };
   },
   keyPriority: 40,
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] &&
-    !event.shiftKey &&
-    event.code === CODES.BRACKET_RIGHT,
   PanelComponent: ({ updateData, appState }) => {
     const keymap = useKeymap();
     return (
@@ -109,14 +99,6 @@ export const actionSendToBack = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    isDarwin
-      ? event[KEYS.CTRL_OR_CMD] &&
-        event.altKey &&
-        event.code === CODES.BRACKET_LEFT
-      : event[KEYS.CTRL_OR_CMD] &&
-        event.shiftKey &&
-        event.code === CODES.BRACKET_LEFT,
   PanelComponent: ({ updateData, appState }) => {
     const keymap = useKeymap();
     return (
@@ -150,14 +132,6 @@ export const actionBringToFront = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    isDarwin
-      ? event[KEYS.CTRL_OR_CMD] &&
-        event.altKey &&
-        event.code === CODES.BRACKET_RIGHT
-      : event[KEYS.CTRL_OR_CMD] &&
-        event.shiftKey &&
-        event.code === CODES.BRACKET_RIGHT,
   PanelComponent: ({ updateData, appState }) => {
     const keymap = useKeymap();
     return (

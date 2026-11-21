@@ -4,7 +4,7 @@ import { isFrameLikeElement } from "@excalidraw/element";
 
 import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element";
 
-import { KEYS, arrayToMap } from "@excalidraw/common";
+import { arrayToMap } from "@excalidraw/common";
 
 import { alignElements } from "@excalidraw/element";
 
@@ -147,8 +147,6 @@ export const actionAlignTop = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_UP,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (
@@ -189,8 +187,6 @@ export const actionAlignBottom = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_DOWN,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (
@@ -231,8 +227,6 @@ export const actionAlignLeft = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_LEFT,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (
@@ -273,8 +267,6 @@ export const actionAlignRight = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event[KEYS.CTRL_OR_CMD] && event.shiftKey && event.key === KEYS.ARROW_RIGHT,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (

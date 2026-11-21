@@ -76,6 +76,12 @@ describe("Excalidraw command catalog API", () => {
       keywords: ["search", "find"],
       shortcut: getShortcutFromShortcutName("searchMenu"),
     });
+    // a bindable action has no `keyTest`; the default keys list it
+    expect(getCatalogEntry(api, "action:selectAll")).toMatchObject({
+      shortcut: expect.any(String),
+    });
+    // a bindable action without a default key is not listed
+    expect(getCatalogEntry(api, "action:zoomToFit")).toBeUndefined();
 
     const dynamicAction = createAction("hostOnlyCommand", {
       label: "buttons.zoomIn",

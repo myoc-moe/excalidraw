@@ -3,16 +3,15 @@ import React from "react";
 import { sceneCoordsToViewportCoords } from "@excalidraw/common";
 
 import { Excalidraw } from "../index";
+import { matchesBinding } from "../keymap";
 import { API } from "../tests/helpers/api";
 import { Pointer, UI } from "../tests/helpers/ui";
 import { act, render } from "../tests/test-utils";
 
-import { actionArrangeElements } from "./actionArrange";
 import {
   actionFlipViewpointHorizontal,
   actionFlipViewpointVertical,
 } from "./actionFlipViewpoint";
-import { actionToggleViewMode } from "./actionToggleViewMode";
 
 const { h } = window;
 
@@ -63,18 +62,20 @@ describe("MyOC regression: viewpoint flip actions", () => {
       ),
     ).toBe(true);
     expect(
-      actionToggleViewMode.keyTest?.(
+      matchesBinding(
         keyEvent({ shiftKey: true, altKey: true }),
+        "action:viewMode",
       ),
     ).toBe(false);
     expect(
-      actionArrangeElements.keyTest?.(
+      matchesBinding(
         keyEvent({ code: "KeyA", key: "a", shiftKey: true }),
+        "action:arrangeElements",
       ),
     ).toBe(true);
-    expect(actionArrangeElements.keyTest?.(keyEvent({ shiftKey: true }))).toBe(
-      false,
-    );
+    expect(
+      matchesBinding(keyEvent({ shiftKey: true }), "action:arrangeElements"),
+    ).toBe(false);
   });
 
   it("can be read and updated through the public app-state API", async () => {

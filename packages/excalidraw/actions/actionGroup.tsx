@@ -14,7 +14,7 @@ import {
   replaceAllElementsInFrame,
 } from "@excalidraw/element";
 
-import { KEYS, randomId, arrayToMap } from "@excalidraw/common";
+import { randomId, arrayToMap } from "@excalidraw/common";
 
 import {
   getSelectedGroupIds,
@@ -200,8 +200,6 @@ export const actionGroup = register({
     };
   },
   predicate: (elements, appState, _, app) => enableActionGroup(appState, app),
-  keyTest: (event) =>
-    !event.shiftKey && event[KEYS.CTRL_OR_CMD] && event.key === KEYS.G,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (
@@ -310,10 +308,6 @@ export const actionUngroup = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    event.shiftKey &&
-    event[KEYS.CTRL_OR_CMD] &&
-    event.key === KEYS.G.toUpperCase(),
   predicate: (elements, appState) => getSelectedGroupIds(appState).length > 0,
 
   PanelComponent: ({ elements, appState, updateData }) => {

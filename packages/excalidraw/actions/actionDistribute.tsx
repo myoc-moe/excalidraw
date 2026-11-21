@@ -2,7 +2,7 @@ import { getNonDeletedElements } from "@excalidraw/element";
 
 import { isFrameLikeElement } from "@excalidraw/element";
 
-import { CODES, KEYS, arrayToMap } from "@excalidraw/common";
+import { arrayToMap } from "@excalidraw/common";
 
 import { updateFrameMembershipOfSelectedElements } from "@excalidraw/element";
 
@@ -85,8 +85,6 @@ export const distributeHorizontally = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.H,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (
@@ -124,8 +122,6 @@ export const distributeVertically = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) =>
-    !event[KEYS.CTRL_OR_CMD] && event.altKey && event.code === CODES.V,
   PanelComponent: ({ elements, appState, updateData, app }) => {
     const keymap = useKeymap();
     return (

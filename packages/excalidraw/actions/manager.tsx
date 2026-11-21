@@ -136,9 +136,8 @@ export class ActionManager {
 
   /**
    * A bindable action matches by its resolved keys (the user `keymap`, else
-   * the defaults) and its state guard, also when it has no `keyTest` (a user
-   * key on a command with no default key); any other action by its
-   * `keyTest`.
+   * the defaults) and its state guard, also when it has no default key; any
+   * other action by its `keyTest`.
    */
   private matchesActionKey(
     action: Action,

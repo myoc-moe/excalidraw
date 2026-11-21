@@ -1,4 +1,4 @@
-import { arrayToMap, KEYS, matchKey } from "@excalidraw/common";
+import { arrayToMap } from "@excalidraw/common";
 
 import { CaptureUpdateAction } from "@excalidraw/element";
 
@@ -74,7 +74,6 @@ export const actionArrangeElements = register({
       captureUpdate: CaptureUpdateAction.IMMEDIATELY,
     };
   },
-  keyTest: (event) => event.shiftKey && matchKey(event, KEYS.A),
   PanelComponent: ({ updateData }) => {
     const keymap = useKeymap();
     return (
