@@ -88,6 +88,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     ui,
     activeTool,
     gridModeEnabled,
+    dotGrid,
     theme,
     renderCustomizations,
     name,
@@ -248,6 +249,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
           ui={ui}
           activeTool={activeTool}
           gridModeEnabled={gridModeEnabled}
+          dotGrid={dotGrid}
           theme={theme}
           renderCustomizations={renderCustomizations}
           name={name}
@@ -309,6 +311,7 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
     interaction: prevInteraction,
     ui: prevUI,
     activeTool: prevActiveTool,
+    dotGrid: prevDotGrid,
     ...prev
   } = prevProps;
   const {
@@ -318,6 +321,7 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
     interaction: nextInteraction,
     ui: nextUI,
     activeTool: nextActiveTool,
+    dotGrid: nextDotGrid,
     ...next
   } = nextProps;
 
@@ -330,6 +334,17 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
         (nextActiveTool?.type === "custom" ? nextActiveTool.customType : null));
 
   if (!isActiveToolSame) {
+    return false;
+  }
+
+  // compare `dotGrid` by value so that hosts inlining the object
+  // (`dotGrid={{ strength: 0.5 }}`) don't bust the memo every render
+  const isDotGridSame =
+    prevDotGrid === nextDotGrid ||
+    ((prevDotGrid?.enabled ?? true) === (nextDotGrid?.enabled ?? true) &&
+      prevDotGrid?.strength === nextDotGrid?.strength);
+
+  if (!isDotGridSame) {
     return false;
   }
 
